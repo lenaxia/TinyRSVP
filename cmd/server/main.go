@@ -52,6 +52,31 @@ func main() {
 
 	logger.Info("Database health check passed")
 
+	logger.Info("Running database migrations")
+	migrator, err := db.NewMigrator(database.DB(), "migrations/sqlite")
+	if err != nil {
+		logger.Error("Failed to create migrator", "error", err)
+		os.Exit(1)
+	}
+
+	migrationCtx, migrationCancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer migrationCancel()
+
+	if err := migrator.Up(migrationCtx); err != nil {
+		logger.Error("Failed to run migrations", "error", err)
+		os.Exit(1)
+	}
+
+	version, dirty, err := migrator.Version(migrationCtx)
+	if err != nil {
+		logger.Warn("Failed to get migration version", "error", err)
+	} else {
+		logger.Info("Database migrations completed",
+			"version", version,
+			"dirty", dirty,
+		)
+	}
+
 	stats := database.DB().Stats()
 	logger.Debug("Database connection pool stats",
 		"max_open_connections", stats.MaxOpenConnections,
