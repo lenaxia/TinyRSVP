@@ -13,6 +13,19 @@ This folder contains sprint stories, epics, and user stories for the TinyRSVP pr
 5. **Update status regularly** - Mark completed items `[x]`
 6. **Keep stories focused** - User stories should be completable in 1-3 sessions
 7. **Reference from worklog** - Link completed work back to stories
+8. **Number all files** - Epics and stories must be numbered for ordering
+
+## Naming Conventions
+
+**Epics:** `{EPIC_NUMBER}_EPIC_{name}.md`
+- Example: `00_EPIC_foundation.md`, `01_EPIC_auth.md`
+- Epic numbers are two digits: 00-99
+
+**User Stories:** `{EPIC_NUMBER}_STORY_{STORY_NUMBER}_{description}.md`
+- Example: `00_STORY_01_go_module_setup.md`, `00_STORY_02_config_management.md`
+- Story numbers are two digits within each epic: 01-99
+- Stories are numbered sequentially within their epic
+- Numbering reflects implementation order and dependencies
 
 ## Structure
 

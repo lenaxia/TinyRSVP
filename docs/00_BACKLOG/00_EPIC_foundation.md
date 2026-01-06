@@ -29,18 +29,20 @@ Establish the foundational infrastructure for TinyRSVP including Go module setup
 
 ## User Stories
 
+**Naming Convention:** `{EPIC_NUMBER}_STORY_{STORY_NUMBER}_{description}.md`
+
 ### Phase 1: Project Bootstrap
-- [ ] [`00_STORY_go_module_setup.md`](00_STORY_go_module_setup.md) - Initialize Go module and project structure
-- [ ] [`00_STORY_config_management.md`](00_STORY_config_management.md) - Environment-based configuration system
+- [x] [`00_STORY_01_go_module_setup.md`](00_STORY_01_go_module_setup.md) - Initialize Go module and project structure
+- [ ] [`00_STORY_02_config_management.md`](00_STORY_02_config_management.md) - Environment-based configuration system
 
 ### Phase 2: Database Layer
-- [ ] [`00_STORY_database_connection.md`](00_STORY_database_connection.md) - Database connection management and pooling
-- [ ] [`00_STORY_database_migrations.md`](00_STORY_database_migrations.md) - Migration system using golang-migrate
-- [ ] [`00_STORY_repository_pattern.md`](00_STORY_repository_pattern.md) - Base repository interfaces and implementations
+- [ ] [`00_STORY_03_database_connection.md`](00_STORY_03_database_connection.md) - Database connection management and pooling
+- [ ] [`00_STORY_04_database_migrations.md`](00_STORY_04_database_migrations.md) - Migration system using golang-migrate
+- [ ] [`00_STORY_05_repository_pattern.md`](00_STORY_05_repository_pattern.md) - Base repository interfaces and implementations
 
 ### Phase 3: Infrastructure
-- [ ] [`00_STORY_health_checks.md`](00_STORY_health_checks.md) - Health check and readiness endpoints
-- [ ] [`00_STORY_docker_setup.md`](00_STORY_docker_setup.md) - Dockerfile and docker-compose configuration
+- [ ] [`00_STORY_06_health_checks.md`](00_STORY_06_health_checks.md) - Health check and readiness endpoints
+- [ ] [`00_STORY_07_docker_setup.md`](00_STORY_07_docker_setup.md) - Dockerfile and docker-compose configuration
 
 ---
 
