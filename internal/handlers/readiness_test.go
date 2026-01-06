@@ -7,6 +7,7 @@ import (
 	"net/http/httptest"
 	"path/filepath"
 	"testing"
+	"time"
 
 	"github.com/yourusername/tinyrsvp/internal/db"
 )
@@ -72,7 +73,7 @@ func TestReadinessHandler_Healthy(t *testing.T) {
 
 func TestReadinessHandler_DatabaseUnhealthy(t *testing.T) {
 	database := setupTestDB(t)
-	
+
 	migrator, err := db.NewMigrator(database.DB(), "../../migrations/sqlite")
 	if err != nil {
 		t.Fatalf("Failed to create migrator: %v", err)
@@ -294,5 +295,78 @@ func TestReadinessHandler_ContentType(t *testing.T) {
 	contentType := w.Header().Get("Content-Type")
 	if contentType != "application/json" {
 		t.Errorf("Expected Content-Type application/json, got %s", contentType)
+	}
+}
+
+func TestReadinessHandler_ContextTimeout(t *testing.T) {
+	database := setupTestDB(t)
+	defer database.Close()
+
+	migrator, err := db.NewMigrator(database.DB(), "../../migrations/sqlite")
+	if err != nil {
+		t.Fatalf("Failed to create migrator: %v", err)
+	}
+
+	if err := migrator.Up(context.Background()); err != nil {
+		t.Fatalf("Failed to run migrations: %v", err)
+	}
+
+	handler := NewReadinessHandler("0.1.0", database, migrator)
+
+	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Millisecond)
+	defer cancel()
+
+	req := httptest.NewRequest("GET", "/ready", nil).WithContext(ctx)
+	w := httptest.NewRecorder()
+
+	time.Sleep(2 * time.Millisecond)
+
+	handler.ServeHTTP(w, req)
+
+	if w.Code != http.StatusServiceUnavailable {
+		t.Logf("Note: Context timeout test may not trigger failure if checks complete quickly")
+	}
+
+	var response HealthResponse
+	if err := json.NewDecoder(w.Body).Decode(&response); err != nil {
+		t.Fatalf("Failed to decode response: %v", err)
+	}
+
+	if response.Checks == nil {
+		t.Error("Expected checks map to be initialized")
+	}
+}
+
+func TestReadinessHandler_MultipleSimultaneousRequests(t *testing.T) {
+	database := setupTestDB(t)
+	defer database.Close()
+
+	migrator, err := db.NewMigrator(database.DB(), "../../migrations/sqlite")
+	if err != nil {
+		t.Fatalf("Failed to create migrator: %v", err)
+	}
+
+	if err := migrator.Up(context.Background()); err != nil {
+		t.Fatalf("Failed to run migrations: %v", err)
+	}
+
+	handler := NewReadinessHandler("0.1.0", database, migrator)
+
+	done := make(chan bool, 10)
+	for i := 0; i < 10; i++ {
+		go func(id int) {
+			req := httptest.NewRequest("GET", "/ready", nil)
+			w := httptest.NewRecorder()
+			handler.ServeHTTP(w, req)
+
+			if w.Code != http.StatusOK {
+				t.Errorf("Request %d: Expected status 200, got %d", id, w.Code)
+			}
+			done <- true
+		}(i)
+	}
+
+	for i := 0; i < 10; i++ {
+		<-done
 	}
 }

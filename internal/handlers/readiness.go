@@ -3,6 +3,7 @@ package handlers
 import (
 	"context"
 	"encoding/json"
+	"log/slog"
 	"net/http"
 	"time"
 
@@ -14,6 +15,7 @@ type ReadinessHandler struct {
 	version  string
 	database db.Database
 	migrator db.Migrator
+	logger   *slog.Logger
 }
 
 func NewReadinessHandler(version string, database db.Database, migrator db.Migrator) *ReadinessHandler {
@@ -21,6 +23,7 @@ func NewReadinessHandler(version string, database db.Database, migrator db.Migra
 		version:  version,
 		database: database,
 		migrator: migrator,
+		logger:   slog.Default(),
 	}
 }
 
@@ -39,12 +42,14 @@ func (h *ReadinessHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	response.Checks["database"] = dbCheck
 	if dbCheck.Status == StatusUnhealthy {
 		response.Status = StatusUnhealthy
+		h.logger.Error("Database health check failed", "message", dbCheck.Message)
 	}
 
 	migrationCheck := h.checkMigrations(ctx)
 	response.Checks["migrations"] = migrationCheck
 	if migrationCheck.Status == StatusUnhealthy {
 		response.Status = StatusUnhealthy
+		h.logger.Error("Migration health check failed", "message", migrationCheck.Message)
 	}
 
 	statusCode := http.StatusOK
