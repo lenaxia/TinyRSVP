@@ -230,7 +230,69 @@ type RSVPRequest struct {
 
 ---
 
-## Minor Inconsistencies
+## Medium Priority Issues Fixed
+
+### 16. ✅ FIXED: Missing Health Check Implementation
+
+**Resolution:** Added complete HealthHandler implementation to Domain 8 LLD with database connectivity checks and proper error handling
+
+---
+
+### 17. ✅ FIXED: Missing Metrics Implementation
+
+**Resolution:** Added complete MetricsHandler implementation to Domain 8 LLD with all required Prometheus metrics (events, invites, RSVPs, emails, HTTP requests, DB connections, email queue size)
+
+---
+
+### 18. ✅ FIXED: Missing Background Jobs Specification
+
+**Resolution:** Already fixed in previous commit - added complete BackgroundJobs struct with all 5 scheduled jobs to Domain 8 LLD
+
+---
+
+### 19. ✅ FIXED: Missing Unsubscribe Implementation
+
+**Resolution:** Already fixed in previous commit - added unsubscribe route to Domain 8 and methods to Domain 3
+
+---
+
+### 20. ✅ FIXED: Missing Reminder Email Feature
+
+**Resolution:** Clarified in HLD Section 21 that reminder emails are manual in v0 (admin button), automatic scheduling deferred to v1+
+
+---
+
+### 21. ✅ FIXED: Section 14: Validation Rules
+
+**Resolution:** Added comprehensive validation rules section to Domain 7 LLD with centralized validation specifications and error message mappings
+
+---
+
+### 22. ✅ FIXED: Section 15: Error Handling
+
+**Resolution:** Added error type mapping and HTTP status code mapping to Domain 7 LLD
+
+---
+
+### 23. ✅ FIXED: Section 16: Security
+
+**Resolution:** Added complete security checklist to Domain 7 LLD covering all HLD Section 16 requirements
+
+---
+
+### 24. ✅ FIXED: Section 17: Operations
+
+**Resolution:** Added health check and metrics implementations to Domain 8 LLD, background jobs already added
+
+---
+
+### 25. ✅ FIXED: Section 20: Deployment Model
+
+**Resolution:** Already fixed in previous commit - added complete Section 20 to HLD with Docker configuration
+
+---
+
+## Minor Inconsistencies (Remaining)
 
 ### 9. HLD Section Numbering Mismatch
 
