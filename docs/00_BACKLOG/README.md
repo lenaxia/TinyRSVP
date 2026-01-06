@@ -20,398 +20,145 @@ This folder contains sprint stories, epics, and user stories for the TinyRSVP pr
 00_BACKLOG/
 ├── README.md (this file)
 │
-├── 00_EPIC_foundation.md          # Epic overview
-├── 00_STORY_go_module_setup.md    # Detailed user story
-├── 00_STORY_config_loader.md      # Detailed user story
+├── 00_EPIC_foundation.md          # Epic: Foundation & Project Setup
+├── 01_EPIC_auth.md                # Epic: Authentication & Authorization
+├── 02_EPIC_events.md              # Epic: Event Management
+├── 03_EPIC_invites.md             # Epic: Invite & Token Management
+├── 04_EPIC_rsvp.md                # Epic: RSVP & Guest Experience
+├── 05_EPIC_email.md               # Epic: Email System & Calendar Integration
+├── 06_EPIC_templates.md           # Epic: Templates & Asset Management
+├── 07_EPIC_frontend.md            # Epic: Frontend & User Experience
+├── 08_EPIC_api.md                 # Epic: API & HTTP Layer
 │
-├── 01_EPIC_auth.md                # Epic overview
-├── 01_STORY_oidc_integration.md   # Detailed user story
-├── 01_STORY_forward_auth.md       # Detailed user story
-│
-├── 02_EPIC_events.md              # Epic overview
-├── 02_STORY_event_model.md        # Detailed user story
-├── 02_STORY_event_crud.md         # Detailed user story
-│
-└── ... (more epics and stories)
-```
-
-## File Formats
-
-### Epic File Format
-
-Epic files provide high-level overview and list related user stories.
-
-**Filename:** `XX_EPIC_name.md`
-
-```markdown
-# Epic: [Epic Name]
-
-**Priority:** High | Medium | Low
-**Status:** Not Started | In Progress | Complete
-**Target Version:** v0 | v1 | Future
-
-## Overview
-
-Brief description of the epic and its goals. What problem does this epic solve?
-
-## Success Criteria
-
-- [ ] Criterion 1 - Measurable outcome
-- [ ] Criterion 2 - Measurable outcome
-- [ ] Criterion 3 - Measurable outcome
-
-## User Stories
-
-List of user stories in this epic (each has its own file):
-
-- [ ] [`XX_STORY_story_name.md`](XX_STORY_story_name.md) - Brief description
-- [ ] [`XX_STORY_another_story.md`](XX_STORY_another_story.md) - Brief description
-
-## Dependencies
-
-- Depends on: Epic YY (if applicable)
-- Blocks: Epic ZZ (if applicable)
-
-## Technical Overview
-
-High-level technical approach for this epic.
-
-## References
-
-- Related design docs: [`docs/XX_design.md`](../XX_design.md)
-- Related HLD sections: Section X.Y in [`docs/00_INITIAL_HLD.md`](../00_INITIAL_HLD.md)
-```
-
-### User Story File Format
-
-User story files are **comprehensive and detailed**, written for an entry-level engineer who is only marginally familiar with the codebase.
-
-**Filename:** `XX_STORY_descriptive_name.md`
-
-```markdown
-# User Story: [Story Title]
-
-**Epic:** [`XX_EPIC_name.md`](XX_EPIC_name.md)
-**Priority:** High | Medium | Low
-**Status:** Not Started | In Progress | Complete
-**Estimated Effort:** Small (1 session) | Medium (2-3 sessions) | Large (4+ sessions)
-
-## Story
-
-**As a** [role]
-**I want** [goal]
-**So that** [benefit]
-
-## Context
-
-### Why This Matters
-
-Explain the business/technical value. Why is this important?
-
-### Current State
-
-What exists now? What's the problem?
-
-### Desired State
-
-What should exist after this story is complete?
-
-## Acceptance Criteria
-
-- [ ] Criterion 1 - Specific, testable condition
-- [ ] Criterion 2 - Specific, testable condition
-- [ ] Criterion 3 - Specific, testable condition
-
-## Technical Approach
-
-### Architecture
-
-Describe where this fits in the system architecture. Include ASCII diagram if helpful:
-
-```
-┌─────────────┐
-│  Component  │
-│   A         │──────> New Component
-└─────────────┘
-```
-
-### Files to Create/Modify
-
-List specific files with their purpose:
-
-- **Create:** `internal/auth/oidc.go` - OIDC client implementation
-- **Create:** `internal/auth/oidc_test.go` - OIDC client tests
-- **Modify:** `internal/config/config.go` - Add OIDC configuration fields
-- **Modify:** `cmd/server/main.go` - Initialize OIDC client
-
-### Key Functions/Types
-
-Define the main types and functions needed:
-
-```go
-// OIDCConfig holds OIDC provider configuration
-type OIDCConfig struct {
-    IssuerURL    string
-    ClientID     string
-    ClientSecret string
-    RedirectURL  string
-}
-
-// NewOIDCClient creates a new OIDC client
-func NewOIDCClient(ctx context.Context, cfg *OIDCConfig) (*OIDCClient, error) {
-    // Implementation details
-}
-```
-
-### Dependencies
-
-**Go Packages:**
-- `github.com/coreos/go-oidc/v3/oidc` - OIDC client library
-- `golang.org/x/oauth2` - OAuth2 helper
-
-**Internal Packages:**
-- `internal/config` - Configuration loading
-- `internal/models` - User model
-
-**External Services:**
-- OIDC provider (Authentik/Keycloak/etc.)
-
-### Data Flow
-
-Describe the flow of data through the system:
-
-1. User clicks "Login" → `/login` handler
-2. Handler redirects to OIDC provider authorization URL
-3. Provider redirects back to `/oidc/callback` with code
-4. Callback handler exchanges code for tokens
-5. Handler validates ID token, extracts claims
-6. Handler creates/updates user in database
-7. Handler sets session cookie
-8. Handler redirects to dashboard
-
-## Implementation Guide
-
-### Step-by-Step Instructions
-
-Detailed steps for an entry-level engineer:
-
-#### Step 1: Set Up Dependencies
-
-```bash
-# Add required Go modules
-go get github.com/coreos/go-oidc/v3/oidc
-go get golang.org/x/oauth2
-```
-
-#### Step 2: Define Configuration Struct
-
-In `internal/config/config.go`, add:
-
-```go
-type OIDCConfig struct {
-    Enabled      bool   `env:"OIDC_ENABLED" default:"false"`
-    IssuerURL    string `env:"OIDC_ISSUER_URL"`
-    ClientID     string `env:"OIDC_CLIENT_ID"`
-    ClientSecret string `env:"OIDC_CLIENT_SECRET"`
-    RedirectURL  string `env:"OIDC_REDIRECT_URL"`
-}
-```
-
-**Why:** This allows configuration via environment variables.
-
-#### Step 3: Write Tests First (TDD)
-
-In `internal/auth/oidc_test.go`:
-
-```go
-func TestNewOIDCClient(t *testing.T) {
-    tests := []struct {
-        name    string
-        config  *OIDCConfig
-        wantErr bool
-    }{
-        {
-            name: "valid config",
-            config: &OIDCConfig{
-                IssuerURL:    "https://example.com",
-                ClientID:     "test-client",
-                ClientSecret: "test-secret",
-                RedirectURL:  "http://localhost/callback",
-            },
-            wantErr: false,
-        },
-        {
-            name: "missing issuer",
-            config: &OIDCConfig{
-                ClientID:     "test-client",
-                ClientSecret: "test-secret",
-            },
-            wantErr: true,
-        },
-    }
-    
-    for _, tt := range tests {
-        t.Run(tt.name, func(t *testing.T) {
-            client, err := NewOIDCClient(context.Background(), tt.config)
-            if (err != nil) != tt.wantErr {
-                t.Errorf("NewOIDCClient() error = %v, wantErr %v", err, tt.wantErr)
-            }
-            if !tt.wantErr && client == nil {
-                t.Error("Expected non-nil client")
-            }
-        })
-    }
-}
-```
-
-#### Step 4: Implement the Function
-
-In `internal/auth/oidc.go`:
-
-```go
-package auth
-
-import (
-    "context"
-    "fmt"
-    
-    "github.com/coreos/go-oidc/v3/oidc"
-    "golang.org/x/oauth2"
-)
-
-type OIDCClient struct {
-    provider *oidc.Provider
-    verifier *oidc.IDTokenVerifier
-    config   oauth2.Config
-}
-
-func NewOIDCClient(ctx context.Context, cfg *OIDCConfig) (*OIDCClient, error) {
-    if cfg.IssuerURL == "" {
-        return nil, fmt.Errorf("issuer URL is required")
-    }
-    
-    provider, err := oidc.NewProvider(ctx, cfg.IssuerURL)
-    if err != nil {
-        return nil, fmt.Errorf("failed to create OIDC provider: %w", err)
-    }
-    
-    // Implementation continues...
-}
-```
-
-**Why:** This follows TDD - tests first, then implementation.
-
-#### Step 5: Run Tests
-
-```bash
-go test -timeout 30s ./internal/auth/...
-```
-
-**Expected:** Tests should pass.
-
-### Tasks (if needed)
-
-Only include tasks for complex stories that need breakdown:
-
-- [ ] Task 1 - Specific subtask
-- [ ] Task 2 - Specific subtask
-
-## Examples
-
-### Similar Code in Codebase
-
-Reference existing patterns:
-
-- See `internal/email/smtp.go` for similar client initialization pattern
-- See `internal/config/config.go` for configuration struct examples
-
-### External Examples
-
-- [go-oidc example](https://github.com/coreos/go-oidc/blob/v3/example/idtoken/app.go)
-- [OAuth2 flow example](https://pkg.go.dev/golang.org/x/oauth2#example-Config)
-
-## Testing Strategy
-
-### Unit Tests
-
-- Test client initialization with valid/invalid configs
-- Test token validation with mock tokens
-- Test error handling
-
-### Integration Tests
-
-- Test full OIDC flow with test provider
-- Test callback handling
-- Test session creation
-
-### Manual Testing
-
-1. Start local OIDC provider (e.g., Keycloak in Docker)
-2. Configure app with provider details
-3. Navigate to `/login`
-4. Complete OIDC flow
-5. Verify session created
-6. Verify user in database
-
-## Edge Cases
-
-- What if OIDC provider is unreachable?
-- What if token validation fails?
-- What if user's email changes?
-- What if provider doesn't return email claim?
-
-## Rollback Plan
-
-If this needs to be reverted:
-
-1. Remove OIDC routes from router
-2. Remove OIDC config from environment
-3. Revert to forward auth only
-4. No database changes needed (user table unchanged)
-
-## References
-
-- **HLD Section:** Section 3.1 in [`docs/00_INITIAL_HLD.md`](../00_INITIAL_HLD.md)
-- **Design Doc:** (if applicable)
-- **Related Stories:**
-  - [`01_STORY_forward_auth.md`](01_STORY_forward_auth.md)
-  - [`01_STORY_session_management.md`](01_STORY_session_management.md)
-
-## Questions to Ask
-
-If you're unsure while implementing:
-
-- Which OIDC claims should we extract?
-- Should we auto-create users on first login?
-- What should happen if email claim is missing?
-- Should we support refresh tokens?
-
-**Ask the user rather than guessing.**
-
-## Success Checklist
-
-Before marking this story complete:
-
-- [ ] All tests passing with timeout
-- [ ] Code follows type safety guidelines (no `map[string]interface{}`)
-- [ ] Documentation updated (README, architecture diagram if needed)
-- [ ] Worklog entry created
-- [ ] Changes committed with reference to this story
-- [ ] Manual testing completed
-- [ ] Edge cases handled
+└── (User story files will be created as epics are started)
 ```
 
 ## Current Epics
 
-| Epic | Priority | Status | Stories | Completion |
-|------|----------|--------|---------|------------|
-| 00_EPIC_foundation | High | Not Started | 0 | 0% |
-| 01_EPIC_auth | High | Not Started | 0 | 0% |
-| 02_EPIC_events | High | Not Started | 0 | 0% |
-| 03_EPIC_invites | High | Not Started | 0 | 0% |
-| 04_EPIC_rsvp | High | Not Started | 0 | 0% |
-| 05_EPIC_email | High | Not Started | 0 | 0% |
-| 06_EPIC_templates | Medium | Not Started | 0 | 0% |
+| # | Epic | Priority | Status | Stories | Effort | Dependencies |
+|---|------|----------|--------|---------|--------|--------------|
+| 00 | [Foundation & Project Setup](00_EPIC_foundation.md) | High | Not Started | 7 | 1 week | None |
+| 01 | [Authentication & Authorization](01_EPIC_auth.md) | High | Not Started | 8 | 1 week | Epic 00 |
+| 02 | [Event Management](02_EPIC_events.md) | High | Not Started | 11 | 2 weeks | Epic 00, 01 |
+| 03 | [Invite & Token Management](03_EPIC_invites.md) | High | Not Started | 11 | 1.5 weeks | Epic 00, 01, 02 |
+| 04 | [RSVP & Guest Experience](04_EPIC_rsvp.md) | High | Not Started | 11 | 1 week | Epic 00, 02, 03 |
+| 05 | [Email System & Calendar](05_EPIC_email.md) | High | Not Started | 15 | 1.5 weeks | Epic 00, 02, 03, 06 |
+| 06 | [Templates & Asset Management](06_EPIC_templates.md) | Medium | Not Started | 13 | 1 week | Epic 00, 01 |
+| 07 | [Frontend & User Experience](07_EPIC_frontend.md) | High | Not Started | 21 | 1 week | Epic 08 |
+| 08 | [API & HTTP Layer](08_EPIC_api.md) | High | Not Started | 18 | 1.5 weeks | All |
+
+**Total Stories:** 115  
+**Total Effort:** ~10 weeks  
+**v0 Target:** All epics complete
+
+---
+
+## Implementation Order
+
+### Phase 1: Foundation (Week 1)
+**Goal:** Establish infrastructure
+```
+Epic 00: Foundation & Project Setup
+  ├─ Database connection
+  ├─ Configuration management
+  ├─ Migrations
+  └─ Repository pattern
+```
+
+### Phase 2: Authentication (Week 2)
+**Goal:** Secure the application
+```
+Epic 01: Authentication & Authorization
+  ├─ OIDC integration
+  ├─ Forward auth
+  ├─ Session management
+  └─ RBAC middleware
+```
+
+### Phase 3: Core Business Logic (Weeks 3-5)
+**Goal:** Implement core features
+```
+Epic 02: Event Management (Week 3-4)
+  ├─ Event CRUD
+  ├─ Lifecycle states
+  ├─ Timezone handling
+  └─ Preference questions
+
+Epic 03: Invite & Token Management (Week 4-5)
+  ├─ Token generation/validation
+  ├─ Invite creation
+  ├─ CSV import
+  └─ Token lifecycle
+
+Epic 04: RSVP & Guest Experience (Week 5)
+  ├─ RSVP submission
+  ├─ Plus ones
+  ├─ Question answering
+  └─ Deadline enforcement
+```
+
+### Phase 4: Supporting Systems (Weeks 6-7)
+**Goal:** Templates and email
+```
+Epic 06: Templates & Asset Management (Week 6)
+  ├─ Template system
+  ├─ Image uploads
+  ├─ Storage provider
+  └─ XSS prevention
+
+Epic 05: Email System & Calendar (Week 7)
+  ├─ SMTP integration
+  ├─ Email queue
+  ├─ ICS generation
+  └─ Retry logic
+```
+
+### Phase 5: Integration (Weeks 8-10)
+**Goal:** Complete application
+```
+Epic 08: API & HTTP Layer (Week 8-9)
+  ├─ All routes
+  ├─ Middleware chain
+  ├─ Error handling
+  └─ Security headers
+
+Epic 07: Frontend & User Experience (Week 9-10)
+  ├─ Mobile-responsive UI
+  ├─ Admin dashboard
+  ├─ Guest RSVP pages
+  └─ Accessibility
+```
+
+---
+
+## Epic Dependency Graph
+
+```
+                    Epic 00 (Foundation)
+                           │
+                           ▼
+                    Epic 01 (Auth)
+                           │
+                ┌──────────┴──────────┐
+                ▼                     ▼
+         Epic 02 (Events)      Epic 06 (Templates)
+                │                     │
+                ▼                     │
+         Epic 03 (Invites)            │
+                │                     │
+         ┌──────┴──────┐              │
+         ▼             ▼              │
+  Epic 04 (RSVP)  Epic 05 (Email)◄───┘
+         │             │
+         └──────┬──────┘
+                ▼
+         Epic 08 (API)
+                │
+                ▼
+         Epic 07 (Frontend)
+```
+
+---
 
 ## Priority Definitions
 
@@ -419,39 +166,139 @@ Before marking this story complete:
 **Medium:** Important but not blocking  
 **Low:** Nice to have, can be deferred
 
+---
+
 ## Status Definitions
 
 **Not Started:** No work begun  
 **In Progress:** Active development  
+**Blocked:** Waiting on dependencies  
 **Complete:** All acceptance criteria met, tests passing
+
+---
+
+## Epic Completion Tracking
+
+### Overall Progress
+- **Epics Complete:** 0/9 (0%)
+- **Stories Complete:** 0/115 (0%)
+- **Estimated Remaining:** 10 weeks
+
+### By Priority
+- **High Priority:** 0/8 complete
+- **Medium Priority:** 0/1 complete
+
+---
 
 ## Workflow
 
-1. **Select Story** - Choose highest priority "Not Started" story
+### Starting an Epic
+1. **Review Dependencies** - Ensure prerequisite epics complete
+2. **Read Epic File** - Understand goals and success criteria
+3. **Update Status** - Mark epic as "In Progress"
+4. **Create User Stories** - Create detailed story files as needed
+5. **Work Stories Sequentially** - Follow story order in epic
+
+### Working a User Story
+1. **Select Story** - Choose next story in epic
 2. **Update Status** - Mark as "In Progress"
-3. **Work on Tasks** - Complete tasks, mark with `[x]`
-4. **Write Tests** - TDD approach, tests first
-5. **Implement** - Write code to pass tests
+3. **Follow TDD** - Write tests first, then implementation
+4. **Update Tasks** - Mark checklist items `[x]` as complete
+5. **Run Tests** - Ensure all tests pass with timeout
 6. **Update Status** - Mark story as "Complete"
 7. **Create Worklog** - Document in `docs/01_WORKLOG/`
-8. **Commit** - Commit changes with reference to story
+8. **Commit** - Reference story in commit message
+
+### Completing an Epic
+1. **Verify All Stories** - All stories marked complete
+2. **Verify Success Criteria** - All criteria met
+3. **Run Full Test Suite** - All tests passing
+4. **Update Epic Status** - Mark as "Complete"
+5. **Update This README** - Update completion tracking
+6. **Create Handoff** - Document in worklog
+
+---
+
+## Story Estimation
+
+### Small (1 session, 2-4 hours)
+- Simple CRUD operations
+- Basic validation
+- Straightforward tests
+
+### Medium (2-3 sessions, 1-2 days)
+- Complex business logic
+- Multiple integrations
+- Comprehensive testing
+
+### Large (4+ sessions, 3-5 days)
+- Major features
+- Multiple components
+- Extensive testing
+- UI work
+
+---
 
 ## Maintenance
 
-**After Each Session:**
-- Update task checklists `[ ]` → `[x]`
-- Update story status if complete
-- Update epic completion percentage
-- Update this README's epic table
+### After Each Session
+- [ ] Update story task checklists
+- [ ] Update story status if complete
+- [ ] Update epic completion percentage
+- [ ] Update this README's tracking table
+- [ ] Commit changes with story reference
 
-**Weekly:**
-- Review priorities
-- Reorder stories if needed
-- Add new stories as discovered
-- Archive completed epics (move to `archive/` if needed)
+### After Each Epic
+- [ ] Update epic status to "Complete"
+- [ ] Update overall progress metrics
+- [ ] Create epic completion worklog
+- [ ] Review and adjust remaining epic priorities
+
+### Weekly Review
+- [ ] Review priorities
+- [ ] Reorder stories if needed
+- [ ] Add newly discovered stories
+- [ ] Update effort estimates
+- [ ] Review blockers
+
+---
+
+## Quick Reference
+
+### Current Sprint Focus
+**Sprint 1:** Epic 00 (Foundation)  
+**Next:** Epic 01 (Authentication)
+
+### Blocked Stories
+None currently
+
+### High Priority Incomplete
+All epics (project just starting)
+
+---
 
 ## References
 
-- **Authoritative Spec:** [`docs/00_INITIAL_HLD.md`](../00_INITIAL_HLD.md)
+- **Authoritative Spec:** [`docs/02_REVISED_HLD.md`](../02_REVISED_HLD.md)
+- **LLD Index:** [`docs/04_LLD_INDEX.md`](../04_LLD_INDEX.md)
 - **Implementation Guide:** [`README-LLM.md`](../../README-LLM.md)
 - **Worklog:** [`docs/01_WORKLOG/`](../01_WORKLOG/)
+
+---
+
+## Epic Quick Links
+
+- [00: Foundation](00_EPIC_foundation.md) - Database, config, migrations
+- [01: Authentication](01_EPIC_auth.md) - OIDC, sessions, RBAC
+- [02: Events](02_EPIC_events.md) - Event lifecycle, questions
+- [03: Invites](03_EPIC_invites.md) - Tokens, CSV import
+- [04: RSVP](04_EPIC_rsvp.md) - Guest responses, plus ones
+- [05: Email](05_EPIC_email.md) - SMTP, queue, ICS files
+- [06: Templates](06_EPIC_templates.md) - Customization, assets
+- [07: Frontend](07_EPIC_frontend.md) - UI, mobile-first, accessibility
+- [08: API](08_EPIC_api.md) - Routes, middleware, integration
+
+---
+
+**Last Updated:** 2026-01-06  
+**Next Review:** After Epic 00 completion
