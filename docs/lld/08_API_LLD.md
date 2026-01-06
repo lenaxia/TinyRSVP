@@ -570,17 +570,187 @@ func TestEventHandler_CreateEvent(t *testing.T) {
 
 ---
 
-## 9. Security
+## 9. Health Check Implementation
 
-**CSRF Protection:** Token in form/header  
-**Security Headers:** CSP, HSTS, X-Frame-Options  
-**Rate Limiting:** 100 requests/minute per IP  
-**Input Validation:** Sanitize all inputs  
+```go
+package handlers
+
+import (
+    "context"
+    "encoding/json"
+    "net/http"
+    "time"
+    
+    "github.com/yourusername/tinyrsvp/internal/db"
+)
+
+type HealthHandler struct {
+    db db.Database
+}
+
+func NewHealthHandler(database db.Database) *HealthHandler {
+    return &HealthHandler{db: database}
+}
+
+func (h *HealthHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+    ctx, cancel := context.WithTimeout(r.Context(), 5*time.Second)
+    defer cancel()
+    
+    checks := make(map[string]string)
+    allHealthy := true
+    
+    if err := h.db.Ping(ctx); err != nil {
+        checks["database"] = "unhealthy: " + err.Error()
+        allHealthy = false
+    } else {
+        checks["database"] = "ok"
+    }
+    
+    _, err := h.db.Exec(ctx, "SELECT 1")
+    if err != nil {
+        checks["database_write"] = "unhealthy: " + err.Error()
+        allHealthy = false
+    } else {
+        checks["database_write"] = "ok"
+    }
+    
+    status := "healthy"
+    statusCode := http.StatusOK
+    if !allHealthy {
+        status = "unhealthy"
+        statusCode = http.StatusServiceUnavailable
+    }
+    
+    response := map[string]interface{}{
+        "status":  status,
+        "checks":  checks,
+        "version": "0.1.0",
+    }
+    
+    w.Header().Set("Content-Type", "application/json")
+    w.WriteHeader(statusCode)
+    json.NewEncoder(w).Encode(response)
+}
+```
+
+---
+
+## 10. Metrics Implementation
+
+```go
+package handlers
+
+import (
+    "net/http"
+    
+    "github.com/prometheus/client_golang/prometheus"
+    "github.com/prometheus/client_golang/prometheus/promhttp"
+)
+
+var (
+    eventsTotal = prometheus.NewGaugeVec(
+        prometheus.GaugeOpts{
+            Name: "tinyrsvp_events_total",
+            Help: "Total number of events by status",
+        },
+        []string{"status"},
+    )
+    
+    invitesTotal = prometheus.NewGaugeVec(
+        prometheus.GaugeOpts{
+            Name: "tinyrsvp_invites_total",
+            Help: "Total number of invites by status",
+        },
+        []string{"status"},
+    )
+    
+    rsvpsTotal = prometheus.NewGaugeVec(
+        prometheus.GaugeOpts{
+            Name: "tinyrsvp_rsvps_total",
+            Help: "Total number of RSVPs by response",
+        },
+        []string{"response"},
+    )
+    
+    emailsTotal = prometheus.NewGaugeVec(
+        prometheus.GaugeOpts{
+            Name: "tinyrsvp_emails_total",
+            Help: "Total number of emails by status",
+        },
+        []string{"status"},
+    )
+    
+    httpRequestsTotal = prometheus.NewCounterVec(
+        prometheus.CounterOpts{
+            Name: "tinyrsvp_http_requests_total",
+            Help: "Total number of HTTP requests",
+        },
+        []string{"method", "path", "status"},
+    )
+    
+    httpRequestDuration = prometheus.NewHistogramVec(
+        prometheus.HistogramOpts{
+            Name:    "tinyrsvp_http_request_duration_seconds",
+            Help:    "HTTP request latency in seconds",
+            Buckets: prometheus.DefBuckets,
+        },
+        []string{"method", "path"},
+    )
+    
+    dbConnections = prometheus.NewGauge(
+        prometheus.GaugeOpts{
+            Name: "tinyrsvp_db_connections",
+            Help: "Number of database connections",
+        },
+    )
+    
+    emailQueueSize = prometheus.NewGauge(
+        prometheus.GaugeOpts{
+            Name: "tinyrsvp_email_queue_size",
+            Help: "Number of pending emails in queue",
+        },
+    )
+)
+
+func init() {
+    prometheus.MustRegister(eventsTotal)
+    prometheus.MustRegister(invitesTotal)
+    prometheus.MustRegister(rsvpsTotal)
+    prometheus.MustRegister(emailsTotal)
+    prometheus.MustRegister(httpRequestsTotal)
+    prometheus.MustRegister(httpRequestDuration)
+    prometheus.MustRegister(dbConnections)
+    prometheus.MustRegister(emailQueueSize)
+}
+
+type MetricsHandler struct {
+    handler http.Handler
+}
+
+func NewMetricsHandler() *MetricsHandler {
+    return &MetricsHandler{
+        handler: promhttp.Handler(),
+    }
+}
+
+func (h *MetricsHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+    h.handler.ServeHTTP(w, r)
+}
+```
+
+---
+
+## 11. Security
+
+**CSRF Protection:** Token in form/header
+**Security Headers:** CSP, HSTS, X-Frame-Options
+**Rate Limiting:** 100 requests/minute per IP
+**Input Validation:** Sanitize all inputs
 **Error Messages:** User-friendly, no sensitive data
 
 ---
 
-## 10. Error Codes
+## 12. Error Codes
 
 | Code | HTTP Status | Description |
 |------|-------------|-------------|

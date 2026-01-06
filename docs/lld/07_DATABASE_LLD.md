@@ -1002,9 +1002,107 @@ import (
 
 ---
 
-## 7. Testing Strategy
+## 7. Validation & Error Handling
 
-### 7.1 Unit Tests
+### 7.1 Centralized Validation Rules
+
+**See HLD Section 14 for complete validation specifications**
+
+**Event Validation:**
+- Title: 3-200 characters
+- Description: Max 5000 characters
+- Location: Max 500 characters
+- Start time: Must be future, valid ISO 8601
+- End time: Must be after start time, within 7 days
+- Timezone: Valid IANA timezone
+- RSVP deadline: Before start time, in future
+- Max plus ones: 0-10
+
+**Invite Validation:**
+- Name: Max 100 characters
+- Email: Valid format, max 255 characters
+- Max plus ones: 0-10, <= event.max_plus_ones
+
+**RSVP Validation:**
+- Response: Must be yes/no/maybe
+- Plus ones: 0 to invite.max_plus_ones
+- Deadline: Must be before event.rsvp_deadline
+
+**Question Validation:**
+- Question text: 5-500 characters
+- Question type: text/select/boolean
+- Options: 2-20 for select type
+
+**Answer Validation:**
+- Text: Max 500 characters
+- Select: Must match option value
+- Boolean: Must be true/false
+- Required: Must have answer
+
+### 7.2 Error Type Mapping
+
+**Database Errors → Domain Errors:**
+```go
+func mapDBError(err error) error {
+    if errors.Is(err, sql.ErrNoRows) {
+        return &models.NotFoundError{}
+    }
+    if isUniqueConstraintError(err) {
+        return &models.ConflictError{}
+    }
+    return err
+}
+```
+
+**Domain Errors → HTTP Status:**
+- `NotFoundError` → 404
+- `ValidationError` → 400
+- `ConflictError` → 409
+- `OptimisticLockError` → 409
+- `PermissionError` → 403
+- Other errors → 500
+
+### 7.3 Security Checklist
+
+**Per HLD Section 16:**
+
+**Transport Security:**
+- ✅ HTTPS required (Secure cookie flag)
+- ✅ HSTS header (31536000 seconds)
+- ✅ Trusted proxy IP validation
+
+**Session Security:**
+- ✅ HttpOnly cookies
+- ✅ SameSite=Lax
+- ✅ 32-byte random session IDs
+- ✅ 7-day expiration
+
+**Token Security:**
+- ✅ 256-bit cryptographically secure tokens
+- ✅ HMAC-SHA256 hashing
+- ✅ Constant-time comparison
+- ✅ Tokens never logged
+
+**Input Security:**
+- ✅ Parameterized queries (SQL injection prevention)
+- ✅ html/template auto-escaping (XSS prevention)
+- ✅ Path traversal prevention
+- ✅ File upload validation
+
+**CSRF Protection:**
+- ✅ CSRF tokens per session
+- ✅ Validated on POST/PUT/DELETE
+- ✅ SameSite cookies
+
+**Secrets Management:**
+- ✅ Never log secrets
+- ✅ Never return in API responses
+- ✅ Masked in admin UI
+- ✅ Rotation support
+
+## 8. Testing Strategy
+
+### 8.1 Unit Tests
 
 **Test Approach:**
 ```go

@@ -2177,16 +2177,21 @@ server {
 - ❌ Guest OIDC authentication
 - ❌ Public event links (all events require invite)
 - ❌ Event passphrases
-- ❌ Reminder email scheduling UI
+- ❌ Automatic reminder email scheduling (manual send in v0)
 - ❌ Template versioning
 - ❌ Event capacity limits
 - ❌ Waitlist functionality
-- ❌ Advanced bounce handling
+- ❌ Advanced bounce handling (parse bounce emails)
 - ❌ SMS notifications
 - ❌ CalDAV sync
 - ❌ Event analytics
 - ❌ Custom branding
 - ❌ Multi-language support
+
+**Note on Reminder Emails:**
+- v0: Manual "Send Reminder" button for admins to email non-responders
+- v1+: Automatic scheduling and batch reminders
+- Unsubscribe mechanism included in v0 for future compatibility
 
 **Rationale:** Focus on core functionality, ensure quality over quantity, maintain simplicity for v0 release.
 
