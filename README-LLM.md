@@ -175,6 +175,12 @@ ensure proper and high test coverage. Never assume a script works
 unless you have demonstrable proof with passing tests. If a script
 or tool lacks tests, assume it is broken until proven otherwise.
 
+### 11. Make sure you understand the entire architecture
+
+Make sure you understand the entire architecture and how the changes
+you are about to make fit in within that architecture. Understand the 
+goals of what you are trying to achieve and how to go about it. 
+
 ---
 
 ## Repository Structure
