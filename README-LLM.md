@@ -31,6 +31,7 @@ TinyRSVP is a **self-hosted, small-scale RSVP and invitation platform**, designe
 - Self-hosted first
 - Single-node homelab compatible
 - Feature completeness over feature breadth
+- Docker first experience, this application should only be available in docker
 
 **Primary Source Documents:**
 - [`docs/00_INITIAL_HLD.md`](docs/00_INITIAL_HLD.md) - Authoritative specification
@@ -65,7 +66,6 @@ TinyRSVP is a **self-hosted, small-scale RSVP and invitation platform**, designe
 
 **ALWAYS DO ✅:**
 - Define strongly-typed structs for ALL data structures
-- Use typed events with `hook.TriggerTypedEvent[T]`
 - Create domain types for related fields
 - Export structs from packages for reuse
 
