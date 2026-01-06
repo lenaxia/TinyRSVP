@@ -258,7 +258,117 @@ func ValidateImage(data []byte) error {
 
 ---
 
-## 6. Dependencies
+## 6. Mock Implementations
+
+### 6.1 Mock Template Service
+
+```go
+package templates
+
+import (
+    "context"
+    "github.com/yourusername/tinyrsvp/internal/models"
+)
+
+type MockService struct {
+    CreateTemplateFunc     func(ctx context.Context, template *models.Template) error
+    GetTemplateFunc        func(ctx context.Context, id int64) (*models.Template, error)
+    GetDefaultTemplateFunc func(ctx context.Context, templateType models.TemplateType) (*models.Template, error)
+    UpdateTemplateFunc     func(ctx context.Context, template *models.Template) error
+    DeleteTemplateFunc     func(ctx context.Context, id int64) error
+    SetDefaultFunc         func(ctx context.Context, id int64) error
+    ListTemplatesFunc      func(ctx context.Context, templateType *models.TemplateType) ([]*models.Template, error)
+}
+
+func (m *MockService) CreateTemplate(ctx context.Context, template *models.Template) error {
+    if m.CreateTemplateFunc != nil {
+        return m.CreateTemplateFunc(ctx, template)
+    }
+    return nil
+}
+
+func (m *MockService) GetTemplate(ctx context.Context, id int64) (*models.Template, error) {
+    if m.GetTemplateFunc != nil {
+        return m.GetTemplateFunc(ctx, id)
+    }
+    return &models.Template{ID: id}, nil
+}
+
+func (m *MockService) GetDefaultTemplate(ctx context.Context, templateType models.TemplateType) (*models.Template, error) {
+    if m.GetDefaultTemplateFunc != nil {
+        return m.GetDefaultTemplateFunc(ctx, templateType)
+    }
+    return &models.Template{Type: templateType, IsDefault: true}, nil
+}
+
+func (m *MockService) UpdateTemplate(ctx context.Context, template *models.Template) error {
+    if m.UpdateTemplateFunc != nil {
+        return m.UpdateTemplateFunc(ctx, template)
+    }
+    return nil
+}
+
+func (m *MockService) DeleteTemplate(ctx context.Context, id int64) error {
+    if m.DeleteTemplateFunc != nil {
+        return m.DeleteTemplateFunc(ctx, id)
+    }
+    return nil
+}
+
+func (m *MockService) SetDefault(ctx context.Context, id int64) error {
+    if m.SetDefaultFunc != nil {
+        return m.SetDefaultFunc(ctx, id)
+    }
+    return nil
+}
+
+func (m *MockService) ListTemplates(ctx context.Context, templateType *models.TemplateType) ([]*models.Template, error) {
+    if m.ListTemplatesFunc != nil {
+        return m.ListTemplatesFunc(ctx, templateType)
+    }
+    return []*models.Template{}, nil
+}
+```
+
+### 6.2 Mock Template Renderer
+
+```go
+package templates
+
+import "io"
+
+type MockRenderer struct {
+    RenderHTMLFunc     func(templateContent string, data interface{}) (string, error)
+    RenderTextFunc     func(templateContent string, data interface{}) (string, error)
+    RenderToWriterFunc func(w io.Writer, templateContent string, data interface{}) error
+}
+
+func (m *MockRenderer) RenderHTML(templateContent string, data interface{}) (string, error) {
+    if m.RenderHTMLFunc != nil {
+        return m.RenderHTMLFunc(templateContent, data)
+    }
+    return "<html>mock</html>", nil
+}
+
+func (m *MockRenderer) RenderText(templateContent string, data interface{}) (string, error) {
+    if m.RenderTextFunc != nil {
+        return m.RenderTextFunc(templateContent, data)
+    }
+    return "mock text", nil
+}
+
+func (m *MockRenderer) RenderToWriter(w io.Writer, templateContent string, data interface{}) error {
+    if m.RenderToWriterFunc != nil {
+        return m.RenderToWriterFunc(w, templateContent, data)
+    }
+    w.Write([]byte("mock"))
+    return nil
+}
+```
+
+---
+
+## 7. Dependencies
 
 **Internal:**
 - Domain 1 (Auth) - Access control
@@ -270,7 +380,7 @@ func ValidateImage(data []byte) error {
 
 ---
 
-## 7. Testing
+## 8. Testing
 
 ```go
 func TestTemplateRenderer_RenderHTML(t *testing.T) {

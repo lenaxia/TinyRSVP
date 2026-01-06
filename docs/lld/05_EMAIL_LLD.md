@@ -493,6 +493,115 @@ func escapeICS(s string) string {
 
 ---
 
+## 5. Mock Implementations
+
+### 5.1 Mock Email Service
+
+```go
+package email
+
+import (
+    "context"
+    "github.com/yourusername/tinyrsvp/internal/models"
+)
+
+type MockService struct {
+    SendInviteEmailFunc       func(ctx context.Context, invite *models.Invite, event *models.Event, token string) error
+    SendConfirmationEmailFunc func(ctx context.Context, rsvp *models.RSVP, invite *models.Invite, event *models.Event) error
+    SendUpdateEmailFunc       func(ctx context.Context, event *models.Event, changes string) error
+    SendCancellationEmailFunc func(ctx context.Context, event *models.Event, reason string) error
+    QueueEmailFunc            func(ctx context.Context, email *models.EmailQueue) error
+    ProcessQueueFunc          func(ctx context.Context) error
+    RetryFailedFunc           func(ctx context.Context, emailID int64) error
+}
+
+func (m *MockService) SendInviteEmail(ctx context.Context, invite *models.Invite, event *models.Event, token string) error {
+    if m.SendInviteEmailFunc != nil {
+        return m.SendInviteEmailFunc(ctx, invite, event, token)
+    }
+    return nil
+}
+
+func (m *MockService) SendConfirmationEmail(ctx context.Context, rsvp *models.RSVP, invite *models.Invite, event *models.Event) error {
+    if m.SendConfirmationEmailFunc != nil {
+        return m.SendConfirmationEmailFunc(ctx, rsvp, invite, event)
+    }
+    return nil
+}
+
+func (m *MockService) SendUpdateEmail(ctx context.Context, event *models.Event, changes string) error {
+    if m.SendUpdateEmailFunc != nil {
+        return m.SendUpdateEmailFunc(ctx, event, changes)
+    }
+    return nil
+}
+
+func (m *MockService) SendCancellationEmail(ctx context.Context, event *models.Event, reason string) error {
+    if m.SendCancellationEmailFunc != nil {
+        return m.SendCancellationEmailFunc(ctx, event, reason)
+    }
+    return nil
+}
+
+func (m *MockService) QueueEmail(ctx context.Context, email *models.EmailQueue) error {
+    if m.QueueEmailFunc != nil {
+        return m.QueueEmailFunc(ctx, email)
+    }
+    return nil
+}
+
+func (m *MockService) ProcessQueue(ctx context.Context) error {
+    if m.ProcessQueueFunc != nil {
+        return m.ProcessQueueFunc(ctx)
+    }
+    return nil
+}
+
+func (m *MockService) RetryFailed(ctx context.Context, emailID int64) error {
+    if m.RetryFailedFunc != nil {
+        return m.RetryFailedFunc(ctx, emailID)
+    }
+    return nil
+}
+```
+
+### 5.2 Mock ICS Generator
+
+```go
+package ics
+
+import "github.com/yourusername/tinyrsvp/internal/models"
+
+type MockGenerator struct {
+    GenerateFunc             func(event *models.Event, rsvpURL string) ([]byte, error)
+    GenerateUpdateFunc       func(event *models.Event, rsvpURL string) ([]byte, error)
+    GenerateCancellationFunc func(event *models.Event) ([]byte, error)
+}
+
+func (m *MockGenerator) Generate(event *models.Event, rsvpURL string) ([]byte, error) {
+    if m.GenerateFunc != nil {
+        return m.GenerateFunc(event, rsvpURL)
+    }
+    return []byte("BEGIN:VCALENDAR\nEND:VCALENDAR"), nil
+}
+
+func (m *MockGenerator) GenerateUpdate(event *models.Event, rsvpURL string) ([]byte, error) {
+    if m.GenerateUpdateFunc != nil {
+        return m.GenerateUpdateFunc(event, rsvpURL)
+    }
+    return []byte("BEGIN:VCALENDAR\nEND:VCALENDAR"), nil
+}
+
+func (m *MockGenerator) GenerateCancellation(event *models.Event) ([]byte, error) {
+    if m.GenerateCancellationFunc != nil {
+        return m.GenerateCancellationFunc(event)
+    }
+    return []byte("BEGIN:VCALENDAR\nEND:VCALENDAR"), nil
+}
+```
+
+---
+
 ## 6. Dependencies
 
 **External:**

@@ -272,7 +272,135 @@ func (v *validator) ValidateCreate(ctx context.Context, event *models.Event) err
 
 ---
 
-## 5. State Machine
+## 5. Mock Implementations
+
+### 5.1 Mock Event Service
+
+```go
+package events
+
+import (
+    "context"
+    "github.com/yourusername/tinyrsvp/internal/models"
+)
+
+type MockService struct {
+    CreateEventFunc         func(ctx context.Context, event *models.Event) error
+    GetEventFunc            func(ctx context.Context, id int64) (*models.Event, error)
+    UpdateEventFunc         func(ctx context.Context, event *models.Event) error
+    DeleteEventFunc         func(ctx context.Context, id int64) error
+    ListEventsFunc          func(ctx context.Context, filters ListFilters) ([]*models.Event, error)
+    PublishEventFunc        func(ctx context.Context, id int64) error
+    CancelEventFunc         func(ctx context.Context, id int64, reason string) error
+    ArchiveEventFunc        func(ctx context.Context, id int64) error
+    GetEventsToArchiveFunc  func(ctx context.Context) ([]*models.Event, error)
+}
+
+func (m *MockService) CreateEvent(ctx context.Context, event *models.Event) error {
+    if m.CreateEventFunc != nil {
+        return m.CreateEventFunc(ctx, event)
+    }
+    return nil
+}
+
+func (m *MockService) GetEvent(ctx context.Context, id int64) (*models.Event, error) {
+    if m.GetEventFunc != nil {
+        return m.GetEventFunc(ctx, id)
+    }
+    return &models.Event{ID: id}, nil
+}
+
+func (m *MockService) UpdateEvent(ctx context.Context, event *models.Event) error {
+    if m.UpdateEventFunc != nil {
+        return m.UpdateEventFunc(ctx, event)
+    }
+    return nil
+}
+
+func (m *MockService) DeleteEvent(ctx context.Context, id int64) error {
+    if m.DeleteEventFunc != nil {
+        return m.DeleteEventFunc(ctx, id)
+    }
+    return nil
+}
+
+func (m *MockService) ListEvents(ctx context.Context, filters ListFilters) ([]*models.Event, error) {
+    if m.ListEventsFunc != nil {
+        return m.ListEventsFunc(ctx, filters)
+    }
+    return []*models.Event{}, nil
+}
+
+func (m *MockService) PublishEvent(ctx context.Context, id int64) error {
+    if m.PublishEventFunc != nil {
+        return m.PublishEventFunc(ctx, id)
+    }
+    return nil
+}
+
+func (m *MockService) CancelEvent(ctx context.Context, id int64, reason string) error {
+    if m.CancelEventFunc != nil {
+        return m.CancelEventFunc(ctx, id, reason)
+    }
+    return nil
+}
+
+func (m *MockService) ArchiveEvent(ctx context.Context, id int64) error {
+    if m.ArchiveEventFunc != nil {
+        return m.ArchiveEventFunc(ctx, id)
+    }
+    return nil
+}
+
+func (m *MockService) GetEventsToArchive(ctx context.Context) ([]*models.Event, error) {
+    if m.GetEventsToArchiveFunc != nil {
+        return m.GetEventsToArchiveFunc(ctx)
+    }
+    return []*models.Event{}, nil
+}
+```
+
+### 5.2 Mock Event Validator
+
+```go
+package events
+
+import (
+    "context"
+    "github.com/yourusername/tinyrsvp/internal/models"
+)
+
+type MockValidator struct {
+    ValidateCreateFunc          func(ctx context.Context, event *models.Event) error
+    ValidateUpdateFunc          func(ctx context.Context, event *models.Event) error
+    ValidateStateTransitionFunc func(from, to models.EventStatus) error
+}
+
+func (m *MockValidator) ValidateCreate(ctx context.Context, event *models.Event) error {
+    if m.ValidateCreateFunc != nil {
+        return m.ValidateCreateFunc(ctx, event)
+    }
+    return nil
+}
+
+func (m *MockValidator) ValidateUpdate(ctx context.Context, event *models.Event) error {
+    if m.ValidateUpdateFunc != nil {
+        return m.ValidateUpdateFunc(ctx, event)
+    }
+    return nil
+}
+
+func (m *MockValidator) ValidateStateTransition(from, to models.EventStatus) error {
+    if m.ValidateStateTransitionFunc != nil {
+        return m.ValidateStateTransitionFunc(from, to)
+    }
+    return nil
+}
+```
+
+---
+
+## 6. State Machine
 
 ```
 DRAFT → PUBLISHED → CANCELLED → ARCHIVED
@@ -289,7 +417,7 @@ CANCELLED            ARCHIVED
 
 ---
 
-## 6. Dependencies
+## 7. Dependencies
 
 **Internal:**
 - Domain 1 (Auth) - Permission checking
@@ -302,7 +430,7 @@ CANCELLED            ARCHIVED
 
 ---
 
-## 7. Testing Strategy
+## 8. Testing Strategy
 
 ```go
 func TestEventService_CreateEvent(t *testing.T) {

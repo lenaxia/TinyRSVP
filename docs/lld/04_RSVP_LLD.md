@@ -38,7 +38,7 @@ Manages RSVP submissions, updates, preference questions, and answer collection w
 
 ```
 internal/
-├── rsvp/
+├── rsvps/
 │   ├── service.go              # RSVP service
 │   ├── service_test.go
 │   ├── validator.go            # RSVP validation
@@ -56,7 +56,7 @@ internal/
 ### 3.1 RSVP Service Interface
 
 ```go
-package rsvp
+package rsvps
 
 import (
     "context"
@@ -111,7 +111,7 @@ type RSVPStats struct {
 ### 3.2 Question Service Interface
 
 ```go
-package rsvp
+package rsvps
 
 import (
     "context"
@@ -135,7 +135,7 @@ type QuestionService interface {
 ### 4.1 RSVP Service
 
 ```go
-package rsvp
+package rsvps
 
 import (
     "context"
@@ -235,6 +235,8 @@ func (s *service) SubmitRSVP(ctx context.Context, req *RSVPRequest) error {
 ### 5.1 RSVP Validation
 
 ```go
+package rsvps
+
 func (v *validator) ValidateRSVP(req *RSVPRequest, invite *models.Invite) error {
     if req.Response != "yes" && req.Response != "no" && req.Response != "maybe" {
         return &models.ValidationError{
@@ -260,7 +262,127 @@ func (v *validator) ValidateRSVP(req *RSVPRequest, invite *models.Invite) error 
 
 ---
 
-## 6. Dependencies
+## 6. Mock Implementations
+
+### 6.1 Mock RSVP Service
+
+```go
+package rsvps
+
+import (
+    "context"
+    "github.com/yourusername/tinyrsvp/internal/models"
+)
+
+type MockService struct {
+    SubmitRSVPFunc      func(ctx context.Context, req *RSVPRequest) error
+    UpdateRSVPFunc      func(ctx context.Context, inviteID int64, req *RSVPRequest) error
+    GetRSVPFunc         func(ctx context.Context, inviteID int64) (*RSVPWithAnswers, error)
+    GetEventRSVPsFunc   func(ctx context.Context, eventID int64) ([]*RSVPWithAnswers, error)
+    GetRSVPStatsFunc    func(ctx context.Context, eventID int64) (*RSVPStats, error)
+}
+
+func (m *MockService) SubmitRSVP(ctx context.Context, req *RSVPRequest) error {
+    if m.SubmitRSVPFunc != nil {
+        return m.SubmitRSVPFunc(ctx, req)
+    }
+    return nil
+}
+
+func (m *MockService) UpdateRSVP(ctx context.Context, inviteID int64, req *RSVPRequest) error {
+    if m.UpdateRSVPFunc != nil {
+        return m.UpdateRSVPFunc(ctx, inviteID, req)
+    }
+    return nil
+}
+
+func (m *MockService) GetRSVP(ctx context.Context, inviteID int64) (*RSVPWithAnswers, error) {
+    if m.GetRSVPFunc != nil {
+        return m.GetRSVPFunc(ctx, inviteID)
+    }
+    return &RSVPWithAnswers{}, nil
+}
+
+func (m *MockService) GetEventRSVPs(ctx context.Context, eventID int64) ([]*RSVPWithAnswers, error) {
+    if m.GetEventRSVPsFunc != nil {
+        return m.GetEventRSVPsFunc(ctx, eventID)
+    }
+    return []*RSVPWithAnswers{}, nil
+}
+
+func (m *MockService) GetRSVPStats(ctx context.Context, eventID int64) (*RSVPStats, error) {
+    if m.GetRSVPStatsFunc != nil {
+        return m.GetRSVPStatsFunc(ctx, eventID)
+    }
+    return &RSVPStats{}, nil
+}
+```
+
+### 6.2 Mock Question Service
+
+```go
+package rsvps
+
+import (
+    "context"
+    "github.com/yourusername/tinyrsvp/internal/models"
+)
+
+type MockQuestionService struct {
+    CreateQuestionFunc   func(ctx context.Context, question *models.PreferenceQuestion) error
+    GetQuestionFunc      func(ctx context.Context, id int64) (*models.PreferenceQuestion, error)
+    GetEventQuestionsFunc func(ctx context.Context, eventID int64) ([]*models.PreferenceQuestion, error)
+    UpdateQuestionFunc   func(ctx context.Context, question *models.PreferenceQuestion) error
+    DeleteQuestionFunc   func(ctx context.Context, id int64) error
+    ReorderQuestionsFunc func(ctx context.Context, eventID int64, questionIDs []int64) error
+}
+
+func (m *MockQuestionService) CreateQuestion(ctx context.Context, question *models.PreferenceQuestion) error {
+    if m.CreateQuestionFunc != nil {
+        return m.CreateQuestionFunc(ctx, question)
+    }
+    return nil
+}
+
+func (m *MockQuestionService) GetQuestion(ctx context.Context, id int64) (*models.PreferenceQuestion, error) {
+    if m.GetQuestionFunc != nil {
+        return m.GetQuestionFunc(ctx, id)
+    }
+    return &models.PreferenceQuestion{ID: id}, nil
+}
+
+func (m *MockQuestionService) GetEventQuestions(ctx context.Context, eventID int64) ([]*models.PreferenceQuestion, error) {
+    if m.GetEventQuestionsFunc != nil {
+        return m.GetEventQuestionsFunc(ctx, eventID)
+    }
+    return []*models.PreferenceQuestion{}, nil
+}
+
+func (m *MockQuestionService) UpdateQuestion(ctx context.Context, question *models.PreferenceQuestion) error {
+    if m.UpdateQuestionFunc != nil {
+        return m.UpdateQuestionFunc(ctx, question)
+    }
+    return nil
+}
+
+func (m *MockQuestionService) DeleteQuestion(ctx context.Context, id int64) error {
+    if m.DeleteQuestionFunc != nil {
+        return m.DeleteQuestionFunc(ctx, id)
+    }
+    return nil
+}
+
+func (m *MockQuestionService) ReorderQuestions(ctx context.Context, eventID int64, questionIDs []int64) error {
+    if m.ReorderQuestionsFunc != nil {
+        return m.ReorderQuestionsFunc(ctx, eventID, questionIDs)
+    }
+    return nil
+}
+```
+
+---
+
+## 7. Dependencies
 
 **Internal:**
 - Domain 3 (Invite) - RSVPs belong to invites
@@ -272,7 +394,7 @@ func (v *validator) ValidateRSVP(req *RSVPRequest, invite *models.Invite) error 
 
 ---
 
-## 7. Testing
+## 8. Testing
 
 ```go
 func TestRSVPService_SubmitRSVP(t *testing.T) {

@@ -295,7 +295,121 @@ func (s *service) ImportCSV(ctx context.Context, eventID int64, csvData []byte) 
 
 ---
 
-## 5. Security
+## 5. Mock Implementations
+
+### 5.1 Mock Invite Service
+
+```go
+package invites
+
+import (
+    "context"
+    "github.com/yourusername/tinyrsvp/internal/models"
+)
+
+type MockService struct {
+    CreateInviteFunc          func(ctx context.Context, invite *models.Invite) (string, error)
+    CreateInviteBatchFunc     func(ctx context.Context, invites []*models.Invite) ([]InviteResult, error)
+    ImportCSVFunc             func(ctx context.Context, eventID int64, csvData []byte) (*ImportResult, error)
+    GetInviteFunc             func(ctx context.Context, id int64) (*models.Invite, error)
+    GetInviteByTokenFunc      func(ctx context.Context, token string) (*models.Invite, error)
+    UpdateInviteFunc          func(ctx context.Context, invite *models.Invite) error
+    RevokeInviteFunc          func(ctx context.Context, id int64) error
+    RegenerateTokenFunc       func(ctx context.Context, id int64) (string, error)
+    ListInvitesFunc           func(ctx context.Context, eventID int64) ([]*models.Invite, error)
+    GetInviteStatsFunc        func(ctx context.Context, eventID int64) (*InviteStats, error)
+    CleanupExpiredTokensFunc  func(ctx context.Context) error
+    UnsubscribeFunc           func(ctx context.Context, token string) error
+}
+
+func (m *MockService) CreateInvite(ctx context.Context, invite *models.Invite) (string, error) {
+    if m.CreateInviteFunc != nil {
+        return m.CreateInviteFunc(ctx, invite)
+    }
+    return "mock-token", nil
+}
+
+func (m *MockService) CreateInviteBatch(ctx context.Context, invites []*models.Invite) ([]InviteResult, error) {
+    if m.CreateInviteBatchFunc != nil {
+        return m.CreateInviteBatchFunc(ctx, invites)
+    }
+    return []InviteResult{}, nil
+}
+
+func (m *MockService) ImportCSV(ctx context.Context, eventID int64, csvData []byte) (*ImportResult, error) {
+    if m.ImportCSVFunc != nil {
+        return m.ImportCSVFunc(ctx, eventID, csvData)
+    }
+    return &ImportResult{}, nil
+}
+
+func (m *MockService) GetInvite(ctx context.Context, id int64) (*models.Invite, error) {
+    if m.GetInviteFunc != nil {
+        return m.GetInviteFunc(ctx, id)
+    }
+    return &models.Invite{ID: id}, nil
+}
+
+func (m *MockService) GetInviteByToken(ctx context.Context, token string) (*models.Invite, error) {
+    if m.GetInviteByTokenFunc != nil {
+        return m.GetInviteByTokenFunc(ctx, token)
+    }
+    return &models.Invite{}, nil
+}
+
+func (m *MockService) UpdateInvite(ctx context.Context, invite *models.Invite) error {
+    if m.UpdateInviteFunc != nil {
+        return m.UpdateInviteFunc(ctx, invite)
+    }
+    return nil
+}
+
+func (m *MockService) RevokeInvite(ctx context.Context, id int64) error {
+    if m.RevokeInviteFunc != nil {
+        return m.RevokeInviteFunc(ctx, id)
+    }
+    return nil
+}
+
+func (m *MockService) RegenerateToken(ctx context.Context, id int64) (string, error) {
+    if m.RegenerateTokenFunc != nil {
+        return m.RegenerateTokenFunc(ctx, id)
+    }
+    return "new-mock-token", nil
+}
+
+func (m *MockService) ListInvites(ctx context.Context, eventID int64) ([]*models.Invite, error) {
+    if m.ListInvitesFunc != nil {
+        return m.ListInvitesFunc(ctx, eventID)
+    }
+    return []*models.Invite{}, nil
+}
+
+func (m *MockService) GetInviteStats(ctx context.Context, eventID int64) (*InviteStats, error) {
+    if m.GetInviteStatsFunc != nil {
+        return m.GetInviteStatsFunc(ctx, eventID)
+    }
+    return &InviteStats{}, nil
+}
+
+func (m *MockService) CleanupExpiredTokens(ctx context.Context) error {
+    if m.CleanupExpiredTokensFunc != nil {
+        return m.CleanupExpiredTokensFunc(ctx)
+    }
+    return nil
+}
+
+func (m *MockService) Unsubscribe(ctx context.Context, token string) error {
+    if m.UnsubscribeFunc != nil {
+        return m.UnsubscribeFunc(ctx, token)
+    }
+    return nil
+}
+```
+
+---
+
+## 6. Security
 
 **Token Generation:** crypto/rand (256-bit)  
 **Token Hashing:** HMAC-SHA256 with secret key  
@@ -304,7 +418,7 @@ func (s *service) ImportCSV(ctx context.Context, eventID int64, csvData []byte) 
 
 ---
 
-## 6. Testing
+## 7. Testing
 
 ```go
 func TestTokenGenerator_Generate(t *testing.T) {
