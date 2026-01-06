@@ -15,13 +15,13 @@ As an **operator**, I want **health check and readiness endpoints** so that **I 
 
 ## Acceptance Criteria
 
-- [ ] `/health` endpoint returns application health status
-- [ ] `/ready` endpoint returns readiness status
-- [ ] Database connectivity checked in health endpoint
-- [ ] Proper HTTP status codes returned (200 for healthy, 503 for unhealthy)
-- [ ] Response includes component status details
-- [ ] Endpoints accessible without authentication
-- [ ] All tests pass with timeout
+- [x] `/health` endpoint returns application health status
+- [x] `/ready` endpoint returns readiness status
+- [x] Database connectivity checked in health endpoint
+- [x] Proper HTTP status codes returned (200 for healthy, 503 for unhealthy)
+- [x] Response includes component status details
+- [x] Endpoints accessible without authentication
+- [x] All tests pass with timeout
 
 ---
 
@@ -77,32 +77,32 @@ As an **operator**, I want **health check and readiness endpoints** so that **I 
 ## Tasks
 
 ### Phase 1: Health Check Handler (TDD)
-- [ ] Write test for health endpoint returns 200
-- [ ] Write test for health endpoint response format
-- [ ] Write test for health endpoint includes version
-- [ ] Implement health check handler
-- [ ] Run tests (should pass)
+- [x] Write test for health endpoint returns 200
+- [x] Write test for health endpoint response format
+- [x] Write test for health endpoint includes version
+- [x] Implement health check handler
+- [x] Run tests (should pass)
 
 ### Phase 2: Readiness Check Handler (TDD)
-- [ ] Write test for readiness endpoint returns 200 when ready
-- [ ] Write test for readiness endpoint returns 503 when not ready
-- [ ] Write test for database connectivity check
-- [ ] Write test for migration version check
-- [ ] Implement readiness check handler
-- [ ] Run tests (should pass)
+- [x] Write test for readiness endpoint returns 200 when ready
+- [x] Write test for readiness endpoint returns 503 when not ready
+- [x] Write test for database connectivity check
+- [x] Write test for migration version check
+- [x] Implement readiness check handler
+- [x] Run tests (should pass)
 
 ### Phase 3: Component Health Checks (TDD)
-- [ ] Write test for database health check
-- [ ] Write test for database health check failure
-- [ ] Write test for database latency measurement
-- [ ] Implement database health checker
-- [ ] Run tests (should pass)
+- [x] Write test for database health check
+- [x] Write test for database health check failure
+- [x] Write test for database latency measurement
+- [x] Implement database health checker
+- [x] Run tests (should pass)
 
 ### Phase 4: Integration
-- [ ] Register health endpoints in router
-- [ ] Add health check logging
-- [ ] Test with real database
-- [ ] Document endpoints
+- [x] Register health endpoints in router
+- [x] Add health check logging
+- [x] Test with real database
+- [x] Document endpoints
 
 ---
 
@@ -440,18 +440,18 @@ readinessProbe:
 
 ## Definition of Done
 
-- [ ] All acceptance criteria met
-- [ ] All tasks completed
-- [ ] All tests pass with timeout (`go test -timeout 30s ./internal/handlers/...`)
-- [ ] Test coverage >= 80%
-- [ ] Code formatted with `go fmt`
-- [ ] No errors from `go vet`
-- [ ] Health endpoint functional
-- [ ] Readiness endpoint functional
-- [ ] Database checks working
-- [ ] Migration checks working
-- [ ] Documentation complete
-- [ ] Changes committed to git
+- [x] All acceptance criteria met
+- [x] All tasks completed
+- [x] All tests pass with timeout (`go test -timeout 30s ./internal/handlers/...`)
+- [x] Test coverage >= 80%
+- [x] Code formatted with `go fmt`
+- [x] No errors from `go vet`
+- [x] Health endpoint functional
+- [x] Readiness endpoint functional
+- [x] Database checks working
+- [x] Migration checks working
+- [x] Documentation complete
+- [x] Changes committed to git
 
 ---
 

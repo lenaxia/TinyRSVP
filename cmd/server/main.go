@@ -2,12 +2,19 @@ package main
 
 import (
 	"context"
+	"fmt"
+	"net/http"
 	"os"
+	"os/signal"
+	"syscall"
 	"time"
 
 	"github.com/yourusername/tinyrsvp/internal/config"
 	"github.com/yourusername/tinyrsvp/internal/db"
+	"github.com/yourusername/tinyrsvp/internal/handlers"
 )
+
+const appVersion = "0.1.0"
 
 func main() {
 	logLevel := config.GetLogLevelFromEnv()
@@ -85,11 +92,53 @@ func main() {
 		"idle", stats.Idle,
 	)
 
-	logger.Info("Server starting",
-		"host", cfg.Server.Host,
-		"port", cfg.Server.Port,
-		"base_url", cfg.Server.BaseURL,
-	)
+	mux := http.NewServeMux()
 
-	logger.Info("TinyRSVP Server initialized successfully")
+	healthHandler := handlers.NewHealthHandler(appVersion)
+	mux.Handle("/health", healthHandler)
+	logger.Info("Registered health endpoint", "path", "/health")
+
+	readinessHandler := handlers.NewReadinessHandler(appVersion, database, migrator)
+	mux.Handle("/ready", readinessHandler)
+	logger.Info("Registered readiness endpoint", "path", "/ready")
+
+	addr := fmt.Sprintf("%s:%d", cfg.Server.Host, cfg.Server.Port)
+	server := &http.Server{
+		Addr:         addr,
+		Handler:      mux,
+		ReadTimeout:  15 * time.Second,
+		WriteTimeout: 15 * time.Second,
+		IdleTimeout:  60 * time.Second,
+	}
+
+	serverErrors := make(chan error, 1)
+	go func() {
+		logger.Info("Server starting", "address", addr)
+		serverErrors <- server.ListenAndServe()
+	}()
+
+	shutdown := make(chan os.Signal, 1)
+	signal.Notify(shutdown, os.Interrupt, syscall.SIGTERM)
+
+	select {
+	case err := <-serverErrors:
+		logger.Error("Server error", "error", err)
+		os.Exit(1)
+
+	case sig := <-shutdown:
+		logger.Info("Shutdown signal received", "signal", sig)
+
+		ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+		defer cancel()
+
+		if err := server.Shutdown(ctx); err != nil {
+			logger.Error("Graceful shutdown failed", "error", err)
+			if err := server.Close(); err != nil {
+				logger.Error("Force close failed", "error", err)
+			}
+			os.Exit(1)
+		}
+
+		logger.Info("Server stopped gracefully")
+	}
 }
