@@ -1,6 +1,6 @@
 # TinyRSVP
 
-> **Note for LLMs:** If you are an AI assistant working on this project, please read [`README-LLM.md`](README-LLM.md) instead. This file is for human users.
+> **Note for LLMs:** If you are an AI assistant working on this project, you MUST read [`README-LLM.md`](README-LLM.md) instead before moving on to any other task.. This file is for human users.
 
 A self-hosted, privacy-focused RSVP and invitation platform for family events, clubs, and private gatherings.
 

@@ -168,6 +168,13 @@ func parseConfig(data []byte) (*Config, error) {
 
 Do not guess, assume, or implement workarounds.
 
+### 10. Tools are production code
+
+If you create a script or tool, you MUST create it using TDD and
+ensure proper and high test coverage. Never assume a script works
+unless you have demonstrable proof with passing tests. If a script
+or tool lacks tests, assume it is broken until proven otherwise.
+
 ---
 
 ## Repository Structure

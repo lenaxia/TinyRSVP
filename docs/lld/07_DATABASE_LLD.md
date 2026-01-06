@@ -765,7 +765,27 @@ type AuditLogRepository interface {
 }
 ```
 
-### 4.12 Migrator Interface
+### 4.12 Config Repository Interface
+
+```go
+package repositories
+
+import (
+    "context"
+    "github.com/yourusername/tinyrsvp/internal/models"
+)
+
+type ConfigRepository interface {
+    Get(ctx context.Context, key string) (*models.Config, error)
+    Set(ctx context.Context, key, value string) error
+    Delete(ctx context.Context, key string) error
+    GetAll(ctx context.Context) ([]*models.Config, error)
+    GetHMACSecret(ctx context.Context) ([]byte, error)
+    SetHMACSecret(ctx context.Context, secret []byte) error
+}
+```
+
+### 4.13 Migrator Interface
 
 ```go
 package db

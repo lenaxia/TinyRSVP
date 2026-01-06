@@ -78,6 +78,8 @@ type Service interface {
     RegenerateToken(ctx context.Context, id int64) (token string, err error)
     ListInvites(ctx context.Context, eventID int64) ([]*models.Invite, error)
     GetInviteStats(ctx context.Context, eventID int64) (*InviteStats, error)
+    CleanupExpiredTokens(ctx context.Context) error
+    Unsubscribe(ctx context.Context, token string) error
 }
 
 type InviteResult struct {

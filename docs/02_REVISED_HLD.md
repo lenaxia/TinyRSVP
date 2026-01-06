@@ -2022,6 +2022,246 @@ CREATE INDEX idx_audit_log_resource ON audit_log(resource_type, resource_id);
 
 ---
 
+## 18. API Routes
+
+**See:** [Domain 8: API & HTTP Handlers LLD](lld/08_API_LLD.md) for complete route specifications
+
+**Route Categories:**
+- Authentication routes (`/auth/*`)
+- Event management routes (`/events/*`)
+- Invite management routes (`/invites/*`)
+- RSVP routes (`/rsvp/{token}`)
+- Admin routes (`/admin/*`)
+- Utility routes (`/health`, `/metrics`)
+
+**All routes documented in:** [Domain 8 LLD Section 6](lld/08_API_LLD.md#6-api-routes)
+
+---
+
+## 19. Request Flow
+
+**See:** [Domain 8: API & HTTP Handlers LLD](lld/08_API_LLD.md) for complete request flow diagrams
+
+**Middleware Chain:**
+1. Recovery (panic handling)
+2. Logging (request logging)
+3. Security Headers (CSP, HSTS, etc.)
+4. Rate Limiting (per-IP)
+5. Authentication (session validation)
+6. RBAC (permission checking)
+7. CSRF (token validation)
+8. Handler (business logic)
+
+**Detailed flow documented in:** [Domain 8 LLD Section 5](lld/08_API_LLD.md#5-request-flow)
+
+---
+
+## 20. Deployment Model
+
+### 20.1 Container Architecture
+
+**Single Container Deployment:**
+- Application binary
+- SQLite database (mounted volume)
+- Static assets (embedded or mounted)
+- Migrations (embedded)
+
+**Docker Image:**
+```dockerfile
+FROM golang:1.21-alpine AS builder
+WORKDIR /app
+COPY . .
+RUN go build -o tinyrsvp cmd/server/main.go
+
+FROM alpine:latest
+RUN apk add --no-cache ca-certificates
+COPY --from=builder /app/tinyrsvp /usr/local/bin/
+COPY --from=builder /app/migrations /migrations
+COPY --from=builder /app/templates /templates
+COPY --from=builder /app/static /static
+EXPOSE 8080
+CMD ["tinyrsvp"]
+```
+
+### 20.2 Volume Mounts
+
+**Required:**
+- `/data` - Database and uploads directory
+
+**Optional:**
+- `/config` - Configuration overrides
+- `/templates` - Custom templates
+
+### 20.3 Environment Configuration
+
+**Minimal Configuration:**
+```yaml
+services:
+  tinyrsvp:
+    image: tinyrsvp:latest
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./data:/data
+    environment:
+      - DATABASE_PATH=/data/tinyrsvp.db
+      - SMTP_HOST=smtp.gmail.com
+      - SMTP_PORT=587
+      - SMTP_USERNAME=${SMTP_USERNAME}
+      - SMTP_PASSWORD=${SMTP_PASSWORD}
+```
+
+### 20.4 Reverse Proxy Integration
+
+**Traefik Example:**
+```yaml
+labels:
+  - "traefik.enable=true"
+  - "traefik.http.routers.tinyrsvp.rule=Host(`rsvp.example.com`)"
+  - "traefik.http.routers.tinyrsvp.tls=true"
+  - "traefik.http.routers.tinyrsvp.tls.certresolver=letsencrypt"
+```
+
+**Nginx Example:**
+```nginx
+server {
+    listen 443 ssl http2;
+    server_name rsvp.example.com;
+    
+    ssl_certificate /etc/ssl/certs/rsvp.crt;
+    ssl_certificate_key /etc/ssl/private/rsvp.key;
+    
+    location / {
+        proxy_pass http://tinyrsvp:8080;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+}
+```
+
+---
+
+## 21. v0 Scope
+
+### 21.1 Included Features
+
+**Core Functionality:**
+- ✅ Event creation and management
+- ✅ Invite system with token-based access
+- ✅ RSVP handling with preference questions
+- ✅ Email sending with ICS attachments
+- ✅ OIDC authentication
+- ✅ Forward auth support
+- ✅ SQLite database
+- ✅ Local filesystem storage
+- ✅ Basic templates
+- ✅ Mobile-responsive UI
+
+**Supporting Features:**
+- ✅ Session management
+- ✅ Role-based access control
+- ✅ Email queue with retry
+- ✅ Event lifecycle (draft/published/cancelled/archived)
+- ✅ Optimistic locking
+- ✅ Audit logging
+- ✅ Health checks
+- ✅ Metrics endpoint
+
+### 21.2 Explicitly Excluded from v0
+
+**Deferred to v1+:**
+- ❌ PostgreSQL support (SQLite only in v0)
+- ❌ S3-compatible storage (local FS only in v0)
+- ❌ Guest OIDC authentication
+- ❌ Public event links (all events require invite)
+- ❌ Event passphrases
+- ❌ Reminder email scheduling UI
+- ❌ Template versioning
+- ❌ Event capacity limits
+- ❌ Waitlist functionality
+- ❌ Advanced bounce handling
+- ❌ SMS notifications
+- ❌ CalDAV sync
+- ❌ Event analytics
+- ❌ Custom branding
+- ❌ Multi-language support
+
+**Rationale:** Focus on core functionality, ensure quality over quantity, maintain simplicity for v0 release.
+
+---
+
+## 22. Success Criteria
+
+### 22.1 Functional Requirements
+
+**Must Work:**
+- [ ] Admin can authenticate via OIDC or forward auth
+- [ ] Admin can create event with all required fields
+- [ ] Admin can publish event
+- [ ] Admin can create invite with email
+- [ ] Admin can send invite email
+- [ ] Guest receives email with RSVP link
+- [ ] Guest can click link and see RSVP page
+- [ ] Guest can submit RSVP (yes/no/maybe)
+- [ ] Guest can specify plus ones (within limits)
+- [ ] Guest can answer preference questions
+- [ ] Guest receives confirmation email
+- [ ] Admin can view all RSVPs for event
+- [ ] Admin can export guest list
+- [ ] Email includes ICS calendar attachment
+- [ ] ICS file imports correctly into calendar apps
+
+### 22.2 Non-Functional Requirements
+
+**Performance:**
+- [ ] RSVP page loads in <2 seconds
+- [ ] Email sent within 5 minutes of queueing
+- [ ] Supports 100 concurrent users
+- [ ] Handles 1000 invites per event
+
+**Security:**
+- [ ] All cookies have Secure and HttpOnly flags
+- [ ] CSRF protection on all mutations
+- [ ] Tokens use HMAC-SHA256
+- [ ] No XSS vulnerabilities
+- [ ] No SQL injection vulnerabilities
+- [ ] Security headers on all responses
+
+**Reliability:**
+- [ ] Email retry on transient failures
+- [ ] Graceful degradation if SMTP down
+- [ ] Database transactions for atomic operations
+- [ ] No data loss on server restart
+
+**Usability:**
+- [ ] Mobile-responsive design
+- [ ] Works without JavaScript
+- [ ] Clear error messages
+- [ ] Intuitive navigation
+
+### 22.3 Deployment Requirements
+
+**Must Deploy:**
+- [ ] Single Docker container
+- [ ] Works on Raspberry Pi 4 (ARM64)
+- [ ] Uses <512MB RAM under normal load
+- [ ] Starts in <10 seconds
+- [ ] Health check responds correctly
+- [ ] Metrics endpoint works
+
+### 22.4 Documentation Requirements
+
+**Must Document:**
+- [ ] Installation guide
+- [ ] Configuration reference
+- [ ] API documentation
+- [ ] Troubleshooting guide
+- [ ] Backup/restore procedure
+
+---
+
 ## 25. Appendix
 
 ### 25.1 Glossary

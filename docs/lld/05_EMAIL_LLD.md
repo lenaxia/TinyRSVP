@@ -129,7 +129,175 @@ type Generator interface {
 
 ## 4. Implementation
 
-### 4.1 Email Queue Processor
+### 4.1 Email Service Implementation
+
+```go
+package email
+
+import (
+    "context"
+    "fmt"
+    
+    "github.com/yourusername/tinyrsvp/internal/db/repositories"
+    "github.com/yourusername/tinyrsvp/internal/models"
+    "github.com/yourusername/tinyrsvp/pkg/ics"
+)
+
+type service struct {
+    queueRepo  repositories.EmailQueueRepository
+    sender     SMTPSender
+    renderer   TemplateRenderer
+    icsGen     ics.Generator
+}
+
+func NewService(
+    queueRepo repositories.EmailQueueRepository,
+    sender SMTPSender,
+    renderer TemplateRenderer,
+    icsGen ics.Generator,
+) Service {
+    return &service{
+        queueRepo: queueRepo,
+        sender:    sender,
+        renderer:  renderer,
+        icsGen:    icsGen,
+    }
+}
+
+func (s *service) SendInviteEmail(ctx context.Context, invite *models.Invite, event *models.Event, token string) error {
+    rsvpURL := fmt.Sprintf("%s/rsvp/%s", baseURL, token)
+    
+    data := struct {
+        Event   *models.Event
+        Invite  *models.Invite
+        RSVPURL string
+    }{
+        Event:   event,
+        Invite:  invite,
+        RSVPURL: rsvpURL,
+    }
+    
+    bodyHTML, err := s.renderer.RenderHTML(inviteTemplate, data)
+    if err != nil {
+        return fmt.Errorf("failed to render invite email: %w", err)
+    }
+    
+    bodyText, err := s.renderer.RenderText(inviteTemplate, data)
+    if err != nil {
+        return fmt.Errorf("failed to render invite text: %w", err)
+    }
+    
+    icsData, err := s.icsGen.Generate(event, rsvpURL)
+    if err != nil {
+        return fmt.Errorf("failed to generate ICS: %w", err)
+    }
+    
+    attachments, err := json.Marshal([]models.EmailAttachment{
+        {
+            Filename:    "event.ics",
+            ContentType: "text/calendar",
+            Content:     icsData,
+        },
+    })
+    if err != nil {
+        return fmt.Errorf("failed to marshal attachments: %w", err)
+    }
+    
+    email := &models.EmailQueue{
+        ToEmail:      *invite.Email,
+        ToName:       invite.Name,
+        Subject:      fmt.Sprintf("You're invited: %s", event.Title),
+        BodyText:     bodyText,
+        BodyHTML:     &bodyHTML,
+        Attachments:  attachments,
+        Status:       models.EmailStatusPending,
+        MaxAttempts:  4,
+        ScheduledFor: time.Now(),
+    }
+    
+    return s.queueRepo.Create(ctx, email)
+}
+
+func (s *service) SendConfirmationEmail(ctx context.Context, rsvp *models.RSVP, invite *models.Invite, event *models.Event) error {
+    if invite.Email == nil {
+        return nil
+    }
+    
+    rsvpURL := fmt.Sprintf("%s/rsvp/%s", baseURL, "token")
+    
+    data := struct {
+        Event  *models.Event
+        Invite *models.Invite
+        RSVP   *models.RSVP
+    }{
+        Event:  event,
+        Invite: invite,
+        RSVP:   rsvp,
+    }
+    
+    bodyHTML, err := s.renderer.RenderHTML(confirmationTemplate, data)
+    if err != nil {
+        return fmt.Errorf("failed to render confirmation email: %w", err)
+    }
+    
+    bodyText, err := s.renderer.RenderText(confirmationTemplate, data)
+    if err != nil {
+        return fmt.Errorf("failed to render confirmation text: %w", err)
+    }
+    
+    icsData, err := s.icsGen.Generate(event, rsvpURL)
+    if err != nil {
+        return fmt.Errorf("failed to generate ICS: %w", err)
+    }
+    
+    attachments, err := json.Marshal([]models.EmailAttachment{
+        {
+            Filename:    "event.ics",
+            ContentType: "text/calendar",
+            Content:     icsData,
+        },
+    })
+    if err != nil {
+        return fmt.Errorf("failed to marshal attachments: %w", err)
+    }
+    
+    email := &models.EmailQueue{
+        ToEmail:      *invite.Email,
+        ToName:       invite.Name,
+        Subject:      fmt.Sprintf("RSVP Confirmed: %s", event.Title),
+        BodyText:     bodyText,
+        BodyHTML:     &bodyHTML,
+        Attachments:  attachments,
+        Status:       models.EmailStatusPending,
+        MaxAttempts:  4,
+        ScheduledFor: time.Now(),
+    }
+    
+    return s.queueRepo.Create(ctx, email)
+}
+
+func (s *service) SendUpdateEmail(ctx context.Context, event *models.Event, changes string) error {
+    return fmt.Errorf("not implemented")
+}
+
+func (s *service) SendCancellationEmail(ctx context.Context, event *models.Event, reason string) error {
+    return fmt.Errorf("not implemented")
+}
+
+func (s *service) QueueEmail(ctx context.Context, email *models.EmailQueue) error {
+    return s.queueRepo.Create(ctx, email)
+}
+
+func (s *service) ProcessQueue(ctx context.Context) error {
+    return fmt.Errorf("not implemented")
+}
+
+func (s *service) RetryFailed(ctx context.Context, emailID int64) error {
+    return fmt.Errorf("not implemented")
+}
+```
+
+### 4.2 Email Queue Processor
 
 ```go
 package email

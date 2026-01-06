@@ -7,7 +7,7 @@ This folder contains progress updates, handoff documents, and session summaries 
 ## Rules
 
 1. **Create a worklog entry after significant work** - Don't wait until end of day
-2. **Use date-based naming** - `YYYY-MM-DD_description.md`
+2. **Use date-based naming with doc numbering** - `YYYY-MM-DD_XX_description.md`, doc number restarts from 00 each day
 3. **Be specific and factual** - What was done, not what was attempted
 4. **Document decisions** - Why choices were made
 5. **Note blockers** - What's preventing progress

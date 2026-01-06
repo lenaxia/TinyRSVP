@@ -150,7 +150,137 @@ func setupRouter(deps *Dependencies) http.Handler {
         r.Post("/", handlers.NewSubmitRSVPHandler(deps.RSVPService).ServeHTTP)
     })
     
+    r.Get("/unsubscribe/{token}", handlers.NewUnsubscribeHandler(deps.InviteService).ServeHTTP)
+    
     return r
+}
+```
+
+### 4.2 Background Jobs
+
+```go
+package main
+
+import (
+    "context"
+    "time"
+)
+
+type BackgroundJobs struct {
+    emailProcessor *email.QueueProcessor
+    sessionMgr     auth.SessionManager
+    inviteService  invites.Service
+    eventService   events.Service
+    auditRepo      repositories.AuditLogRepository
+    stopChan       chan struct{}
+}
+
+func NewBackgroundJobs(deps *Dependencies) *BackgroundJobs {
+    return &BackgroundJobs{
+        emailProcessor: email.NewQueueProcessor(deps.EmailQueueRepo, deps.SMTPSender, 50),
+        sessionMgr:     deps.SessionMgr,
+        inviteService:  deps.InviteService,
+        eventService:   deps.EventService,
+        auditRepo:      deps.AuditLogRepo,
+        stopChan:       make(chan struct{}),
+    }
+}
+
+func (j *BackgroundJobs) Start() {
+    j.emailProcessor.Start()
+    
+    go j.runSessionCleanup()
+    go j.runTokenCleanup()
+    go j.runEventArchive()
+    go j.runAuditLogCleanup()
+}
+
+func (j *BackgroundJobs) Stop() {
+    close(j.stopChan)
+    j.emailProcessor.Stop()
+}
+
+func (j *BackgroundJobs) runSessionCleanup() {
+    ticker := time.NewTicker(1 * time.Hour)
+    defer ticker.Stop()
+    
+    for {
+        select {
+        case <-ticker.C:
+            ctx := context.Background()
+            count, err := j.sessionMgr.CleanupExpired(ctx)
+            if err != nil {
+                log.Printf("Session cleanup error: %v", err)
+            } else {
+                log.Printf("Cleaned up %d expired sessions", count)
+            }
+        case <-j.stopChan:
+            return
+        }
+    }
+}
+
+func (j *BackgroundJobs) runTokenCleanup() {
+    ticker := time.NewTicker(24 * time.Hour)
+    defer ticker.Stop()
+    
+    for {
+        select {
+        case <-ticker.C:
+            ctx := context.Background()
+            if err := j.inviteService.CleanupExpiredTokens(ctx); err != nil {
+                log.Printf("Token cleanup error: %v", err)
+            }
+        case <-j.stopChan:
+            return
+        }
+    }
+}
+
+func (j *BackgroundJobs) runEventArchive() {
+    ticker := time.NewTicker(24 * time.Hour)
+    defer ticker.Stop()
+    
+    for {
+        select {
+        case <-ticker.C:
+            ctx := context.Background()
+            events, err := j.eventService.GetEventsToArchive(ctx)
+            if err != nil {
+                log.Printf("Event archive query error: %v", err)
+                continue
+            }
+            
+            for _, event := range events {
+                if err := j.eventService.ArchiveEvent(ctx, event.ID); err != nil {
+                    log.Printf("Failed to archive event %d: %v", event.ID, err)
+                }
+            }
+        case <-j.stopChan:
+            return
+        }
+    }
+}
+
+func (j *BackgroundJobs) runAuditLogCleanup() {
+    ticker := time.NewTicker(7 * 24 * time.Hour)
+    defer ticker.Stop()
+    
+    for {
+        select {
+        case <-ticker.C:
+            ctx := context.Background()
+            cutoff := time.Now().AddDate(-1, 0, 0)
+            count, err := j.auditRepo.DeleteOlderThan(ctx, cutoff)
+            if err != nil {
+                log.Printf("Audit log cleanup error: %v", err)
+            } else {
+                log.Printf("Cleaned up %d old audit logs", count)
+            }
+        case <-j.stopChan:
+            return
+        }
+    }
 }
 ```
 
@@ -365,6 +495,7 @@ Response
 
 - `GET /rsvp/{token}` - RSVP page
 - `POST /rsvp/{token}` - Submit RSVP
+- `GET /unsubscribe/{token}` - Unsubscribe from reminder emails
 
 ### 6.5 Admin Routes
 

@@ -72,10 +72,19 @@ type Service interface {
 }
 
 type RSVPRequest struct {
+    InviteID int64
     Response RSVPResponse
     PlusOnes int
     Answers  []AnswerRequest
 }
+
+type RSVPResponse string
+
+const (
+    RSVPResponseYes   RSVPResponse = "yes"
+    RSVPResponseNo    RSVPResponse = "no"
+    RSVPResponseMaybe RSVPResponse = "maybe"
+)
 
 type AnswerRequest struct {
     QuestionID    int64
@@ -144,6 +153,27 @@ type service struct {
     answerRepo   repositories.AnswerRepository
     questionRepo repositories.QuestionRepository
     validator    Validator
+    db           db.Database
+}
+
+func NewService(
+    rsvpRepo repositories.RSVPRepository,
+    inviteRepo repositories.InviteRepository,
+    eventRepo repositories.EventRepository,
+    answerRepo repositories.AnswerRepository,
+    questionRepo repositories.QuestionRepository,
+    validator Validator,
+    database db.Database,
+) Service {
+    return &service{
+        rsvpRepo:     rsvpRepo,
+        inviteRepo:   inviteRepo,
+        eventRepo:    eventRepo,
+        answerRepo:   answerRepo,
+        questionRepo: questionRepo,
+        validator:    validator,
+        db:           database,
+    }
 }
 
 func (s *service) SubmitRSVP(ctx context.Context, req *RSVPRequest) error {

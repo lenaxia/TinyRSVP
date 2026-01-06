@@ -99,6 +99,17 @@ type Validator interface {
 }
 ```
 
+### 3.3 Timezone Validator Interface
+
+```go
+package events
+
+type TimezoneValidator interface {
+    IsValid(timezone string) bool
+    GetLocation(timezone string) (*time.Location, error)
+}
+```
+
 ---
 
 ## 4. Implementation
@@ -113,6 +124,7 @@ import (
     "fmt"
     "time"
     
+    "github.com/yourusername/tinyrsvp/internal/auth"
     "github.com/yourusername/tinyrsvp/internal/db/repositories"
     "github.com/yourusername/tinyrsvp/internal/models"
 )
@@ -120,10 +132,10 @@ import (
 type service struct {
     repo      repositories.EventRepository
     validator Validator
-    authz     AuthorizationChecker
+    authz     auth.AuthorizationChecker
 }
 
-func NewService(repo repositories.EventRepository, validator Validator, authz AuthorizationChecker) Service {
+func NewService(repo repositories.EventRepository, validator Validator, authz auth.AuthorizationChecker) Service {
     return &service{
         repo:      repo,
         validator: validator,
