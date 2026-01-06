@@ -23,7 +23,7 @@
 
 ## Project Overview
 
-TinyRSVP is a **self-hosted, small-scale RSVP and invitation platform** similar to Evite, designed for homelab environments, family events, clubs, and private gatherings. This project is **100% LLM-implemented** with significant human-in-the-loop oversight.
+TinyRSVP is a **self-hosted, small-scale RSVP and invitation platform**, designed for homelab environments, family events, clubs, and private gatherings. This project is **100% LLM-implemented** with significant human-in-the-loop oversight.
 
 **Core Principles:**
 - Guests never required to create accounts
@@ -318,6 +318,64 @@ TinyRSVP/
 - No build step required
 - Built into Go standard library
 - Works for both web pages and emails
+
+### Frontend: Plain CSS (Mobile-First) + Vanilla JavaScript
+
+**Why:**
+- **Minimal footprint**: ~10-25KB total (minified)
+- **No build step**: Serve static files directly
+- **Fast loading**: Critical for user experience
+- **Mobile-first**: Progressive enhancement for desktop
+- **No framework overhead**: Pure browser APIs
+- **Timeless**: No framework churn or deprecation
+
+**CSS Approach:**
+- Mobile-first responsive design
+- CSS Grid + Flexbox for layouts
+- Custom properties (CSS variables) for theming
+- Media queries for tablet/desktop enhancements
+- Critical CSS inlined in `<head>` for fast first paint
+
+**JavaScript Approach:**
+- Vanilla ES6+ (no transpilation needed)
+- Progressive enhancement (works without JS)
+- Module pattern for organization
+- Event delegation for performance
+- Minimal DOM manipulation
+
+**Performance Targets:**
+- First Contentful Paint: <1s
+- Time to Interactive: <2s
+- Total page weight: <100KB (including images)
+
+**Mobile Experience:**
+- Touch-friendly tap targets (44px minimum)
+- Single-column layouts
+- Stacked forms
+- Hamburger navigation
+- Full-width buttons
+- Optimized for 320px-767px screens
+
+**Desktop Experience:**
+- Multi-column layouts (CSS Grid)
+- Wider content areas (max 1200px centered)
+- Inline form fields where appropriate
+- Full navigation bars
+- Hover states and interactions
+- Optimized for 1024px+ screens
+
+**Responsive Breakpoints:**
+```css
+/* Mobile: 320px-767px (base styles) */
+/* Tablet: 768px-1023px */
+@media (min-width: 768px) { ... }
+/* Desktop: 1024px+ */
+@media (min-width: 1024px) { ... }
+```
+
+**Optional Enhancement:**
+- HTMX (14KB) for dynamic updates without full page reloads
+- Only add if specific use case requires it (defer to v1+)
 
 ### OIDC Library: `github.com/coreos/go-oidc`
 
