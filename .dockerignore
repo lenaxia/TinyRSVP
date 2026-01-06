@@ -1,0 +1,48 @@
+# Git
+.git
+.gitignore
+
+# Documentation
+*.md
+docs/
+llm-workflows/
+
+# Development
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Build artifacts
+bin/
+server
+*.exe
+*.test
+*.out
+coverage.out
+
+# Data
+data/
+*.db
+*.db-shm
+*.db-wal
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Temporary
+tmp/
+temp/
+
+# Test scripts
+test_*.sh
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Include vendor directory for Docker builds
+!vendor/

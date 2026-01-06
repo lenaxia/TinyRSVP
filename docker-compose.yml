@@ -1,0 +1,32 @@
+services:
+  tinyrsvp:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: tinyrsvp
+    ports:
+      - "8080:8080"
+    environment:
+      - SERVER_HOST=0.0.0.0
+      - SERVER_PORT=8080
+      - SERVER_BASE_URL=${SERVER_BASE_URL:-http://localhost:8080}
+      - DATABASE_TYPE=sqlite
+      - DATABASE_PATH=/data/tinyrsvp.db
+      - SMTP_HOST=${SMTP_HOST:-localhost}
+      - SMTP_PORT=${SMTP_PORT:-587}
+      - EMAIL_FROM=${EMAIL_FROM:-noreply@example.com}
+      - STORAGE_TYPE=local
+      - STORAGE_LOCAL_PATH=/data/uploads
+    volumes:
+      - tinyrsvp-data:/data
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+      start_period: 5s
+
+volumes:
+  tinyrsvp-data:
+    driver: local

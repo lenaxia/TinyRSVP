@@ -1,9 +1,10 @@
 # User Story: Health Check and Readiness Endpoints
 
-**Epic:** [00_EPIC_foundation.md](00_EPIC_foundation.md)  
-**Priority:** High  
-**Status:** Not Started  
+**Epic:** [00_EPIC_foundation.md](00_EPIC_foundation.md)
+**Priority:** High
+**Status:** ✅ Complete
 **Estimated Effort:** 3 hours
+**Completed:** 2026-01-06
 
 ---
 
