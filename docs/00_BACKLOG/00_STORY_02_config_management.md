@@ -1,9 +1,10 @@
 # User Story: Configuration Management
 
-**Epic:** [00_EPIC_foundation.md](00_EPIC_foundation.md)  
-**Priority:** Critical  
-**Status:** Not Started  
+**Epic:** [00_EPIC_foundation.md](00_EPIC_foundation.md)
+**Priority:** Critical
+**Status:** Complete
 **Estimated Effort:** 3 hours
+**Completed:** 2026-01-06
 
 ---
 
@@ -15,15 +16,15 @@ As a **developer**, I want **environment-based configuration management** so tha
 
 ## Acceptance Criteria
 
-- [ ] Configuration loaded from environment variables
-- [ ] Type-safe configuration struct defined
-- [ ] All required configuration fields validated on startup
-- [ ] Default values provided for optional fields
-- [ ] Configuration errors fail fast with clear messages
-- [ ] Structured logging package integrated (slog)
-- [ ] No sensitive data in logs
-- [ ] Configuration can be loaded in tests
-- [ ] All tests pass with timeout
+- [x] Configuration loaded from environment variables
+- [x] Type-safe configuration struct defined
+- [x] All required configuration fields validated on startup
+- [x] Default values provided for optional fields
+- [x] Configuration errors fail fast with clear messages
+- [x] Structured logging package integrated (slog)
+- [x] No sensitive data in logs
+- [x] Configuration can be loaded in tests
+- [x] All tests pass with timeout
 
 ---
 
@@ -183,52 +184,52 @@ SECURITY_HMAC_SECRET=
 ## Tasks
 
 ### Phase 1: Configuration Structure (TDD)
-- [ ] Write test for loading valid configuration
-- [ ] Write test for missing required fields
-- [ ] Write test for invalid values
-- [ ] Implement `Config` struct
-- [ ] Implement `Load()` function
-- [ ] Run tests (should pass)
+- [x] Write test for loading valid configuration
+- [x] Write test for missing required fields
+- [x] Write test for invalid values
+- [x] Implement `Config` struct
+- [x] Implement `Load()` function
+- [x] Run tests (should pass)
 
 ### Phase 2: Environment Variable Parsing (TDD)
-- [ ] Write test for parsing string values
-- [ ] Write test for parsing integer values
-- [ ] Write test for parsing duration values
-- [ ] Write test for parsing boolean values
-- [ ] Implement parsing functions
-- [ ] Run tests (should pass)
+- [x] Write test for parsing string values
+- [x] Write test for parsing integer values
+- [x] Write test for parsing duration values
+- [x] Write test for parsing boolean values
+- [x] Implement parsing functions
+- [x] Run tests (should pass)
 
 ### Phase 3: Validation (TDD)
-- [ ] Write test for server validation
-- [ ] Write test for database validation
-- [ ] Write test for OIDC validation
-- [ ] Write test for email validation
-- [ ] Write test for storage validation
-- [ ] Write test for security validation
-- [ ] Implement `Validate()` method
-- [ ] Run tests (should pass)
+- [x] Write test for server validation
+- [x] Write test for database validation
+- [x] Write test for OIDC validation
+- [x] Write test for email validation
+- [x] Write test for storage validation
+- [x] Write test for security validation
+- [x] Implement `Validate()` method
+- [x] Run tests (should pass)
 
 ### Phase 4: Default Values (TDD)
-- [ ] Write test for default server config
-- [ ] Write test for default database config
-- [ ] Write test for default security config
-- [ ] Implement `SetDefaults()` method
-- [ ] Run tests (should pass)
+- [x] Write test for default server config
+- [x] Write test for default database config
+- [x] Write test for default security config
+- [x] Implement `SetDefaults()` method
+- [x] Run tests (should pass)
 
 ### Phase 5: Structured Logging Setup (TDD)
-- [ ] Write test for logger initialization
-- [ ] Write test for log level configuration
-- [ ] Write test for JSON log output format
-- [ ] Implement logger setup using log/slog
-- [ ] Configure log levels (DEBUG, INFO, WARN, ERROR)
-- [ ] Run tests (should pass)
+- [x] Write test for logger initialization
+- [x] Write test for log level configuration
+- [x] Write test for JSON log output format
+- [x] Implement logger setup using log/slog
+- [x] Configure log levels (DEBUG, INFO, WARN, ERROR)
+- [x] Run tests (should pass)
 
 ### Phase 6: Integration
-- [ ] Update `cmd/server/main.go` to load config
-- [ ] Initialize structured logger
-- [ ] Add config logging (mask sensitive fields)
-- [ ] Test with various environment configurations
-- [ ] Document all environment variables
+- [x] Update `cmd/server/main.go` to load config
+- [x] Initialize structured logger
+- [x] Add config logging (mask sensitive fields)
+- [x] Test with various environment configurations
+- [x] Document all environment variables
 
 ---
 
@@ -427,15 +428,15 @@ func contains(s, substr string) bool {
 
 ## Definition of Done
 
-- [ ] All acceptance criteria met
-- [ ] All tasks completed
-- [ ] All tests pass with timeout (`go test -timeout 30s ./internal/config/...`)
-- [ ] Test coverage >= 80%
-- [ ] Code formatted with `go fmt`
-- [ ] No errors from `go vet`
-- [ ] Sensitive data properly masked in logs
-- [ ] Documentation complete
-- [ ] Changes committed to git
+- [x] All acceptance criteria met
+- [x] All tasks completed
+- [x] All tests pass with timeout (`go test -timeout 30s ./internal/config/...`)
+- [x] Test coverage >= 80% (achieved 85.7%)
+- [x] Code formatted with `go fmt`
+- [x] No errors from `go vet`
+- [x] Sensitive data properly masked in logs
+- [x] Documentation complete
+- [x] Changes committed to git
 
 ---
 
