@@ -20,6 +20,7 @@ As a **developer**, I want **environment-based configuration management** so tha
 - [ ] All required configuration fields validated on startup
 - [ ] Default values provided for optional fields
 - [ ] Configuration errors fail fast with clear messages
+- [ ] Structured logging package integrated (slog)
 - [ ] No sensitive data in logs
 - [ ] Configuration can be loaded in tests
 - [ ] All tests pass with timeout
@@ -214,8 +215,17 @@ SECURITY_HMAC_SECRET=
 - [ ] Implement `SetDefaults()` method
 - [ ] Run tests (should pass)
 
-### Phase 5: Integration
+### Phase 5: Structured Logging Setup (TDD)
+- [ ] Write test for logger initialization
+- [ ] Write test for log level configuration
+- [ ] Write test for JSON log output format
+- [ ] Implement logger setup using log/slog
+- [ ] Configure log levels (DEBUG, INFO, WARN, ERROR)
+- [ ] Run tests (should pass)
+
+### Phase 6: Integration
 - [ ] Update `cmd/server/main.go` to load config
+- [ ] Initialize structured logger
 - [ ] Add config logging (mask sensitive fields)
 - [ ] Test with various environment configurations
 - [ ] Document all environment variables

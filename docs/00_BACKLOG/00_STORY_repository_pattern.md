@@ -15,6 +15,7 @@ As a **developer**, I want **repository pattern implementation for data access**
 
 ## Acceptance Criteria
 
+- [ ] Domain models package created with all model structs
 - [ ] Base repository interface defined
 - [ ] User repository implemented with all methods
 - [ ] Session repository implemented with all methods
@@ -120,6 +121,19 @@ type ConfigRepository interface {
 ---
 
 ## Tasks
+
+### Phase 0: Domain Models Creation (TDD)
+- [ ] Create internal/models/errors.go with domain error types
+- [ ] Write tests for NotFoundError
+- [ ] Write tests for ConflictError
+- [ ] Write tests for ValidationError
+- [ ] Write tests for OptimisticLockError
+- [ ] Create internal/models/user.go with User struct and methods
+- [ ] Write tests for User.IsAdmin() and User.IsEventManager()
+- [ ] Create internal/models/session.go with Session struct
+- [ ] Write tests for Session.IsExpired()
+- [ ] Create internal/models/config.go with Config struct
+- [ ] Run tests (should pass)
 
 ### Phase 1: User Repository (TDD)
 - [ ] Write test for Create user

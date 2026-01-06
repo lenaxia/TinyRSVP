@@ -95,8 +95,11 @@ require (
     github.com/golang-migrate/migrate/v4 v4.17.0
     github.com/coreos/go-oidc/v3 v3.9.0
     golang.org/x/oauth2 v0.15.0
+    github.com/go-chi/chi/v5 v5.0.11
 )
 ```
+
+**Note:** Using chi router for HTTP routing - lightweight, idiomatic, stdlib-compatible.
 
 ### Initial main.go
 
