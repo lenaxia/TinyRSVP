@@ -131,8 +131,72 @@ version, dirty, err := migrator.Version(context.Background())
 - `github.com/golang-migrate/migrate/v4/database/sqlite3` - SQLite driver
 - `github.com/golang-migrate/migrate/v4/source/file` - File source
 
+## Repository Pattern
+
+The database package includes repository implementations for data access abstraction.
+
+### Available Repositories
+
+- **UserRepository** - User CRUD operations and queries
+- **SessionRepository** - Session management and cleanup
+- **ConfigRepository** - Key-value configuration storage
+
+### Usage Example
+
+```go
+import (
+    "github.com/yourusername/tinyrsvp/internal/db/repositories"
+    "github.com/yourusername/tinyrsvp/internal/models"
+)
+
+// Create repositories
+userRepo := repositories.NewUserRepository(database)
+sessionRepo := repositories.NewSessionRepository(database)
+configRepo := repositories.NewConfigRepository(database)
+
+// User operations
+user := &models.User{
+    Email: "user@example.com",
+    Name:  "John Doe",
+    Role:  models.RoleEventManager,
+}
+err := userRepo.Create(ctx, user)
+
+// Session operations
+session := &models.Session{
+    ID:        "session-id",
+    UserID:    user.ID,
+    ExpiresAt: time.Now().Add(7 * 24 * time.Hour),
+}
+err := sessionRepo.Create(ctx, session)
+
+// Config operations
+err := configRepo.Set(ctx, "smtp_host", "smtp.example.com")
+config, err := configRepo.Get(ctx, "smtp_host")
+
+// HMAC secret (auto-generated on first call)
+secret, err := configRepo.GetHMACSecret(ctx)
+```
+
+### Repository Features
+
+- **Type Safety**: All repositories use strongly-typed models
+- **Error Mapping**: Database errors mapped to domain errors
+- **Context Support**: All methods accept context for cancellation
+- **Validation**: Input validation before database operations
+- **Testing**: Comprehensive test coverage with table-driven tests
+
+### Domain Errors
+
+Repositories return domain-specific errors:
+- `NotFoundError` - Resource not found
+- `ConflictError` - Unique constraint violation
+- `ValidationError` - Input validation failure
+- `OptimisticLockError` - Version mismatch (future)
+
 ## Related Packages
 
 - `internal/config` - Database configuration
-- `internal/db/repositories` - Repository implementations (future)
+- `internal/db/repositories` - Repository implementations
+- `internal/models` - Domain models and errors
 - `migrations/sqlite` - Migration SQL files
