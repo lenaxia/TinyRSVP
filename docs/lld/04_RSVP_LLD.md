@@ -384,13 +384,43 @@ func (m *MockQuestionService) ReorderQuestions(ctx context.Context, eventID int6
 
 ## 7. Dependencies
 
-**Internal:**
+### 7.1 External Libraries
+
+```go
+import (
+    "context"
+    "database/sql"
+    "fmt"
+    "time"
+)
+```
+
+### 7.2 Internal Dependencies
+
+**Required:**
+- `github.com/yourusername/tinyrsvp/internal/db` - Transaction management
+- `github.com/yourusername/tinyrsvp/internal/db/repositories` - Data access
+- `github.com/yourusername/tinyrsvp/internal/models` - Domain models
+
+**Interfaces Used:**
+- `repositories.RSVPRepository` - RSVP persistence
+- `repositories.InviteRepository` - Invite lookup
+- `repositories.EventRepository` - Event lookup
+- `repositories.AnswerRepository` - Answer persistence
+- `repositories.QuestionRepository` - Question management
+- `db.Database` - Transaction support
+- `Validator` - RSVP validation
+
+### 7.3 Domain Dependencies
+
+**Depends On:**
 - Domain 3 (Invite) - RSVPs belong to invites
 - Domain 2 (Event) - Questions belong to events, deadline checking
 - Domain 7 (Database) - RSVP and question repositories
 
-**Dependents:**
+**Used By:**
 - Domain 5 (Email) - Confirmation emails
+- Domain 8 (API) - RSVP endpoints
 
 ---
 

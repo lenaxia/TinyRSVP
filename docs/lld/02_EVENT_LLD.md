@@ -59,6 +59,11 @@ package events
 
 import (
     "context"
+    "fmt"
+    "time"
+    
+    "github.com/yourusername/tinyrsvp/internal/auth"
+    "github.com/yourusername/tinyrsvp/internal/db/repositories"
     "github.com/yourusername/tinyrsvp/internal/models"
 )
 
