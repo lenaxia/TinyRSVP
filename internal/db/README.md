@@ -2,11 +2,12 @@
 
 ## Purpose
 
-Provides database connection management, query execution, and transaction support for TinyRSVP.
+Provides database connection management, query execution, transaction support, and automated migrations for TinyRSVP.
 
 ## Key Components
 
 - **Database Interface**: Abstraction for database operations
+- **Migrator Interface**: Automated schema migrations
 - **Connection Pooling**: Configured connection pool with limits
 - **Transaction Support**: ACID transactions with rollback on error/panic
 - **Context-Aware**: All operations support context cancellation
@@ -92,12 +93,46 @@ Check coverage:
 go test -timeout 30s -cover ./internal/db/...
 ```
 
+## Migrations
+
+Automated database migrations using golang-migrate:
+
+```go
+// Run migrations on startup
+migrator, err := db.NewMigrator(database.DB(), "migrations/sqlite")
+if err != nil {
+    log.Fatal(err)
+}
+
+if err := migrator.Up(context.Background()); err != nil {
+    log.Fatal(err)
+}
+
+// Check migration version
+version, dirty, err := migrator.Version(context.Background())
+```
+
+**Migration Files:**
+- Location: `migrations/sqlite/`
+- Format: `{version}_{description}.{up|down}.sql`
+- See: [`migrations/sqlite/README.md`](../../migrations/sqlite/README.md)
+
+**Operations:**
+- `Up()` - Apply all pending migrations
+- `Down()` - Rollback all migrations
+- `Version()` - Get current migration version
+- `Steps(n)` - Apply/rollback n migrations
+
 ## Dependencies
 
 - `database/sql` - Go standard library
 - `github.com/mattn/go-sqlite3` - SQLite driver
+- `github.com/golang-migrate/migrate/v4` - Migration tool
+- `github.com/golang-migrate/migrate/v4/database/sqlite3` - SQLite driver
+- `github.com/golang-migrate/migrate/v4/source/file` - File source
 
 ## Related Packages
 
 - `internal/config` - Database configuration
 - `internal/db/repositories` - Repository implementations (future)
+- `migrations/sqlite` - Migration SQL files

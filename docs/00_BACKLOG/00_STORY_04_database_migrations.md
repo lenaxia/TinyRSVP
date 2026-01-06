@@ -68,34 +68,34 @@ type Migrator interface {
 ## Tasks
 
 ### Phase 1: Migration System Setup (TDD)
-- [ ] Write test for migrator creation
-- [ ] Write test for migration up
-- [ ] Write test for migration down
-- [ ] Write test for version tracking
-- [ ] Implement Migrator interface
-- [ ] Implement NewMigrator() constructor
-- [ ] Run tests (should pass)
+- [x] Write test for migrator creation
+- [x] Write test for migration up
+- [x] Write test for migration down
+- [x] Write test for version tracking
+- [x] Implement Migrator interface
+- [x] Implement NewMigrator() constructor
+- [x] Run tests (should pass)
 
 ### Phase 2: Create Migration Files
-- [ ] Create migrations/sqlite/README.md
-- [ ] Create 001_initial_schema.up.sql with all 11 tables
-- [ ] Create 001_initial_schema.down.sql
-- [ ] Create 002_add_indexes.up.sql
-- [ ] Create 002_add_indexes.down.sql
+- [x] Create migrations/sqlite/README.md
+- [x] Create 001_initial_schema.up.sql with all 11 tables
+- [x] Create 001_initial_schema.down.sql
+- [x] Create 002_add_indexes.up.sql
+- [x] Create 002_add_indexes.down.sql
 
 ### Phase 3: Migration Tests (TDD)
-- [ ] Write test to verify all tables created
-- [ ] Write test to verify all columns exist
-- [ ] Write test to verify foreign keys work
-- [ ] Write test to verify constraints work
-- [ ] Write test for down migration
-- [ ] Run tests (should pass)
+- [x] Write test to verify all tables created
+- [x] Write test to verify all columns exist
+- [x] Write test to verify foreign keys work
+- [x] Write test to verify constraints work
+- [x] Write test for down migration
+- [x] Run tests (should pass)
 
 ### Phase 4: Integration
-- [ ] Update cmd/server/main.go to run migrations on startup
-- [ ] Add migration logging
-- [ ] Test with real database file
-- [ ] Document migration process
+- [x] Update cmd/server/main.go to run migrations on startup
+- [x] Add migration logging
+- [x] Test with real database file
+- [x] Document migration process
 
 ---
 
