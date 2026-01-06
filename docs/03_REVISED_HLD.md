@@ -912,7 +912,1098 @@ Your Response: {rsvp.response}
 Plus Ones: {rsvp.plus_ones}
 
 When: {event.start_time}
-Where:
+Where: {event.location}
+
+You can update your RSVP anytime before the deadline:
+{rsvp_url}
+
+Add to your calendar (attached)
+
+---
+Sent via TinyRSVP
+```
+
+**Event Update Email:**
+```
+Subject: Event Updated: {event.title}
+
+Hi {invite.name},
+
+The event details have been updated:
+
+{changes_summary}
+
+Updated Details:
+When: {event.start_time}
+Where: {event.location}
+
+View and update your RSVP:
+{rsvp_url}
+
+---
+Sent via TinyRSVP
+```
+
+**Event Cancellation Email:**
+```
+Subject: Event Cancelled: {event.title}
+
+Hi {invite.name},
+
+Unfortunately, {event.title} has been cancelled.
+
+{cancellation_reason}
+
+We apologize for any inconvenience.
+
+---
+Sent via TinyRSVP
+```
+
+### 9.5 Email Bounce Handling
+
+**v0 Scope:** Basic bounce detection
+
+**Mechanism:**
+- Monitor SMTP send errors
+- Classify errors as temporary (4xx) or permanent (5xx)
+- Temporary: Retry per retry policy
+- Permanent: Mark email as failed, flag invite
+
+**Bounce Types:**
+- Hard bounce (mailbox doesn't exist): Mark invite.email_invalid = true
+- Soft bounce (mailbox full): Retry per policy
+- Block (spam filter): Mark as failed, notify admin
+
+**Admin Notification:**
+- Daily digest of failed emails
+- Includes: guest name, email, error message
+- Admin can manually resend or update email
+
+**v1+ Enhancement:**
+- Parse bounce emails via SMTP callback
+- Automatic email validation
+- Guest self-service email update
+
+### 9.6 Email Compliance
+
+**CAN-SPAM Compliance:**
+- All emails include sender identification
+- All emails include physical address (configurable)
+- Reminder emails include unsubscribe link
+- Unsubscribe processed within 10 business days
+
+**Unsubscribe Mechanism:**
+- Link format: `/unsubscribe/{token}`
+- Sets invite.unsubscribed = true
+- Stops reminder emails
+- Does not affect ability to RSVP
+
+---
+
+## 10. Calendar Integration (ICS)
+
+### 10.1 ICS File Generation
+
+**Format:** iCalendar (RFC 5545)
+
+**Required Fields:**
+```
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//TinyRSVP//EN
+METHOD:REQUEST
+BEGIN:VEVENT
+UID:{event.id}@{domain}
+DTSTAMP:{generation_time}
+DTSTART;TZID={event.timezone}:{event.start_time}
+DTEND;TZID={event.timezone}:{event.end_time}
+SUMMARY:{event.title}
+DESCRIPTION:{event.description}\n\nRSVP: {rsvp_url}
+LOCATION:{event.location}
+STATUS:CONFIRMED
+SEQUENCE:0
+BEGIN:VALARM
+TRIGGER:-PT24H
+ACTION:DISPLAY
+DESCRIPTION:Reminder: {event.title} tomorrow
+END:VALARM
+END:VEVENT
+END:VCALENDAR
+```
+
+**Timezone Handling:**
+- Use IANA timezone name from event.timezone
+- Include VTIMEZONE component for timezone definition
+- Convert times to event timezone (not UTC)
+- Ensures correct display in all calendar clients
+
+**UID Generation:**
+- Format: `{event.id}@{base_domain}`
+- Example: `123@rsvp.example.com`
+- Stable across updates (same UID for same event)
+
+**Sequence Number:**
+- Starts at 0
+- Incremented on each event update
+- Tells calendar clients this is an update
+
+### 10.2 ICS Updates
+
+**When Event Details Change:**
+1. Increment event.ics_sequence
+2. Generate new ICS with updated SEQUENCE
+3. Queue update emails to all RESPONDED invites
+4. Email subject: "Event Updated: {title}"
+5. Attach updated ICS file
+
+**When Event Cancelled:**
+1. Generate ICS with STATUS:CANCELLED
+2. Queue cancellation emails to all invites
+3. Email subject: "Event Cancelled: {title}"
+4. Attach cancellation ICS file
+
+**Calendar Client Behavior:**
+- Same UID + higher SEQUENCE = update existing event
+- STATUS:CANCELLED = remove from calendar
+
+### 10.3 ICS Validation
+
+**Before Generation:**
+- Validate timezone exists in IANA database
+- Validate start_time < end_time
+- Validate all required fields present
+- Escape special characters per RFC 5545
+
+**Error Handling:**
+- Invalid timezone: Use UTC as fallback, log warning
+- Missing end_time: Set to start_time + 2 hours
+- Invalid characters: Strip or escape
+
+---
+
+## 11. Templates & Customization
+
+### 11.1 Template Types
+
+| Type | Purpose | Format |
+|------|---------|--------|
+| invite_email | Invitation email body | HTML + text |
+| rsvp_page | Guest RSVP page | HTML |
+| confirmation_page | Post-RSVP confirmation | HTML |
+
+### 11.2 Template Attributes
+
+| Attribute | Type | Required | Description |
+|-----------|------|----------|-------------|
+| id | INTEGER | Auto | Primary key |
+| name | TEXT | Yes | Template name (max 100 chars) |
+| type | TEXT | Yes | invite_email/rsvp_page/confirmation_page |
+| html_content | TEXT | Yes | HTML template |
+| text_content | TEXT | Conditional | Plain text (required for email) |
+| css_content | TEXT | No | Inline CSS |
+| is_default | BOOLEAN | Yes | System default template |
+| created_by | INTEGER | No | User ID (null for system templates) |
+| created_at | TIMESTAMP | Auto | Creation timestamp |
+| updated_at | TIMESTAMP | Auto | Last update timestamp |
+
+### 11.3 Template Variables
+
+**Available in All Templates:**
+- `{{.Event.Title}}`
+- `{{.Event.Description}}`
+- `{{.Event.StartTime}}`
+- `{{.Event.EndTime}}`
+- `{{.Event.Timezone}}`
+- `{{.Event.Location}}`
+- `{{.Event.RSVPDeadline}}`
+
+**Available in Invite Templates:**
+- `{{.Invite.Name}}`
+- `{{.Invite.Email}}`
+- `{{.RSVPURL}}`
+- `{{.MaxPlusOnes}}`
+
+**Available in RSVP Page Templates:**
+- `{{.RSVP.Response}}`
+- `{{.RSVP.PlusOnes}}`
+- `{{.Questions}}` (array)
+
+### 11.4 Template Security
+
+**XSS Prevention:**
+- Use Go `html/template` (auto-escapes by default)
+- All user input escaped before rendering
+- No `template.HTML` type (disables escaping)
+- CSS sanitized (no `javascript:` URLs, no `expression()`)
+
+**Template Validation:**
+- Parse template on upload
+- Reject if parse fails
+- Reject if contains disallowed functions
+- Reject if references undefined variables
+
+**Allowed Template Functions:**
+- Date formatting: `{{.StartTime.Format "Jan 2, 2006"}}`
+- String operations: `{{.Title | upper}}`
+- Conditionals: `{{if .RSVPDeadline}}...{{end}}`
+- Loops: `{{range .Questions}}...{{end}}`
+
+**Disallowed:**
+- JavaScript execution
+- External resource loading
+- Form submissions to external URLs
+- Arbitrary HTML attributes
+
+### 11.5 Template Versioning
+
+**v0 Scope:** No versioning
+
+**Behavior:**
+- Template updates apply immediately
+- Existing queued emails use current template
+- No template history
+
+**Rationale:** Simplicity for v0, versioning adds complexity
+
+**v1+ Enhancement:**
+- Template versions
+- Emails reference specific version
+- Can revert to previous version
+
+### 11.6 Image Upload
+
+**Allowed File Types:**
+- image/jpeg
+- image/png
+- image/gif
+- image/webp
+
+**Validation:**
+- Max file size: 5MB
+- Max dimensions: 4096x4096 pixels
+- File type verified by magic bytes (not just extension)
+- Image re-encoded to strip EXIF data
+
+**Storage:**
+- Stored via storage provider (local FS or S3)
+- Path: `/uploads/images/{event_id}/{filename}`
+- Filename: Original name sanitized + random suffix
+
+**Access Control:**
+- Images are public (no auth required)
+- Used in email templates and RSVP pages
+- URL format: `/assets/images/{event_id}/{filename}`
+
+---
+
+## 12. Asset Storage
+
+### 12.1 Storage Provider Interface
+
+**Required Methods:**
+```go
+type StorageProvider interface {
+    PutObject(ctx context.Context, path string, data io.Reader, contentType string) error
+    GetObject(ctx context.Context, path string) (io.ReadCloser, error)
+    DeleteObject(ctx context.Context, path string) error
+    GetPublicURL(ctx context.Context, path string) (string, error)
+    ListObjects(ctx context.Context, prefix string) ([]string, error)
+}
+```
+
+### 12.2 Local Filesystem Provider
+
+**Configuration:**
+```
+STORAGE_TYPE=local
+STORAGE_PATH=/data/uploads
+```
+
+**Behavior:**
+- Files stored in mounted volume
+- Public URLs: `/assets/{path}`
+- Served by app (not external web server)
+
+**Directory Structure:**
+```
+/data/uploads/
+├── images/
+│   ├── {event_id}/
+│   │   └── {filename}
+├── templates/
+│   └── {template_id}/
+│       └── {filename}
+```
+
+### 12.3 S3-Compatible Provider (v1+)
+
+**Configuration:**
+```
+STORAGE_TYPE=s3
+S3_ENDPOINT=https://s3.amazonaws.com
+S3_REGION=us-west-2
+S3_BUCKET=tinyrsvp-assets
+S3_ACCESS_KEY=...
+S3_SECRET_KEY=...
+```
+
+**Behavior:**
+- Files stored in S3 bucket
+- Public URLs: Pre-signed URLs or CloudFront
+- Served by S3 (not app)
+
+**v0 Scope:** Excluded (local FS only)
+
+### 12.4 Storage Quota
+
+**v0 Scope:** No enforced quota
+
+**Monitoring:**
+- Admin can view total storage used
+- Warning if >80% of disk space used
+- No automatic cleanup
+
+**v1+ Enhancement:**
+- Configurable quota per event
+- Automatic cleanup of old assets
+- Compression of large images
+
+### 12.5 Asset Deletion Policy
+
+**When Event Deleted:**
+- Assets moved to trash (not immediately deleted)
+- Trash emptied after 30 days
+- Admin can permanently delete immediately
+
+**When Template Deleted:**
+- Assets remain if referenced by events
+- Orphaned assets cleaned up monthly
+
+**Manual Deletion:**
+- Admin can delete individual assets
+- Confirmation required
+- No recovery after deletion
+
+---
+
+## 13. Database Schema
+
+### 13.1 Schema Overview
+
+**Database Support:**
+- SQLite 3.35+ (default)
+- PostgreSQL 12+ (v1+)
+
+**Design Principles:**
+- Normalized to 3NF
+- Foreign keys enforced
+- Indexes on common queries
+- Timestamps on all tables
+- Soft deletes where appropriate
+
+### 13.2 Complete Schema
+
+#### users
+
+```sql
+CREATE TABLE users (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    email TEXT NOT NULL UNIQUE,
+    name TEXT,
+    role TEXT NOT NULL DEFAULT 'event_manager',
+    oidc_subject TEXT UNIQUE,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    last_login_at TIMESTAMP,
+    CHECK (role IN ('admin', 'event_manager'))
+);
+
+CREATE INDEX idx_users_email ON users(email);
+CREATE INDEX idx_users_oidc_subject ON users(oidc_subject);
+CREATE INDEX idx_users_role ON users(role);
+```
+
+**Notes:**
+- `oidc_subject` is NULL for forward auth users
+- `email` is unique identifier
+- First user gets role='admin' automatically
+
+#### sessions
+
+```sql
+CREATE TABLE sessions (
+    id TEXT PRIMARY KEY,
+    user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    expires_at TIMESTAMP NOT NULL,
+    last_accessed_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    ip_address TEXT,
+    user_agent TEXT
+);
+
+CREATE INDEX idx_sessions_user_id ON sessions(user_id);
+CREATE INDEX idx_sessions_expires_at ON sessions(expires_at);
+```
+
+**Notes:**
+- Session ID is 32-byte random value (base64-encoded)
+- Expires 7 days from creation
+- Cleanup job deletes expired sessions hourly
+
+#### events
+
+```sql
+CREATE TABLE events (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    title TEXT NOT NULL,
+    description TEXT,
+    location TEXT,
+    start_time TIMESTAMP NOT NULL,
+    end_time TIMESTAMP,
+    timezone TEXT NOT NULL,
+    rsvp_deadline TIMESTAMP,
+    max_plus_ones INTEGER NOT NULL DEFAULT 0,
+    status TEXT NOT NULL DEFAULT 'draft',
+    template_id INTEGER REFERENCES templates(id) ON DELETE SET NULL,
+    created_by INTEGER NOT NULL REFERENCES users(id) ON DELETE RESTRICT,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    version INTEGER NOT NULL DEFAULT 1,
+    ics_sequence INTEGER NOT NULL DEFAULT 0,
+    CHECK (status IN ('draft', 'published', 'cancelled', 'archived')),
+    CHECK (max_plus_ones >= 0 AND max_plus_ones <= 10),
+    CHECK (end_time IS NULL OR end_time > start_time),
+    CHECK (rsvp_deadline IS NULL OR rsvp_deadline < start_time)
+);
+
+CREATE INDEX idx_events_created_by ON events(created_by);
+CREATE INDEX idx_events_status ON events(status);
+CREATE INDEX idx_events_start_time ON events(start_time);
+```
+
+**Notes:**
+- `version` used for optimistic locking
+- `ics_sequence` incremented on each update for calendar clients
+- `created_by` cannot be deleted (RESTRICT) - must transfer ownership first
+
+#### invites
+
+```sql
+CREATE TABLE invites (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    event_id INTEGER NOT NULL REFERENCES events(id) ON DELETE CASCADE,
+    name TEXT,
+    email TEXT,
+    token_hash TEXT NOT NULL UNIQUE,
+    max_plus_ones INTEGER NOT NULL,
+    status TEXT NOT NULL DEFAULT 'draft',
+    sent_at TIMESTAMP,
+    viewed_at TIMESTAMP,
+    unsubscribed BOOLEAN NOT NULL DEFAULT FALSE,
+    email_invalid BOOLEAN NOT NULL DEFAULT FALSE,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    expires_at TIMESTAMP NOT NULL,
+    CHECK (status IN ('draft', 'sent', 'viewed', 'responded', 'revoked')),
+    CHECK (max_plus_ones >= 0 AND max_plus_ones <= 10)
+);
+
+CREATE INDEX idx_invites_event_id ON invites(event_id);
+CREATE INDEX idx_invites_token_hash ON invites(token_hash);
+CREATE INDEX idx_invites_email ON invites(email);
+CREATE INDEX idx_invites_status ON invites(status);
+CREATE INDEX idx_invites_expires_at ON invites(expires_at);
+```
+
+**Notes:**
+- `token_hash` is HMAC-SHA256 of actual token
+- `expires_at` set to event.start_time + 30 days
+- `email` can be NULL (for manual distribution)
+
+#### rsvps
+
+```sql
+CREATE TABLE rsvps (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    invite_id INTEGER NOT NULL UNIQUE REFERENCES invites(id) ON DELETE CASCADE,
+    response TEXT NOT NULL,
+    plus_ones INTEGER NOT NULL DEFAULT 0,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CHECK (response IN ('yes', 'no', 'maybe')),
+    CHECK (plus_ones >= 0)
+);
+
+CREATE INDEX idx_rsvps_invite_id ON rsvps(invite_id);
+CREATE INDEX idx_rsvps_response ON rsvps(response);
+```
+
+**Notes:**
+- One RSVP per invite (UNIQUE constraint)
+- plus_ones validated against invite.max_plus_ones in application logic
+
+#### preference_questions
+
+```sql
+CREATE TABLE preference_questions (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    event_id INTEGER NOT NULL REFERENCES events(id) ON DELETE CASCADE,
+    question_text TEXT NOT NULL,
+    question_type TEXT NOT NULL,
+    options JSON,
+    required BOOLEAN NOT NULL DEFAULT FALSE,
+    display_order INTEGER NOT NULL DEFAULT 0,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CHECK (question_type IN ('text', 'select', 'boolean'))
+);
+
+CREATE INDEX idx_questions_event_id ON preference_questions(event_id);
+CREATE INDEX idx_questions_display_order ON preference_questions(event_id, display_order);
+```
+
+**Notes:**
+- `options` is JSON array for select type, NULL for others
+- `display_order` determines question sequence
+
+#### rsvp_answers
+
+```sql
+CREATE TABLE rsvp_answers (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    rsvp_id INTEGER NOT NULL REFERENCES rsvps(id) ON DELETE CASCADE,
+    question_id INTEGER NOT NULL REFERENCES preference_questions(id) ON DELETE CASCADE,
+    answer_text TEXT,
+    answer_option TEXT,
+    answer_boolean BOOLEAN,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE(rsvp_id, question_id)
+);
+
+CREATE INDEX idx_answers_rsvp_id ON rsvp_answers(rsvp_id);
+CREATE INDEX idx_answers_question_id ON rsvp_answers(question_id);
+```
+
+**Notes:**
+- One answer per RSVP per question
+- Answer type must match question type (enforced in application)
+
+#### email_queue
+
+```sql
+CREATE TABLE email_queue (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    to_email TEXT NOT NULL,
+    to_name TEXT,
+    subject TEXT NOT NULL,
+    body_text TEXT NOT NULL,
+    body_html TEXT,
+    attachments JSON,
+    status TEXT NOT NULL DEFAULT 'pending',
+    attempts INTEGER NOT NULL DEFAULT 0,
+    max_attempts INTEGER NOT NULL DEFAULT 4,
+    last_attempt_at TIMESTAMP,
+    last_error TEXT,
+    scheduled_for TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CHECK (status IN ('pending', 'sending', 'sent', 'failed', 'cancelled'))
+);
+
+CREATE INDEX idx_email_queue_status_scheduled ON email_queue(status, scheduled_for);
+CREATE INDEX idx_email_queue_status ON email_queue(status);
+```
+
+**Notes:**
+- `attachments` is JSON array of {filename, content_base64, content_type}
+- Background worker queries by status='pending' AND scheduled_for <= NOW
+
+#### templates
+
+```sql
+CREATE TABLE templates (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL,
+    type TEXT NOT NULL,
+    html_content TEXT NOT NULL,
+    text_content TEXT,
+    css_content TEXT,
+    is_default BOOLEAN NOT NULL DEFAULT FALSE,
+    created_by INTEGER REFERENCES users(id) ON DELETE SET NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CHECK (type IN ('invite_email', 'rsvp_page', 'confirmation_page'))
+);
+
+CREATE INDEX idx_templates_type ON templates(type);
+CREATE INDEX idx_templates_is_default ON templates(is_default);
+CREATE INDEX idx_templates_created_by ON templates(created_by);
+```
+
+**Notes:**
+- One default template per type
+- System templates have created_by = NULL
+
+#### config
+
+```sql
+CREATE TABLE config (
+    key TEXT PRIMARY KEY,
+    value TEXT NOT NULL,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+```
+
+**Notes:**
+- Stores system configuration (HMAC secret, etc.)
+- Key-value pairs for flexibility
+
+### 13.3 Database Relationships
+
+```
+users (1) ──────< (N) events
+users (1) ──────< (N) sessions
+users (1) ──────< (N) templates
+
+events (1) ──────< (N) invites
+events (1) ──────< (N) preference_questions
+events (N) ──────> (1) templates [optional]
+
+invites (1) ──────< (1) rsvps
+invites (N) ──────> (1) events
+
+rsvps (1) ──────< (N) rsvp_answers
+
+preference_questions (1) ──────< (N) rsvp_answers
+preference_questions (N) ──────> (1) events
+```
+
+### 13.4 Database Migrations
+
+**Migration Tool:** golang-migrate/migrate
+
+**Migration Files:**
+- Location: `migrations/sqlite/` and `migrations/postgres/`
+- Naming: `{version}_{description}.up.sql` and `{version}_{description}.down.sql`
+- Example: `001_initial_schema.up.sql`
+
+**Migration Strategy:**
+- Applied automatically on startup
+- Version tracked in `schema_migrations` table
+- Rollback supported via `.down.sql` files
+- Failed migration prevents app startup
+
+---
+
+## 14. Validation Rules
+
+### 14.1 Event Validation
+
+| Field | Rule | Error Message |
+|-------|------|---------------|
+| title | Required, 3-200 chars | "Event title must be between 3 and 200 characters" |
+| description | Optional, max 5000 chars | "Description cannot exceed 5000 characters" |
+| location | Optional, max 500 chars | "Location cannot exceed 500 characters" |
+| start_time | Required, valid ISO 8601, future | "Event start time must be in the future" |
+| end_time | Optional, after start_time, within 7 days | "Event end time must be after start time" |
+| timezone | Required, valid IANA timezone | "Invalid timezone. Use format like 'America/Los_Angeles'" |
+| rsvp_deadline | Optional, before start_time, future | "RSVP deadline must be before event start time" |
+| max_plus_ones | Required, 0-10 | "Max plus ones must be between 0 and 10" |
+
+### 14.2 Invite Validation
+
+| Field | Rule | Error Message |
+|-------|------|---------------|
+| name | Optional, max 100 chars | "Guest name cannot exceed 100 characters" |
+| email | Optional, valid email format, max 255 chars | "Invalid email address" |
+| max_plus_ones | Required, 0-10, <= event.max_plus_ones | "Max plus ones cannot exceed event limit" |
+
+**Email Format Validation:**
+- Regex: `^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$`
+- Additional check: Not longer than 255 characters
+- Additional check: Local part < 64 chars, domain < 255 chars
+
+### 14.3 RSVP Validation
+
+| Field | Rule | Error Message |
+|-------|------|---------------|
+| response | Required, yes/no/maybe | "Please select a response" |
+| plus_ones | Required, 0 to invite.max_plus_ones | "You can bring up to {max} guest(s)" |
+| deadline | Must be before event.rsvp_deadline | "RSVP deadline has passed" |
+
+### 14.4 Question Validation
+
+| Field | Rule | Error Message |
+|-------|------|---------------|
+| question_text | Required, 5-500 chars | "Question must be between 5 and 500 characters" |
+| question_type | Required, text/select/boolean | "Invalid question type" |
+| options | Required for select, 2-20 options | "Select questions must have 2-20 options" |
+
+### 14.5 Answer Validation
+
+| Question Type | Rule | Error Message |
+|---------------|------|---------------|
+| text | Max 500 chars | "Answer cannot exceed 500 characters" |
+| select | Must match one option value | "Invalid selection" |
+| boolean | Must be true/false | "Please answer yes or no" |
+| required | Must have answer | "This question is required" |
+
+### 14.6 Template Validation
+
+| Field | Rule | Error Message |
+|-------|------|---------------|
+| name | Required, 3-100 chars | "Template name must be between 3 and 100 characters" |
+| type | Required, valid type | "Invalid template type" |
+| html_content | Required, valid Go template syntax | "Template syntax error: {details}" |
+| text_content | Required for email templates | "Email templates must have text content" |
+
+### 14.7 Image Upload Validation
+
+| Rule | Error Message |
+|------|---------------|
+| File type must be image/jpeg, image/png, image/gif, image/webp | "Only JPEG, PNG, GIF, and WebP images are allowed" |
+| Max file size: 5MB | "Image file size cannot exceed 5MB" |
+| Max dimensions: 4096x4096 | "Image dimensions cannot exceed 4096x4096 pixels" |
+| File must be valid image (magic bytes check) | "File is not a valid image" |
+
+---
+
+## 15. Error Handling
+
+### 15.1 Error Response Format
+
+**HTTP API Errors:**
+```json
+{
+    "error": {
+        "code": "VALIDATION_ERROR",
+        "message": "Event title must be between 3 and 200 characters",
+        "field": "title",
+        "details": {}
+    }
+}
+```
+
+**HTML Page Errors:**
+- User-friendly error page with message
+- Suggested actions (e.g., "Go back and try again")
+- Support contact information
+
+### 15.2 Error Codes
+
+| Code | HTTP Status | Description |
+|------|-------------|-------------|
+| VALIDATION_ERROR | 400 | Input validation failed |
+| UNAUTHORIZED | 401 | Authentication required |
+| FORBIDDEN | 403 | Insufficient permissions |
+| NOT_FOUND | 404 | Resource not found |
+| CONFLICT | 409 | Concurrent modification conflict |
+| RATE_LIMITED | 429 | Too many requests |
+| INTERNAL_ERROR | 500 | Unexpected server error |
+| SERVICE_UNAVAILABLE | 503 | Service temporarily unavailable |
+
+### 15.3 Error Scenarios
+
+**Authentication Errors:**
+- Missing session cookie → Redirect to /login
+- Expired session → Redirect to /login with message
+- Invalid session → Delete cookie, redirect to /login
+- OIDC provider down → Show error page with retry button
+
+**Authorization Errors:**
+- Insufficient permissions → HTTP 403 with explanation
+- Accessing other user's event → HTTP 403 "You don't have permission to edit this event"
+
+**Validation Errors:**
+- Invalid input → HTTP 400 with field-specific errors
+- Multiple validation errors → Return all errors at once
+
+**Concurrent Modification:**
+- Version mismatch → HTTP 409 "Event was modified by another user. Please refresh and try again."
+- Include current version in response for retry
+
+**Resource Not Found:**
+- Event not found → HTTP 404 "Event not found"
+- Invite token not found → HTTP 404 "Invalid invite link"
+
+**Rate Limiting:**
+- Too many requests → HTTP 429 "Too many requests. Please try again in {seconds} seconds."
+- Retry-After header included
+
+**SMTP Errors:**
+- Connection failed → Queue for retry, log error
+- Authentication failed → Mark as failed, notify admin
+- Recipient rejected → Mark email_invalid, notify admin
+
+**Database Errors:**
+- Connection lost → HTTP 503 "Service temporarily unavailable"
+- Constraint violation → HTTP 400 with user-friendly message
+- Deadlock → Retry transaction up to 3 times
+
+---
+
+## 16. Security
+
+### 16.1 Transport Security
+
+**HTTPS Enforcement:**
+- App expects to run behind reverse proxy with TLS termination
+- App sets Secure flag on cookies (requires HTTPS)
+- App can optionally redirect HTTP to HTTPS (configurable)
+
+**Configuration:**
+```
+HTTPS_REQUIRED=true          # Reject HTTP requests (default: true)
+HTTPS_REDIRECT=false         # Redirect HTTP to HTTPS (default: false)
+TRUSTED_PROXY_IPS=10.0.0.1   # Comma-separated list of proxy IPs
+```
+
+### 16.2 Security Headers
+
+**All Responses Include:**
+```
+Strict-Transport-Security: max-age=31536000; includeSubDomains
+X-Content-Type-Options: nosniff
+X-Frame-Options: DENY
+X-XSS-Protection: 1; mode=block
+Referrer-Policy: strict-origin-when-cross-origin
+Content-Security-Policy: default-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline'
+```
+
+**CSP Policy Breakdown:**
+- `default-src 'self'` - Only load resources from same origin
+- `img-src 'self' data:` - Images from same origin or data URLs
+- `style-src 'self' 'unsafe-inline'` - Styles from same origin or inline (for email compatibility)
+- `script-src 'self'` - Scripts only from same origin
+- `form-action 'self'` - Forms only submit to same origin
+
+### 16.3 Input Sanitization
+
+**HTML Content:**
+- Use Go `html/template` for automatic escaping
+- Markdown rendered with sanitization (no raw HTML)
+- Strip dangerous tags: `<script>`, `<iframe>`, `<object>`, `<embed>`
+
+**SQL Injection Prevention:**
+- Use parameterized queries exclusively
+- Never concatenate user input into SQL
+- Use database/sql package (built-in protection)
+
+**Path Traversal Prevention:**
+- Validate file paths don't contain `..`
+- Use filepath.Clean() to normalize paths
+- Restrict file access to designated directories
+
+### 16.4 CSRF Protection
+
+**Mechanism:** SameSite cookies + CSRF tokens
+
+**CSRF Token:**
+- Generated per session
+- Stored in session
+- Included in all forms as hidden field
+- Validated on POST/PUT/DELETE requests
+
+**Implementation:**
+- Middleware validates CSRF token
+- GET requests don't require token
+- API endpoints require token in header or form
+
+### 16.5 Secrets Management
+
+**Secrets in Environment:**
+- OIDC_CLIENT_SECRET
+- SMTP_PASSWORD
+- S3_SECRET_KEY (v1+)
+
+**Secrets in Database:**
+- HMAC secret key (for token hashing)
+- Session encryption key (future)
+
+**Protection:**
+- Never logged
+- Never returned in API responses
+- Masked in admin UI (show only last 4 chars)
+- Encrypted at rest (database encryption recommended)
+
+**Rotation:**
+- HMAC secret rotation invalidates all tokens (admin command)
+- SMTP password rotation via environment variable update + restart
+- OIDC secret rotation via environment variable update + restart
+
+### 16.6 Audit Logging
+
+**Logged Actions:**
+- User login/logout
+- User role changes
+- Event creation/update/deletion
+- Invite creation/revocation
+- RSVP submissions/updates
+- System configuration changes
+- Failed authentication attempts
+
+**Audit Log Table:**
+```sql
+CREATE TABLE audit_log (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    timestamp TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    user_id INTEGER REFERENCES users(id) ON DELETE SET NULL,
+    action TEXT NOT NULL,
+    resource_type TEXT NOT NULL,
+    resource_id INTEGER,
+    details JSON,
+    ip_address TEXT,
+    user_agent TEXT
+);
+
+CREATE INDEX idx_audit_log_timestamp ON audit_log(timestamp);
+CREATE INDEX idx_audit_log_user_id ON audit_log(user_id);
+CREATE INDEX idx_audit_log_resource ON audit_log(resource_type, resource_id);
+```
+
+**Retention:**
+- Audit logs kept for 1 year
+- Automatic cleanup of logs >1 year old
+
+---
+
+## 17. Operations
+
+### 17.1 Health Checks
+
+**Endpoint:** `/health`
+
+**Checks Performed:**
+- Database connectivity (SELECT 1)
+- Database write test (INSERT/DELETE test row)
+- SMTP connectivity (optional, can be slow)
+- Disk space available (>10% free)
+
+**Response Format:**
+```json
+{
+    "status": "healthy",
+    "checks": {
+        "database": "ok",
+        "disk_space": "ok",
+        "smtp": "ok"
+    },
+    "version": "0.1.0",
+    "uptime_seconds": 3600
+}
+```
+
+**Status Codes:**
+- 200: All checks passed
+- 503: One or more checks failed
+
+### 17.2 Logging
+
+**Log Levels:**
+- ERROR: Errors requiring attention
+- WARN: Warnings, degraded functionality
+- INFO: Normal operations, state changes
+- DEBUG: Detailed debugging (disabled in production)
+
+**Log Format:** Structured JSON
+```json
+{
+    "timestamp": "2026-01-06T18:00:00Z",
+    "level": "INFO",
+    "message": "Event created",
+    "event_id": 123,
+    "user_id": 1,
+    "ip": "10.0.0.1"
+}
+```
+
+**Sensitive Data Handling:**
+- Tokens never logged
+- Passwords never logged
+- Email addresses logged only at INFO level
+- HMAC secret never logged
+
+**Log Output:**
+- stdout (captured by Docker)
+- Optionally: file rotation (configurable)
+
+### 17.3 Monitoring
+
+**Metrics Endpoint:** `/metrics` (Prometheus format)
+
+**Key Metrics:**
+- `tinyrsvp_events_total{status}` - Events by status
+- `tinyrsvp_invites_total{status}` - Invites by status
+- `tinyrsvp_rsvps_total{response}` - RSVPs by response
+- `tinyrsvp_emails_total{status}` - Emails by status
+- `tinyrsvp_http_requests_total{method,path,status}` - HTTP requests
+- `tinyrsvp_http_request_duration_seconds` - Request latency
+- `tinyrsvp_db_connections` - Database connection pool
+- `tinyrsvp_email_queue_size` - Pending emails
+
+### 17.4 Background Jobs
+
+**Jobs:**
+1. **Email Queue Processor** - Every 60 seconds
+2. **Session Cleanup** - Every hour
+3. **Token Expiration Cleanup** - Every 24 hours
+4. **Event Auto-Archive** - Every 24 hours
+5. **Audit Log Cleanup** - Every 7 days
+
+**Job Execution:**
+- Single goroutine per job
+- Graceful shutdown on SIGTERM
+- Jobs complete before shutdown (max 30 seconds)
+
+### 17.5 Backup & Recovery
+
+**Backup Responsibility:** Administrator
+
+**Recommended Backup Strategy:**
+- Database: Daily backup of SQLite file
+- Uploads: Daily backup of /data/uploads directory
+- Config: Backup environment variables
+
+**Recovery:**
+1. Stop application
+2. Restore database file
+3. Restore uploads directory
+4. Start application
+5. Verify health check passes
+
+**RTO/RPO:**
+- RTO (Recovery Time Objective): <15 minutes
+- RPO (Recovery Point Objective): 24 hours (daily backups)
+
+### 17.6 Disaster Recovery
+
+**Scenarios:**
+
+**Database Corruption:**
+1. Stop app
+2. Restore from backup
+3. Restart app
+4. Verify data integrity
+
+**Disk Full:**
+1. Free disk space
+2. App auto-recovers
+3. Check logs for failed operations
+
+**SMTP Outage:**
+- Emails queue automatically
+- Retry when SMTP recovers
+- No data loss
+
+**Complete Server Loss:**
+1. Deploy new server
+2. Restore database backup
+3. Restore uploads backup
+4. Configure environment variables
+5. Start application
+
+### 17.7 Known Limitations
+
 **Single-Node Deployment:**
 - Not designed for horizontal scaling in v0
 - Single container handles all requests
