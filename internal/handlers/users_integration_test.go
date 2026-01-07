@@ -9,10 +9,10 @@ import (
 	"testing"
 	"time"
 
-	"github.com/yourusername/tinyrsvp/internal/auth"
-	"github.com/yourusername/tinyrsvp/internal/db"
-	"github.com/yourusername/tinyrsvp/internal/db/repositories"
-	"github.com/yourusername/tinyrsvp/internal/models"
+	"github.com/lenaxia/tinyrsvp/internal/auth"
+	"github.com/lenaxia/tinyrsvp/internal/db"
+	"github.com/lenaxia/tinyrsvp/internal/db/repositories"
+	"github.com/lenaxia/tinyrsvp/internal/models"
 )
 
 func setupIntegrationTestDB(t *testing.T) db.Database {

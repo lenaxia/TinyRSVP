@@ -8,7 +8,7 @@ import (
 	"time"
 
 	"github.com/golang-migrate/migrate/v4"
-	"github.com/yourusername/tinyrsvp/internal/db"
+	"github.com/lenaxia/tinyrsvp/internal/db"
 )
 
 type ReadinessHandler struct {

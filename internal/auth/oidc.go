@@ -8,7 +8,7 @@ import (
 	"net/http"
 
 	"github.com/coreos/go-oidc/v3/oidc"
-	"github.com/yourusername/tinyrsvp/internal/models"
+	"github.com/lenaxia/tinyrsvp/internal/models"
 	"golang.org/x/oauth2"
 )
 
@@ -39,6 +39,7 @@ type UserService interface {
 	GetUserByEmail(ctx context.Context, email string) (*models.User, error)
 	UpdateUser(ctx context.Context, user *models.User) error
 	UpdateUserRole(ctx context.Context, userID int64, role models.UserRole) error
+	UpdateLastLogin(ctx context.Context, userID int64) error
 	DeleteUser(ctx context.Context, id int64) error
 	ListUsers(ctx context.Context, limit, offset int) ([]*models.User, error)
 	CountUsers(ctx context.Context) (int, error)

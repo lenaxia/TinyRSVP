@@ -551,7 +551,7 @@ package repositories
 
 import (
     "context"
-    "github.com/yourusername/tinyrsvp/internal/models"
+    "github.com/lenaxia/tinyrsvp/internal/models"
 )
 
 type UserRepository interface {
@@ -575,7 +575,7 @@ package repositories
 
 import (
     "context"
-    "github.com/yourusername/tinyrsvp/internal/models"
+    "github.com/lenaxia/tinyrsvp/internal/models"
 )
 
 type SessionRepository interface {
@@ -597,7 +597,7 @@ package repositories
 
 import (
     "context"
-    "github.com/yourusername/tinyrsvp/internal/models"
+    "github.com/lenaxia/tinyrsvp/internal/models"
 )
 
 type EventRepository interface {
@@ -624,7 +624,7 @@ package repositories
 
 import (
     "context"
-    "github.com/yourusername/tinyrsvp/internal/models"
+    "github.com/lenaxia/tinyrsvp/internal/models"
 )
 
 type InviteRepository interface {
@@ -652,7 +652,7 @@ package repositories
 
 import (
     "context"
-    "github.com/yourusername/tinyrsvp/internal/models"
+    "github.com/lenaxia/tinyrsvp/internal/models"
 )
 
 type RSVPRepository interface {
@@ -674,7 +674,7 @@ package repositories
 
 import (
     "context"
-    "github.com/yourusername/tinyrsvp/internal/models"
+    "github.com/lenaxia/tinyrsvp/internal/models"
 )
 
 type QuestionRepository interface {
@@ -704,7 +704,7 @@ package repositories
 
 import (
     "context"
-    "github.com/yourusername/tinyrsvp/internal/models"
+    "github.com/lenaxia/tinyrsvp/internal/models"
 )
 
 type EmailQueueRepository interface {
@@ -729,7 +729,7 @@ package repositories
 
 import (
     "context"
-    "github.com/yourusername/tinyrsvp/internal/models"
+    "github.com/lenaxia/tinyrsvp/internal/models"
 )
 
 type TemplateRepository interface {
@@ -751,7 +751,7 @@ package repositories
 
 import (
     "context"
-    "github.com/yourusername/tinyrsvp/internal/models"
+    "github.com/lenaxia/tinyrsvp/internal/models"
     "time"
 )
 
@@ -772,7 +772,7 @@ package repositories
 
 import (
     "context"
-    "github.com/yourusername/tinyrsvp/internal/models"
+    "github.com/lenaxia/tinyrsvp/internal/models"
 )
 
 type ConfigRepository interface {

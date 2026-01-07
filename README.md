@@ -32,7 +32,7 @@ TinyRSVP is a lightweight alternative to services like Evite, designed specifica
 
 1. **Clone the repository:**
    ```bash
-   git clone https://github.com/yourusername/tinyrsvp.git
+   git clone https://github.com/lenaxia/tinyrsvp.git
    cd tinyrsvp
    ```
 
@@ -240,7 +240,7 @@ Works with:
 
 ```bash
 # Clone repository
-git clone https://github.com/yourusername/tinyrsvp.git
+git clone https://github.com/lenaxia/tinyrsvp.git
 cd tinyrsvp
 
 # Install dependencies
@@ -348,9 +348,9 @@ A: Not currently, but manual import is possible by creating events and invites.
 
 ## Support
 
-- **Issues**: [GitHub Issues](https://github.com/yourusername/tinyrsvp/issues)
+- **Issues**: [GitHub Issues](https://github.com/lenaxia/tinyrsvp/issues)
 - **Documentation**: [docs/](docs/)
-- **Discussions**: [GitHub Discussions](https://github.com/yourusername/tinyrsvp/discussions)
+- **Discussions**: [GitHub Discussions](https://github.com/lenaxia/tinyrsvp/discussions)
 
 ---
 

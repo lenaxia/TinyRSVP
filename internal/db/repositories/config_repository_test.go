@@ -7,7 +7,7 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/yourusername/tinyrsvp/internal/models"
+	"github.com/lenaxia/tinyrsvp/internal/models"
 )
 
 func TestConfigRepository_Get(t *testing.T) {

@@ -86,11 +86,11 @@ All tests passing with comprehensive coverage:
 ```
 go test -timeout 30s ./internal/auth/... -run TestForwardAuth
 PASS
-ok      github.com/yourusername/tinyrsvp/internal/auth  0.005s
+ok      github.com/lenaxia/tinyrsvp/internal/auth  0.005s
 
 go test -timeout 30s ./internal/config/... -run TestForwardAuth
 PASS
-ok      github.com/yourusername/tinyrsvp/internal/config        0.004s
+ok      github.com/lenaxia/tinyrsvp/internal/config        0.004s
 ```
 
 ---

@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/yourusername/tinyrsvp/internal/models"
+	"github.com/lenaxia/tinyrsvp/internal/models"
 )
 
 func TestUserService_CreateUser_FirstUserIsAdmin(t *testing.T) {

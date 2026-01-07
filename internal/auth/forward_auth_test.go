@@ -6,7 +6,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/yourusername/tinyrsvp/internal/models"
+	"github.com/lenaxia/tinyrsvp/internal/models"
 )
 
 type mockUserService struct {
@@ -37,6 +37,10 @@ func (m *mockUserService) UpdateUser(ctx context.Context, user *models.User) err
 }
 
 func (m *mockUserService) UpdateUserRole(ctx context.Context, userID int64, role models.UserRole) error {
+	return nil
+}
+
+func (m *mockUserService) UpdateLastLogin(ctx context.Context, userID int64) error {
 	return nil
 }
 

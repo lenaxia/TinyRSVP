@@ -63,7 +63,7 @@ package templates
 
 import (
     "context"
-    "github.com/yourusername/tinyrsvp/internal/models"
+    "github.com/lenaxia/tinyrsvp/internal/models"
 )
 
 type Service interface {
@@ -267,7 +267,7 @@ package templates
 
 import (
     "context"
-    "github.com/yourusername/tinyrsvp/internal/models"
+    "github.com/lenaxia/tinyrsvp/internal/models"
 )
 
 type MockService struct {

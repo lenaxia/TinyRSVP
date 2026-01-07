@@ -71,7 +71,7 @@ Implemented comprehensive configuration management and structured logging for Ti
 
 ```bash
 $ go test -timeout 30s -cover ./internal/config/...
-ok      github.com/yourusername/tinyrsvp/internal/config    0.005s  coverage: 85.7% of statements
+ok      github.com/lenaxia/tinyrsvp/internal/config    0.005s  coverage: 85.7% of statements
 ```
 
 All tests passing:

@@ -4,7 +4,7 @@ import (
 	"context"
 	"testing"
 
-	"github.com/yourusername/tinyrsvp/internal/models"
+	"github.com/lenaxia/tinyrsvp/internal/models"
 )
 
 func TestWithUser(t *testing.T) {

@@ -16,7 +16,7 @@ Provides database connection management, query execution, transaction support, a
 ## Usage
 
 ```go
-import "github.com/yourusername/tinyrsvp/internal/db"
+import "github.com/lenaxia/tinyrsvp/internal/db"
 
 // Create database connection
 db, err := db.NewDatabase(db.Config{
@@ -145,8 +145,8 @@ The database package includes repository implementations for data access abstrac
 
 ```go
 import (
-    "github.com/yourusername/tinyrsvp/internal/db/repositories"
-    "github.com/yourusername/tinyrsvp/internal/models"
+    "github.com/lenaxia/tinyrsvp/internal/db/repositories"
+    "github.com/lenaxia/tinyrsvp/internal/models"
 )
 
 // Create repositories

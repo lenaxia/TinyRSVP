@@ -61,7 +61,7 @@ package repositories
 
 import (
     "context"
-    "github.com/yourusername/tinyrsvp/internal/models"
+    "github.com/lenaxia/tinyrsvp/internal/models"
 )
 
 type UserRepository interface {
@@ -85,7 +85,7 @@ package repositories
 
 import (
     "context"
-    "github.com/yourusername/tinyrsvp/internal/models"
+    "github.com/lenaxia/tinyrsvp/internal/models"
 )
 
 type SessionRepository interface {
@@ -107,7 +107,7 @@ package repositories
 
 import (
     "context"
-    "github.com/yourusername/tinyrsvp/internal/models"
+    "github.com/lenaxia/tinyrsvp/internal/models"
 )
 
 type ConfigRepository interface {

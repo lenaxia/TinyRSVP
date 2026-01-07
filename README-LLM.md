@@ -469,7 +469,7 @@ TinyRSVP/
 
 ```bash
 # Initialize Go module (if not done)
-go mod init github.com/yourusername/tinyrsvp
+go mod init github.com/lenaxia/tinyrsvp
 
 # Download dependencies
 go mod download

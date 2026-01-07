@@ -79,7 +79,7 @@ Implemented automated database migration system using golang-migrate/migrate. Al
 
 **Test Results:**
 ```
-ok  	github.com/yourusername/tinyrsvp/internal/db	0.083s	coverage: 83.1%
+ok  	github.com/lenaxia/tinyrsvp/internal/db	0.083s	coverage: 83.1%
 ```
 
 ---

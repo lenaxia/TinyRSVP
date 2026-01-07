@@ -88,11 +88,11 @@ All tests pass with timeout:
 ```bash
 $ go test -timeout 30s ./internal/models/
 PASS
-ok      github.com/yourusername/tinyrsvp/internal/models        0.006s
+ok      github.com/lenaxia/tinyrsvp/internal/models        0.006s
 
 $ go test -timeout 30s ./internal/db/repositories/
 PASS
-ok      github.com/yourusername/tinyrsvp/internal/db/repositories       0.208s
+ok      github.com/lenaxia/tinyrsvp/internal/db/repositories       0.208s
 ```
 
 **Total Test Coverage:**

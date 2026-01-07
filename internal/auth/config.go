@@ -1,7 +1,7 @@
 package auth
 
 import (
-	"github.com/yourusername/tinyrsvp/internal/config"
+	"github.com/lenaxia/tinyrsvp/internal/config"
 )
 
 func NewOIDCConfigFromAppConfig(appCfg *config.Config) *OIDCConfig {

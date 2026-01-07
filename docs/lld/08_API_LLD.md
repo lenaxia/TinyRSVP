@@ -581,7 +581,7 @@ import (
     "net/http"
     "time"
     
-    "github.com/yourusername/tinyrsvp/internal/db"
+    "github.com/lenaxia/tinyrsvp/internal/db"
 )
 
 type HealthHandler struct {

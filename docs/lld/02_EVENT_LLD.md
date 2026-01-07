@@ -62,9 +62,9 @@ import (
     "fmt"
     "time"
     
-    "github.com/yourusername/tinyrsvp/internal/auth"
-    "github.com/yourusername/tinyrsvp/internal/db/repositories"
-    "github.com/yourusername/tinyrsvp/internal/models"
+    "github.com/lenaxia/tinyrsvp/internal/auth"
+    "github.com/lenaxia/tinyrsvp/internal/db/repositories"
+    "github.com/lenaxia/tinyrsvp/internal/models"
 )
 
 type Service interface {
@@ -94,7 +94,7 @@ package events
 
 import (
     "context"
-    "github.com/yourusername/tinyrsvp/internal/models"
+    "github.com/lenaxia/tinyrsvp/internal/models"
 )
 
 type Validator interface {
@@ -129,9 +129,9 @@ import (
     "fmt"
     "time"
     
-    "github.com/yourusername/tinyrsvp/internal/auth"
-    "github.com/yourusername/tinyrsvp/internal/db/repositories"
-    "github.com/yourusername/tinyrsvp/internal/models"
+    "github.com/lenaxia/tinyrsvp/internal/auth"
+    "github.com/lenaxia/tinyrsvp/internal/db/repositories"
+    "github.com/lenaxia/tinyrsvp/internal/models"
 )
 
 type service struct {
@@ -210,7 +210,7 @@ import (
     "fmt"
     "time"
     
-    "github.com/yourusername/tinyrsvp/internal/models"
+    "github.com/lenaxia/tinyrsvp/internal/models"
 )
 
 type validator struct {
@@ -286,7 +286,7 @@ package events
 
 import (
     "context"
-    "github.com/yourusername/tinyrsvp/internal/models"
+    "github.com/lenaxia/tinyrsvp/internal/models"
 )
 
 type MockService struct {
@@ -372,7 +372,7 @@ package events
 
 import (
     "context"
-    "github.com/yourusername/tinyrsvp/internal/models"
+    "github.com/lenaxia/tinyrsvp/internal/models"
 )
 
 type MockValidator struct {

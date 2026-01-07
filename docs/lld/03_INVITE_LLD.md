@@ -64,7 +64,7 @@ package invites
 
 import (
     "context"
-    "github.com/yourusername/tinyrsvp/internal/models"
+    "github.com/lenaxia/tinyrsvp/internal/models"
 )
 
 type Service interface {
@@ -304,7 +304,7 @@ package invites
 
 import (
     "context"
-    "github.com/yourusername/tinyrsvp/internal/models"
+    "github.com/lenaxia/tinyrsvp/internal/models"
 )
 
 type MockService struct {

@@ -8,7 +8,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/yourusername/tinyrsvp/internal/models"
+	"github.com/lenaxia/tinyrsvp/internal/models"
 )
 
 func TestNewOIDCAuthenticator_ValidConfig(t *testing.T) {
@@ -170,6 +170,7 @@ type MockUserService struct {
 	GetUserByEmailFunc  func(ctx context.Context, email string) (*models.User, error)
 	UpdateUserFunc      func(ctx context.Context, user *models.User) error
 	UpdateUserRoleFunc  func(ctx context.Context, userID int64, role models.UserRole) error
+	UpdateLastLoginFunc func(ctx context.Context, userID int64) error
 	DeleteUserFunc      func(ctx context.Context, id int64) error
 	ListUsersFunc       func(ctx context.Context, limit, offset int) ([]*models.User, error)
 	CountUsersFunc      func(ctx context.Context) (int, error)
@@ -214,6 +215,13 @@ func (m *MockUserService) UpdateUser(ctx context.Context, user *models.User) err
 func (m *MockUserService) UpdateUserRole(ctx context.Context, userID int64, role models.UserRole) error {
 	if m.UpdateUserRoleFunc != nil {
 		return m.UpdateUserRoleFunc(ctx, userID, role)
+	}
+	return nil
+}
+
+func (m *MockUserService) UpdateLastLogin(ctx context.Context, userID int64) error {
+	if m.UpdateLastLoginFunc != nil {
+		return m.UpdateLastLoginFunc(ctx, userID)
 	}
 	return nil
 }

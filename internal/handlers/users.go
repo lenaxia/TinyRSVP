@@ -9,8 +9,8 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/yourusername/tinyrsvp/internal/auth"
-	"github.com/yourusername/tinyrsvp/internal/models"
+	"github.com/lenaxia/tinyrsvp/internal/auth"
+	"github.com/lenaxia/tinyrsvp/internal/models"
 )
 
 type UserService interface {

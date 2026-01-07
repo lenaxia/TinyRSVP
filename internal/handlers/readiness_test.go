@@ -9,7 +9,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/yourusername/tinyrsvp/internal/db"
+	"github.com/lenaxia/tinyrsvp/internal/db"
 )
 
 func setupTestDB(t *testing.T) db.Database {

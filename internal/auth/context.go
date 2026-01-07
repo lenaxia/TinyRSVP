@@ -3,7 +3,7 @@ package auth
 import (
 	"context"
 
-	"github.com/yourusername/tinyrsvp/internal/models"
+	"github.com/lenaxia/tinyrsvp/internal/models"
 )
 
 type contextKey string

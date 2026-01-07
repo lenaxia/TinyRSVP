@@ -178,7 +178,7 @@ type service struct {
 
 **Problem:** Domain 2 doesn't show import or package qualification
 
-**Resolution:** Added explicit import statement `"github.com/yourusername/tinyrsvp/internal/auth"` to Domain 2 LLD
+**Resolution:** Added explicit import statement `"github.com/lenaxia/tinyrsvp/internal/auth"` to Domain 2 LLD
 
 ---
 

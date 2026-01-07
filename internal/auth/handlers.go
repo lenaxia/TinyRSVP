@@ -50,6 +50,10 @@ func (h *CallbackHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if err := h.userService.UpdateLastLogin(r.Context(), user.ID); err != nil {
+		log.Printf("Failed to update last login: %v", err)
+	}
+
 	session, err := h.sessionMgr.CreateSession(r.Context(), user.ID, r)
 	if err != nil {
 		log.Printf("Session creation error: %v", err)

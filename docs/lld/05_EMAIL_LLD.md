@@ -67,7 +67,7 @@ package email
 
 import (
     "context"
-    "github.com/yourusername/tinyrsvp/internal/models"
+    "github.com/lenaxia/tinyrsvp/internal/models"
 )
 
 type Service interface {
@@ -115,7 +115,7 @@ type Attachment struct {
 package ics
 
 import (
-    "github.com/yourusername/tinyrsvp/internal/models"
+    "github.com/lenaxia/tinyrsvp/internal/models"
 )
 
 type Generator interface {
@@ -138,9 +138,9 @@ import (
     "context"
     "fmt"
     
-    "github.com/yourusername/tinyrsvp/internal/db/repositories"
-    "github.com/yourusername/tinyrsvp/internal/models"
-    "github.com/yourusername/tinyrsvp/pkg/ics"
+    "github.com/lenaxia/tinyrsvp/internal/db/repositories"
+    "github.com/lenaxia/tinyrsvp/internal/models"
+    "github.com/lenaxia/tinyrsvp/pkg/ics"
 )
 
 type service struct {
@@ -418,7 +418,7 @@ import (
     "fmt"
     "time"
     
-    "github.com/yourusername/tinyrsvp/internal/models"
+    "github.com/lenaxia/tinyrsvp/internal/models"
 )
 
 type generator struct{}
@@ -502,7 +502,7 @@ package email
 
 import (
     "context"
-    "github.com/yourusername/tinyrsvp/internal/models"
+    "github.com/lenaxia/tinyrsvp/internal/models"
 )
 
 type MockService struct {
@@ -570,7 +570,7 @@ func (m *MockService) RetryFailed(ctx context.Context, emailID int64) error {
 ```go
 package ics
 
-import "github.com/yourusername/tinyrsvp/internal/models"
+import "github.com/lenaxia/tinyrsvp/internal/models"
 
 type MockGenerator struct {
     GenerateFunc             func(event *models.Event, rsvpURL string) ([]byte, error)

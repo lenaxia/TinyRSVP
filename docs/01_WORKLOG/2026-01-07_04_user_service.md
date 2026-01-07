@@ -47,7 +47,7 @@ All tests passing with excellent coverage:
 
 ```bash
 go test -timeout 30s -cover ./internal/auth/...
-ok      github.com/yourusername/tinyrsvp/internal/auth  3.736s  coverage: 87.6% of statements
+ok      github.com/lenaxia/tinyrsvp/internal/auth  3.736s  coverage: 87.6% of statements
 ```
 
 **Test Summary:**

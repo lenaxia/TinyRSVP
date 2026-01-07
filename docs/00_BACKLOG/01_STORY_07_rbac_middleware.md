@@ -39,8 +39,8 @@ import (
     "context"
     "net/http"
     
-    "github.com/yourusername/tinyrsvp/internal/auth"
-    "github.com/yourusername/tinyrsvp/internal/models"
+    "github.com/lenaxia/tinyrsvp/internal/auth"
+    "github.com/lenaxia/tinyrsvp/internal/models"
 )
 
 func RequireAuth(sessionMgr auth.SessionManager, userService auth.UserService) func(http.Handler) http.Handler {

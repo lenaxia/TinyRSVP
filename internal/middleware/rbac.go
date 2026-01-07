@@ -4,7 +4,7 @@ import (
 	"log/slog"
 	"net/http"
 
-	"github.com/yourusername/tinyrsvp/internal/auth"
+	"github.com/lenaxia/tinyrsvp/internal/auth"
 )
 
 func RequireAuth(sessionMgr auth.SessionManager, userService auth.UserService) func(http.Handler) http.Handler {

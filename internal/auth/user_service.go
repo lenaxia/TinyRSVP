@@ -6,8 +6,8 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/yourusername/tinyrsvp/internal/db/repositories"
-	"github.com/yourusername/tinyrsvp/internal/models"
+	"github.com/lenaxia/tinyrsvp/internal/db/repositories"
+	"github.com/lenaxia/tinyrsvp/internal/models"
 )
 
 var emailRegex = regexp.MustCompile(`^[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}$`)
@@ -74,12 +74,24 @@ func (s *userService) GetOrCreateUser(ctx context.Context, email, name string, o
 	return s.CreateUser(ctx, email, name, oidcSubject)
 }
 
-func (s *userService) GetUserByID(ctx context.Context, id int64) (*models.User, error) {
+func (s *userService) GetByID(ctx context.Context, id int64) (*models.User, error) {
 	return s.repo.GetByID(ctx, id)
 }
 
-func (s *userService) GetUserByEmail(ctx context.Context, email string) (*models.User, error) {
+func (s *userService) GetUserByID(ctx context.Context, id int64) (*models.User, error) {
+	return s.GetByID(ctx, id)
+}
+
+func (s *userService) GetByEmail(ctx context.Context, email string) (*models.User, error) {
 	return s.repo.GetByEmail(ctx, email)
+}
+
+func (s *userService) GetUserByEmail(ctx context.Context, email string) (*models.User, error) {
+	return s.GetByEmail(ctx, email)
+}
+
+func (s *userService) UpdateRole(ctx context.Context, userID int64, role models.UserRole) error {
+	return s.UpdateUserRole(ctx, userID, role)
 }
 
 func (s *userService) UpdateUser(ctx context.Context, user *models.User) error {
@@ -94,6 +106,10 @@ func (s *userService) UpdateUserRole(ctx context.Context, userID int64, role mod
 
 	user.Role = role
 	return s.repo.Update(ctx, user)
+}
+
+func (s *userService) UpdateLastLogin(ctx context.Context, userID int64) error {
+	return s.repo.UpdateLastLogin(ctx, userID)
 }
 
 func (s *userService) DeleteUser(ctx context.Context, id int64) error {

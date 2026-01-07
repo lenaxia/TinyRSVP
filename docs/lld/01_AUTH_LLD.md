@@ -175,7 +175,7 @@ package auth
 
 import (
     "context"
-    "github.com/yourusername/tinyrsvp/internal/models"
+    "github.com/lenaxia/tinyrsvp/internal/models"
     "net/http"
 )
 
@@ -199,7 +199,7 @@ package auth
 
 import (
     "context"
-    "github.com/yourusername/tinyrsvp/internal/models"
+    "github.com/lenaxia/tinyrsvp/internal/models"
     "net/http"
 )
 
@@ -223,7 +223,7 @@ package auth
 
 import (
     "context"
-    "github.com/yourusername/tinyrsvp/internal/models"
+    "github.com/lenaxia/tinyrsvp/internal/models"
 )
 
 type AuthorizationChecker interface {
@@ -247,7 +247,7 @@ package auth
 
 import (
     "context"
-    "github.com/yourusername/tinyrsvp/internal/models"
+    "github.com/lenaxia/tinyrsvp/internal/models"
 )
 
 type UserService interface {
@@ -498,8 +498,8 @@ import (
     "net/http"
     "time"
     
-    "github.com/yourusername/tinyrsvp/internal/db/repositories"
-    "github.com/yourusername/tinyrsvp/internal/models"
+    "github.com/lenaxia/tinyrsvp/internal/db/repositories"
+    "github.com/lenaxia/tinyrsvp/internal/models"
 )
 
 type sessionManager struct {
@@ -633,8 +633,8 @@ import (
     "context"
     "fmt"
     
-    "github.com/yourusername/tinyrsvp/internal/db/repositories"
-    "github.com/yourusername/tinyrsvp/internal/models"
+    "github.com/lenaxia/tinyrsvp/internal/db/repositories"
+    "github.com/lenaxia/tinyrsvp/internal/models"
 )
 
 type userService struct {
@@ -739,7 +739,7 @@ package auth
 
 import (
     "context"
-    "github.com/yourusername/tinyrsvp/internal/models"
+    "github.com/lenaxia/tinyrsvp/internal/models"
 )
 
 type authorizationChecker struct{}

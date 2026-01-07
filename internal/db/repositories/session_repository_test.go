@@ -7,7 +7,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/yourusername/tinyrsvp/internal/models"
+	"github.com/lenaxia/tinyrsvp/internal/models"
 )
 
 func createTestUser(t *testing.T, repo UserRepository) *models.User {

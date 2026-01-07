@@ -7,10 +7,10 @@ import (
 	"testing"
 	"time"
 
-	"github.com/yourusername/tinyrsvp/internal/auth"
-	"github.com/yourusername/tinyrsvp/internal/db"
-	"github.com/yourusername/tinyrsvp/internal/db/repositories"
-	"github.com/yourusername/tinyrsvp/internal/models"
+	"github.com/lenaxia/tinyrsvp/internal/auth"
+	"github.com/lenaxia/tinyrsvp/internal/db"
+	"github.com/lenaxia/tinyrsvp/internal/db/repositories"
+	"github.com/lenaxia/tinyrsvp/internal/models"
 )
 
 func setupIntegrationTest(t *testing.T) (auth.SessionManager, auth.UserService, func()) {

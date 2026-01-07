@@ -38,9 +38,9 @@ Provides OIDC authentication, session management, and user service for TinyRSVP 
 
 ```go
 import (
-    "github.com/yourusername/tinyrsvp/internal/auth"
-    "github.com/yourusername/tinyrsvp/internal/config"
-    "github.com/yourusername/tinyrsvp/internal/db/repositories"
+    "github.com/lenaxia/tinyrsvp/internal/auth"
+    "github.com/lenaxia/tinyrsvp/internal/config"
+    "github.com/lenaxia/tinyrsvp/internal/db/repositories"
 )
 
 appCfg, _ := config.Load()
@@ -63,9 +63,9 @@ if err != nil {
 
 ```go
 import (
-    "github.com/yourusername/tinyrsvp/internal/auth"
-    "github.com/yourusername/tinyrsvp/internal/config"
-    "github.com/yourusername/tinyrsvp/internal/db/repositories"
+    "github.com/lenaxia/tinyrsvp/internal/auth"
+    "github.com/lenaxia/tinyrsvp/internal/config"
+    "github.com/lenaxia/tinyrsvp/internal/db/repositories"
 )
 
 appCfg, _ := config.Load()

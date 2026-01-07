@@ -60,7 +60,7 @@ package rsvps
 
 import (
     "context"
-    "github.com/yourusername/tinyrsvp/internal/models"
+    "github.com/lenaxia/tinyrsvp/internal/models"
 )
 
 type Service interface {
@@ -115,7 +115,7 @@ package rsvps
 
 import (
     "context"
-    "github.com/yourusername/tinyrsvp/internal/models"
+    "github.com/lenaxia/tinyrsvp/internal/models"
 )
 
 type QuestionService interface {
@@ -142,8 +142,8 @@ import (
     "fmt"
     "time"
     
-    "github.com/yourusername/tinyrsvp/internal/db/repositories"
-    "github.com/yourusername/tinyrsvp/internal/models"
+    "github.com/lenaxia/tinyrsvp/internal/db/repositories"
+    "github.com/lenaxia/tinyrsvp/internal/models"
 )
 
 type service struct {
@@ -271,7 +271,7 @@ package rsvps
 
 import (
     "context"
-    "github.com/yourusername/tinyrsvp/internal/models"
+    "github.com/lenaxia/tinyrsvp/internal/models"
 )
 
 type MockService struct {
@@ -325,7 +325,7 @@ package rsvps
 
 import (
     "context"
-    "github.com/yourusername/tinyrsvp/internal/models"
+    "github.com/lenaxia/tinyrsvp/internal/models"
 )
 
 type MockQuestionService struct {
@@ -398,9 +398,9 @@ import (
 ### 7.2 Internal Dependencies
 
 **Required:**
-- `github.com/yourusername/tinyrsvp/internal/db` - Transaction management
-- `github.com/yourusername/tinyrsvp/internal/db/repositories` - Data access
-- `github.com/yourusername/tinyrsvp/internal/models` - Domain models
+- `github.com/lenaxia/tinyrsvp/internal/db` - Transaction management
+- `github.com/lenaxia/tinyrsvp/internal/db/repositories` - Data access
+- `github.com/lenaxia/tinyrsvp/internal/models` - Domain models
 
 **Interfaces Used:**
 - `repositories.RSVPRepository` - RSVP persistence

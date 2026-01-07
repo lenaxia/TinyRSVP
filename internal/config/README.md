@@ -82,7 +82,7 @@ package main
 
 import (
     "log"
-    "github.com/yourusername/tinyrsvp/internal/config"
+    "github.com/lenaxia/tinyrsvp/internal/config"
 )
 
 func main() {

@@ -17,7 +17,7 @@ As a **developer**, I want **a properly initialized Go module with project struc
 ## Acceptance Criteria
 
 - [x] Go module initialized with `go mod init`
-- [x] Module name follows convention: `github.com/yourusername/tinyrsvp`
+- [x] Module name follows convention: `github.com/lenaxia/tinyrsvp`
 - [x] All required dependencies added to `go.mod`
 - [x] Directory structure created per README-LLM.md specification
 - [ ] All directories have README.md files (deferred - created as needed)
@@ -171,7 +171,7 @@ temp/
 ## Tasks
 
 ### Phase 1: Module Initialization
-- [ ] Run `go mod init github.com/yourusername/tinyrsvp`
+- [ ] Run `go mod init github.com/lenaxia/tinyrsvp`
 - [ ] Create `.gitignore` file with Go-specific ignores
 - [ ] Verify module initialization with `go mod tidy`
 

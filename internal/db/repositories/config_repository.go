@@ -9,8 +9,8 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/yourusername/tinyrsvp/internal/db"
-	"github.com/yourusername/tinyrsvp/internal/models"
+	"github.com/lenaxia/tinyrsvp/internal/db"
+	"github.com/lenaxia/tinyrsvp/internal/models"
 )
 
 const hmacSecretKey = "hmac_secret"

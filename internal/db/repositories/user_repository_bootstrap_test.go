@@ -7,7 +7,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/yourusername/tinyrsvp/internal/models"
+	"github.com/lenaxia/tinyrsvp/internal/models"
 )
 
 func TestUserRepository_CreateWithBootstrapCheck(t *testing.T) {

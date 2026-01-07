@@ -9,8 +9,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/yourusername/tinyrsvp/internal/db/repositories"
-	"github.com/yourusername/tinyrsvp/internal/models"
+	"github.com/lenaxia/tinyrsvp/internal/db/repositories"
+	"github.com/lenaxia/tinyrsvp/internal/models"
 )
 
 const (

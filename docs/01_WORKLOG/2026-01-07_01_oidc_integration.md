@@ -186,10 +186,10 @@ Uses existing models:
 
 ```go
 import (
-    "github.com/yourusername/tinyrsvp/internal/auth"
-    "github.com/yourusername/tinyrsvp/internal/config"
-    "github.com/yourusername/tinyrsvp/internal/db"
-    "github.com/yourusername/tinyrsvp/internal/db/repositories"
+    "github.com/lenaxia/tinyrsvp/internal/auth"
+    "github.com/lenaxia/tinyrsvp/internal/config"
+    "github.com/lenaxia/tinyrsvp/internal/db"
+    "github.com/lenaxia/tinyrsvp/internal/db/repositories"
 )
 
 appCfg, _ := config.Load()
@@ -220,7 +220,7 @@ http.Handle("/logout", logoutHandler)
 All tests pass with timeout:
 ```bash
 go test -mod=mod -timeout 30s ./internal/auth/...
-# ok  	github.com/yourusername/tinyrsvp/internal/auth	1.523s
+# ok  	github.com/lenaxia/tinyrsvp/internal/auth	1.523s
 ```
 
 ---

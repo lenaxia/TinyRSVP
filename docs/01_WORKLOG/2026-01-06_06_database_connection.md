@@ -91,7 +91,7 @@ file:/data/tinyrsvp.db?cache=shared&mode=rwc&_journal_mode=WAL&_busy_timeout=500
 
 ### Test Coverage
 ```
-ok  	github.com/yourusername/tinyrsvp/internal/db	0.041s	coverage: 85.4% of statements
+ok  	github.com/lenaxia/tinyrsvp/internal/db	0.041s	coverage: 85.4% of statements
 ```
 
 ### All Tests Passing

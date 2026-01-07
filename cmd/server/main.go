@@ -10,12 +10,12 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/yourusername/tinyrsvp/internal/auth"
-	"github.com/yourusername/tinyrsvp/internal/config"
-	"github.com/yourusername/tinyrsvp/internal/db"
-	"github.com/yourusername/tinyrsvp/internal/db/repositories"
-	"github.com/yourusername/tinyrsvp/internal/handlers"
-	"github.com/yourusername/tinyrsvp/internal/middleware"
+	"github.com/lenaxia/tinyrsvp/internal/auth"
+	"github.com/lenaxia/tinyrsvp/internal/config"
+	"github.com/lenaxia/tinyrsvp/internal/db"
+	"github.com/lenaxia/tinyrsvp/internal/db/repositories"
+	"github.com/lenaxia/tinyrsvp/internal/handlers"
+	"github.com/lenaxia/tinyrsvp/internal/middleware"
 )
 
 const appVersion = "0.1.0"
@@ -105,7 +105,49 @@ func main() {
 
 	logger.Info("Initialized auth services")
 
+	var authenticator auth.Authenticator
+	if cfg.OIDC.Enabled {
+		oidcCfg := &auth.OIDCConfig{
+			IssuerURL:    cfg.OIDC.IssuerURL,
+			ClientID:     cfg.OIDC.ClientID,
+			ClientSecret: cfg.OIDC.ClientSecret,
+			RedirectURL:  cfg.OIDC.RedirectURL,
+			Scopes:       []string{"openid", "email", "profile"},
+		}
+		oidcAuth, err := auth.NewOIDCAuthenticator(oidcCfg, userService, sessionMgr)
+		if err != nil {
+			logger.Error("Failed to create OIDC authenticator", "error", err)
+			os.Exit(1)
+		}
+		authenticator = oidcAuth
+		logger.Info("OIDC authentication enabled")
+	} else if cfg.ForwardAuth.Enabled {
+		fwdAuthCfg := &auth.ForwardAuthConfig{
+			UserHeader:  cfg.ForwardAuth.UserHeader,
+			EmailHeader: cfg.ForwardAuth.EmailHeader,
+			TrustedIPs:  cfg.ForwardAuth.TrustedIPs,
+		}
+		authenticator = auth.NewForwardAuthenticator(fwdAuthCfg, userService, sessionMgr)
+		logger.Info("Forward auth enabled")
+	} else {
+		logger.Error("No authentication method enabled")
+		os.Exit(1)
+	}
+
+	loginHandler := auth.NewLoginHandler(authenticator)
+	callbackHandler := auth.NewCallbackHandler(authenticator, userService, sessionMgr)
+	logoutHandler := auth.NewLogoutHandler(authenticator)
+
 	mux := http.NewServeMux()
+
+	mux.Handle("/login", loginHandler)
+	logger.Info("Registered auth endpoint", "path", "/login")
+
+	mux.Handle("/auth/callback", callbackHandler)
+	logger.Info("Registered auth endpoint", "path", "/auth/callback")
+
+	mux.Handle("/logout", logoutHandler)
+	logger.Info("Registered auth endpoint", "path", "/logout")
 
 	healthHandler := handlers.NewHealthHandler(appVersion)
 	mux.Handle("/health", healthHandler)
@@ -160,6 +202,30 @@ func main() {
 		WriteTimeout: 15 * time.Second,
 		IdleTimeout:  60 * time.Second,
 	}
+
+	cleanupCtx, cleanupCancel := context.WithCancel(context.Background())
+	defer cleanupCancel()
+
+	go func() {
+		ticker := time.NewTicker(1 * time.Hour)
+		defer ticker.Stop()
+
+		for {
+			select {
+			case <-ticker.C:
+				count, err := sessionMgr.CleanupExpired(context.Background())
+				if err != nil {
+					logger.Error("Session cleanup failed", "error", err)
+				} else {
+					logger.Info("Session cleanup completed", "deleted", count)
+				}
+			case <-cleanupCtx.Done():
+				logger.Info("Session cleanup goroutine stopped")
+				return
+			}
+		}
+	}()
+	logger.Info("Session cleanup background job started")
 
 	serverErrors := make(chan error, 1)
 	go func() {
