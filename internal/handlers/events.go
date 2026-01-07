@@ -154,9 +154,23 @@ func (h *EventHandlers) UpdateEvent(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	existing, err := h.service.GetEvent(r.Context(), id)
+	if err != nil {
+		handleServiceError(w, err)
+		return
+	}
+
 	event := &models.Event{
-		ID:      id,
-		Version: req.Version,
+		ID:           id,
+		Version:      req.Version,
+		Title:        existing.Title,
+		Description:  existing.Description,
+		StartTime:    existing.StartTime,
+		EndTime:      existing.EndTime,
+		Timezone:     existing.Timezone,
+		Location:     existing.Location,
+		MaxPlusOnes:  existing.MaxPlusOnes,
+		RSVPDeadline: existing.RSVPDeadline,
 	}
 
 	if req.Title != nil {
@@ -420,6 +434,7 @@ func handleServiceError(w http.ResponseWriter, err error) {
 	var permErr *models.PermissionDeniedError
 	var validationErr *models.ValidationError
 	var versionConflictErr *models.VersionConflictError
+	var optimisticLockErr *models.OptimisticLockError
 
 	switch {
 	case errors.As(err, &notFoundErr):
@@ -429,6 +444,8 @@ func handleServiceError(w http.ResponseWriter, err error) {
 	case errors.As(err, &validationErr):
 		respondError(w, http.StatusBadRequest, err.Error())
 	case errors.As(err, &versionConflictErr):
+		respondError(w, http.StatusConflict, "version conflict")
+	case errors.As(err, &optimisticLockErr):
 		respondError(w, http.StatusConflict, "version conflict")
 	default:
 		if err.Error() == "invalid state transition" {

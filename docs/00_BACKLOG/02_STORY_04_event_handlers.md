@@ -516,7 +516,7 @@ func TestEventHandlers_PublishEvent(t *testing.T) {
 - [x] No errors from `go vet`
 - [x] API documentation complete
 - [x] Error responses consistent
-- [ ] Changes committed to git
+- [x] Changes committed to git
 
 ---
 

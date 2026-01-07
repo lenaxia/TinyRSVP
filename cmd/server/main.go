@@ -10,10 +10,12 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/go-chi/chi/v5"
 	"github.com/lenaxia/tinyrsvp/internal/auth"
 	"github.com/lenaxia/tinyrsvp/internal/config"
 	"github.com/lenaxia/tinyrsvp/internal/db"
 	"github.com/lenaxia/tinyrsvp/internal/db/repositories"
+	"github.com/lenaxia/tinyrsvp/internal/events"
 	"github.com/lenaxia/tinyrsvp/internal/handlers"
 	"github.com/lenaxia/tinyrsvp/internal/middleware"
 )
@@ -98,12 +100,18 @@ func main() {
 
 	userRepo := repositories.NewUserRepository(database)
 	sessionRepo := repositories.NewSessionRepository(database)
+	eventRepo := repositories.NewEventRepository(database)
 
 	sessionMgr := auth.NewSessionManager(sessionRepo, false)
 	userService := auth.NewUserService(userRepo)
 	authChecker := auth.NewAuthorizationChecker()
 
 	logger.Info("Initialized auth services")
+
+	eventValidator := events.NewValidator(events.NewTimezoneValidator())
+	eventService := events.NewService(eventRepo, eventValidator, authChecker)
+
+	logger.Info("Initialized event services")
 
 	var authenticator auth.Authenticator
 	if cfg.OIDC.Enabled {
@@ -193,6 +201,17 @@ func main() {
 		}
 	})
 	logger.Info("Registered user management endpoints", "path", "/api/users/{id}", "methods", "GET,PATCH,DELETE", "protection", "admin")
+
+	eventHandlers := handlers.NewEventHandlers(eventService)
+	chiRouter := chi.NewRouter()
+	chiRouter.Use(func(next http.Handler) http.Handler {
+		return requireAuth(next)
+	})
+	eventHandlers.RegisterRoutes(chiRouter)
+
+	mux.Handle("/api/events", chiRouter)
+	mux.Handle("/api/events/", chiRouter)
+	logger.Info("Registered event management endpoints", "path", "/api/events", "protection", "authenticated")
 
 	addr := fmt.Sprintf("%s:%d", cfg.Server.Host, cfg.Server.Port)
 	server := &http.Server{

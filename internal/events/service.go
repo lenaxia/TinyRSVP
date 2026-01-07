@@ -132,7 +132,7 @@ func (s *service) UpdateEvent(ctx context.Context, event *models.Event) error {
 		return err
 	}
 
-	if err := s.repo.UpdateWithVersion(ctx, event, existing.Version); err != nil {
+	if err := s.repo.UpdateWithVersion(ctx, event, event.Version); err != nil {
 		return err
 	}
 

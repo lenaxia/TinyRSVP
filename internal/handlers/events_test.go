@@ -416,6 +416,17 @@ func TestEventHandlers_UpdateEvent(t *testing.T) {
 				Role: models.RoleEventManager,
 			},
 			setupMock: func(m *mockEventService) {
+				m.GetEventFunc = func(ctx context.Context, id int64) (*models.Event, error) {
+					return &models.Event{
+						ID:        1,
+						Title:     "Original Title",
+						StartTime: time.Now().Add(24 * time.Hour),
+						Timezone:  "America/Los_Angeles",
+						Status:    models.EventStatusDraft,
+						CreatedBy: 1,
+						Version:   1,
+					}, nil
+				}
 				m.UpdateEventFunc = func(ctx context.Context, e *models.Event) error {
 					return nil
 				}
@@ -434,6 +445,17 @@ func TestEventHandlers_UpdateEvent(t *testing.T) {
 				Role: models.RoleEventManager,
 			},
 			setupMock: func(m *mockEventService) {
+				m.GetEventFunc = func(ctx context.Context, id int64) (*models.Event, error) {
+					return &models.Event{
+						ID:        1,
+						Title:     "Original Title",
+						StartTime: time.Now().Add(24 * time.Hour),
+						Timezone:  "America/Los_Angeles",
+						Status:    models.EventStatusDraft,
+						CreatedBy: 1,
+						Version:   1,
+					}, nil
+				}
 				m.UpdateEventFunc = func(ctx context.Context, e *models.Event) error {
 					return nil
 				}
@@ -452,6 +474,17 @@ func TestEventHandlers_UpdateEvent(t *testing.T) {
 				Role: models.RoleEventManager,
 			},
 			setupMock: func(m *mockEventService) {
+				m.GetEventFunc = func(ctx context.Context, id int64) (*models.Event, error) {
+					return &models.Event{
+						ID:        1,
+						Title:     "Original Title",
+						StartTime: time.Now().Add(24 * time.Hour),
+						Timezone:  "America/Los_Angeles",
+						Status:    models.EventStatusDraft,
+						CreatedBy: 1,
+						Version:   1,
+					}, nil
+				}
 				m.UpdateEventFunc = func(ctx context.Context, e *models.Event) error {
 					return &models.VersionConflictError{
 						ResourceType: "event",
@@ -509,11 +542,11 @@ func TestEventHandlers_UpdateEvent(t *testing.T) {
 				Role: models.RoleEventManager,
 			},
 			setupMock: func(m *mockEventService) {
-				m.UpdateEventFunc = func(ctx context.Context, e *models.Event) error {
-					return &models.PermissionDeniedError{
-						Action:   "update event",
+				m.GetEventFunc = func(ctx context.Context, id int64) (*models.Event, error) {
+					return nil, &models.PermissionDeniedError{
+						Action:   "view event",
 						Resource: "Event",
-						ID:       e.ID,
+						ID:       id,
 					}
 				}
 			},
@@ -773,6 +806,50 @@ func TestEventHandlers_ListEvents(t *testing.T) {
 			},
 			wantStatus: http.StatusBadRequest,
 			wantBody:   "invalid status",
+		},
+		{
+			name:  "list with creator_id filter",
+			query: "?creator_id=1",
+			user: &models.User{
+				ID:   1,
+				Role: models.RoleEventManager,
+			},
+			setupMock: func(m *mockEventService) {
+				m.ListEventsFunc = func(ctx context.Context, filters events.ListFilters) ([]*models.Event, error) {
+					if filters.CreatorID == nil || *filters.CreatorID != 1 {
+						return nil, fmt.Errorf("unexpected creator_id filter")
+					}
+					return []*models.Event{}, nil
+				}
+			},
+			wantStatus: http.StatusOK,
+		},
+		{
+			name:  "invalid creator_id parameter",
+			query: "?creator_id=invalid",
+			user: &models.User{
+				ID:   1,
+				Role: models.RoleEventManager,
+			},
+			wantStatus: http.StatusBadRequest,
+			wantBody:   "invalid creator_id",
+		},
+		{
+			name:  "negative creator_id parameter",
+			query: "?creator_id=-1",
+			user: &models.User{
+				ID:   1,
+				Role: models.RoleEventManager,
+			},
+			setupMock: func(m *mockEventService) {
+				m.ListEventsFunc = func(ctx context.Context, filters events.ListFilters) ([]*models.Event, error) {
+					if filters.CreatorID == nil || *filters.CreatorID != -1 {
+						return nil, fmt.Errorf("unexpected creator_id filter")
+					}
+					return []*models.Event{}, nil
+				}
+			},
+			wantStatus: http.StatusOK,
 		},
 	}
 
@@ -1119,6 +1196,300 @@ func TestEventHandlers_RegisterRoutes(t *testing.T) {
 
 			if w.Code == http.StatusMethodNotAllowed {
 				t.Errorf("Route %s %s not registered", route.method, route.path)
+			}
+		})
+	}
+}
+
+func TestEventHandlers_CreateEvent_TitleBoundaries(t *testing.T) {
+	tests := []struct {
+		name       string
+		title      string
+		wantStatus int
+		wantBody   string
+	}{
+		{
+			name:       "title exactly 2 characters",
+			title:      "AB",
+			wantStatus: http.StatusBadRequest,
+			wantBody:   "title must be between 3 and 200 characters",
+		},
+		{
+			name:       "title exactly 3 characters",
+			title:      "ABC",
+			wantStatus: http.StatusCreated,
+		},
+		{
+			name:       "title exactly 200 characters",
+			title:      strings.Repeat("A", 200),
+			wantStatus: http.StatusCreated,
+		},
+		{
+			name:       "title exactly 201 characters",
+			title:      strings.Repeat("A", 201),
+			wantStatus: http.StatusBadRequest,
+			wantBody:   "title must be between 3 and 200 characters",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mockService := &mockEventService{}
+			mockService.CreateEventFunc = func(ctx context.Context, e *models.Event) error {
+				e.ID = 1
+				e.CreatedAt = time.Now()
+				e.UpdatedAt = time.Now()
+				return nil
+			}
+
+			handlers := NewEventHandlers(mockService)
+
+			body := fmt.Sprintf(`{
+				"title": "%s",
+				"start_time": "2026-06-15T14:00:00-07:00",
+				"timezone": "America/Los_Angeles",
+				"max_plus_ones": 0
+			}`, tt.title)
+
+			req := httptest.NewRequest("POST", "/api/events", strings.NewReader(body))
+			req.Header.Set("Content-Type", "application/json")
+
+			ctx := auth.WithUser(req.Context(), &models.User{
+				ID:   1,
+				Role: models.RoleEventManager,
+			})
+			req = req.WithContext(ctx)
+
+			w := httptest.NewRecorder()
+			handlers.CreateEvent(w, req)
+
+			if w.Code != tt.wantStatus {
+				t.Errorf("Status = %d, want %d, body: %s", w.Code, tt.wantStatus, w.Body.String())
+			}
+
+			if tt.wantBody != "" && !strings.Contains(w.Body.String(), tt.wantBody) {
+				t.Errorf("Body = %q, want to contain %q", w.Body.String(), tt.wantBody)
+			}
+		})
+	}
+}
+
+func TestEventHandlers_CreateEvent_MaxPlusOnesBoundaries(t *testing.T) {
+	tests := []struct {
+		name        string
+		maxPlusOnes int
+		wantStatus  int
+		wantBody    string
+	}{
+		{
+			name:        "max_plus_ones exactly -1",
+			maxPlusOnes: -1,
+			wantStatus:  http.StatusBadRequest,
+			wantBody:    "max_plus_ones must be between 0 and 10",
+		},
+		{
+			name:        "max_plus_ones exactly 0",
+			maxPlusOnes: 0,
+			wantStatus:  http.StatusCreated,
+		},
+		{
+			name:        "max_plus_ones exactly 10",
+			maxPlusOnes: 10,
+			wantStatus:  http.StatusCreated,
+		},
+		{
+			name:        "max_plus_ones exactly 11",
+			maxPlusOnes: 11,
+			wantStatus:  http.StatusBadRequest,
+			wantBody:    "max_plus_ones must be between 0 and 10",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mockService := &mockEventService{}
+			mockService.CreateEventFunc = func(ctx context.Context, e *models.Event) error {
+				e.ID = 1
+				e.CreatedAt = time.Now()
+				e.UpdatedAt = time.Now()
+				return nil
+			}
+
+			handlers := NewEventHandlers(mockService)
+
+			body := fmt.Sprintf(`{
+				"title": "Test Event",
+				"start_time": "2026-06-15T14:00:00-07:00",
+				"timezone": "America/Los_Angeles",
+				"max_plus_ones": %d
+			}`, tt.maxPlusOnes)
+
+			req := httptest.NewRequest("POST", "/api/events", strings.NewReader(body))
+			req.Header.Set("Content-Type", "application/json")
+
+			ctx := auth.WithUser(req.Context(), &models.User{
+				ID:   1,
+				Role: models.RoleEventManager,
+			})
+			req = req.WithContext(ctx)
+
+			w := httptest.NewRecorder()
+			handlers.CreateEvent(w, req)
+
+			if w.Code != tt.wantStatus {
+				t.Errorf("Status = %d, want %d, body: %s", w.Code, tt.wantStatus, w.Body.String())
+			}
+
+			if tt.wantBody != "" && !strings.Contains(w.Body.String(), tt.wantBody) {
+				t.Errorf("Body = %q, want to contain %q", w.Body.String(), tt.wantBody)
+			}
+		})
+	}
+}
+
+func TestEventHandlers_ListEvents_LimitOffsetBoundaries(t *testing.T) {
+	tests := []struct {
+		name       string
+		query      string
+		wantStatus int
+		wantBody   string
+	}{
+		{
+			name:       "limit exactly 0",
+			query:      "?limit=0",
+			wantStatus: http.StatusBadRequest,
+			wantBody:   "invalid limit",
+		},
+		{
+			name:       "limit exactly 1",
+			query:      "?limit=1",
+			wantStatus: http.StatusOK,
+		},
+		{
+			name:       "limit exactly 100",
+			query:      "?limit=100",
+			wantStatus: http.StatusOK,
+		},
+		{
+			name:       "limit exactly 101",
+			query:      "?limit=101",
+			wantStatus: http.StatusBadRequest,
+			wantBody:   "invalid limit",
+		},
+		{
+			name:       "limit exactly -1",
+			query:      "?limit=-1",
+			wantStatus: http.StatusBadRequest,
+			wantBody:   "invalid limit",
+		},
+		{
+			name:       "offset exactly -1",
+			query:      "?offset=-1",
+			wantStatus: http.StatusBadRequest,
+			wantBody:   "invalid offset",
+		},
+		{
+			name:       "offset exactly 0",
+			query:      "?offset=0",
+			wantStatus: http.StatusOK,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mockService := &mockEventService{}
+			mockService.ListEventsFunc = func(ctx context.Context, filters events.ListFilters) ([]*models.Event, error) {
+				return []*models.Event{}, nil
+			}
+
+			handlers := NewEventHandlers(mockService)
+
+			req := httptest.NewRequest("GET", "/api/events"+tt.query, nil)
+
+			ctx := auth.WithUser(req.Context(), &models.User{
+				ID:   1,
+				Role: models.RoleEventManager,
+			})
+			req = req.WithContext(ctx)
+
+			w := httptest.NewRecorder()
+			handlers.ListEvents(w, req)
+
+			if w.Code != tt.wantStatus {
+				t.Errorf("Status = %d, want %d, body: %s", w.Code, tt.wantStatus, w.Body.String())
+			}
+
+			if tt.wantBody != "" && !strings.Contains(w.Body.String(), tt.wantBody) {
+				t.Errorf("Body = %q, want to contain %q", w.Body.String(), tt.wantBody)
+			}
+		})
+	}
+}
+
+func TestEventHandlers_CancelEvent_ReasonBoundaries(t *testing.T) {
+	tests := []struct {
+		name       string
+		reason     string
+		wantStatus int
+		wantBody   string
+	}{
+		{
+			name:       "reason exactly 9 characters",
+			reason:     "123456789",
+			wantStatus: http.StatusBadRequest,
+			wantBody:   "reason must be between 10 and 500 characters",
+		},
+		{
+			name:       "reason exactly 10 characters",
+			reason:     "1234567890",
+			wantStatus: http.StatusOK,
+		},
+		{
+			name:       "reason exactly 500 characters",
+			reason:     strings.Repeat("A", 500),
+			wantStatus: http.StatusOK,
+		},
+		{
+			name:       "reason exactly 501 characters",
+			reason:     strings.Repeat("A", 501),
+			wantStatus: http.StatusBadRequest,
+			wantBody:   "reason must be between 10 and 500 characters",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mockService := &mockEventService{}
+			mockService.CancelEventFunc = func(ctx context.Context, id int64, reason string) error {
+				return nil
+			}
+
+			handlers := NewEventHandlers(mockService)
+
+			body := fmt.Sprintf(`{"reason": "%s"}`, tt.reason)
+
+			req := httptest.NewRequest("POST", "/api/events/1/cancel", strings.NewReader(body))
+			req.Header.Set("Content-Type", "application/json")
+
+			rctx := chi.NewRouteContext()
+			rctx.URLParams.Add("id", "1")
+			req = req.WithContext(context.WithValue(req.Context(), chi.RouteCtxKey, rctx))
+
+			ctx := auth.WithUser(req.Context(), &models.User{
+				ID:   1,
+				Role: models.RoleEventManager,
+			})
+			req = req.WithContext(ctx)
+
+			w := httptest.NewRecorder()
+			handlers.CancelEvent(w, req)
+
+			if w.Code != tt.wantStatus {
+				t.Errorf("Status = %d, want %d, body: %s", w.Code, tt.wantStatus, w.Body.String())
+			}
+
+			if tt.wantBody != "" && !strings.Contains(w.Body.String(), tt.wantBody) {
+				t.Errorf("Body = %q, want to contain %q", w.Body.String(), tt.wantBody)
 			}
 		})
 	}
