@@ -509,4 +509,3 @@ func (r *inviteRepository) DeleteExpired(ctx context.Context, before time.Time) 
 
 	return rowsAffected, nil
 }
-

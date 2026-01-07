@@ -452,7 +452,6 @@ func TestEventRepository_UpdateWithVersion_NonExistentEvent(t *testing.T) {
 	}
 }
 
-
 func TestEventRepository_Create_LastInsertIdError(t *testing.T) {
 	database := setupEventTestDB(t)
 	defer database.Close()
