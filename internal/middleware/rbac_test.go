@@ -581,3 +581,58 @@ func TestMiddlewareChaining_AuthSucceedsRoleFails(t *testing.T) {
 		t.Errorf("Expected status %d, got %d", http.StatusForbidden, w.Code)
 	}
 }
+
+func TestRequireAuth_RefreshSessionError(t *testing.T) {
+	mockSession := &models.Session{
+		ID:        "session123",
+		UserID:    1,
+		ExpiresAt: time.Now().Add(1 * time.Hour),
+	}
+
+	mockUser := &models.User{
+		ID:    1,
+		Email: "user@example.com",
+		Name:  "Test User",
+		Role:  models.RoleEventManager,
+	}
+
+	sessionMgr := &mockSessionManager{
+		getSessionFromRequestFunc: func(r *http.Request) (string, error) {
+			return "session123", nil
+		},
+		getSessionFunc: func(ctx context.Context, sessionID string) (*models.Session, error) {
+			return mockSession, nil
+		},
+		refreshSessionFunc: func(ctx context.Context, sessionID string) error {
+			return fmt.Errorf("database error")
+		},
+	}
+
+	userService := &mockUserService{
+		getUserByIDFunc: func(ctx context.Context, id int64) (*models.User, error) {
+			return mockUser, nil
+		},
+	}
+
+	handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		user, ok := auth.UserFromContext(r.Context())
+		if !ok {
+			t.Error("Expected user in context")
+		}
+		if user.ID != mockUser.ID {
+			t.Errorf("Expected user ID %d, got %d", mockUser.ID, user.ID)
+		}
+		w.WriteHeader(http.StatusOK)
+	})
+
+	middleware := RequireAuth(sessionMgr, userService)
+
+	w := httptest.NewRecorder()
+	r := httptest.NewRequest("GET", "/protected", nil)
+
+	middleware(handler).ServeHTTP(w, r)
+
+	if w.Code != http.StatusOK {
+		t.Errorf("Expected status %d, got %d (refresh failure should not block request)", http.StatusOK, w.Code)
+	}
+}

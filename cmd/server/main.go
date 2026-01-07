@@ -6,12 +6,16 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"strings"
 	"syscall"
 	"time"
 
+	"github.com/yourusername/tinyrsvp/internal/auth"
 	"github.com/yourusername/tinyrsvp/internal/config"
 	"github.com/yourusername/tinyrsvp/internal/db"
+	"github.com/yourusername/tinyrsvp/internal/db/repositories"
 	"github.com/yourusername/tinyrsvp/internal/handlers"
+	"github.com/yourusername/tinyrsvp/internal/middleware"
 )
 
 const appVersion = "0.1.0"
@@ -92,6 +96,14 @@ func main() {
 		"idle", stats.Idle,
 	)
 
+	userRepo := repositories.NewUserRepository(database)
+	sessionRepo := repositories.NewSessionRepository(database)
+
+	sessionMgr := auth.NewSessionManager(sessionRepo, false)
+	userService := auth.NewUserService(userRepo)
+
+	logger.Info("Initialized auth services")
+
 	mux := http.NewServeMux()
 
 	healthHandler := handlers.NewHealthHandler(appVersion)
@@ -101,6 +113,43 @@ func main() {
 	readinessHandler := handlers.NewReadinessHandler(appVersion, database, migrator)
 	mux.Handle("/ready", readinessHandler)
 	logger.Info("Registered readiness endpoint", "path", "/ready")
+
+	userHandler := handlers.NewUserHandler(userService)
+
+	requireAuth := middleware.RequireAuth(sessionMgr, userService)
+	requireAdmin := middleware.RequireAdmin
+
+	mux.Handle("/api/users", requireAuth(requireAdmin(http.HandlerFunc(userHandler.ListUsers))))
+	logger.Info("Registered user management endpoint", "path", "/api/users", "method", "GET", "protection", "admin")
+
+	mux.HandleFunc("/api/users/", func(w http.ResponseWriter, r *http.Request) {
+		path := strings.TrimPrefix(r.URL.Path, "/api/users/")
+		if path == "" {
+			http.NotFound(w, r)
+			return
+		}
+
+		parts := strings.Split(path, "/")
+		userID := parts[0]
+
+		switch r.Method {
+		case http.MethodGet:
+			requireAuth(requireAdmin(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				userHandler.GetUser(w, r, userID)
+			}))).ServeHTTP(w, r)
+		case http.MethodPatch:
+			requireAuth(requireAdmin(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				userHandler.UpdateUserRole(w, r, userID)
+			}))).ServeHTTP(w, r)
+		case http.MethodDelete:
+			requireAuth(requireAdmin(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				userHandler.DeleteUser(w, r, userID)
+			}))).ServeHTTP(w, r)
+		default:
+			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		}
+	})
+	logger.Info("Registered user management endpoints", "path", "/api/users/{id}", "methods", "GET,PATCH,DELETE", "protection", "admin")
 
 	addr := fmt.Sprintf("%s:%d", cfg.Server.Host, cfg.Server.Port)
 	server := &http.Server{
