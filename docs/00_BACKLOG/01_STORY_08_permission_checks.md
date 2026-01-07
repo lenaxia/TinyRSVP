@@ -339,7 +339,7 @@ func TestAuthorizationChecker_CanManageUsers(t *testing.T) {
 - [x] All scenarios tested
 - [x] Edge cases covered
 - [x] Documentation complete
-- [ ] Changes committed to git
+- [x] Changes committed to git
 
 ---
 
