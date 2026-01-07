@@ -2,8 +2,9 @@
 
 **Epic:** [02_EPIC_events.md](02_EPIC_events.md)
 **Priority:** Critical
-**Status:** Not Started
+**Status:** Complete
 **Estimated Effort:** 4 hours
+**Completed:** 2026-01-07
 
 ---
 
@@ -15,16 +16,16 @@ As a **developer**, I want **a complete Event model with validation logic** so t
 
 ## Acceptance Criteria
 
-- [ ] Event struct matches database schema
-- [ ] EventStatus enum with all lifecycle states defined
-- [ ] Event validation rules implemented
-- [ ] Timezone validation using IANA database
-- [ ] Title validation (3-200 characters)
-- [ ] Date validation (start before end, future dates)
-- [ ] RSVP deadline validation (before start time)
-- [ ] Max plus ones validation (0-10)
-- [ ] All validation tests pass with timeout
-- [ ] Validation error messages are clear and actionable
+- [x] Event struct matches database schema
+- [x] EventStatus enum with all lifecycle states defined
+- [x] Event validation rules implemented
+- [x] Timezone validation using IANA database
+- [x] Title validation (3-200 characters)
+- [x] Date validation (start before end, future dates)
+- [x] RSVP deadline validation (before start time)
+- [x] Max plus ones validation (0-10)
+- [x] All validation tests pass with timeout
+- [x] Validation error messages are clear and actionable
 
 ---
 
@@ -135,56 +136,56 @@ type TimezoneValidator interface {
 ## Tasks
 
 ### Phase 1: Timezone Validator (TDD)
-- [ ] Write test for valid IANA timezones
-- [ ] Write test for invalid timezones
-- [ ] Write test for GetLocation with valid timezone
-- [ ] Write test for GetLocation with invalid timezone
-- [ ] Implement TimezoneValidator using time.LoadLocation
-- [ ] Run tests (should pass)
+- [x] Write test for valid IANA timezones
+- [x] Write test for invalid timezones
+- [x] Write test for GetLocation with valid timezone
+- [x] Write test for GetLocation with invalid timezone
+- [x] Implement TimezoneValidator using time.LoadLocation
+- [x] Run tests (should pass)
 
 ### Phase 2: Event Validator - Create (TDD)
-- [ ] Write test for valid event creation
-- [ ] Write test for title too short
-- [ ] Write test for title too long
-- [ ] Write test for missing title
-- [ ] Write test for description too long
-- [ ] Write test for start time in past
-- [ ] Write test for end time before start time
-- [ ] Write test for end time more than 7 days after start
-- [ ] Write test for invalid timezone
-- [ ] Write test for RSVP deadline after start time
-- [ ] Write test for RSVP deadline in past
-- [ ] Write test for max plus ones negative
-- [ ] Write test for max plus ones over 10
-- [ ] Implement ValidateCreate method
-- [ ] Run tests (should pass)
+- [x] Write test for valid event creation
+- [x] Write test for title too short
+- [x] Write test for title too long
+- [x] Write test for missing title
+- [x] Write test for description too long
+- [x] Write test for start time in past
+- [x] Write test for end time before start time
+- [x] Write test for end time more than 7 days after start
+- [x] Write test for invalid timezone
+- [x] Write test for RSVP deadline after start time
+- [x] Write test for RSVP deadline in past
+- [x] Write test for max plus ones negative
+- [x] Write test for max plus ones over 10
+- [x] Implement ValidateCreate method
+- [x] Run tests (should pass)
 
 ### Phase 3: Event Validator - Update (TDD)
-- [ ] Write test for valid event update
-- [ ] Write test for updating published event dates
-- [ ] Write test for updating cancelled event
-- [ ] Write test for updating archived event
-- [ ] Write test for version mismatch
-- [ ] Implement ValidateUpdate method
-- [ ] Run tests (should pass)
+- [x] Write test for valid event update
+- [x] Write test for updating published event dates
+- [x] Write test for updating cancelled event
+- [x] Write test for updating archived event
+- [x] Write test for version mismatch
+- [x] Implement ValidateUpdate method
+- [x] Run tests (should pass)
 
 ### Phase 4: State Transition Validator (TDD)
-- [ ] Write test for draft → published
-- [ ] Write test for draft → cancelled
-- [ ] Write test for published → cancelled
-- [ ] Write test for published → archived
-- [ ] Write test for cancelled → archived
-- [ ] Write test for invalid transitions
-- [ ] Write test for archived → any (should fail)
-- [ ] Implement ValidateStateTransition method
-- [ ] Run tests (should pass)
+- [x] Write test for draft → published
+- [x] Write test for draft → cancelled
+- [x] Write test for published → cancelled
+- [x] Write test for published → archived
+- [x] Write test for cancelled → archived
+- [x] Write test for invalid transitions
+- [x] Write test for archived → any (should fail)
+- [x] Implement ValidateStateTransition method
+- [x] Run tests (should pass)
 
 ### Phase 5: Integration
-- [ ] Create validator constructor
-- [ ] Wire timezone validator into event validator
-- [ ] Add validation error types to models package
-- [ ] Document validation rules in README
-- [ ] Run all tests with timeout
+- [x] Create validator constructor
+- [x] Wire timezone validator into event validator
+- [x] Add validation error types to models package
+- [x] Document validation rules in README
+- [x] Run all tests with timeout
 
 ---
 
@@ -382,14 +383,14 @@ func TestEventValidator_ValidateStateTransition(t *testing.T) {
 
 ## Definition of Done
 
-- [ ] All acceptance criteria met
-- [ ] All tasks completed
-- [ ] All tests pass with timeout (`go test -timeout 30s ./internal/events/...`)
-- [ ] Test coverage >= 85%
-- [ ] Code formatted with `go fmt`
-- [ ] No errors from `go vet`
-- [ ] Validation rules documented
-- [ ] Changes committed to git
+- [x] All acceptance criteria met
+- [x] All tasks completed
+- [x] All tests pass with timeout (`go test -timeout 30s ./internal/events/...`)
+- [x] Test coverage >= 85%
+- [x] Code formatted with `go fmt`
+- [x] No errors from `go vet`
+- [x] Validation rules documented
+- [x] Changes committed to git
 
 ---
 
