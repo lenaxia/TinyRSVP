@@ -42,6 +42,18 @@ func (e *OptimisticLockError) Error() string {
 		e.Resource, e.ID, e.ExpectedVersion, e.ActualVersion)
 }
 
+type VersionConflictError struct {
+	ResourceType string
+	ResourceID   int64
+	Expected     int
+	Actual       int
+}
+
+func (e *VersionConflictError) Error() string {
+	return fmt.Sprintf("%s %d version conflict: expected %d, got %d",
+		e.ResourceType, e.ResourceID, e.Expected, e.Actual)
+}
+
 type PermissionDeniedError struct {
 	Action   string
 	Resource string

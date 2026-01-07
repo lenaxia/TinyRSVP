@@ -2,8 +2,9 @@
 
 **Epic:** [02_EPIC_events.md](02_EPIC_events.md)
 **Priority:** High
-**Status:** Not Started
+**Status:** Complete
 **Estimated Effort:** 6 hours
+**Completed:** 2026-01-07
 
 ---
 
@@ -15,18 +16,18 @@ As an **event manager**, I want **HTTP endpoints for event operations** so that 
 
 ## Acceptance Criteria
 
-- [ ] POST /api/events - Create event
-- [ ] GET /api/events/:id - Get event by ID
-- [ ] PUT /api/events/:id - Update event
-- [ ] DELETE /api/events/:id - Delete event
-- [ ] GET /api/events - List events with filters
-- [ ] POST /api/events/:id/publish - Publish event
-- [ ] POST /api/events/:id/cancel - Cancel event
-- [ ] All endpoints require authentication
-- [ ] All endpoints enforce permissions
-- [ ] Request validation working
-- [ ] Error responses are consistent
-- [ ] All tests pass with timeout
+- [x] POST /api/events - Create event
+- [x] GET /api/events/:id - Get event by ID
+- [x] PUT /api/events/:id - Update event
+- [x] DELETE /api/events/:id - Delete event
+- [x] GET /api/events - List events with filters
+- [x] POST /api/events/:id/publish - Publish event
+- [x] POST /api/events/:id/cancel - Cancel event
+- [x] All endpoints require authentication
+- [x] All endpoints enforce permissions
+- [x] Request validation working
+- [x] Error responses are consistent
+- [x] All tests pass with timeout
 
 ---
 
@@ -133,73 +134,73 @@ func (h *EventHandlers) RegisterRoutes(r chi.Router) {
 ## Tasks
 
 ### Phase 1: Handler Setup (TDD)
-- [ ] Write test for handler constructor
-- [ ] Write test for route registration
-- [ ] Implement NewEventHandlers
-- [ ] Implement RegisterRoutes
-- [ ] Run tests (should pass)
+- [x] Write test for handler constructor
+- [x] Write test for route registration
+- [x] Implement NewEventHandlers
+- [x] Implement RegisterRoutes
+- [x] Run tests (should pass)
 
 ### Phase 2: Create Event Handler (TDD)
-- [ ] Write test for valid create request
-- [ ] Write test for invalid JSON
-- [ ] Write test for validation errors
-- [ ] Write test for missing required fields
-- [ ] Write test for unauthorized user
-- [ ] Write test for service error
-- [ ] Implement CreateEvent handler
-- [ ] Run tests (should pass)
+- [x] Write test for valid create request
+- [x] Write test for invalid JSON
+- [x] Write test for validation errors
+- [x] Write test for missing required fields
+- [x] Write test for unauthorized user
+- [x] Write test for service error
+- [x] Implement CreateEvent handler
+- [x] Run tests (should pass)
 
 ### Phase 3: Get Event Handler (TDD)
-- [ ] Write test for getting existing event
-- [ ] Write test for invalid event ID
-- [ ] Write test for non-existent event
-- [ ] Write test for unauthorized access
-- [ ] Implement GetEvent handler
-- [ ] Run tests (should pass)
+- [x] Write test for getting existing event
+- [x] Write test for invalid event ID
+- [x] Write test for non-existent event
+- [x] Write test for unauthorized access
+- [x] Implement GetEvent handler
+- [x] Run tests (should pass)
 
 ### Phase 4: Update Event Handler (TDD)
-- [ ] Write test for valid update
-- [ ] Write test for partial update
-- [ ] Write test for invalid JSON
-- [ ] Write test for validation errors
-- [ ] Write test for version conflict
-- [ ] Write test for unauthorized update
-- [ ] Implement UpdateEvent handler
-- [ ] Run tests (should pass)
+- [x] Write test for valid update
+- [x] Write test for partial update
+- [x] Write test for invalid JSON
+- [x] Write test for validation errors
+- [x] Write test for version conflict
+- [x] Write test for unauthorized update
+- [x] Implement UpdateEvent handler
+- [x] Run tests (should pass)
 
 ### Phase 5: List Events Handler (TDD)
-- [ ] Write test for listing all events
-- [ ] Write test for filtering by status
-- [ ] Write test for filtering by creator
-- [ ] Write test for pagination
-- [ ] Write test for invalid query params
-- [ ] Implement ListEvents handler
-- [ ] Run tests (should pass)
+- [x] Write test for listing all events
+- [x] Write test for filtering by status
+- [x] Write test for filtering by creator
+- [x] Write test for pagination
+- [x] Write test for invalid query params
+- [x] Implement ListEvents handler
+- [x] Run tests (should pass)
 
 ### Phase 6: Delete Event Handler (TDD)
-- [ ] Write test for deleting own event
-- [ ] Write test for deleting as admin
-- [ ] Write test for unauthorized delete
-- [ ] Write test for non-existent event
-- [ ] Implement DeleteEvent handler
-- [ ] Run tests (should pass)
+- [x] Write test for deleting own event
+- [x] Write test for deleting as admin
+- [x] Write test for unauthorized delete
+- [x] Write test for non-existent event
+- [x] Implement DeleteEvent handler
+- [x] Run tests (should pass)
 
 ### Phase 7: Lifecycle Handlers (TDD)
-- [ ] Write test for publishing draft event
-- [ ] Write test for publishing invalid state
-- [ ] Write test for unauthorized publish
-- [ ] Write test for cancelling with reason
-- [ ] Write test for cancelling invalid state
-- [ ] Write test for unauthorized cancel
-- [ ] Implement PublishEvent handler
-- [ ] Implement CancelEvent handler
-- [ ] Run tests (should pass)
+- [x] Write test for publishing draft event
+- [x] Write test for publishing invalid state
+- [x] Write test for unauthorized publish
+- [x] Write test for cancelling with reason
+- [x] Write test for cancelling invalid state
+- [x] Write test for unauthorized cancel
+- [x] Implement PublishEvent handler
+- [x] Implement CancelEvent handler
+- [x] Run tests (should pass)
 
 ### Phase 8: Integration Tests
-- [ ] Write integration test for full CRUD flow
-- [ ] Write integration test for lifecycle transitions
-- [ ] Write integration test for permission enforcement
-- [ ] Run integration tests
+- [x] Write integration test for full CRUD flow
+- [x] Write integration test for lifecycle transitions
+- [x] Write integration test for permission enforcement
+- [x] Run integration tests
 
 ---
 
@@ -507,14 +508,14 @@ func TestEventHandlers_PublishEvent(t *testing.T) {
 
 ## Definition of Done
 
-- [ ] All acceptance criteria met
-- [ ] All tasks completed
-- [ ] All tests pass with timeout (`go test -timeout 30s ./internal/handlers/...`)
-- [ ] Test coverage >= 85%
-- [ ] Code formatted with `go fmt`
-- [ ] No errors from `go vet`
-- [ ] API documentation complete
-- [ ] Error responses consistent
+- [x] All acceptance criteria met
+- [x] All tasks completed
+- [x] All tests pass with timeout (`go test -timeout 30s ./internal/handlers/...`)
+- [x] Test coverage >= 85% (achieved 90.4%)
+- [x] Code formatted with `go fmt`
+- [x] No errors from `go vet`
+- [x] API documentation complete
+- [x] Error responses consistent
 - [ ] Changes committed to git
 
 ---
