@@ -401,17 +401,17 @@ func TestUserService_UpdateUser(t *testing.T) {
 }
 
 type MockUserRepository struct {
-	CreateFunc                  func(ctx context.Context, user *models.User) error
+	CreateFunc                   func(ctx context.Context, user *models.User) error
 	CreateWithBootstrapCheckFunc func(ctx context.Context, user *models.User) (bool, error)
-	GetByIDFunc                 func(ctx context.Context, id int64) (*models.User, error)
-	GetByEmailFunc              func(ctx context.Context, email string) (*models.User, error)
-	GetByOIDCSubjectFunc        func(ctx context.Context, subject string) (*models.User, error)
-	UpdateFunc                  func(ctx context.Context, user *models.User) error
-	DeleteFunc                  func(ctx context.Context, id int64) error
-	ListFunc                    func(ctx context.Context, limit, offset int) ([]*models.User, error)
-	CountFunc                   func(ctx context.Context) (int, error)
-	IsFirstUserFunc             func(ctx context.Context) (bool, error)
-	UpdateLastLoginFunc         func(ctx context.Context, userID int64) error
+	GetByIDFunc                  func(ctx context.Context, id int64) (*models.User, error)
+	GetByEmailFunc               func(ctx context.Context, email string) (*models.User, error)
+	GetByOIDCSubjectFunc         func(ctx context.Context, subject string) (*models.User, error)
+	UpdateFunc                   func(ctx context.Context, user *models.User) error
+	DeleteFunc                   func(ctx context.Context, id int64) error
+	ListFunc                     func(ctx context.Context, limit, offset int) ([]*models.User, error)
+	CountFunc                    func(ctx context.Context) (int, error)
+	IsFirstUserFunc              func(ctx context.Context) (bool, error)
+	UpdateLastLoginFunc          func(ctx context.Context, userID int64) error
 }
 
 func (m *MockUserRepository) Create(ctx context.Context, user *models.User) error {
