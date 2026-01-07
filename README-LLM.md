@@ -144,10 +144,11 @@ func parseConfig(data []byte) (*Config, error) {
 
 ### 7. Code Quality
 
-- No comments unless ABSOLUTELY necessary
-- Comments get outdated and mislead LLMs
-- Remove existing comments when encountered
+- No comments unless its necessary and makes sense
+- If you are going to leave comments make sure they are timeless in that they will not be out dated
+- Comments get outdated and mislead LLMs 
 - Code should be self-documenting through clear naming
+- If you do see comments that are incorrect, either remove them or update them
 
 ### 8. Technical Debt
 

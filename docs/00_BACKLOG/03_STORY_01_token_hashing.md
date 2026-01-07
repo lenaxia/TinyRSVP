@@ -1,8 +1,8 @@
 # User Story: Token Hashing
 
-**Epic:** [03_EPIC_invites.md](03_EPIC_invites.md)  
-**Priority:** High  
-**Status:** Not Started  
+**Epic:** [03_EPIC_invites.md](03_EPIC_invites.md)
+**Priority:** High
+**Status:** Complete
 **Estimated Effort:** Included in Story 00
 
 ---
@@ -23,14 +23,14 @@ As a **system developer**, I want **HMAC-SHA256 token hashing** so that **tokens
 
 ## Acceptance Criteria
 
-- [ ] Tokens hashed using HMAC-SHA256 with secret key
-- [ ] Hash output is base64-URL encoded (44 characters)
-- [ ] Same token + secret produces same hash (deterministic)
-- [ ] Different tokens produce different hashes
-- [ ] Different secrets produce different hashes for same token
-- [ ] Hash cannot be reversed to obtain original token
-- [ ] Hash function is constant-time safe
-- [ ] Secret key never logged or exposed
+- [x] Tokens hashed using HMAC-SHA256 with secret key
+- [x] Hash output is base64-URL encoded (43 characters)
+- [x] Same token + secret produces same hash (deterministic)
+- [x] Different tokens produce different hashes
+- [x] Different secrets produce different hashes for same token
+- [x] Hash cannot be reversed to obtain original token
+- [x] Hash function is constant-time safe
+- [x] Secret key never logged or exposed
 
 ---
 
@@ -52,7 +52,7 @@ func (g *generator) Hash(token string) (string, error) {
 ### Hash Properties
 
 - **Input:** 43-character token string
-- **Output:** 44-character base64-URL encoded hash
+- **Output:** 43-character base64-URL encoded hash
 - **Algorithm:** HMAC-SHA256
 - **Key:** Secret key from config (minimum 32 bytes)
 
@@ -174,7 +174,7 @@ CREATE TABLE invites (
 );
 ```
 
-Hash format: `"a3F8kL9mN2pQ5rT7vW0xY4zA6bC8dE1fG3hJ5kL7mN9pQ=="` (44 chars)
+Hash format: `"a3F8kL9mN2pQ5rT7vW0xY4zA6bC8dE1fG3hJ5kL7mN9pQ"` (43 chars)
 
 ---
 
@@ -191,6 +191,6 @@ Hash format: `"a3F8kL9mN2pQ5rT7vW0xY4zA6bC8dE1fG3hJ5kL7mN9pQ=="` (44 chars)
 ## Definition of Done
 
 - [x] Implemented as part of Story 00
-- [ ] All tests passing (covered in Story 00)
-- [ ] Security review passed
-- [ ] Documentation complete
+- [x] All tests passing (covered in Story 00)
+- [x] Security review passed
+- [x] Documentation complete

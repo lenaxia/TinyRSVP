@@ -173,7 +173,7 @@ func BenchmarkGenerator_Hash(b *testing.B)
 
 - Token length: exactly 43 characters
 - Token format: `[A-Za-z0-9_-]{43}`
-- Hash length: 44 characters (base64-URL encoded SHA256)
+- Hash length: 43 characters (base64-URL encoded SHA256 without padding)
 - Secret key: minimum 32 bytes recommended
 
 ---
