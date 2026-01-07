@@ -128,10 +128,7 @@ func parseConfig(data []byte) (*Config, error) {
 - Only add concurrency when there's clear benefit
 - Always consider synchronization and race conditions
 
-### 5. Functional Parity
 
-- Always ensure functional parity with Perl implementation (if applicable)
-- Document any deviations with justification
 
 ### 6. Communication Tone
 
