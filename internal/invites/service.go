@@ -25,8 +25,21 @@ type ImportError struct {
 	Message string
 }
 
+type CreateManualInviteRequest struct {
+	EventID     int64
+	Name        *string
+	MaxPlusOnes *int
+}
+
+type CreateManualInviteResponse struct {
+	Invite  *models.Invite
+	Token   string
+	RSVPURL string
+}
+
 type InviteService interface {
 	CreateInvite(ctx context.Context, eventID int64, name *string, email *string, maxPlusOnes int, expiresAt time.Time) (*models.Invite, string, error)
+	CreateManualInvite(ctx context.Context, req *CreateManualInviteRequest, expiresAt time.Time) (*CreateManualInviteResponse, error)
 	GetInviteByToken(ctx context.Context, token string) (*models.Invite, error)
 	GetInviteByID(ctx context.Context, id int64) (*models.Invite, error)
 	RevokeInvite(ctx context.Context, id int64) error
@@ -76,6 +89,26 @@ func (s *inviteService) CreateInvite(ctx context.Context, eventID int64, name *s
 	}
 
 	return invite, plainToken, nil
+}
+
+func (s *inviteService) CreateManualInvite(ctx context.Context, req *CreateManualInviteRequest, expiresAt time.Time) (*CreateManualInviteResponse, error) {
+	maxPlusOnes := 0
+	if req.MaxPlusOnes != nil {
+		maxPlusOnes = *req.MaxPlusOnes
+	}
+
+	invite, plainToken, err := s.CreateInvite(ctx, req.EventID, req.Name, nil, maxPlusOnes, expiresAt)
+	if err != nil {
+		return nil, err
+	}
+
+	rsvpURL := fmt.Sprintf("/rsvp/%s", plainToken)
+
+	return &CreateManualInviteResponse{
+		Invite:  invite,
+		Token:   plainToken,
+		RSVPURL: rsvpURL,
+	}, nil
 }
 
 func (s *inviteService) GetInviteByToken(ctx context.Context, plainToken string) (*models.Invite, error) {

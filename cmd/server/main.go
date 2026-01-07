@@ -229,11 +229,15 @@ func main() {
 	importInviteHandlers := handlers.NewImportInviteHandlers(inviteService, eventRepo, cfg.Server.BaseURL)
 	importInviteHandlers.RegisterRoutes(chiRouter)
 
+	manualInviteHandlers := handlers.NewManualInviteHandlers(inviteService, eventRepo, cfg.Server.BaseURL)
+	manualInviteHandlers.RegisterRoutes(chiRouter)
+
 	mux.Handle("/api/events", chiRouter)
 	mux.Handle("/api/events/", chiRouter)
 	logger.Info("Registered event management endpoints", "path", "/api/events", "protection", "authenticated")
 	logger.Info("Registered invite management endpoints", "path", "/api/events/{eventId}/invites", "protection", "authenticated")
 	logger.Info("Registered import invite endpoints", "path", "/api/events/{eventId}/invites/import", "protection", "authenticated")
+	logger.Info("Registered manual invite endpoints", "path", "/api/events/{eventId}/invites/manual", "protection", "authenticated")
 
 	addr := fmt.Sprintf("%s:%d", cfg.Server.Host, cfg.Server.Port)
 	server := &http.Server{

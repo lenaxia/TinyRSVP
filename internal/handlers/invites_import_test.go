@@ -20,11 +20,19 @@ import (
 )
 
 type mockImportService struct {
-	importCSVFunc func(ctx context.Context, eventID int64, csvData []byte, defaultMaxPlusOnes int, expiresAt time.Time) (*invites.ImportResult, error)
+	importCSVFunc          func(ctx context.Context, eventID int64, csvData []byte, defaultMaxPlusOnes int, expiresAt time.Time) (*invites.ImportResult, error)
+	createManualInviteFunc func(ctx context.Context, req *invites.CreateManualInviteRequest, expiresAt time.Time) (*invites.CreateManualInviteResponse, error)
 }
 
 func (m *mockImportService) CreateInvite(ctx context.Context, eventID int64, name *string, email *string, maxPlusOnes int, expiresAt time.Time) (*models.Invite, string, error) {
 	return nil, "", nil
+}
+
+func (m *mockImportService) CreateManualInvite(ctx context.Context, req *invites.CreateManualInviteRequest, expiresAt time.Time) (*invites.CreateManualInviteResponse, error) {
+	if m.createManualInviteFunc != nil {
+		return m.createManualInviteFunc(ctx, req, expiresAt)
+	}
+	return nil, nil
 }
 
 func (m *mockImportService) GetInviteByToken(ctx context.Context, token string) (*models.Invite, error) {

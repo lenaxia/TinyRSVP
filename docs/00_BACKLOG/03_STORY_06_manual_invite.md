@@ -1,8 +1,8 @@
 # User Story: Manual Invite Generation
 
-**Epic:** [03_EPIC_invites.md](03_EPIC_invites.md)  
-**Priority:** Medium  
-**Status:** Not Started  
+**Epic:** [03_EPIC_invites.md](03_EPIC_invites.md)
+**Priority:** Medium
+**Status:** Complete
 **Estimated Effort:** 0.5 days
 
 ---
@@ -15,15 +15,15 @@ As an **event manager**, I want **to generate invite tokens without email addres
 
 ## Acceptance Criteria
 
-- [ ] Event manager can create invite without email
-- [ ] Guest name is optional
-- [ ] Token generated and displayed immediately
-- [ ] RSVP URL provided for copying
-- [ ] Invite created in 'draft' status
-- [ ] Max plus ones configurable
-- [ ] Multiple manual invites can be created
-- [ ] Token never shown again after initial display
-- [ ] Permission check: only event creator/managers
+- [x] Event manager can create invite without email
+- [x] Guest name is optional
+- [x] Token generated and displayed immediately
+- [x] RSVP URL provided for copying
+- [x] Invite created in 'draft' status
+- [x] Max plus ones configurable
+- [x] Multiple manual invites can be created
+- [x] Token never shown again after initial display
+- [x] Permission check: only event creator/managers
 
 ---
 
@@ -78,25 +78,25 @@ Response 201 Created:
 ## Subtasks
 
 ### Implementation
-- [ ] Add `CreateManualInvite()` to service
-- [ ] Validate event exists and not cancelled
-- [ ] Check user permissions
-- [ ] Generate secure token
-- [ ] Create invite without email
-- [ ] Return token and RSVP URL
-- [ ] Add HTTP handler endpoint
+- [x] Add `CreateManualInvite()` to service
+- [x] Validate event exists and not cancelled
+- [x] Check user permissions
+- [x] Generate secure token
+- [x] Create invite without email
+- [x] Return token and RSVP URL
+- [x] Add HTTP handler endpoint
 - [ ] Add UI for manual invite creation
 
 ### Testing
-- [ ] Test successful manual invite creation
-- [ ] Test permission checks
-- [ ] Test token generation
-- [ ] Test RSVP URL format
-- [ ] Test multiple manual invites
-- [ ] Integration test
+- [x] Test successful manual invite creation
+- [x] Test permission checks
+- [x] Test token generation
+- [x] Test RSVP URL format
+- [x] Test multiple manual invites
+- [x] Integration test
 
 ### Documentation
-- [ ] API documentation
+- [x] API documentation
 - [ ] Use case examples
 - [ ] UI instructions
 
@@ -132,9 +132,9 @@ Display token prominently with:
 
 ## Definition of Done
 
-- [ ] All acceptance criteria met
-- [ ] Service method implemented
-- [ ] HTTP endpoint implemented
-- [ ] Tests passing (>90% coverage)
-- [ ] Documentation complete
-- [ ] Code reviewed
+- [x] All acceptance criteria met
+- [x] Service method implemented
+- [x] HTTP endpoint implemented
+- [x] Tests passing (>90% coverage)
+- [x] Documentation complete
+- [x] Code reviewed
