@@ -32,24 +32,24 @@ Implement complete event lifecycle management including creation, editing, publi
 ## User Stories
 
 ### Phase 1: Core Event Model
-- [ ] [`02_STORY_event_model.md`](02_STORY_event_model.md) - Event struct and validation
-- [ ] [`02_STORY_event_repository.md`](02_STORY_event_repository.md) - Event persistence layer
-- [ ] [`02_STORY_timezone_handling.md`](02_STORY_timezone_handling.md) - IANA timezone support
+- [ ] [`02_STORY_00_event_model.md`](02_STORY_event_model.md) - Event struct and validation
+- [ ] [`02_STORY_01_event_repository.md`](02_STORY_event_repository.md) - Event persistence layer
+- [ ] [`02_STORY_02_timezone_handling.md`](02_STORY_timezone_handling.md) - IANA timezone support
 
 ### Phase 2: Event CRUD
-- [ ] [`02_STORY_event_creation.md`](02_STORY_event_creation.md) - Create event endpoint
-- [ ] [`02_STORY_event_editing.md`](02_STORY_event_editing.md) - Update event with optimistic locking
-- [ ] [`02_STORY_event_listing.md`](02_STORY_event_listing.md) - List and filter events
-- [ ] [`02_STORY_event_deletion.md`](02_STORY_event_deletion.md) - Soft delete (archive)
+- [ ] [`02_STORY_03_event_creation.md`](02_STORY_event_creation.md) - Create event endpoint
+- [ ] [`02_STORY_04_event_editing.md`](02_STORY_event_editing.md) - Update event with optimistic locking
+- [ ] [`02_STORY_05_event_listing.md`](02_STORY_event_listing.md) - List and filter events
+- [ ] [`02_STORY_06_event_deletion.md`](02_STORY_event_deletion.md) - Soft delete (archive)
 
 ### Phase 3: Event Lifecycle
-- [ ] [`02_STORY_event_publishing.md`](02_STORY_event_publishing.md) - Publish draft events
-- [ ] [`02_STORY_event_cancellation.md`](02_STORY_event_cancellation.md) - Cancel published events
-- [ ] [`02_STORY_event_archiving.md`](02_STORY_event_archiving.md) - Auto-archive old events
+- [ ] [`02_STORY_07_event_publishing.md`](02_STORY_event_publishing.md) - Publish draft events
+- [ ] [`02_STORY_08_event_cancellation.md`](02_STORY_event_cancellation.md) - Cancel published events
+- [ ] [`02_STORY_09_event_archiving.md`](02_STORY_event_archiving.md) - Auto-archive old events
 
 ### Phase 4: Preference Questions
-- [ ] [`02_STORY_preference_questions.md`](02_STORY_preference_questions.md) - Question CRUD operations
-- [ ] [`02_STORY_question_validation.md`](02_STORY_question_validation.md) - Question type validation
+- [ ] [`02_STORY_10_preference_questions.md`](02_STORY_preference_questions.md) - Question CRUD operations
+- [ ] [`02_STORY_11_question_validation.md`](02_STORY_question_validation.md) - Question type validation
 
 ---
 

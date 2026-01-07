@@ -32,24 +32,24 @@ Implement secure token-based guest access system. Support individual invites, bu
 ## User Stories
 
 ### Phase 1: Token Infrastructure
-- [ ] [`03_STORY_token_generation.md`](03_STORY_token_generation.md) - Cryptographically secure token generation
-- [ ] [`03_STORY_token_hashing.md`](03_STORY_token_hashing.md) - HMAC-SHA256 hashing implementation
-- [ ] [`03_STORY_token_validation.md`](03_STORY_token_validation.md) - Constant-time token validation
+- [ ] [`03_STORY_00_token_generation.md`](03_STORY_token_generation.md) - Cryptographically secure token generation
+- [ ] [`03_STORY_01_token_hashing.md`](03_STORY_token_hashing.md) - HMAC-SHA256 hashing implementation
+- [ ] [`03_STORY_02_token_validation.md`](03_STORY_token_validation.md) - Constant-time token validation
 
 ### Phase 2: Invite Management
-- [ ] [`03_STORY_invite_model.md`](03_STORY_invite_model.md) - Invite struct and repository
-- [ ] [`03_STORY_individual_invite.md`](03_STORY_individual_invite.md) - Create single invite
-- [ ] [`03_STORY_bulk_csv_import.md`](03_STORY_bulk_csv_import.md) - CSV import with validation
-- [ ] [`03_STORY_manual_invite.md`](03_STORY_manual_invite.md) - Generate invite without email
+- [ ] [`03_STORY_03_invite_model.md`](03_STORY_invite_model.md) - Invite struct and repository
+- [ ] [`03_STORY_04_individual_invite.md`](03_STORY_individual_invite.md) - Create single invite
+- [ ] [`03_STORY_05_bulk_csv_import.md`](03_STORY_bulk_csv_import.md) - CSV import with validation
+- [ ] [`03_STORY_06_manual_invite.md`](03_STORY_manual_invite.md) - Generate invite without email
 
 ### Phase 3: Token Lifecycle
-- [ ] [`03_STORY_token_expiration.md`](03_STORY_token_expiration.md) - Token expiration and cleanup
-- [ ] [`03_STORY_token_revocation.md`](03_STORY_token_revocation.md) - Revoke compromised tokens
-- [ ] [`03_STORY_token_regeneration.md`](03_STORY_token_regeneration.md) - Regenerate tokens
+- [ ] [`03_STORY_07_token_expiration.md`](03_STORY_token_expiration.md) - Token expiration and cleanup
+- [ ] [`03_STORY_08_token_revocation.md`](03_STORY_token_revocation.md) - Revoke compromised tokens
+- [ ] [`03_STORY_09_token_regeneration.md`](03_STORY_token_regeneration.md) - Regenerate tokens
 
 ### Phase 4: Invite Status
-- [ ] [`03_STORY_invite_tracking.md`](03_STORY_invite_tracking.md) - Track invite status transitions
-- [ ] [`03_STORY_invite_listing.md`](03_STORY_invite_listing.md) - List and filter invites
+- [ ] [`03_STORY_10_invite_tracking.md`](03_STORY_invite_tracking.md) - Track invite status transitions
+- [ ] [`03_STORY_11_invite_listing.md`](03_STORY_invite_listing.md) - List and filter invites
 
 ---
 

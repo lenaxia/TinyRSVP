@@ -31,38 +31,38 @@ Implement mobile-first, responsive frontend using plain CSS and vanilla JavaScri
 ## User Stories
 
 ### Phase 1: Design System
-- [ ] [`07_STORY_css_variables.md`](07_STORY_css_variables.md) - CSS custom properties for theming
-- [ ] [`07_STORY_typography.md`](07_STORY_typography.md) - Font system and hierarchy
-- [ ] [`07_STORY_color_system.md`](07_STORY_color_system.md) - Color palette and contrast
-- [ ] [`07_STORY_spacing_system.md`](07_STORY_spacing_system.md) - Consistent spacing scale
+- [ ] [`07_STORY_00_css_variables.md`](07_STORY_css_variables.md) - CSS custom properties for theming
+- [ ] [`07_STORY_01_typography.md`](07_STORY_typography.md) - Font system and hierarchy
+- [ ] [`07_STORY_02_color_system.md`](07_STORY_color_system.md) - Color palette and contrast
+- [ ] [`07_STORY_03_spacing_system.md`](07_STORY_spacing_system.md) - Consistent spacing scale
 
 ### Phase 2: Layout Components
-- [ ] [`07_STORY_responsive_grid.md`](07_STORY_responsive_grid.md) - CSS Grid layout system
-- [ ] [`07_STORY_navigation.md`](07_STORY_navigation.md) - Header and navigation
-- [ ] [`07_STORY_forms.md`](07_STORY_forms.md) - Form components and validation
-- [ ] [`07_STORY_buttons.md`](07_STORY_buttons.md) - Button styles and states
+- [ ] [`07_STORY_04_responsive_grid.md`](07_STORY_responsive_grid.md) - CSS Grid layout system
+- [ ] [`07_STORY_05_navigation.md`](07_STORY_navigation.md) - Header and navigation
+- [ ] [`07_STORY_06_forms.md`](07_STORY_forms.md) - Form components and validation
+- [ ] [`07_STORY_07_buttons.md`](07_STORY_buttons.md) - Button styles and states
 
 ### Phase 3: Admin UI
-- [ ] [`07_STORY_dashboard_ui.md`](07_STORY_dashboard_ui.md) - Admin dashboard layout
-- [ ] [`07_STORY_event_list_ui.md`](07_STORY_event_list_ui.md) - Event list with filters
-- [ ] [`07_STORY_event_form_ui.md`](07_STORY_event_form_ui.md) - Event creation/edit form
-- [ ] [`07_STORY_invite_list_ui.md`](07_STORY_invite_list_ui.md) - Invite management interface
-- [ ] [`07_STORY_rsvp_summary_ui.md`](07_STORY_rsvp_summary_ui.md) - RSVP tracking dashboard
+- [ ] [`07_STORY_08_dashboard_ui.md`](07_STORY_dashboard_ui.md) - Admin dashboard layout
+- [ ] [`07_STORY_09_event_list_ui.md`](07_STORY_event_list_ui.md) - Event list with filters
+- [ ] [`07_STORY_10_event_form_ui.md`](07_STORY_event_form_ui.md) - Event creation/edit form
+- [ ] [`07_STORY_11_invite_list_ui.md`](07_STORY_invite_list_ui.md) - Invite management interface
+- [ ] [`07_STORY_12_rsvp_summary_ui.md`](07_STORY_rsvp_summary_ui.md) - RSVP tracking dashboard
 
 ### Phase 4: Guest UI
-- [ ] [`07_STORY_rsvp_page_ui.md`](07_STORY_rsvp_page_ui.md) - Guest RSVP form
-- [ ] [`07_STORY_confirmation_ui.md`](07_STORY_confirmation_ui.md) - Post-RSVP confirmation
-- [ ] [`07_STORY_mobile_optimization.md`](07_STORY_mobile_optimization.md) - Mobile-specific optimizations
+- [ ] [`07_STORY_13_rsvp_page_ui.md`](07_STORY_rsvp_page_ui.md) - Guest RSVP form
+- [ ] [`07_STORY_14_confirmation_ui.md`](07_STORY_confirmation_ui.md) - Post-RSVP confirmation
+- [ ] [`07_STORY_15_mobile_optimization.md`](07_STORY_mobile_optimization.md) - Mobile-specific optimizations
 
 ### Phase 5: Interactivity
-- [ ] [`07_STORY_form_validation_js.md`](07_STORY_form_validation_js.md) - Client-side validation
-- [ ] [`07_STORY_loading_states.md`](07_STORY_loading_states.md) - Loading indicators
-- [ ] [`07_STORY_error_display.md`](07_STORY_error_display.md) - Error message display
+- [ ] [`07_STORY_16_form_validation_js.md`](07_STORY_form_validation_js.md) - Client-side validation
+- [ ] [`07_STORY_17_loading_states.md`](07_STORY_loading_states.md) - Loading indicators
+- [ ] [`07_STORY_18_error_display.md`](07_STORY_error_display.md) - Error message display
 
 ### Phase 6: Accessibility
-- [ ] [`07_STORY_keyboard_navigation.md`](07_STORY_keyboard_navigation.md) - Full keyboard support
-- [ ] [`07_STORY_screen_reader.md`](07_STORY_screen_reader.md) - ARIA labels and roles
-- [ ] [`07_STORY_focus_management.md`](07_STORY_focus_management.md) - Focus indicators
+- [ ] [`07_STORY_19_keyboard_navigation.md`](07_STORY_keyboard_navigation.md) - Full keyboard support
+- [ ] [`07_STORY_20_screen_reader.md`](07_STORY_screen_reader.md) - ARIA labels and roles
+- [ ] [`07_STORY_021_focus_management.md`](07_STORY_focus_management.md) - Focus indicators
 
 ---
 

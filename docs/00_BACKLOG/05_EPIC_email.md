@@ -32,30 +32,30 @@ Implement reliable email delivery system with queue management, retry logic, and
 ## User Stories
 
 ### Phase 1: SMTP Integration
-- [ ] [`05_STORY_smtp_configuration.md`](05_STORY_smtp_configuration.md) - SMTP config and validation
-- [ ] [`05_STORY_smtp_connection.md`](05_STORY_smtp_connection.md) - SMTP connection management
-- [ ] [`05_STORY_email_sending.md`](05_STORY_email_sending.md) - Basic email sending
+- [ ] [`05_STORY_00_smtp_configuration.md`](05_STORY_smtp_configuration.md) - SMTP config and validation
+- [ ] [`05_STORY_01_smtp_connection.md`](05_STORY_smtp_connection.md) - SMTP connection management
+- [ ] [`05_STORY_02_email_sending.md`](05_STORY_email_sending.md) - Basic email sending
 
 ### Phase 2: Email Queue
-- [ ] [`05_STORY_email_queue_model.md`](05_STORY_email_queue_model.md) - Queue table and repository
-- [ ] [`05_STORY_queue_processor.md`](05_STORY_queue_processor.md) - Background queue processor
-- [ ] [`05_STORY_retry_policy.md`](05_STORY_retry_policy.md) - Exponential backoff retry
+- [ ] [`05_STORY_03_email_queue_model.md`](05_STORY_email_queue_model.md) - Queue table and repository
+- [ ] [`05_STORY_04_queue_processor.md`](05_STORY_queue_processor.md) - Background queue processor
+- [ ] [`05_STORY_05_retry_policy.md`](05_STORY_retry_policy.md) - Exponential backoff retry
 
 ### Phase 3: Email Types
-- [ ] [`05_STORY_invite_email.md`](05_STORY_invite_email.md) - Invitation email template
-- [ ] [`05_STORY_confirmation_email.md`](05_STORY_confirmation_email.md) - RSVP confirmation email
-- [ ] [`05_STORY_update_email.md`](05_STORY_update_email.md) - Event update notification
-- [ ] [`05_STORY_cancellation_email.md`](05_STORY_cancellation_email.md) - Event cancellation email
+- [ ] [`05_STORY_06_invite_email.md`](05_STORY_invite_email.md) - Invitation email template
+- [ ] [`05_STORY_07_confirmation_email.md`](05_STORY_confirmation_email.md) - RSVP confirmation email
+- [ ] [`05_STORY_08_update_email.md`](05_STORY_update_email.md) - Event update notification
+- [ ] [`05_STORY_09_cancellation_email.md`](05_STORY_cancellation_email.md) - Event cancellation email
 
 ### Phase 4: Calendar Integration
-- [ ] [`05_STORY_ics_generation.md`](05_STORY_ics_generation.md) - ICS file generation (RFC 5545)
-- [ ] [`05_STORY_ics_updates.md`](05_STORY_ics_updates.md) - ICS updates with SEQUENCE
-- [ ] [`05_STORY_ics_cancellation.md`](05_STORY_ics_cancellation.md) - ICS cancellation
+- [ ] [`05_STORY_10_ics_generation.md`](05_STORY_ics_generation.md) - ICS file generation (RFC 5545)
+- [ ] [`05_STORY_11_ics_updates.md`](05_STORY_ics_updates.md) - ICS updates with SEQUENCE
+- [ ] [`05_STORY_12_ics_cancellation.md`](05_STORY_ics_cancellation.md) - ICS cancellation
 
 ### Phase 5: Reliability
-- [ ] [`05_STORY_rate_limiting.md`](05_STORY_rate_limiting.md) - Email rate limiting
-- [ ] [`05_STORY_bounce_handling.md`](05_STORY_bounce_handling.md) - Bounce detection
-- [ ] [`05_STORY_unsubscribe.md`](05_STORY_unsubscribe.md) - Unsubscribe mechanism
+- [ ] [`05_STORY_13_rate_limiting.md`](05_STORY_rate_limiting.md) - Email rate limiting
+- [ ] [`05_STORY_14_bounce_handling.md`](05_STORY_bounce_handling.md) - Bounce detection
+- [ ] [`05_STORY_15_unsubscribe.md`](05_STORY_unsubscribe.md) - Unsubscribe mechanism
 
 ---
 

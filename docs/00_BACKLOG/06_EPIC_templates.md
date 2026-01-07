@@ -32,26 +32,26 @@ Implement template system for customizable email and web page rendering. Support
 ## User Stories
 
 ### Phase 1: Template System
-- [ ] [`06_STORY_template_model.md`](06_STORY_template_model.md) - Template struct and repository
-- [ ] [`06_STORY_template_rendering.md`](06_STORY_template_rendering.md) - Go html/template integration
-- [ ] [`06_STORY_template_validation.md`](06_STORY_template_validation.md) - Template security validation
-- [ ] [`06_STORY_default_templates.md`](06_STORY_default_templates.md) - System default templates
+- [ ] [`06_STORY_00_template_model.md`](06_STORY_template_model.md) - Template struct and repository
+- [ ] [`06_STORY_01_template_rendering.md`](06_STORY_template_rendering.md) - Go html/template integration
+- [ ] [`06_STORY_02_template_validation.md`](06_STORY_template_validation.md) - Template security validation
+- [ ] [`06_STORY_03_default_templates.md`](06_STORY_default_templates.md) - System default templates
 
 ### Phase 2: Template Management
-- [ ] [`06_STORY_template_crud.md`](06_STORY_template_crud.md) - Create/edit/delete templates
-- [ ] [`06_STORY_template_variables.md`](06_STORY_template_variables.md) - Template variable system
-- [ ] [`06_STORY_template_preview.md`](06_STORY_template_preview.md) - Preview before saving
+- [ ] [`06_STORY_04_template_crud.md`](06_STORY_template_crud.md) - Create/edit/delete templates
+- [ ] [`06_STORY_05_template_variables.md`](06_STORY_template_variables.md) - Template variable system
+- [ ] [`06_STORY_06_template_preview.md`](06_STORY_template_preview.md) - Preview before saving
 
 ### Phase 3: Asset Management
-- [ ] [`06_STORY_image_upload.md`](06_STORY_image_upload.md) - Image upload with validation
-- [ ] [`06_STORY_storage_provider.md`](06_STORY_storage_provider.md) - Storage provider interface
-- [ ] [`06_STORY_local_storage.md`](06_STORY_local_storage.md) - Local filesystem implementation
-- [ ] [`06_STORY_asset_serving.md`](06_STORY_asset_serving.md) - Serve uploaded assets
+- [ ] [`06_STORY_07_image_upload.md`](06_STORY_image_upload.md) - Image upload with validation
+- [ ] [`06_STORY_08_storage_provider.md`](06_STORY_storage_provider.md) - Storage provider interface
+- [ ] [`06_STORY_09_local_storage.md`](06_STORY_local_storage.md) - Local filesystem implementation
+- [ ] [`06_STORY_10_asset_serving.md`](06_STORY_asset_serving.md) - Serve uploaded assets
 
 ### Phase 4: Security
-- [ ] [`06_STORY_xss_prevention.md`](06_STORY_xss_prevention.md) - XSS prevention in templates
-- [ ] [`06_STORY_css_sanitization.md`](06_STORY_css_sanitization.md) - CSS sanitization
-- [ ] [`06_STORY_file_validation.md`](06_STORY_file_validation.md) - File type validation
+- [ ] [`06_STORY_11_xss_prevention.md`](06_STORY_xss_prevention.md) - XSS prevention in templates
+- [ ] [`06_STORY_12_css_sanitization.md`](06_STORY_css_sanitization.md) - CSS sanitization
+- [ ] [`06_STORY_013_file_validation.md`](06_STORY_file_validation.md) - File type validation
 
 ---
 

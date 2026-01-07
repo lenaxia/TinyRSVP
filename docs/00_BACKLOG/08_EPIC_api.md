@@ -33,39 +33,39 @@ Implement complete HTTP API layer that orchestrates all domains. Includes routin
 ## User Stories
 
 ### Phase 1: HTTP Infrastructure
-- [ ] [`08_STORY_router_setup.md`](08_STORY_router_setup.md) - HTTP router configuration
-- [ ] [`08_STORY_middleware_chain.md`](08_STORY_middleware_chain.md) - Middleware ordering and composition
-- [ ] [`08_STORY_error_handling.md`](08_STORY_error_handling.md) - Error response formatting
+- [ ] [`08_STORY_00_router_setup.md`](08_STORY_router_setup.md) - HTTP router configuration
+- [ ] [`08_STORY_01_middleware_chain.md`](08_STORY_middleware_chain.md) - Middleware ordering and composition
+- [ ] [`08_STORY_02_error_handling.md`](08_STORY_error_handling.md) - Error response formatting
 
 ### Phase 2: Security Middleware
-- [ ] [`08_STORY_security_headers.md`](08_STORY_security_headers.md) - CSP, HSTS, X-Frame-Options
-- [ ] [`08_STORY_csrf_protection.md`](08_STORY_csrf_protection.md) - CSRF token generation and validation
-- [ ] [`08_STORY_rate_limiting.md`](08_STORY_rate_limiting.md) - Per-IP rate limiting
+- [ ] [`08_STORY_03_security_headers.md`](08_STORY_security_headers.md) - CSP, HSTS, X-Frame-Options
+- [ ] [`08_STORY_04_csrf_protection.md`](08_STORY_csrf_protection.md) - CSRF token generation and validation
+- [ ] [`08_STORY_05_rate_limiting.md`](08_STORY_rate_limiting.md) - Per-IP rate limiting
 
 ### Phase 3: Authentication Routes
-- [ ] [`08_STORY_login_routes.md`](08_STORY_login_routes.md) - Login, logout, callback
-- [ ] [`08_STORY_dashboard_route.md`](08_STORY_dashboard_route.md) - Main dashboard
+- [ ] [`08_STORY_06_login_routes.md`](08_STORY_login_routes.md) - Login, logout, callback
+- [ ] [`08_STORY_07_dashboard_route.md`](08_STORY_dashboard_route.md) - Main dashboard
 
 ### Phase 4: Event Routes
-- [ ] [`08_STORY_event_routes.md`](08_STORY_event_routes.md) - Event CRUD endpoints
-- [ ] [`08_STORY_event_ui.md`](08_STORY_event_ui.md) - Event management UI
+- [ ] [`08_STORY_08_event_routes.md`](08_STORY_event_routes.md) - Event CRUD endpoints
+- [ ] [`08_STORY_09_event_ui.md`](08_STORY_event_ui.md) - Event management UI
 
 ### Phase 5: Invite Routes
-- [ ] [`08_STORY_invite_routes.md`](08_STORY_invite_routes.md) - Invite CRUD endpoints
-- [ ] [`08_STORY_invite_ui.md`](08_STORY_invite_ui.md) - Invite management UI
-- [ ] [`08_STORY_csv_upload_route.md`](08_STORY_csv_upload_route.md) - CSV import endpoint
+- [ ] [`08_STORY_10_invite_routes.md`](08_STORY_invite_routes.md) - Invite CRUD endpoints
+- [ ] [`08_STORY_11_invite_ui.md`](08_STORY_invite_ui.md) - Invite management UI
+- [ ] [`08_STORY_12_csv_upload_route.md`](08_STORY_csv_upload_route.md) - CSV import endpoint
 
 ### Phase 6: RSVP Routes
-- [ ] [`08_STORY_rsvp_routes.md`](08_STORY_rsvp_routes.md) - RSVP submission endpoints
-- [ ] [`08_STORY_rsvp_ui.md`](08_STORY_rsvp_ui.md) - Guest RSVP page
+- [ ] [`08_STORY_13_rsvp_routes.md`](08_STORY_rsvp_routes.md) - RSVP submission endpoints
+- [ ] [`08_STORY_14_rsvp_ui.md`](08_STORY_rsvp_ui.md) - Guest RSVP page
 
 ### Phase 7: Admin Routes
-- [ ] [`08_STORY_admin_routes.md`](08_STORY_admin_routes.md) - User management, settings
-- [ ] [`08_STORY_admin_ui.md`](08_STORY_admin_ui.md) - Admin dashboard
+- [ ] [`08_STORY_15_admin_routes.md`](08_STORY_admin_routes.md) - User management, settings
+- [ ] [`08_STORY_16_admin_ui.md`](08_STORY_admin_ui.md) - Admin dashboard
 
 ### Phase 8: Utility Routes
-- [ ] [`08_STORY_health_metrics.md`](08_STORY_health_metrics.md) - Health check and metrics
-- [ ] [`08_STORY_static_assets.md`](08_STORY_static_assets.md) - Static file serving
+- [ ] [`08_STORY_17_health_metrics.md`](08_STORY_health_metrics.md) - Health check and metrics
+- [ ] [`08_STORY_18_static_assets.md`](08_STORY_static_assets.md) - Static file serving
 
 ---
 
