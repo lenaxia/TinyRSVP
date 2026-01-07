@@ -41,3 +41,16 @@ func (e *OptimisticLockError) Error() string {
 	return fmt.Sprintf("%s %d was modified (expected version %d, got %d)",
 		e.Resource, e.ID, e.ExpectedVersion, e.ActualVersion)
 }
+
+type PermissionDeniedError struct {
+	Action   string
+	Resource string
+	ID       interface{}
+}
+
+func (e *PermissionDeniedError) Error() string {
+	if e.ID != nil {
+		return fmt.Sprintf("permission denied: cannot %s %s %v", e.Action, e.Resource, e.ID)
+	}
+	return fmt.Sprintf("permission denied: cannot %s %s", e.Action, e.Resource)
+}

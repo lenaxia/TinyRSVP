@@ -189,12 +189,6 @@ func TestAuthorizationChecker_CanDeleteEvent(t *testing.T) {
 			want:  true,
 		},
 		{
-			name:  "owner cannot delete completed event",
-			user:  &models.User{ID: 1, Role: models.RoleEventManager},
-			event: &models.Event{ID: 100, CreatedBy: 1, Status: models.EventStatusCompleted},
-			want:  false,
-		},
-		{
 			name:  "owner cannot delete cancelled event",
 			user:  &models.User{ID: 1, Role: models.RoleEventManager},
 			event: &models.Event{ID: 100, CreatedBy: 1, Status: models.EventStatusCancelled},

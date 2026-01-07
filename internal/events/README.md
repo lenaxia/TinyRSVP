@@ -2,23 +2,50 @@
 
 ## Purpose
 
-This package provides event validation logic for the TinyRSVP application, ensuring event data integrity before persistence.
+This package provides event business logic for the TinyRSVP application, including validation, authorization, and state management.
 
 ## Rules
 
+- All event operations MUST go through the Service layer
 - All event data MUST be validated before database operations
+- All operations MUST check permissions before execution
+- State transitions follow a strict state machine model
 - Use the Validator interface for all validation operations
 - Timezone validation uses Go's standard IANA timezone database
-- State transitions follow a strict state machine model
 
 ## Structure
 
+- `service.go` - Event service layer with business logic
+- `service_test.go` - Comprehensive service tests
 - `validator.go` - Main event validator implementation
 - `validator_test.go` - Comprehensive validation tests
 - `timezone_validator.go` - IANA timezone validation
 - `timezone_validator_test.go` - Timezone validation tests
 
 ## Key Components
+
+### Service Interface
+
+```go
+type Service interface {
+    CreateEvent(ctx context.Context, event *models.Event) error
+    GetEvent(ctx context.Context, id int64) (*models.Event, error)
+    UpdateEvent(ctx context.Context, event *models.Event) error
+    DeleteEvent(ctx context.Context, id int64) error
+    ListEvents(ctx context.Context, filters ListFilters) ([]*models.Event, error)
+    PublishEvent(ctx context.Context, id int64) error
+    CancelEvent(ctx context.Context, id int64, reason string) error
+    ArchiveEvent(ctx context.Context, id int64) error
+    GetEventsToArchive(ctx context.Context) ([]*models.Event, error)
+}
+```
+
+The service layer enforces:
+- Permission checks on all operations
+- Event validation before persistence
+- State transition validation
+- Optimistic locking for updates
+- User context extraction and authorization
 
 ### Validator Interface
 
@@ -103,12 +130,50 @@ The start time future validation only applies during event creation (ValidateCre
 
 ## Usage
 
+### Service Layer
+
 ```go
 import (
     "github.com/lenaxia/tinyrsvp/internal/events"
-    "github.com/lenaxia/tinyrsvp/internal/models"
+    "github.com/lenaxia/tinyrsvp/internal/auth"
+    "github.com/lenaxia/tinyrsvp/internal/db/repositories"
 )
 
+repo := repositories.NewEventRepository(db)
+tzValidator := events.NewTimezoneValidator()
+validator := events.NewValidator(tzValidator)
+authz := auth.NewAuthorizationChecker()
+
+service := events.NewService(repo, validator, authz)
+
+ctx := auth.WithUser(context.Background(), user)
+
+event := &models.Event{
+    Title:       "Birthday Party",
+    StartTime:   time.Now().Add(24 * time.Hour),
+    Timezone:    "America/Los_Angeles",
+    MaxPlusOnes: 2,
+}
+
+if err := service.CreateEvent(ctx, event); err != nil {
+    return err
+}
+
+if err := service.PublishEvent(ctx, event.ID); err != nil {
+    return err
+}
+
+events, err := service.ListEvents(ctx, events.ListFilters{
+    Limit: 10,
+})
+if err != nil {
+    return err
+}
+```
+
+### Validator Only
+
+```go
 tzValidator := events.NewTimezoneValidator()
 validator := events.NewValidator(tzValidator)
 

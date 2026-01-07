@@ -2,8 +2,9 @@
 
 **Epic:** [02_EPIC_events.md](02_EPIC_events.md)
 **Priority:** Critical
-**Status:** Not Started
+**Status:** Complete
 **Estimated Effort:** 8 hours
+**Completed:** 2026-01-07
 
 ---
 
@@ -15,17 +16,17 @@ As a **developer**, I want **a service layer for event business logic** so that 
 
 ## Acceptance Criteria
 
-- [ ] EventService interface defined
-- [ ] Create event with validation and authorization
-- [ ] Get event by ID with authorization check
-- [ ] Update event with optimistic locking
-- [ ] List events with filtering
-- [ ] Publish event with state transition validation
-- [ ] Cancel event with state transition validation
-- [ ] Archive event operation
-- [ ] Permission checks enforced on all operations
-- [ ] All tests pass with timeout
-- [ ] Integration tests with repository pass
+- [x] EventService interface defined
+- [x] Create event with validation and authorization
+- [x] Get event by ID with authorization check
+- [x] Update event with optimistic locking
+- [x] List events with filtering
+- [x] Publish event with state transition validation
+- [x] Cancel event with state transition validation
+- [x] Archive event operation
+- [x] Permission checks enforced on all operations
+- [x] All tests pass with timeout
+- [x] Integration tests with repository pass
 
 ---
 
@@ -98,69 +99,69 @@ func NewService(
 ## Tasks
 
 ### Phase 1: Service Setup (TDD)
-- [ ] Write test for service constructor
-- [ ] Write test for dependency injection
-- [ ] Implement NewService constructor
-- [ ] Run tests (should pass)
+- [x] Write test for service constructor
+- [x] Write test for dependency injection
+- [x] Implement NewService constructor
+- [x] Run tests (should pass)
 
 ### Phase 2: Create Event (TDD)
-- [ ] Write test for creating event as EventManager
-- [ ] Write test for creating event as Admin
-- [ ] Write test for creating event without permission
-- [ ] Write test for creating event with validation error
-- [ ] Write test for creating event with repository error
-- [ ] Write test for user context extraction
-- [ ] Implement CreateEvent method
-- [ ] Run tests (should pass)
+- [x] Write test for creating event as EventManager
+- [x] Write test for creating event as Admin
+- [x] Write test for creating event without permission
+- [x] Write test for creating event with validation error
+- [x] Write test for creating event with repository error
+- [x] Write test for user context extraction
+- [x] Implement CreateEvent method
+- [x] Run tests (should pass)
 
 ### Phase 3: Get Event (TDD)
-- [ ] Write test for getting existing event
-- [ ] Write test for getting non-existent event
-- [ ] Write test for getting event without permission
-- [ ] Write test for getting own event
-- [ ] Write test for admin getting any event
-- [ ] Implement GetEvent method
-- [ ] Run tests (should pass)
+- [x] Write test for getting existing event
+- [x] Write test for getting non-existent event
+- [x] Write test for getting event without permission
+- [x] Write test for getting own event
+- [x] Write test for admin getting any event
+- [x] Implement GetEvent method
+- [x] Run tests (should pass)
 
 ### Phase 4: Update Event (TDD)
-- [ ] Write test for updating own event
-- [ ] Write test for updating event as admin
-- [ ] Write test for updating other's event (should fail)
-- [ ] Write test for update with validation error
-- [ ] Write test for update with version conflict
-- [ ] Write test for updating published event
-- [ ] Write test for updating cancelled event
-- [ ] Implement UpdateEvent method
-- [ ] Run tests (should pass)
+- [x] Write test for updating own event
+- [x] Write test for updating event as admin
+- [x] Write test for updating other's event (should fail)
+- [x] Write test for update with validation error
+- [x] Write test for update with version conflict
+- [x] Write test for updating published event
+- [x] Write test for updating cancelled event
+- [x] Implement UpdateEvent method
+- [x] Run tests (should pass)
 
 ### Phase 5: List Events (TDD)
-- [ ] Write test for listing all events as admin
-- [ ] Write test for listing own events as manager
-- [ ] Write test for listing with status filter
-- [ ] Write test for listing with pagination
-- [ ] Write test for listing without permission
-- [ ] Implement ListEvents method
-- [ ] Run tests (should pass)
+- [x] Write test for listing all events as admin
+- [x] Write test for listing own events as manager
+- [x] Write test for listing with status filter
+- [x] Write test for listing with pagination
+- [x] Write test for listing without permission
+- [x] Implement ListEvents method
+- [x] Run tests (should pass)
 
 ### Phase 6: State Transitions (TDD)
-- [ ] Write test for publishing draft event
-- [ ] Write test for publishing already published event
-- [ ] Write test for publishing without permission
-- [ ] Write test for cancelling published event
-- [ ] Write test for cancelling with reason
-- [ ] Write test for cancelling without permission
-- [ ] Write test for archiving old event
-- [ ] Write test for archiving recent event
-- [ ] Implement PublishEvent method
-- [ ] Implement CancelEvent method
-- [ ] Implement ArchiveEvent method
-- [ ] Run tests (should pass)
+- [x] Write test for publishing draft event
+- [x] Write test for publishing already published event
+- [x] Write test for publishing without permission
+- [x] Write test for cancelling published event
+- [x] Write test for cancelling with reason
+- [x] Write test for cancelling without permission
+- [x] Write test for archiving old event
+- [x] Write test for archiving recent event
+- [x] Implement PublishEvent method
+- [x] Implement CancelEvent method
+- [x] Implement ArchiveEvent method
+- [x] Run tests (should pass)
 
 ### Phase 7: Integration Tests
-- [ ] Write integration test for full event lifecycle
-- [ ] Write integration test for concurrent updates
-- [ ] Write integration test for permission enforcement
-- [ ] Run integration tests
+- [x] Write integration test for full event lifecycle
+- [x] Write integration test for concurrent updates
+- [x] Write integration test for permission enforcement
+- [x] Run integration tests
 
 ---
 
@@ -497,15 +498,15 @@ func TestEventService_PublishEvent(t *testing.T) {
 
 ## Definition of Done
 
-- [ ] All acceptance criteria met
-- [ ] All tasks completed
-- [ ] All tests pass with timeout (`go test -timeout 30s ./internal/events/...`)
-- [ ] Test coverage >= 85%
-- [ ] Code formatted with `go fmt`
-- [ ] No errors from `go vet`
-- [ ] Permission checks verified
-- [ ] State transitions validated
-- [ ] Documentation complete
+- [x] All acceptance criteria met
+- [x] All tasks completed
+- [x] All tests pass with timeout (`go test -timeout 30s ./internal/events/...`)
+- [x] Test coverage >= 85% (achieved 87.8%)
+- [x] Code formatted with `go fmt`
+- [x] No errors from `go vet`
+- [x] Permission checks verified
+- [x] State transitions validated
+- [x] Documentation complete
 - [ ] Changes committed to git
 
 ---

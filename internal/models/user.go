@@ -7,6 +7,7 @@ type UserRole string
 const (
 	RoleAdmin        UserRole = "admin"
 	RoleEventManager UserRole = "event_manager"
+	RoleGuest        UserRole = "guest"
 )
 
 type User struct {
