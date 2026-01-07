@@ -1,11 +1,11 @@
 # User Story: RBAC Middleware
 
-**Epic:** [01_EPIC_auth.md](01_EPIC_auth.md)  
-**Priority:** Critical  
-**Status:** Not Started  
-**Estimated Effort:** 6 hours  
-**Actual Effort:** TBD  
-**Completed:** TBD
+**Epic:** [01_EPIC_auth.md](01_EPIC_auth.md)
+**Priority:** Critical
+**Status:** Complete
+**Estimated Effort:** 6 hours
+**Actual Effort:** 1 hour
+**Completed:** 2026-01-07
 
 ---
 
@@ -17,14 +17,14 @@ As a **developer**, I want **role-based access control middleware** so that **on
 
 ## Acceptance Criteria
 
-- [ ] RequireAuth middleware validates session
-- [ ] RequireAdmin middleware restricts to admin users
-- [ ] RequireEventManager middleware allows managers and admins
-- [ ] Middleware chains correctly
-- [ ] User and session injected into request context
-- [ ] Clear error responses for unauthorized access
-- [ ] Middleware skips public endpoints
-- [ ] All tests pass with timeout
+- [x] RequireAuth middleware validates session
+- [x] RequireAdmin middleware restricts to admin users
+- [x] RequireEventManager middleware allows managers and admins
+- [x] Middleware chains correctly
+- [x] User and session injected into request context
+- [x] Clear error responses for unauthorized access
+- [x] Middleware skips public endpoints
+- [x] All tests pass with timeout
 
 ---
 
@@ -125,43 +125,43 @@ mux.Handle("/api/events", authMiddleware(managerMiddleware(http.HandlerFunc(list
 ## Tasks
 
 ### Phase 1: RequireAuth Middleware (TDD)
-- [ ] Write test for valid session
-- [ ] Write test for missing session cookie
-- [ ] Write test for invalid session ID
-- [ ] Write test for expired session
-- [ ] Write test for user not found
-- [ ] Write test for context injection
-- [ ] Implement RequireAuth middleware
-- [ ] Run tests (should pass)
+- [x] Write test for valid session
+- [x] Write test for missing session cookie
+- [x] Write test for invalid session ID
+- [x] Write test for expired session
+- [x] Write test for user not found
+- [x] Write test for context injection
+- [x] Implement RequireAuth middleware
+- [x] Run tests (should pass)
 
 ### Phase 2: RequireAdmin Middleware (TDD)
-- [ ] Write test for admin user allowed
-- [ ] Write test for event manager denied
-- [ ] Write test for missing user in context
-- [ ] Write test for middleware chaining
-- [ ] Implement RequireAdmin middleware
-- [ ] Run tests (should pass)
+- [x] Write test for admin user allowed
+- [x] Write test for event manager denied
+- [x] Write test for missing user in context
+- [x] Write test for middleware chaining
+- [x] Implement RequireAdmin middleware
+- [x] Run tests (should pass)
 
 ### Phase 3: RequireEventManager Middleware (TDD)
-- [ ] Write test for admin allowed
-- [ ] Write test for event manager allowed
-- [ ] Write test for missing user denied
-- [ ] Write test for middleware chaining
-- [ ] Implement RequireEventManager middleware
-- [ ] Run tests (should pass)
+- [x] Write test for admin allowed
+- [x] Write test for event manager allowed
+- [x] Write test for missing user denied
+- [x] Write test for middleware chaining
+- [x] Implement RequireEventManager middleware
+- [x] Run tests (should pass)
 
 ### Phase 4: Session Refresh Middleware (TDD)
-- [ ] Write test for session last access update
-- [ ] Write test for refresh on each request
-- [ ] Implement session refresh in RequireAuth
-- [ ] Run tests (should pass)
+- [x] Write test for session last access update
+- [x] Write test for refresh on each request
+- [x] Implement session refresh in RequireAuth
+- [x] Run tests (should pass)
 
 ### Phase 5: Integration
-- [ ] Wire middleware into HTTP router
-- [ ] Test middleware chains
-- [ ] Test endpoint protection
-- [ ] Document middleware usage
-- [ ] Create middleware examples
+- [x] Wire middleware into HTTP router
+- [x] Test middleware chains
+- [x] Test endpoint protection
+- [x] Document middleware usage
+- [x] Create middleware examples
 
 ---
 
@@ -473,47 +473,47 @@ func TestMiddlewareChaining(t *testing.T) {
 ## Tasks
 
 ### Phase 1: RequireAuth Middleware (TDD)
-- [ ] Write test for valid authentication
-- [ ] Write test for missing session
-- [ ] Write test for invalid session
-- [ ] Write test for expired session
-- [ ] Write test for context injection
-- [ ] Implement RequireAuth
-- [ ] Run tests (should pass)
+- [x] Write test for valid authentication
+- [x] Write test for missing session
+- [x] Write test for invalid session
+- [x] Write test for expired session
+- [x] Write test for context injection
+- [x] Implement RequireAuth
+- [x] Run tests (should pass)
 
 ### Phase 2: RequireAdmin Middleware (TDD)
-- [ ] Write test for admin access granted
-- [ ] Write test for non-admin denied
-- [ ] Write test for missing user
-- [ ] Implement RequireAdmin
-- [ ] Run tests (should pass)
+- [x] Write test for admin access granted
+- [x] Write test for non-admin denied
+- [x] Write test for missing user
+- [x] Implement RequireAdmin
+- [x] Run tests (should pass)
 
 ### Phase 3: RequireEventManager Middleware (TDD)
-- [ ] Write test for admin access
-- [ ] Write test for event manager access
-- [ ] Write test for unauthorized access
-- [ ] Implement RequireEventManager
-- [ ] Run tests (should pass)
+- [x] Write test for admin access
+- [x] Write test for event manager access
+- [x] Write test for unauthorized access
+- [x] Implement RequireEventManager
+- [x] Run tests (should pass)
 
 ### Phase 4: Middleware Chaining (TDD)
-- [ ] Write test for RequireAuth + RequireAdmin chain
-- [ ] Write test for RequireAuth + RequireEventManager chain
-- [ ] Write test for multiple middleware chain
-- [ ] Test order of execution
-- [ ] Run tests (should pass)
+- [x] Write test for RequireAuth + RequireAdmin chain
+- [x] Write test for RequireAuth + RequireEventManager chain
+- [x] Write test for multiple middleware chain
+- [x] Test order of execution
+- [x] Run tests (should pass)
 
 ### Phase 5: Error Responses (TDD)
-- [ ] Write test for JSON error responses
-- [ ] Write test for HTML error pages
-- [ ] Write test for proper HTTP status codes
-- [ ] Implement error response logic
-- [ ] Run tests (should pass)
+- [x] Write test for JSON error responses
+- [x] Write test for HTML error pages
+- [x] Write test for proper HTTP status codes
+- [x] Implement error response logic
+- [x] Run tests (should pass)
 
 ### Phase 6: Integration
-- [ ] Apply middleware to protected routes
-- [ ] Test with real HTTP server
-- [ ] Verify all endpoints properly protected
-- [ ] Document middleware usage patterns
+- [x] Apply middleware to protected routes
+- [x] Test with real HTTP server
+- [x] Verify all endpoints properly protected
+- [x] Document middleware usage patterns
 
 ---
 
@@ -532,17 +532,17 @@ func TestMiddlewareChaining(t *testing.T) {
 
 ## Definition of Done
 
-- [ ] All acceptance criteria met
-- [ ] All tasks completed
-- [ ] All tests pass with timeout (`go test -timeout 30s ./internal/middleware/...`)
-- [ ] Test coverage >= 85%
-- [ ] Code formatted with `go fmt`
-- [ ] No errors from `go vet`
-- [ ] Middleware chains tested
-- [ ] Context injection verified
-- [ ] Error responses appropriate
-- [ ] Documentation complete
-- [ ] Changes committed to git
+- [x] All acceptance criteria met
+- [x] All tasks completed
+- [x] All tests pass with timeout (`go test -timeout 30s ./internal/middleware/...`)
+- [x] Test coverage >= 85%
+- [x] Code formatted with `go fmt`
+- [x] No errors from `go vet`
+- [x] Middleware chains tested
+- [x] Context injection verified
+- [x] Error responses appropriate
+- [x] Documentation complete
+- [x] Changes committed to git
 
 ---
 

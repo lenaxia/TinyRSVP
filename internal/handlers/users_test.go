@@ -66,15 +66,15 @@ func (m *mockUserService) CountAdmins(ctx context.Context) (int, error) {
 
 func TestListUsers(t *testing.T) {
 	tests := []struct {
-		name           string
-		queryParams    string
-		mockUsers      []*models.User
-		mockCount      int
-		mockListErr    error
-		mockCountErr   error
-		wantStatus     int
-		wantUserCount  int
-		wantTotal      int
+		name          string
+		queryParams   string
+		mockUsers     []*models.User
+		mockCount     int
+		mockListErr   error
+		mockCountErr  error
+		wantStatus    int
+		wantUserCount int
+		wantTotal     int
 	}{
 		{
 			name:        "list users successfully",
@@ -247,15 +247,15 @@ func TestGetUser(t *testing.T) {
 
 func TestUpdateUserRole(t *testing.T) {
 	tests := []struct {
-		name            string
-		userID          string
-		requestBody     UpdateRoleRequest
-		mockUser        *models.User
-		mockGetErr      error
-		mockUpdateErr   error
-		mockAdminCount  int
-		mockCountErr    error
-		wantStatus      int
+		name           string
+		userID         string
+		requestBody    UpdateRoleRequest
+		mockUser       *models.User
+		mockGetErr     error
+		mockUpdateErr  error
+		mockAdminCount int
+		mockCountErr   error
+		wantStatus     int
 	}{
 		{
 			name:   "promote user to admin",
