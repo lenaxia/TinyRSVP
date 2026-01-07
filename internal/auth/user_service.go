@@ -3,10 +3,14 @@ package auth
 import (
 	"context"
 	"fmt"
+	"regexp"
+	"strings"
 
 	"github.com/yourusername/tinyrsvp/internal/db/repositories"
 	"github.com/yourusername/tinyrsvp/internal/models"
 )
+
+var emailRegex = regexp.MustCompile(`^[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}$`)
 
 type userService struct {
 	repo repositories.UserRepository
@@ -17,6 +21,14 @@ func NewUserService(repo repositories.UserRepository) UserService {
 }
 
 func (s *userService) CreateUser(ctx context.Context, email, name string, oidcSubject *string) (*models.User, error) {
+	if err := validateEmail(email); err != nil {
+		return nil, err
+	}
+
+	if err := validateName(name); err != nil {
+		return nil, err
+	}
+
 	isFirst, err := s.repo.IsFirstUser(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("failed to check if first user: %w", err)
@@ -100,4 +112,35 @@ func (s *userService) DeleteUser(ctx context.Context, id int64) error {
 
 func (s *userService) ListUsers(ctx context.Context, limit, offset int) ([]*models.User, error) {
 	return s.repo.List(ctx, limit, offset)
+}
+
+func validateEmail(email string) error {
+	email = strings.TrimSpace(email)
+	if email == "" {
+		return &models.ValidationError{
+			Field:   "email",
+			Message: "email is required",
+		}
+	}
+
+	if !emailRegex.MatchString(email) {
+		return &models.ValidationError{
+			Field:   "email",
+			Message: "invalid email format",
+		}
+	}
+
+	return nil
+}
+
+func validateName(name string) error {
+	name = strings.TrimSpace(name)
+	if name == "" {
+		return &models.ValidationError{
+			Field:   "name",
+			Message: "name is required",
+		}
+	}
+
+	return nil
 }

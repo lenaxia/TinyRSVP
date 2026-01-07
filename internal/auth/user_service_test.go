@@ -2,6 +2,7 @@ package auth
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"testing"
 
@@ -238,6 +239,170 @@ func TestUserService_UpdateUserRole(t *testing.T) {
 	err := service.UpdateUserRole(context.Background(), 1, models.RoleAdmin)
 	if err != nil {
 		t.Fatalf("UpdateUserRole failed: %v", err)
+	}
+}
+
+func TestUserService_CreateUser_InvalidEmail(t *testing.T) {
+	mockRepo := &MockUserRepository{}
+	service := NewUserService(mockRepo)
+
+	_, err := service.CreateUser(context.Background(), "not-an-email", "Test User", nil)
+	if err == nil {
+		t.Fatal("Expected error for invalid email, got nil")
+	}
+
+	var validationErr *models.ValidationError
+	if !errors.As(err, &validationErr) {
+		t.Errorf("Expected ValidationError, got %T", err)
+	}
+}
+
+func TestUserService_CreateUser_EmptyEmail(t *testing.T) {
+	mockRepo := &MockUserRepository{}
+	service := NewUserService(mockRepo)
+
+	_, err := service.CreateUser(context.Background(), "", "Test User", nil)
+	if err == nil {
+		t.Fatal("Expected error for empty email, got nil")
+	}
+
+	var validationErr *models.ValidationError
+	if !errors.As(err, &validationErr) {
+		t.Errorf("Expected ValidationError, got %T", err)
+	}
+}
+
+func TestUserService_CreateUser_EmptyName(t *testing.T) {
+	mockRepo := &MockUserRepository{}
+	service := NewUserService(mockRepo)
+
+	_, err := service.CreateUser(context.Background(), "test@example.com", "", nil)
+	if err == nil {
+		t.Fatal("Expected error for empty name, got nil")
+	}
+
+	var validationErr *models.ValidationError
+	if !errors.As(err, &validationErr) {
+		t.Errorf("Expected ValidationError, got %T", err)
+	}
+}
+
+func TestUserService_GetUserByEmail_NotFound(t *testing.T) {
+	mockRepo := &MockUserRepository{
+		GetByEmailFunc: func(ctx context.Context, email string) (*models.User, error) {
+			return nil, &models.NotFoundError{Resource: "User", ID: email}
+		},
+	}
+
+	service := NewUserService(mockRepo)
+
+	_, err := service.GetUserByEmail(context.Background(), "nonexistent@example.com")
+	if err == nil {
+		t.Fatal("Expected error for non-existent user, got nil")
+	}
+
+	var notFoundErr *models.NotFoundError
+	if !errors.As(err, &notFoundErr) {
+		t.Errorf("Expected NotFoundError, got %T", err)
+	}
+}
+
+func TestUserService_ListUsers(t *testing.T) {
+	mockRepo := &MockUserRepository{
+		ListFunc: func(ctx context.Context, limit, offset int) ([]*models.User, error) {
+			users := []*models.User{
+				{ID: 1, Email: "user1@example.com", Name: "User 1", Role: models.RoleAdmin},
+				{ID: 2, Email: "user2@example.com", Name: "User 2", Role: models.RoleEventManager},
+			}
+			if offset >= len(users) {
+				return []*models.User{}, nil
+			}
+			end := offset + limit
+			if end > len(users) {
+				end = len(users)
+			}
+			return users[offset:end], nil
+		},
+	}
+
+	service := NewUserService(mockRepo)
+
+	users, err := service.ListUsers(context.Background(), 10, 0)
+	if err != nil {
+		t.Fatalf("ListUsers failed: %v", err)
+	}
+
+	if len(users) != 2 {
+		t.Errorf("Expected 2 users, got %d", len(users))
+	}
+
+	usersPage2, err := service.ListUsers(context.Background(), 10, 2)
+	if err != nil {
+		t.Fatalf("ListUsers page 2 failed: %v", err)
+	}
+
+	if len(usersPage2) != 0 {
+		t.Errorf("Expected 0 users on page 2, got %d", len(usersPage2))
+	}
+}
+
+func TestUserService_DeleteUser(t *testing.T) {
+	mockRepo := &MockUserRepository{
+		DeleteFunc: func(ctx context.Context, id int64) error {
+			if id == 1 {
+				return nil
+			}
+			return &models.NotFoundError{Resource: "User", ID: id}
+		},
+	}
+
+	service := NewUserService(mockRepo)
+
+	err := service.DeleteUser(context.Background(), 1)
+	if err != nil {
+		t.Fatalf("DeleteUser failed: %v", err)
+	}
+
+	err = service.DeleteUser(context.Background(), 999)
+	if err == nil {
+		t.Fatal("Expected error for non-existent user, got nil")
+	}
+}
+
+func TestUserService_UpdateUser(t *testing.T) {
+	mockRepo := &MockUserRepository{
+		UpdateFunc: func(ctx context.Context, user *models.User) error {
+			if user.ID == 1 {
+				return nil
+			}
+			return &models.NotFoundError{Resource: "User", ID: user.ID}
+		},
+	}
+
+	service := NewUserService(mockRepo)
+
+	user := &models.User{
+		ID:    1,
+		Email: "updated@example.com",
+		Name:  "Updated User",
+		Role:  models.RoleAdmin,
+	}
+
+	err := service.UpdateUser(context.Background(), user)
+	if err != nil {
+		t.Fatalf("UpdateUser failed: %v", err)
+	}
+
+	nonExistentUser := &models.User{
+		ID:    999,
+		Email: "nonexistent@example.com",
+		Name:  "Non-existent User",
+		Role:  models.RoleAdmin,
+	}
+
+	err = service.UpdateUser(context.Background(), nonExistentUser)
+	if err == nil {
+		t.Fatal("Expected error for non-existent user, got nil")
 	}
 }
 

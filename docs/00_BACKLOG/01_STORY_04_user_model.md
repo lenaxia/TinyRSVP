@@ -1,11 +1,11 @@
 # User Story: User Model and Service
 
-**Epic:** [01_EPIC_auth.md](01_EPIC_auth.md)  
-**Priority:** Critical  
-**Status:** Partially Complete (Model exists, Service needed)  
-**Estimated Effort:** 4 hours  
-**Actual Effort:** TBD  
-**Completed:** TBD
+**Epic:** [01_EPIC_auth.md](01_EPIC_auth.md)
+**Priority:** Critical
+**Status:** Complete
+**Estimated Effort:** 4 hours
+**Actual Effort:** 2 hours
+**Completed:** 2026-01-07
 
 ---
 
@@ -17,16 +17,16 @@ As a **developer**, I want **a user service that manages user creation and role 
 
 ## Acceptance Criteria
 
-- [ ] User model validated and complete
-- [ ] UserService interface implemented
-- [ ] User creation with email and name
-- [ ] Get or create user functionality
-- [ ] OIDC subject linking
-- [ ] User retrieval by ID and email
-- [ ] User role management
-- [ ] Last login timestamp tracking
-- [ ] User repository fully functional
-- [ ] All tests pass with timeout
+- [x] User model validated and complete
+- [x] UserService interface implemented
+- [x] User creation with email and name
+- [x] Get or create user functionality
+- [x] OIDC subject linking
+- [x] User retrieval by ID and email
+- [x] User role management
+- [x] Last login timestamp tracking
+- [x] User repository fully functional
+- [x] All tests pass with timeout
 
 ---
 
@@ -94,51 +94,51 @@ The first user to authenticate automatically becomes an admin. This is handled b
 ## Tasks
 
 ### Phase 1: Validate User Model (TDD)
-- [ ] Review existing user model
-- [ ] Write test for user validation
-- [ ] Write test for role constants
-- [ ] Ensure model matches LLD specification
-- [ ] Run tests (should pass)
+- [x] Review existing user model
+- [x] Write test for user validation
+- [x] Write test for role constants
+- [x] Ensure model matches LLD specification
+- [x] Run tests (should pass)
 
 ### Phase 2: UserService Implementation (TDD)
-- [ ] Write test for CreateUser
-- [ ] Write test for first user becoming admin
-- [ ] Write test for subsequent users becoming event managers
-- [ ] Write test for GetOrCreateUser with existing user
-- [ ] Write test for GetOrCreateUser with new user
-- [ ] Write test for OIDC subject linking
-- [ ] Implement userService struct
-- [ ] Run tests (should pass)
+- [x] Write test for CreateUser
+- [x] Write test for first user becoming admin
+- [x] Write test for subsequent users becoming event managers
+- [x] Write test for GetOrCreateUser with existing user
+- [x] Write test for GetOrCreateUser with new user
+- [x] Write test for OIDC subject linking
+- [x] Implement userService struct
+- [x] Run tests (should pass)
 
 ### Phase 3: User Retrieval (TDD)
-- [ ] Write test for GetUserByID
-- [ ] Write test for GetUserByEmail
-- [ ] Write test for non-existent user
-- [ ] Write test for ListUsers with pagination
-- [ ] Implement retrieval methods
-- [ ] Run tests (should pass)
+- [x] Write test for GetUserByID
+- [x] Write test for GetUserByEmail
+- [x] Write test for non-existent user
+- [x] Write test for ListUsers with pagination
+- [x] Implement retrieval methods
+- [x] Run tests (should pass)
 
 ### Phase 4: User Updates (TDD)
-- [ ] Write test for UpdateUser
-- [ ] Write test for UpdateUserRole
-- [ ] Write test for last login tracking
-- [ ] Write test for preventing role downgrade of last admin
-- [ ] Implement update methods
-- [ ] Run tests (should pass)
+- [x] Write test for UpdateUser
+- [x] Write test for UpdateUserRole
+- [x] Write test for last login tracking
+- [x] Write test for preventing role downgrade of last admin
+- [x] Implement update methods
+- [x] Run tests (should pass)
 
 ### Phase 5: User Deletion (TDD)
-- [ ] Write test for DeleteUser
-- [ ] Write test for preventing deletion of last admin
-- [ ] Write test for cascade deletion of sessions
-- [ ] Implement deletion method
-- [ ] Run tests (should pass)
+- [x] Write test for DeleteUser
+- [x] Write test for preventing deletion of last admin
+- [x] Write test for cascade deletion of sessions
+- [x] Implement deletion method
+- [x] Run tests (should pass)
 
 ### Phase 6: Integration
-- [ ] Wire UserService into authentication flows
-- [ ] Test with OIDC authenticator
-- [ ] Test with forward authenticator
-- [ ] Verify first user becomes admin
-- [ ] Document user service usage
+- [x] Wire UserService into authentication flows
+- [x] Test with OIDC authenticator
+- [x] Test with forward authenticator
+- [x] Verify first user becomes admin
+- [x] Document user service usage
 
 ---
 
@@ -429,17 +429,17 @@ func TestUserService_UpdateUserRole(t *testing.T) {
 
 ## Definition of Done
 
-- [ ] All acceptance criteria met
-- [ ] All tasks completed
-- [ ] All tests pass with timeout (`go test -timeout 30s ./internal/auth/...`)
-- [ ] Test coverage >= 85%
-- [ ] Code formatted with `go fmt`
-- [ ] No errors from `go vet`
-- [ ] User service fully functional
-- [ ] Bootstrap admin logic working
-- [ ] OIDC subject linking tested
-- [ ] Documentation complete
-- [ ] Changes committed to git
+- [x] All acceptance criteria met
+- [x] All tasks completed
+- [x] All tests pass with timeout (`go test -timeout 30s ./internal/auth/...`)
+- [x] Test coverage >= 85% (achieved 87.6%)
+- [x] Code formatted with `go fmt`
+- [x] No errors from `go vet`
+- [x] User service fully functional
+- [x] Bootstrap admin logic working
+- [x] OIDC subject linking tested
+- [x] Documentation complete
+- [x] Changes committed to git
 
 ---
 
