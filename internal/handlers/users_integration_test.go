@@ -203,3 +203,315 @@ func TestUpdateUserRole_LastAdminProtection(t *testing.T) {
 		t.Errorf("Expected admin role to remain unchanged, got %s", user.Role)
 	}
 }
+
+func TestListUsers_PermissionCheck_AdminAllowed(t *testing.T) {
+	database := setupIntegrationTestDB(t)
+	defer database.Close()
+
+	userRepo := repositories.NewUserRepository(database)
+	userService := auth.NewUserService(userRepo)
+	authChecker := auth.NewAuthorizationChecker()
+	handler := NewUserHandler(userService, authChecker)
+
+	ctx := context.Background()
+
+	admin := &models.User{
+		Email: "admin@example.com",
+		Name:  "Admin User",
+		Role:  models.RoleAdmin,
+	}
+	if err := userRepo.Create(ctx, admin); err != nil {
+		t.Fatalf("Failed to create admin: %v", err)
+	}
+
+	req := httptest.NewRequest(http.MethodGet, "/api/users", nil)
+	ctx = auth.WithUser(ctx, admin)
+	req = req.WithContext(ctx)
+	w := httptest.NewRecorder()
+
+	handler.ListUsers(w, req)
+
+	if w.Code != http.StatusOK {
+		t.Errorf("Expected status 200 for admin, got %d", w.Code)
+	}
+}
+
+func TestListUsers_PermissionCheck_NonAdminDenied(t *testing.T) {
+	database := setupIntegrationTestDB(t)
+	defer database.Close()
+
+	userRepo := repositories.NewUserRepository(database)
+	userService := auth.NewUserService(userRepo)
+	authChecker := auth.NewAuthorizationChecker()
+	handler := NewUserHandler(userService, authChecker)
+
+	ctx := context.Background()
+
+	eventManager := &models.User{
+		Email: "manager@example.com",
+		Name:  "Event Manager",
+		Role:  models.RoleEventManager,
+	}
+	if err := userRepo.Create(ctx, eventManager); err != nil {
+		t.Fatalf("Failed to create event manager: %v", err)
+	}
+
+	req := httptest.NewRequest(http.MethodGet, "/api/users", nil)
+	ctx = auth.WithUser(ctx, eventManager)
+	req = req.WithContext(ctx)
+	w := httptest.NewRecorder()
+
+	handler.ListUsers(w, req)
+
+	if w.Code != http.StatusForbidden {
+		t.Errorf("Expected status 403 for non-admin, got %d", w.Code)
+	}
+}
+
+func TestGetUser_PermissionCheck_AdminAllowed(t *testing.T) {
+	database := setupIntegrationTestDB(t)
+	defer database.Close()
+
+	userRepo := repositories.NewUserRepository(database)
+	userService := auth.NewUserService(userRepo)
+	authChecker := auth.NewAuthorizationChecker()
+	handler := NewUserHandler(userService, authChecker)
+
+	ctx := context.Background()
+
+	admin := &models.User{
+		Email: "admin@example.com",
+		Name:  "Admin User",
+		Role:  models.RoleAdmin,
+	}
+	if err := userRepo.Create(ctx, admin); err != nil {
+		t.Fatalf("Failed to create admin: %v", err)
+	}
+
+	targetUser := &models.User{
+		Email: "target@example.com",
+		Name:  "Target User",
+		Role:  models.RoleEventManager,
+	}
+	if err := userRepo.Create(ctx, targetUser); err != nil {
+		t.Fatalf("Failed to create target user: %v", err)
+	}
+
+	req := httptest.NewRequest(http.MethodGet, "/api/users/2", nil)
+	ctx = auth.WithUser(ctx, admin)
+	req = req.WithContext(ctx)
+	w := httptest.NewRecorder()
+
+	handler.GetUser(w, req, "2")
+
+	if w.Code != http.StatusOK {
+		t.Errorf("Expected status 200 for admin, got %d", w.Code)
+	}
+}
+
+func TestGetUser_PermissionCheck_NonAdminDenied(t *testing.T) {
+	database := setupIntegrationTestDB(t)
+	defer database.Close()
+
+	userRepo := repositories.NewUserRepository(database)
+	userService := auth.NewUserService(userRepo)
+	authChecker := auth.NewAuthorizationChecker()
+	handler := NewUserHandler(userService, authChecker)
+
+	ctx := context.Background()
+
+	eventManager := &models.User{
+		Email: "manager@example.com",
+		Name:  "Event Manager",
+		Role:  models.RoleEventManager,
+	}
+	if err := userRepo.Create(ctx, eventManager); err != nil {
+		t.Fatalf("Failed to create event manager: %v", err)
+	}
+
+	targetUser := &models.User{
+		Email: "target@example.com",
+		Name:  "Target User",
+		Role:  models.RoleEventManager,
+	}
+	if err := userRepo.Create(ctx, targetUser); err != nil {
+		t.Fatalf("Failed to create target user: %v", err)
+	}
+
+	req := httptest.NewRequest(http.MethodGet, "/api/users/2", nil)
+	ctx = auth.WithUser(ctx, eventManager)
+	req = req.WithContext(ctx)
+	w := httptest.NewRecorder()
+
+	handler.GetUser(w, req, "2")
+
+	if w.Code != http.StatusForbidden {
+		t.Errorf("Expected status 403 for non-admin, got %d", w.Code)
+	}
+}
+
+func TestUpdateUserRole_PermissionCheck_AdminAllowed(t *testing.T) {
+	database := setupIntegrationTestDB(t)
+	defer database.Close()
+
+	userRepo := repositories.NewUserRepository(database)
+	userService := auth.NewUserService(userRepo)
+	authChecker := auth.NewAuthorizationChecker()
+	handler := NewUserHandler(userService, authChecker)
+
+	ctx := context.Background()
+
+	admin := &models.User{
+		Email: "admin@example.com",
+		Name:  "Admin User",
+		Role:  models.RoleAdmin,
+	}
+	if err := userRepo.Create(ctx, admin); err != nil {
+		t.Fatalf("Failed to create admin: %v", err)
+	}
+
+	targetUser := &models.User{
+		Email: "target@example.com",
+		Name:  "Target User",
+		Role:  models.RoleEventManager,
+	}
+	if err := userRepo.Create(ctx, targetUser); err != nil {
+		t.Fatalf("Failed to create target user: %v", err)
+	}
+
+	reqBody := `{"role": "admin"}`
+	req := httptest.NewRequest(http.MethodPatch, "/api/users/2/role", bytes.NewReader([]byte(reqBody)))
+	ctx = auth.WithUser(ctx, admin)
+	req = req.WithContext(ctx)
+	w := httptest.NewRecorder()
+
+	handler.UpdateUserRole(w, req, "2")
+
+	if w.Code != http.StatusOK {
+		t.Errorf("Expected status 200 for admin, got %d", w.Code)
+	}
+}
+
+func TestUpdateUserRole_PermissionCheck_NonAdminDenied(t *testing.T) {
+	database := setupIntegrationTestDB(t)
+	defer database.Close()
+
+	userRepo := repositories.NewUserRepository(database)
+	userService := auth.NewUserService(userRepo)
+	authChecker := auth.NewAuthorizationChecker()
+	handler := NewUserHandler(userService, authChecker)
+
+	ctx := context.Background()
+
+	eventManager := &models.User{
+		Email: "manager@example.com",
+		Name:  "Event Manager",
+		Role:  models.RoleEventManager,
+	}
+	if err := userRepo.Create(ctx, eventManager); err != nil {
+		t.Fatalf("Failed to create event manager: %v", err)
+	}
+
+	targetUser := &models.User{
+		Email: "target@example.com",
+		Name:  "Target User",
+		Role:  models.RoleEventManager,
+	}
+	if err := userRepo.Create(ctx, targetUser); err != nil {
+		t.Fatalf("Failed to create target user: %v", err)
+	}
+
+	reqBody := `{"role": "admin"}`
+	req := httptest.NewRequest(http.MethodPatch, "/api/users/2/role", bytes.NewReader([]byte(reqBody)))
+	ctx = auth.WithUser(ctx, eventManager)
+	req = req.WithContext(ctx)
+	w := httptest.NewRecorder()
+
+	handler.UpdateUserRole(w, req, "2")
+
+	if w.Code != http.StatusForbidden {
+		t.Errorf("Expected status 403 for non-admin, got %d", w.Code)
+	}
+}
+
+func TestDeleteUser_PermissionCheck_AdminAllowed(t *testing.T) {
+	database := setupIntegrationTestDB(t)
+	defer database.Close()
+
+	userRepo := repositories.NewUserRepository(database)
+	userService := auth.NewUserService(userRepo)
+	authChecker := auth.NewAuthorizationChecker()
+	handler := NewUserHandler(userService, authChecker)
+
+	ctx := context.Background()
+
+	admin := &models.User{
+		Email: "admin@example.com",
+		Name:  "Admin User",
+		Role:  models.RoleAdmin,
+	}
+	if err := userRepo.Create(ctx, admin); err != nil {
+		t.Fatalf("Failed to create admin: %v", err)
+	}
+
+	targetUser := &models.User{
+		Email: "target@example.com",
+		Name:  "Target User",
+		Role:  models.RoleEventManager,
+	}
+	if err := userRepo.Create(ctx, targetUser); err != nil {
+		t.Fatalf("Failed to create target user: %v", err)
+	}
+
+	req := httptest.NewRequest(http.MethodDelete, "/api/users/2", nil)
+	ctx = auth.WithUser(ctx, admin)
+	req = req.WithContext(ctx)
+	w := httptest.NewRecorder()
+
+	handler.DeleteUser(w, req, "2")
+
+	if w.Code != http.StatusNoContent {
+		t.Errorf("Expected status 204 for admin, got %d", w.Code)
+	}
+}
+
+func TestDeleteUser_PermissionCheck_NonAdminDenied(t *testing.T) {
+	database := setupIntegrationTestDB(t)
+	defer database.Close()
+
+	userRepo := repositories.NewUserRepository(database)
+	userService := auth.NewUserService(userRepo)
+	authChecker := auth.NewAuthorizationChecker()
+	handler := NewUserHandler(userService, authChecker)
+
+	ctx := context.Background()
+
+	eventManager := &models.User{
+		Email: "manager@example.com",
+		Name:  "Event Manager",
+		Role:  models.RoleEventManager,
+	}
+	if err := userRepo.Create(ctx, eventManager); err != nil {
+		t.Fatalf("Failed to create event manager: %v", err)
+	}
+
+	targetUser := &models.User{
+		Email: "target@example.com",
+		Name:  "Target User",
+		Role:  models.RoleEventManager,
+	}
+	if err := userRepo.Create(ctx, targetUser); err != nil {
+		t.Fatalf("Failed to create target user: %v", err)
+	}
+
+	req := httptest.NewRequest(http.MethodDelete, "/api/users/2", nil)
+	ctx = auth.WithUser(ctx, eventManager)
+	req = req.WithContext(ctx)
+	w := httptest.NewRecorder()
+
+	handler.DeleteUser(w, req, "2")
+
+	if w.Code != http.StatusForbidden {
+		t.Errorf("Expected status 403 for non-admin, got %d", w.Code)
+	}
+}

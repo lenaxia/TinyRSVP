@@ -316,7 +316,8 @@ func TestRequireAdmin_AdminAllowed(t *testing.T) {
 		w.WriteHeader(http.StatusOK)
 	})
 
-	middleware := RequireAdmin
+	authChecker := auth.NewAuthorizationChecker()
+	middleware := RequireAdmin(authChecker)
 
 	w := httptest.NewRecorder()
 	r := httptest.NewRequest("GET", "/admin", nil)
@@ -342,7 +343,8 @@ func TestRequireAdmin_EventManagerDenied(t *testing.T) {
 		w.WriteHeader(http.StatusOK)
 	})
 
-	middleware := RequireAdmin
+	authChecker := auth.NewAuthorizationChecker()
+	middleware := RequireAdmin(authChecker)
 
 	w := httptest.NewRecorder()
 	r := httptest.NewRequest("GET", "/admin", nil)
@@ -363,7 +365,8 @@ func TestRequireAdmin_NoUserInContext(t *testing.T) {
 		w.WriteHeader(http.StatusOK)
 	})
 
-	middleware := RequireAdmin
+	authChecker := auth.NewAuthorizationChecker()
+	middleware := RequireAdmin(authChecker)
 
 	w := httptest.NewRecorder()
 	r := httptest.NewRequest("GET", "/admin", nil)
@@ -385,7 +388,8 @@ func TestRequireEventManager_AdminAllowed(t *testing.T) {
 		w.WriteHeader(http.StatusOK)
 	})
 
-	middleware := RequireEventManager
+	authChecker := auth.NewAuthorizationChecker()
+	middleware := RequireEventManager(authChecker)
 
 	w := httptest.NewRecorder()
 	r := httptest.NewRequest("GET", "/events", nil)
@@ -410,7 +414,8 @@ func TestRequireEventManager_EventManagerAllowed(t *testing.T) {
 		w.WriteHeader(http.StatusOK)
 	})
 
-	middleware := RequireEventManager
+	authChecker := auth.NewAuthorizationChecker()
+	middleware := RequireEventManager(authChecker)
 
 	w := httptest.NewRecorder()
 	r := httptest.NewRequest("GET", "/events", nil)
@@ -431,7 +436,8 @@ func TestRequireEventManager_NoUserDenied(t *testing.T) {
 		w.WriteHeader(http.StatusOK)
 	})
 
-	middleware := RequireEventManager
+	authChecker := auth.NewAuthorizationChecker()
+	middleware := RequireEventManager(authChecker)
 
 	w := httptest.NewRecorder()
 	r := httptest.NewRequest("GET", "/events", nil)
@@ -486,8 +492,9 @@ func TestMiddlewareChaining(t *testing.T) {
 		w.WriteHeader(http.StatusOK)
 	})
 
+	authChecker := auth.NewAuthorizationChecker()
 	authMiddleware := RequireAuth(sessionMgr, userService)
-	adminMiddleware := RequireAdmin
+	adminMiddleware := RequireAdmin(authChecker)
 
 	chainedHandler := authMiddleware(adminMiddleware(handler))
 
@@ -515,8 +522,9 @@ func TestMiddlewareChaining_AuthFailsBeforeRoleCheck(t *testing.T) {
 		w.WriteHeader(http.StatusOK)
 	})
 
+	authChecker := auth.NewAuthorizationChecker()
 	authMiddleware := RequireAuth(sessionMgr, userService)
-	adminMiddleware := RequireAdmin
+	adminMiddleware := RequireAdmin(authChecker)
 
 	chainedHandler := authMiddleware(adminMiddleware(handler))
 
@@ -567,8 +575,9 @@ func TestMiddlewareChaining_AuthSucceedsRoleFails(t *testing.T) {
 		w.WriteHeader(http.StatusOK)
 	})
 
+	authChecker := auth.NewAuthorizationChecker()
 	authMiddleware := RequireAuth(sessionMgr, userService)
-	adminMiddleware := RequireAdmin
+	adminMiddleware := RequireAdmin(authChecker)
 
 	chainedHandler := authMiddleware(adminMiddleware(handler))
 

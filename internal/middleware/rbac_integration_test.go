@@ -162,8 +162,9 @@ func TestIntegration_MiddlewareChain_AdminOnly_WithRealDatabase(t *testing.T) {
 		w.WriteHeader(http.StatusOK)
 	})
 
+	authChecker := auth.NewAuthorizationChecker()
 	authMiddleware := RequireAuth(sessionMgr, userService)
-	adminMiddleware := RequireAdmin
+	adminMiddleware := RequireAdmin(authChecker)
 
 	chainedHandler := authMiddleware(adminMiddleware(handler))
 
@@ -207,8 +208,9 @@ func TestIntegration_MiddlewareChain_NonAdminDenied_WithRealDatabase(t *testing.
 		w.WriteHeader(http.StatusOK)
 	})
 
+	authChecker := auth.NewAuthorizationChecker()
 	authMiddleware := RequireAuth(sessionMgr, userService)
-	adminMiddleware := RequireAdmin
+	adminMiddleware := RequireAdmin(authChecker)
 
 	chainedHandler := authMiddleware(adminMiddleware(handler))
 
@@ -262,8 +264,9 @@ func TestIntegration_RequireEventManager_BothRolesAllowed_WithRealDatabase(t *te
 				w.WriteHeader(http.StatusOK)
 			})
 
+			authChecker := auth.NewAuthorizationChecker()
 			authMiddleware := RequireAuth(sessionMgr, userService)
-			managerMiddleware := RequireEventManager
+			managerMiddleware := RequireEventManager(authChecker)
 
 			chainedHandler := authMiddleware(managerMiddleware(handler))
 

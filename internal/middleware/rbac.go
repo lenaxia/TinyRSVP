@@ -5,7 +5,6 @@ import (
 	"net/http"
 
 	"github.com/yourusername/tinyrsvp/internal/auth"
-	"github.com/yourusername/tinyrsvp/internal/models"
 )
 
 func RequireAuth(sessionMgr auth.SessionManager, userService auth.UserService) func(http.Handler) http.Handler {
@@ -44,38 +43,42 @@ func RequireAuth(sessionMgr auth.SessionManager, userService auth.UserService) f
 	}
 }
 
-func RequireAdmin(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		user, ok := auth.UserFromContext(r.Context())
-		if !ok {
-			w.Header().Set("WWW-Authenticate", "Cookie")
-			http.Error(w, "Unauthorized", http.StatusUnauthorized)
-			return
-		}
+func RequireAdmin(authChecker auth.AuthorizationChecker) func(http.Handler) http.Handler {
+	return func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			user, ok := auth.UserFromContext(r.Context())
+			if !ok {
+				w.Header().Set("WWW-Authenticate", "Cookie")
+				http.Error(w, "Unauthorized", http.StatusUnauthorized)
+				return
+			}
 
-		if user.Role != models.RoleAdmin {
-			http.Error(w, "Forbidden", http.StatusForbidden)
-			return
-		}
+			if !authChecker.IsAdmin(user) {
+				http.Error(w, "Forbidden", http.StatusForbidden)
+				return
+			}
 
-		next.ServeHTTP(w, r)
-	})
+			next.ServeHTTP(w, r)
+		})
+	}
 }
 
-func RequireEventManager(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		user, ok := auth.UserFromContext(r.Context())
-		if !ok {
-			w.Header().Set("WWW-Authenticate", "Cookie")
-			http.Error(w, "Unauthorized", http.StatusUnauthorized)
-			return
-		}
+func RequireEventManager(authChecker auth.AuthorizationChecker) func(http.Handler) http.Handler {
+	return func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			user, ok := auth.UserFromContext(r.Context())
+			if !ok {
+				w.Header().Set("WWW-Authenticate", "Cookie")
+				http.Error(w, "Unauthorized", http.StatusUnauthorized)
+				return
+			}
 
-		if user.Role != models.RoleAdmin && user.Role != models.RoleEventManager {
-			http.Error(w, "Forbidden", http.StatusForbidden)
-			return
-		}
+			if !authChecker.IsEventManager(user) {
+				http.Error(w, "Forbidden", http.StatusForbidden)
+				return
+			}
 
-		next.ServeHTTP(w, r)
-	})
+			next.ServeHTTP(w, r)
+		})
+	}
 }

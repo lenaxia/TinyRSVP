@@ -118,7 +118,7 @@ func main() {
 	userHandler := handlers.NewUserHandler(userService, authChecker)
 
 	requireAuth := middleware.RequireAuth(sessionMgr, userService)
-	requireAdmin := middleware.RequireAdmin
+	requireAdmin := middleware.RequireAdmin(authChecker)
 
 	mux.Handle("/api/users", requireAuth(requireAdmin(http.HandlerFunc(userHandler.ListUsers))))
 	logger.Info("Registered user management endpoint", "path", "/api/users", "method", "GET", "protection", "admin")
