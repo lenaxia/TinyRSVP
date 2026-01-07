@@ -45,6 +45,7 @@ type TimezoneValidator interface {
 - Required
 - 3-200 characters
 - No leading/trailing whitespace
+- XSS Protection: Sanitization occurs at the template rendering layer using Go's html/template package, which automatically escapes HTML entities. Input validation focuses on length and format constraints.
 
 ### Description
 - Optional
@@ -84,13 +85,21 @@ type TimezoneValidator interface {
 - PUBLISHED → CANCELLED
 - PUBLISHED → ARCHIVED
 - CANCELLED → ARCHIVED
-- COMPLETED → ARCHIVED
 
 ### Invalid Transitions
 - Any state → DRAFT (cannot revert to draft)
 - ARCHIVED → Any state (archived is final)
 - CANCELLED → PUBLISHED (cannot un-cancel)
-- COMPLETED → PUBLISHED (cannot un-complete)
+
+## Update Validation Behavior
+
+### Start Time Validation
+ValidateUpdate intentionally does NOT validate that start time is in the future. This allows:
+- Updating published events that have already started or passed
+- Modifying event details after the event has occurred
+- Correcting event information retroactively
+
+The start time future validation only applies during event creation (ValidateCreate) to prevent creating events in the past.
 
 ## Usage
 

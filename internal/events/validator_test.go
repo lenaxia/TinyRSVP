@@ -354,12 +354,6 @@ func TestEventValidator_ValidateStateTransition(t *testing.T) {
 			wantErr: false,
 		},
 		{
-			name:    "completed to archived",
-			from:    models.EventStatusCompleted,
-			to:      models.EventStatusArchived,
-			wantErr: false,
-		},
-		{
 			name:    "archived to published",
 			from:    models.EventStatusArchived,
 			to:      models.EventStatusPublished,
@@ -400,20 +394,6 @@ func TestEventValidator_ValidateStateTransition(t *testing.T) {
 			to:      models.EventStatusDraft,
 			wantErr: true,
 			errMsg:  "cannot revert to draft",
-		},
-		{
-			name:    "completed to draft",
-			from:    models.EventStatusCompleted,
-			to:      models.EventStatusDraft,
-			wantErr: true,
-			errMsg:  "cannot revert to draft",
-		},
-		{
-			name:    "completed to published",
-			from:    models.EventStatusCompleted,
-			to:      models.EventStatusPublished,
-			wantErr: true,
-			errMsg:  "cannot transition from completed to published",
 		},
 		{
 			name:    "same state transition",
@@ -496,17 +476,6 @@ func TestEventValidator_ValidateUpdate(t *testing.T) {
 			},
 			wantErr: true,
 			errMsg:  "cannot update archived event",
-		},
-		{
-			name: "update completed event",
-			event: &models.Event{
-				Title:     "Event",
-				StartTime: time.Now().Add(24 * time.Hour),
-				Timezone:  "America/Los_Angeles",
-				Status:    models.EventStatusCompleted,
-			},
-			wantErr: true,
-			errMsg:  "cannot update completed event",
 		},
 		{
 			name: "invalid title in update",

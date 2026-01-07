@@ -7,7 +7,6 @@ type EventStatus string
 const (
 	EventStatusDraft     EventStatus = "draft"
 	EventStatusPublished EventStatus = "published"
-	EventStatusCompleted EventStatus = "completed"
 	EventStatusCancelled EventStatus = "cancelled"
 	EventStatusArchived  EventStatus = "archived"
 )

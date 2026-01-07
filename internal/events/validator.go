@@ -76,13 +76,6 @@ func (v *validator) ValidateUpdate(ctx context.Context, event *models.Event) err
 		}
 	}
 
-	if event.Status == models.EventStatusCompleted {
-		return &models.ValidationError{
-			Field:   "status",
-			Message: "cannot update completed event",
-		}
-	}
-
 	if err := v.validateTitle(event.Title); err != nil {
 		return err
 	}
@@ -146,9 +139,6 @@ func (v *validator) ValidateStateTransition(from, to models.EventStatus) error {
 			models.EventStatusArchived,
 		},
 		models.EventStatusCancelled: {
-			models.EventStatusArchived,
-		},
-		models.EventStatusCompleted: {
 			models.EventStatusArchived,
 		},
 	}
