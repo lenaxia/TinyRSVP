@@ -10,6 +10,10 @@ Provides OIDC authentication, session management, and user service for TinyRSVP 
 - [`oidc.go`](oidc.go) - OIDC authentication implementation
 - [`oidc_test.go`](oidc_test.go) - OIDC authenticator tests
 
+### Forward Auth Authenticator
+- [`forward_auth.go`](forward_auth.go) - Forward auth implementation
+- [`forward_auth_test.go`](forward_auth_test.go) - Forward auth tests
+
 ### Session Management
 - [`session.go`](session.go) - Session manager implementation
 - [`session_test.go`](session_test.go) - Session manager tests
@@ -53,6 +57,28 @@ authenticator, err := auth.NewOIDCAuthenticator(oidcCfg, userService, sessionMgr
 if err != nil {
     log.Fatalf("Failed to create authenticator: %v", err)
 }
+```
+
+### Initialize Forward Auth
+
+```go
+import (
+    "github.com/yourusername/tinyrsvp/internal/auth"
+    "github.com/yourusername/tinyrsvp/internal/config"
+    "github.com/yourusername/tinyrsvp/internal/db/repositories"
+)
+
+appCfg, _ := config.Load()
+database, _ := db.New(&appCfg.Database)
+
+userRepo := repositories.NewUserRepository(database)
+sessionRepo := repositories.NewSessionRepository(database)
+
+userService := auth.NewUserService(userRepo)
+sessionMgr := auth.NewSessionManager(sessionRepo, true)
+
+fwdAuthCfg := auth.NewForwardAuthConfigFromAppConfig(appCfg)
+authenticator := auth.NewForwardAuthenticator(fwdAuthCfg, userService, sessionMgr)
 ```
 
 ### Wire HTTP Handlers
@@ -113,12 +139,24 @@ go test -timeout 30s ./internal/auth/... -run TestHandler
 
 ## Environment Variables
 
+### OIDC Authentication
+
 Required when OIDC is enabled:
 - `OIDC_ENABLED=true`
 - `OIDC_ISSUER_URL` - OIDC provider URL (must be HTTPS)
 - `OIDC_CLIENT_ID` - OAuth2 client ID
 - `OIDC_CLIENT_SECRET` - OAuth2 client secret
 - `OIDC_REDIRECT_URL` - Callback URL (e.g., https://rsvp.example.com/auth/callback)
+
+### Forward Auth
+
+Required when forward auth is enabled:
+- `FORWARD_AUTH_ENABLED=true`
+- `FORWARD_AUTH_USER_HEADER` - Header containing username (e.g., Remote-User)
+- `FORWARD_AUTH_EMAIL_HEADER` - Header containing email (e.g., Remote-Email)
+- `FORWARD_AUTH_TRUSTED_IPS` - Comma-separated list of trusted proxy IPs (e.g., 127.0.0.1,10.0.0.1)
+
+Note: Cannot enable both OIDC and forward auth simultaneously.
 
 ## References
 

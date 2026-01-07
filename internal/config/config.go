@@ -12,12 +12,13 @@ import (
 )
 
 type Config struct {
-	Server   ServerConfig
-	Database DatabaseConfig
-	OIDC     OIDCConfig
-	Email    EmailConfig
-	Storage  StorageConfig
-	Security SecurityConfig
+	Server      ServerConfig
+	Database    DatabaseConfig
+	OIDC        OIDCConfig
+	ForwardAuth ForwardAuthConfig
+	Email       EmailConfig
+	Storage     StorageConfig
+	Security    SecurityConfig
 }
 
 type ServerConfig struct {
@@ -43,6 +44,13 @@ type OIDCConfig struct {
 	ClientID     string
 	ClientSecret string
 	RedirectURL  string
+}
+
+type ForwardAuthConfig struct {
+	Enabled     bool
+	UserHeader  string
+	EmailHeader string
+	TrustedIPs  []string
 }
 
 type EmailConfig struct {
@@ -144,6 +152,10 @@ func (c *Config) loadFromEnv() error {
 	c.OIDC.ClientSecret = getEnvString("OIDC_CLIENT_SECRET", "")
 	c.OIDC.RedirectURL = getEnvString("OIDC_REDIRECT_URL", "")
 
+	if err := c.loadForwardAuthFromEnv(); err != nil {
+		return err
+	}
+
 	c.Email.SMTPHost = getEnvString("SMTP_HOST", "")
 	if c.Email.SMTPHost == "" {
 		return fmt.Errorf("SMTP_HOST is required")
@@ -201,6 +213,14 @@ func (c *Config) Validate() error {
 
 	if err := c.validateOIDC(); err != nil {
 		return fmt.Errorf("OIDC config: %w", err)
+	}
+
+	if err := c.validateForwardAuth(); err != nil {
+		return fmt.Errorf("forward auth config: %w", err)
+	}
+
+	if err := c.validateAuthModes(); err != nil {
+		return fmt.Errorf("auth config: %w", err)
 	}
 
 	if err := c.validateEmail(); err != nil {

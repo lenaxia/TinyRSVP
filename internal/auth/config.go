@@ -13,3 +13,11 @@ func NewOIDCConfigFromAppConfig(appCfg *config.Config) *OIDCConfig {
 		Scopes:       []string{"openid", "email", "profile"},
 	}
 }
+
+func NewForwardAuthConfigFromAppConfig(appCfg *config.Config) *ForwardAuthConfig {
+	return &ForwardAuthConfig{
+		UserHeader:  appCfg.ForwardAuth.UserHeader,
+		EmailHeader: appCfg.ForwardAuth.EmailHeader,
+		TrustedIPs:  appCfg.ForwardAuth.TrustedIPs,
+	}
+}
