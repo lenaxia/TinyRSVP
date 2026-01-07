@@ -11,12 +11,10 @@ import (
 
 func TestUserService_CreateUser_FirstUserIsAdmin(t *testing.T) {
 	mockRepo := &MockUserRepository{
-		IsFirstUserFunc: func(ctx context.Context) (bool, error) {
-			return true, nil
-		},
-		CreateFunc: func(ctx context.Context, user *models.User) error {
+		CreateWithBootstrapCheckFunc: func(ctx context.Context, user *models.User) (bool, error) {
 			user.ID = 1
-			return nil
+			user.Role = models.RoleAdmin
+			return true, nil
 		},
 	}
 
@@ -34,12 +32,10 @@ func TestUserService_CreateUser_FirstUserIsAdmin(t *testing.T) {
 
 func TestUserService_CreateUser_SecondUserIsEventManager(t *testing.T) {
 	mockRepo := &MockUserRepository{
-		IsFirstUserFunc: func(ctx context.Context) (bool, error) {
-			return false, nil
-		},
-		CreateFunc: func(ctx context.Context, user *models.User) error {
+		CreateWithBootstrapCheckFunc: func(ctx context.Context, user *models.User) (bool, error) {
 			user.ID = 2
-			return nil
+			user.Role = models.RoleEventManager
+			return false, nil
 		},
 	}
 
@@ -145,12 +141,10 @@ func TestUserService_GetOrCreateUser_NewUser(t *testing.T) {
 		GetByEmailFunc: func(ctx context.Context, email string) (*models.User, error) {
 			return nil, &models.NotFoundError{Resource: "User", ID: email}
 		},
-		IsFirstUserFunc: func(ctx context.Context) (bool, error) {
-			return false, nil
-		},
-		CreateFunc: func(ctx context.Context, user *models.User) error {
+		CreateWithBootstrapCheckFunc: func(ctx context.Context, user *models.User) (bool, error) {
 			user.ID = 3
-			return nil
+			user.Role = models.RoleEventManager
+			return false, nil
 		},
 	}
 
@@ -407,16 +401,17 @@ func TestUserService_UpdateUser(t *testing.T) {
 }
 
 type MockUserRepository struct {
-	CreateFunc           func(ctx context.Context, user *models.User) error
-	GetByIDFunc          func(ctx context.Context, id int64) (*models.User, error)
-	GetByEmailFunc       func(ctx context.Context, email string) (*models.User, error)
-	GetByOIDCSubjectFunc func(ctx context.Context, subject string) (*models.User, error)
-	UpdateFunc           func(ctx context.Context, user *models.User) error
-	DeleteFunc           func(ctx context.Context, id int64) error
-	ListFunc             func(ctx context.Context, limit, offset int) ([]*models.User, error)
-	CountFunc            func(ctx context.Context) (int, error)
-	IsFirstUserFunc      func(ctx context.Context) (bool, error)
-	UpdateLastLoginFunc  func(ctx context.Context, userID int64) error
+	CreateFunc                  func(ctx context.Context, user *models.User) error
+	CreateWithBootstrapCheckFunc func(ctx context.Context, user *models.User) (bool, error)
+	GetByIDFunc                 func(ctx context.Context, id int64) (*models.User, error)
+	GetByEmailFunc              func(ctx context.Context, email string) (*models.User, error)
+	GetByOIDCSubjectFunc        func(ctx context.Context, subject string) (*models.User, error)
+	UpdateFunc                  func(ctx context.Context, user *models.User) error
+	DeleteFunc                  func(ctx context.Context, id int64) error
+	ListFunc                    func(ctx context.Context, limit, offset int) ([]*models.User, error)
+	CountFunc                   func(ctx context.Context) (int, error)
+	IsFirstUserFunc             func(ctx context.Context) (bool, error)
+	UpdateLastLoginFunc         func(ctx context.Context, userID int64) error
 }
 
 func (m *MockUserRepository) Create(ctx context.Context, user *models.User) error {
@@ -424,6 +419,15 @@ func (m *MockUserRepository) Create(ctx context.Context, user *models.User) erro
 		return m.CreateFunc(ctx, user)
 	}
 	return nil
+}
+
+func (m *MockUserRepository) CreateWithBootstrapCheck(ctx context.Context, user *models.User) (bool, error) {
+	if m.CreateWithBootstrapCheckFunc != nil {
+		return m.CreateWithBootstrapCheckFunc(ctx, user)
+	}
+	user.ID = 1
+	user.Role = models.RoleEventManager
+	return false, nil
 }
 
 func (m *MockUserRepository) GetByID(ctx context.Context, id int64) (*models.User, error) {

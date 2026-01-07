@@ -4,7 +4,7 @@
 **Priority:** Critical
 **Status:** Complete
 **Estimated Effort:** 2 hours
-**Actual Effort:** 1.5 hours
+**Actual Effort:** 2.5 hours
 **Completed:** 2026-01-07
 
 ---
@@ -217,7 +217,13 @@ func TestBootstrap_ConcurrentFirstUser(t *testing.T) {
 
 ### Race Condition Prevention
 
-The bootstrap logic relies on database constraints (unique email) to prevent race conditions. If multiple users try to authenticate simultaneously on an empty database, only one will successfully become admin due to transaction isolation.
+The bootstrap logic uses a transactional approach to prevent race conditions. The `CreateWithBootstrapCheck` method atomically:
+1. Checks the user count within a transaction
+2. Determines the appropriate role (admin if count == 0, event_manager otherwise)
+3. Inserts the user with the correct role
+4. Commits the transaction
+
+This ensures that if multiple users try to authenticate simultaneously on an empty database, exactly one will become admin due to transaction serialization. The unique email constraint provides additional protection against duplicate users.
 
 ### Manual Admin Promotion
 

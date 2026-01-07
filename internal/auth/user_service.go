@@ -29,24 +29,14 @@ func (s *userService) CreateUser(ctx context.Context, email, name string, oidcSu
 		return nil, err
 	}
 
-	isFirst, err := s.repo.IsFirstUser(ctx)
-	if err != nil {
-		return nil, fmt.Errorf("failed to check if first user: %w", err)
-	}
-
-	role := models.RoleEventManager
-	if isFirst {
-		role = models.RoleAdmin
-	}
-
 	user := &models.User{
 		Email:       email,
 		Name:        name,
-		Role:        role,
 		OIDCSubject: oidcSubject,
 	}
 
-	if err := s.repo.Create(ctx, user); err != nil {
+	_, err := s.repo.CreateWithBootstrapCheck(ctx, user)
+	if err != nil {
 		return nil, fmt.Errorf("failed to create user: %w", err)
 	}
 

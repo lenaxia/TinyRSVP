@@ -1,9 +1,9 @@
 # Worklog: Bootstrap Admin User
 
-**Date:** 2026-01-07  
-**Story:** [01_STORY_05_bootstrap_admin.md](../00_BACKLOG/01_STORY_05_bootstrap_admin.md)  
-**Status:** Complete  
-**Time Spent:** 1.5 hours
+**Date:** 2026-01-07
+**Story:** [01_STORY_05_bootstrap_admin.md](../00_BACKLOG/01_STORY_05_bootstrap_admin.md)
+**Status:** Complete
+**Time Spent:** 2.5 hours
 
 ---
 
@@ -61,8 +61,12 @@ go test -timeout 30s -v ./internal/db/repositories/...
 
 ### New Files
 - `internal/auth/user_service_integration_test.go` - Integration tests with real database
+- `internal/db/repositories/user_repository_bootstrap_test.go` - Atomic bootstrap tests
 
 ### Modified Files
+- `internal/db/repositories/user_repository.go` - Added `CreateWithBootstrapCheck` method
+- `internal/auth/user_service.go` - Updated to use `CreateWithBootstrapCheck`
+- `internal/auth/user_service_test.go` - Updated mocks for new method
 - `docs/00_BACKLOG/01_STORY_05_bootstrap_admin.md` - Updated status and tasks
 - `docs/01_WORKLOG/2026-01-07_05_bootstrap_admin.md` - This worklog
 
@@ -96,13 +100,19 @@ go test -timeout 30s -v ./internal/db/repositories/...
 ### 1. Authorization Deferred to RBAC Story
 The story mentioned testing "non-admin attempting promotion." This authorization check belongs in the HTTP handler/middleware layer, not the service layer. The service's `UpdateUserRole` is a low-level operation that should be callable by authorized code. Authorization will be implemented in story 01_STORY_07_rbac_middleware.
 
-### 2. Concurrent Test Approach
+### 2. Race Condition Fix (Critical)
+During validation with `-race` flag, discovered a race condition in the original implementation:
+- **Problem:** Two goroutines could both call `IsFirstUser()` and both see `count == 0` before either completed the insert
+- **Solution:** Implemented [`CreateWithBootstrapCheck`](../../internal/db/repositories/user_repository.go:92-169) that atomically checks count and inserts within a single transaction
+- **Result:** Race detector passes, exactly one admin created under concurrent load
+
+### 3. Concurrent Test Approach
 The concurrent test allows for some failures due to unique email constraints, which is expected behavior. The test verifies:
 - Exactly one admin is created
 - All successful creations have correct roles
-- Database constraints prevent race conditions
+- Database transaction isolation prevents race conditions
 
-### 3. Integration Test Database Setup
+### 4. Integration Test Database Setup
 Uses in-memory SQLite with full migrations to ensure tests match production behavior. Each test gets a fresh database instance.
 
 ---

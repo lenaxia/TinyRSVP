@@ -14,6 +14,7 @@ import (
 
 type UserRepository interface {
 	Create(ctx context.Context, user *models.User) error
+	CreateWithBootstrapCheck(ctx context.Context, user *models.User) (isFirst bool, err error)
 	GetByID(ctx context.Context, id int64) (*models.User, error)
 	GetByEmail(ctx context.Context, email string) (*models.User, error)
 	GetByOIDCSubject(ctx context.Context, subject string) (*models.User, error)
@@ -86,6 +87,91 @@ func (r *userRepository) Create(ctx context.Context, user *models.User) error {
 	user.UpdatedAt = now
 
 	return nil
+}
+
+func (r *userRepository) CreateWithBootstrapCheck(ctx context.Context, user *models.User) (bool, error) {
+	if user.Email == "" {
+		return false, &models.ValidationError{
+			Field:   "email",
+			Message: "email is required",
+		}
+	}
+
+	var isFirst bool
+	var insertErr error
+
+	txErr := r.db.WithTransaction(ctx, func(tx *sql.Tx) error {
+		var count int
+		err := tx.QueryRowContext(ctx, "SELECT COUNT(*) FROM users").Scan(&count)
+		if err != nil {
+			return fmt.Errorf("failed to count users: %w", err)
+		}
+
+		isFirst = (count == 0)
+
+		role := models.RoleEventManager
+		if isFirst {
+			role = models.RoleAdmin
+		}
+
+		query := `
+			INSERT INTO users (email, name, role, oidc_subject, created_at, updated_at)
+			VALUES (?, ?, ?, ?, ?, ?)
+		`
+
+		now := time.Now()
+		result, err := tx.ExecContext(ctx, query,
+			user.Email,
+			user.Name,
+			role,
+			user.OIDCSubject,
+			now,
+			now,
+		)
+
+		if err != nil {
+			if isUniqueConstraintError(err) {
+				if strings.Contains(err.Error(), "email") {
+					insertErr = &models.ConflictError{
+						Resource: "User",
+						Field:    "email",
+						Value:    user.Email,
+					}
+					return insertErr
+				}
+				if strings.Contains(err.Error(), "oidc_subject") {
+					insertErr = &models.ConflictError{
+						Resource: "User",
+						Field:    "oidc_subject",
+						Value:    user.OIDCSubject,
+					}
+					return insertErr
+				}
+			}
+			return fmt.Errorf("failed to create user: %w", err)
+		}
+
+		id, err := result.LastInsertId()
+		if err != nil {
+			return fmt.Errorf("failed to get last insert id: %w", err)
+		}
+
+		user.ID = id
+		user.Role = role
+		user.CreatedAt = now
+		user.UpdatedAt = now
+
+		return nil
+	})
+
+	if txErr != nil {
+		if insertErr != nil {
+			return false, insertErr
+		}
+		return false, txErr
+	}
+
+	return isFirst, nil
 }
 
 func (r *userRepository) GetByID(ctx context.Context, id int64) (*models.User, error) {
