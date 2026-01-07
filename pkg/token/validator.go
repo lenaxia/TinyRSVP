@@ -61,8 +61,9 @@ type validator struct {
 //   - Should be stored securely (environment variable, secrets manager)
 //
 // Example:
-//   secret := []byte(os.Getenv("TOKEN_SECRET"))
-//   validator := NewValidator(secret)
+//
+//	secret := []byte(os.Getenv("TOKEN_SECRET"))
+//	validator := NewValidator(secret)
 func NewValidator(secret []byte) Validator {
 	return &validator{secret: secret}
 }
@@ -70,10 +71,10 @@ func NewValidator(secret []byte) Validator {
 // Validate performs constant-time validation of a token against its hash.
 //
 // Implementation Details:
-//   1. Computes HMAC-SHA256 of the provided token
-//   2. Base64-URL encodes the computed hash
-//   3. Uses hmac.Equal() for constant-time comparison with provided hash
-//   4. Returns true only if hashes match exactly
+//  1. Computes HMAC-SHA256 of the provided token
+//  2. Base64-URL encodes the computed hash
+//  3. Uses hmac.Equal() for constant-time comparison with provided hash
+//  4. Returns true only if hashes match exactly
 //
 // The constant-time comparison is critical for security. Using standard
 // comparison operators (==, bytes.Equal, strings.Compare) would leak timing
@@ -92,10 +93,10 @@ func (v *validator) Validate(token, hash string) bool {
 	if token == "" || hash == "" {
 		return false
 	}
-	
+
 	h := hmac.New(sha256.New, v.secret)
 	h.Write([]byte(token))
 	computedHash := base64.URLEncoding.WithPadding(base64.NoPadding).EncodeToString(h.Sum(nil))
-	
+
 	return hmac.Equal([]byte(computedHash), []byte(hash))
 }

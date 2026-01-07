@@ -31,12 +31,12 @@ func (m *mockGenerator) Hash(t string) (string, error) {
 }
 
 type mockInviteRepository struct {
-	createFunc           func(ctx context.Context, invite *models.Invite) error
-	getByIDFunc          func(ctx context.Context, id int64) (*models.Invite, error)
-	getByTokenHashFunc   func(ctx context.Context, tokenHash string) (*models.Invite, error)
-	updateFunc           func(ctx context.Context, invite *models.Invite) error
-	listByEventIDFunc    func(ctx context.Context, eventID int64, filters repositories.InviteFilters) ([]*models.Invite, error)
-	findDuplicateEmails  func(ctx context.Context, eventID int64, emails []string) ([]string, error)
+	createFunc              func(ctx context.Context, invite *models.Invite) error
+	getByIDFunc             func(ctx context.Context, id int64) (*models.Invite, error)
+	getByTokenHashFunc      func(ctx context.Context, tokenHash string) (*models.Invite, error)
+	updateFunc              func(ctx context.Context, invite *models.Invite) error
+	listByEventIDFunc       func(ctx context.Context, eventID int64, filters repositories.InviteFilters) ([]*models.Invite, error)
+	findDuplicateEmailsFunc func(ctx context.Context, eventID int64, emails []string) ([]string, error)
 }
 
 func (m *mockInviteRepository) Create(ctx context.Context, invite *models.Invite) error {
@@ -95,8 +95,8 @@ func (m *mockInviteRepository) GetStats(ctx context.Context, eventID int64) (*re
 }
 
 func (m *mockInviteRepository) FindDuplicateEmails(ctx context.Context, eventID int64, emails []string) ([]string, error) {
-	if m.findDuplicateEmails != nil {
-		return m.findDuplicateEmails(ctx, eventID, emails)
+	if m.findDuplicateEmailsFunc != nil {
+		return m.findDuplicateEmailsFunc(ctx, eventID, emails)
 	}
 	return []string{}, nil
 }
@@ -306,12 +306,12 @@ func TestInviteService_GetInviteByToken(t *testing.T) {
 	email := "test@example.com"
 
 	tests := []struct {
-		name        string
-		token       string
-		mockGen     *mockGenerator
-		mockRepo    *mockInviteRepository
-		wantErr     bool
-		errContains string
+		name           string
+		token          string
+		mockGen        *mockGenerator
+		mockRepo       *mockInviteRepository
+		wantErr        bool
+		errContains    string
 		validateResult func(t *testing.T, invite *models.Invite)
 	}{
 		{

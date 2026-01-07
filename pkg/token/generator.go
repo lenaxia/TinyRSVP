@@ -84,11 +84,12 @@ type generator struct {
 //   - Consider implementing key rotation for long-lived deployments
 //
 // Example:
-//   secret := make([]byte, 32)
-//   if _, err := rand.Read(secret); err != nil {
-//       log.Fatal(err)
-//   }
-//   gen := NewGenerator(secret)
+//
+//	secret := make([]byte, 32)
+//	if _, err := rand.Read(secret); err != nil {
+//	    log.Fatal(err)
+//	}
+//	gen := NewGenerator(secret)
 func NewGenerator(secret []byte) Generator {
 	return &generator{secret: secret}
 }

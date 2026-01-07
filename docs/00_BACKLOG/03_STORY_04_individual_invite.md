@@ -1,9 +1,10 @@
 # User Story: Individual Invite Creation
 
-**Epic:** [03_EPIC_invites.md](03_EPIC_invites.md)  
-**Priority:** High  
-**Status:** Not Started  
+**Epic:** [03_EPIC_invites.md](03_EPIC_invites.md)
+**Priority:** High
+**Status:** Complete
 **Estimated Effort:** 1 day
+**Completed:** 2026-01-07
 
 ---
 
@@ -15,19 +16,19 @@ As an **event manager**, I want **to create individual invites with email addres
 
 ## Acceptance Criteria
 
-- [ ] Event manager can create invite for their event
-- [ ] Invite requires valid email address
-- [ ] Guest name is optional
-- [ ] Max plus ones defaults to event's max_plus_ones
-- [ ] Max plus ones cannot exceed event's max_plus_ones
-- [ ] Token generated automatically and securely
-- [ ] Token hash stored in database (not plain token)
-- [ ] Token returned once to caller (for email/display)
-- [ ] Invite expires 30 days after event date
-- [ ] Duplicate emails detected and rejected
-- [ ] Permission check: only event creator/managers can create invites
-- [ ] Invite created in 'draft' status
-- [ ] HTTP API endpoint for invite creation
+- [x] Event manager can create invite for their event
+- [x] Invite requires valid email address
+- [x] Guest name is optional
+- [x] Max plus ones defaults to event's max_plus_ones
+- [x] Max plus ones cannot exceed event's max_plus_ones
+- [x] Token generated automatically and securely
+- [x] Token hash stored in database (not plain token)
+- [x] Token returned once to caller (for email/display)
+- [x] Invite expires 30 days after event date
+- [x] Duplicate emails detected and rejected
+- [x] Permission check: only event creator/managers can create invites
+- [x] Invite created in 'draft' status
+- [x] HTTP API endpoint for invite creation
 
 ---
 
@@ -93,44 +94,44 @@ Response 201 Created:
 ## Subtasks
 
 ### Service Implementation
-- [ ] Create `InviteService` interface
-- [ ] Implement `CreateInvite()` method
-- [ ] Validate email format
-- [ ] Check for duplicate email in event
-- [ ] Verify event exists and is not cancelled
-- [ ] Check user has permission to create invites
-- [ ] Validate max_plus_ones against event limit
-- [ ] Generate secure token
-- [ ] Hash token for storage
-- [ ] Calculate expiration date (event date + 30 days)
-- [ ] Create invite in database
-- [ ] Return invite with plain token
+- [x] Create `InviteService` interface
+- [x] Implement `CreateInvite()` method
+- [x] Validate email format
+- [x] Check for duplicate email in event
+- [x] Verify event exists and is not cancelled
+- [x] Check user has permission to create invites
+- [x] Validate max_plus_ones against event limit
+- [x] Generate secure token
+- [x] Hash token for storage
+- [x] Calculate expiration date (event date + 30 days)
+- [x] Create invite in database
+- [x] Return invite with plain token
 
 ### Handler Implementation
-- [ ] Create POST `/api/events/:eventId/invites` endpoint
-- [ ] Parse and validate request body
-- [ ] Extract user from context
-- [ ] Call invite service
-- [ ] Format response with RSVP URL
-- [ ] Handle errors appropriately
+- [x] Create POST `/api/events/:eventId/invites` endpoint
+- [x] Parse and validate request body
+- [x] Extract user from context
+- [x] Call invite service
+- [x] Format response with RSVP URL
+- [x] Handle errors appropriately
 
 ### Testing
-- [ ] Test successful invite creation
-- [ ] Test duplicate email rejection
-- [ ] Test invalid email format
-- [ ] Test max_plus_ones validation
-- [ ] Test permission checks
-- [ ] Test non-existent event
-- [ ] Test cancelled event
-- [ ] Test token generation uniqueness
-- [ ] Test expiration date calculation
-- [ ] Integration test full flow
+- [x] Test successful invite creation
+- [x] Test duplicate email rejection
+- [x] Test invalid email format
+- [x] Test max_plus_ones validation
+- [x] Test permission checks
+- [x] Test non-existent event
+- [x] Test cancelled event
+- [x] Test token generation uniqueness
+- [x] Test expiration date calculation
+- [x] Integration test full flow
 
 ### Documentation
-- [ ] API endpoint documentation
-- [ ] Request/response examples
-- [ ] Error codes and messages
-- [ ] Permission requirements
+- [x] API endpoint documentation
+- [x] Request/response examples
+- [x] Error codes and messages
+- [x] Permission requirements
 
 ---
 
@@ -300,14 +301,14 @@ if err == nil && existing != nil {
 
 ## Definition of Done
 
-- [ ] All acceptance criteria met
-- [ ] Service layer implemented and tested
-- [ ] HTTP handler implemented and tested
-- [ ] Unit tests passing (>90% coverage)
-- [ ] Integration tests passing
-- [ ] Permission checks working
-- [ ] Validation rules enforced
-- [ ] Error handling complete
-- [ ] Documentation updated
-- [ ] Code reviewed
-- [ ] No linter warnings
+- [x] All acceptance criteria met
+- [x] Service layer implemented and tested
+- [x] HTTP handler implemented and tested
+- [x] Unit tests passing (>90% coverage)
+- [x] Integration tests passing
+- [x] Permission checks working
+- [x] Validation rules enforced
+- [x] Error handling complete
+- [x] Documentation updated
+- [x] Code reviewed
+- [x] No linter warnings
