@@ -1,11 +1,11 @@
 # User Story: Permission Checking Service
 
-**Epic:** [01_EPIC_auth.md](01_EPIC_auth.md)  
-**Priority:** Critical  
-**Status:** Not Started  
-**Estimated Effort:** 5 hours  
-**Actual Effort:** TBD  
-**Completed:** TBD
+**Epic:** [01_EPIC_auth.md](01_EPIC_auth.md)
+**Priority:** Critical
+**Status:** Complete
+**Estimated Effort:** 5 hours
+**Actual Effort:** 1 hour
+**Completed:** 2026-01-07
 
 ---
 
@@ -17,14 +17,14 @@ As a **developer**, I want **a centralized permission checking service** so that
 
 ## Acceptance Criteria
 
-- [ ] Authorization checker interface implemented
-- [ ] Admin role check functional
-- [ ] Event manager role check functional
-- [ ] Event ownership check functional
-- [ ] Event permission methods working
-- [ ] User management permission methods working
-- [ ] System configuration permission methods working
-- [ ] All tests pass with timeout
+- [x] Authorization checker interface implemented
+- [x] Admin role check functional
+- [x] Event manager role check functional
+- [x] Event ownership check functional
+- [x] Event permission methods working
+- [x] User management permission methods working
+- [x] System configuration permission methods working
+- [x] All tests pass with timeout
 
 ---
 
@@ -69,48 +69,48 @@ type AuthorizationChecker interface {
 ## Tasks
 
 ### Phase 1: Role Checks (TDD)
-- [ ] Write test for IsAdmin with admin user
-- [ ] Write test for IsAdmin with non-admin user
-- [ ] Write test for IsEventManager with admin
-- [ ] Write test for IsEventManager with event manager
-- [ ] Write test for IsEventManager with nil user
-- [ ] Implement role check methods
-- [ ] Run tests (should pass)
+- [x] Write test for IsAdmin with admin user
+- [x] Write test for IsAdmin with non-admin user
+- [x] Write test for IsEventManager with admin
+- [x] Write test for IsEventManager with event manager
+- [x] Write test for IsEventManager with nil user
+- [x] Implement role check methods
+- [x] Run tests (should pass)
 
 ### Phase 2: Event Permissions (TDD)
-- [ ] Write test for CanCreateEvent
-- [ ] Write test for CanEditEvent (owner)
-- [ ] Write test for CanEditEvent (non-owner)
-- [ ] Write test for CanEditEvent (admin)
-- [ ] Write test for CanDeleteEvent with different statuses
-- [ ] Write test for CanViewEvent
-- [ ] Implement event permission methods
-- [ ] Run tests (should pass)
+- [x] Write test for CanCreateEvent
+- [x] Write test for CanEditEvent (owner)
+- [x] Write test for CanEditEvent (non-owner)
+- [x] Write test for CanEditEvent (admin)
+- [x] Write test for CanDeleteEvent with different statuses
+- [x] Write test for CanViewEvent
+- [x] Implement event permission methods
+- [x] Run tests (should pass)
 
 ### Phase 3: Invite Permissions (TDD)
-- [ ] Write test for CanManageInvites (owner)
-- [ ] Write test for CanManageInvites (non-owner)
-- [ ] Write test for CanManageInvites (admin)
-- [ ] Implement invite permission methods
-- [ ] Run tests (should pass)
+- [x] Write test for CanManageInvites (owner)
+- [x] Write test for CanManageInvites (non-owner)
+- [x] Write test for CanManageInvites (admin)
+- [x] Implement invite permission methods
+- [x] Run tests (should pass)
 
 ### Phase 4: RSVP Permissions (TDD)
-- [ ] Write test for CanViewRSVPs (owner)
-- [ ] Write test for CanViewRSVPs (non-owner)
-- [ ] Write test for CanViewRSVPs (admin)
-- [ ] Implement RSVP permission methods
-- [ ] Run tests (should pass)
+- [x] Write test for CanViewRSVPs (owner)
+- [x] Write test for CanViewRSVPs (non-owner)
+- [x] Write test for CanViewRSVPs (admin)
+- [x] Implement RSVP permission methods
+- [x] Run tests (should pass)
 
 ### Phase 5: System Permissions (TDD)
-- [ ] Write test for CanManageUsers
-- [ ] Write test for CanConfigureSystem
-- [ ] Implement system permission methods
-- [ ] Run tests (should pass)
+- [x] Write test for CanManageUsers
+- [x] Write test for CanConfigureSystem
+- [x] Implement system permission methods
+- [x] Run tests (should pass)
 
 ### Phase 6: Integration
 - [ ] Integrate into handlers
 - [ ] Test permission enforcement
-- [ ] Document permission matrix
+- [x] Document permission matrix
 - [ ] Create permission reference guide
 
 ---
@@ -329,16 +329,16 @@ func TestAuthorizationChecker_CanManageUsers(t *testing.T) {
 
 ## Definition of Done
 
-- [ ] All acceptance criteria met
-- [ ] All tasks completed
-- [ ] All tests pass with timeout (`go test -timeout 30s ./internal/auth/...`)
-- [ ] Test coverage >= 85%
-- [ ] Code formatted with `go fmt`
-- [ ] No errors from `go vet`
-- [ ] Permission matrix documented
-- [ ] All scenarios tested
-- [ ] Edge cases covered
-- [ ] Documentation complete
+- [x] All acceptance criteria met
+- [x] All tasks completed
+- [x] All tests pass with timeout (`go test -timeout 30s ./internal/auth/...`)
+- [x] Test coverage >= 85%
+- [x] Code formatted with `go fmt`
+- [x] No errors from `go vet`
+- [x] Permission matrix documented
+- [x] All scenarios tested
+- [x] Edge cases covered
+- [x] Documentation complete
 - [ ] Changes committed to git
 
 ---
