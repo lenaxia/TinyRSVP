@@ -2,8 +2,9 @@
 
 **Epic:** [02_EPIC_events.md](02_EPIC_events.md)
 **Priority:** Critical
-**Status:** Not Started
+**Status:** Complete
 **Estimated Effort:** 6 hours
+**Completed:** 2026-01-07
 
 ---
 
@@ -15,18 +16,18 @@ As a **developer**, I want **a repository layer for event persistence** so that 
 
 ## Acceptance Criteria
 
-- [ ] EventRepository interface defined
-- [ ] Create event operation implemented
-- [ ] Get event by ID operation implemented
-- [ ] Update event with optimistic locking implemented
-- [ ] Delete event (soft delete) operation implemented
-- [ ] List events with filters implemented
-- [ ] Get events by status implemented
-- [ ] Get events to archive implemented
-- [ ] Version conflict detection working
-- [ ] All database operations use transactions
-- [ ] All tests pass with timeout
-- [ ] Integration tests with real database pass
+- [x] EventRepository interface defined
+- [x] Create event operation implemented
+- [x] Get event by ID operation implemented
+- [x] Update event with optimistic locking implemented
+- [x] Delete event (soft delete) operation implemented
+- [x] List events with filters implemented
+- [x] Get events by status implemented
+- [x] Get events to archive implemented
+- [x] Version conflict detection working
+- [x] All database operations use transactions
+- [x] All tests pass with timeout
+- [x] Integration tests with real database pass
 
 ---
 
@@ -135,62 +136,62 @@ func (r *eventRepository) UpdateWithVersion(ctx context.Context, event *models.E
 ## Tasks
 
 ### Phase 1: Repository Setup (TDD)
-- [ ] Write test for repository constructor
-- [ ] Write test for database connection validation
-- [ ] Implement NewEventRepository constructor
-- [ ] Run tests (should pass)
+- [x] Write test for repository constructor
+- [x] Write test for database connection validation
+- [x] Implement NewEventRepository constructor
+- [x] Run tests (should pass)
 
 ### Phase 2: Create Operation (TDD)
-- [ ] Write test for creating valid event
-- [ ] Write test for creating event with all optional fields
-- [ ] Write test for creating event with missing required fields
-- [ ] Write test for database constraint violations
-- [ ] Write test for transaction rollback on error
-- [ ] Implement Create method
-- [ ] Run tests (should pass)
+- [x] Write test for creating valid event
+- [x] Write test for creating event with all optional fields
+- [x] Write test for creating event with missing required fields
+- [x] Write test for database constraint violations
+- [x] Write test for transaction rollback on error
+- [x] Implement Create method
+- [x] Run tests (should pass)
 
 ### Phase 3: Read Operations (TDD)
-- [ ] Write test for GetByID with existing event
-- [ ] Write test for GetByID with non-existent event
-- [ ] Write test for GetByID with invalid ID
-- [ ] Write test for List with no filters
-- [ ] Write test for List with creator filter
-- [ ] Write test for List with status filter
-- [ ] Write test for List with pagination
-- [ ] Write test for GetByStatus
-- [ ] Implement GetByID method
-- [ ] Implement List method
-- [ ] Implement GetByStatus method
-- [ ] Run tests (should pass)
+- [x] Write test for GetByID with existing event
+- [x] Write test for GetByID with non-existent event
+- [x] Write test for GetByID with invalid ID
+- [x] Write test for List with no filters
+- [x] Write test for List with creator filter
+- [x] Write test for List with status filter
+- [x] Write test for List with pagination
+- [x] Write test for GetByStatus
+- [x] Implement GetByID method
+- [x] Implement List method
+- [x] Implement GetByStatus method
+- [x] Run tests (should pass)
 
 ### Phase 4: Update Operations (TDD)
-- [ ] Write test for Update with valid changes
-- [ ] Write test for UpdateWithVersion success
-- [ ] Write test for UpdateWithVersion conflict
-- [ ] Write test for UpdateWithVersion non-existent event
-- [ ] Write test for UpdateStatus
-- [ ] Write test for concurrent updates
-- [ ] Implement Update method
-- [ ] Implement UpdateWithVersion method
-- [ ] Implement UpdateStatus method
-- [ ] Run tests (should pass)
+- [x] Write test for Update with valid changes
+- [x] Write test for UpdateWithVersion success
+- [x] Write test for UpdateWithVersion conflict
+- [x] Write test for UpdateWithVersion non-existent event
+- [x] Write test for UpdateStatus
+- [x] Write test for concurrent updates
+- [x] Implement Update method
+- [x] Implement UpdateWithVersion method
+- [x] Implement UpdateStatus method
+- [x] Run tests (should pass)
 
 ### Phase 5: Delete and Archive Operations (TDD)
-- [ ] Write test for Delete (soft delete)
-- [ ] Write test for Delete non-existent event
-- [ ] Write test for GetEventsToArchive
-- [ ] Write test for GetEventsToArchive with no events
-- [ ] Write test for GetEventsToArchive date filtering
-- [ ] Implement Delete method
-- [ ] Implement GetEventsToArchive method
-- [ ] Run tests (should pass)
+- [x] Write test for Delete (soft delete)
+- [x] Write test for Delete non-existent event
+- [x] Write test for GetEventsToArchive
+- [x] Write test for GetEventsToArchive with no events
+- [x] Write test for GetEventsToArchive date filtering
+- [x] Implement Delete method
+- [x] Implement GetEventsToArchive method
+- [x] Run tests (should pass)
 
 ### Phase 6: Integration Tests
-- [ ] Write integration test for full CRUD cycle
-- [ ] Write integration test for concurrent updates
-- [ ] Write integration test for transaction rollback
-- [ ] Write integration test for foreign key constraints
-- [ ] Run integration tests with real database
+- [x] Write integration test for full CRUD cycle
+- [x] Write integration test for concurrent updates
+- [x] Write integration test for transaction rollback
+- [x] Write integration test for foreign key constraints
+- [x] Run integration tests with real database
 
 ---
 
@@ -593,16 +594,16 @@ func TestEventRepository_Integration_ConcurrentUpdates(t *testing.T) {
 
 ## Definition of Done
 
-- [ ] All acceptance criteria met
-- [ ] All tasks completed
-- [ ] All tests pass with timeout (`go test -timeout 30s ./internal/db/repositories/...`)
-- [ ] Integration tests pass with real database
-- [ ] Test coverage >= 85%
-- [ ] Code formatted with `go fmt`
-- [ ] No errors from `go vet`
-- [ ] Optimistic locking verified with concurrent tests
-- [ ] Documentation complete
-- [ ] Changes committed to git
+- [x] All acceptance criteria met
+- [x] All tasks completed
+- [x] All tests pass with timeout (`go test -timeout 30s ./internal/db/repositories/...`)
+- [x] Integration tests pass with real database
+- [x] Test coverage >= 85%
+- [x] Code formatted with `go fmt`
+- [x] No errors from `go vet`
+- [x] Optimistic locking verified with concurrent tests
+- [x] Documentation complete
+- [x] Changes committed to git
 
 ---
 
