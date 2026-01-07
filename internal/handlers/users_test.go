@@ -10,6 +10,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/yourusername/tinyrsvp/internal/auth"
 	"github.com/yourusername/tinyrsvp/internal/models"
 )
 
@@ -62,6 +63,53 @@ func (m *mockUserService) CountAdmins(ctx context.Context) (int, error) {
 		return m.CountAdminsFunc(ctx)
 	}
 	return 0, errors.New("not implemented")
+}
+
+type mockAuthorizationChecker struct {
+	CanManageUsersFunc func(ctx context.Context, user *models.User) bool
+}
+
+func (m *mockAuthorizationChecker) CanManageUsers(ctx context.Context, user *models.User) bool {
+	if m.CanManageUsersFunc != nil {
+		return m.CanManageUsersFunc(ctx, user)
+	}
+	return false
+}
+
+func (m *mockAuthorizationChecker) CanCreateEvent(ctx context.Context, user *models.User) bool {
+	return false
+}
+
+func (m *mockAuthorizationChecker) CanEditEvent(ctx context.Context, user *models.User, event *models.Event) bool {
+	return false
+}
+
+func (m *mockAuthorizationChecker) CanDeleteEvent(ctx context.Context, user *models.User, event *models.Event) bool {
+	return false
+}
+
+func (m *mockAuthorizationChecker) CanViewEvent(ctx context.Context, user *models.User, event *models.Event) bool {
+	return false
+}
+
+func (m *mockAuthorizationChecker) CanManageInvites(ctx context.Context, user *models.User, event *models.Event) bool {
+	return false
+}
+
+func (m *mockAuthorizationChecker) CanViewRSVPs(ctx context.Context, user *models.User, event *models.Event) bool {
+	return false
+}
+
+func (m *mockAuthorizationChecker) CanConfigureSystem(ctx context.Context, user *models.User) bool {
+	return false
+}
+
+func (m *mockAuthorizationChecker) IsAdmin(user *models.User) bool {
+	return false
+}
+
+func (m *mockAuthorizationChecker) IsEventManager(user *models.User) bool {
+	return false
 }
 
 func TestListUsers(t *testing.T) {
@@ -141,7 +189,12 @@ func TestListUsers(t *testing.T) {
 				},
 			}
 
-			handler := NewUserHandler(mockService)
+			mockAuthChecker := &mockAuthorizationChecker{
+				CanManageUsersFunc: func(ctx context.Context, user *models.User) bool {
+					return true
+				},
+			}
+			handler := NewUserHandler(mockService, mockAuthChecker)
 
 			req := httptest.NewRequest(http.MethodGet, "/api/users"+tt.queryParams, nil)
 			w := httptest.NewRecorder()
@@ -220,7 +273,12 @@ func TestGetUser(t *testing.T) {
 				},
 			}
 
-			handler := NewUserHandler(mockService)
+			mockAuthChecker := &mockAuthorizationChecker{
+				CanManageUsersFunc: func(ctx context.Context, user *models.User) bool {
+					return true
+				},
+			}
+			handler := NewUserHandler(mockService, mockAuthChecker)
 
 			req := httptest.NewRequest(http.MethodGet, "/api/users/"+tt.userID, nil)
 			w := httptest.NewRecorder()
@@ -359,7 +417,12 @@ func TestUpdateUserRole(t *testing.T) {
 				},
 			}
 
-			handler := NewUserHandler(mockService)
+			mockAuthChecker := &mockAuthorizationChecker{
+				CanManageUsersFunc: func(ctx context.Context, user *models.User) bool {
+					return true
+				},
+			}
+			handler := NewUserHandler(mockService, mockAuthChecker)
 
 			body, _ := json.Marshal(tt.requestBody)
 			req := httptest.NewRequest(http.MethodPatch, "/api/users/"+tt.userID+"/role", bytes.NewReader(body))
@@ -471,7 +534,12 @@ func TestDeleteUser(t *testing.T) {
 				},
 			}
 
-			handler := NewUserHandler(mockService)
+			mockAuthChecker := &mockAuthorizationChecker{
+				CanManageUsersFunc: func(ctx context.Context, user *models.User) bool {
+					return true
+				},
+			}
+			handler := NewUserHandler(mockService, mockAuthChecker)
 
 			req := httptest.NewRequest(http.MethodDelete, "/api/users/"+tt.userID, nil)
 			w := httptest.NewRecorder()
@@ -572,6 +640,265 @@ func TestValidateRole(t *testing.T) {
 
 			if !tt.wantErr && role != tt.wantRole {
 				t.Errorf("Expected role %s, got %s", tt.wantRole, role)
+			}
+		})
+	}
+}
+
+func TestListUsers_WithAuthorizationCheck(t *testing.T) {
+	tests := []struct {
+		name           string
+		currentUser    *models.User
+		canManageUsers bool
+		wantStatus     int
+	}{
+		{
+			name: "admin can list users",
+			currentUser: &models.User{
+				ID:   1,
+				Role: models.RoleAdmin,
+			},
+			canManageUsers: true,
+			wantStatus:     http.StatusOK,
+		},
+		{
+			name: "event manager cannot list users",
+			currentUser: &models.User{
+				ID:   2,
+				Role: models.RoleEventManager,
+			},
+			canManageUsers: false,
+			wantStatus:     http.StatusForbidden,
+		},
+		{
+			name:           "nil user cannot list users",
+			currentUser:    nil,
+			canManageUsers: false,
+			wantStatus:     http.StatusForbidden,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mockService := &mockUserService{
+				ListUsersFunc: func(ctx context.Context, limit, offset int) ([]*models.User, error) {
+					return []*models.User{}, nil
+				},
+				CountUsersFunc: func(ctx context.Context) (int, error) {
+					return 0, nil
+				},
+			}
+
+			mockAuthChecker := &mockAuthorizationChecker{
+				CanManageUsersFunc: func(ctx context.Context, user *models.User) bool {
+					return tt.canManageUsers
+				},
+			}
+
+			handler := NewUserHandler(mockService, mockAuthChecker)
+
+			req := httptest.NewRequest(http.MethodGet, "/api/users", nil)
+			ctx := auth.WithUser(req.Context(), tt.currentUser)
+			req = req.WithContext(ctx)
+			w := httptest.NewRecorder()
+
+			handler.ListUsers(w, req)
+
+			if w.Code != tt.wantStatus {
+				t.Errorf("Expected status %d, got %d", tt.wantStatus, w.Code)
+			}
+		})
+	}
+}
+
+func TestGetUser_WithAuthorizationCheck(t *testing.T) {
+	tests := []struct {
+		name           string
+		currentUser    *models.User
+		canManageUsers bool
+		wantStatus     int
+	}{
+		{
+			name: "admin can get user",
+			currentUser: &models.User{
+				ID:   1,
+				Role: models.RoleAdmin,
+			},
+			canManageUsers: true,
+			wantStatus:     http.StatusOK,
+		},
+		{
+			name: "event manager cannot get user",
+			currentUser: &models.User{
+				ID:   2,
+				Role: models.RoleEventManager,
+			},
+			canManageUsers: false,
+			wantStatus:     http.StatusForbidden,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mockService := &mockUserService{
+				GetUserByIDFunc: func(ctx context.Context, id int64) (*models.User, error) {
+					return &models.User{
+						ID:        1,
+						Email:     "user@example.com",
+						Name:      "Test User",
+						Role:      models.RoleEventManager,
+						CreatedAt: time.Now(),
+					}, nil
+				},
+			}
+
+			mockAuthChecker := &mockAuthorizationChecker{
+				CanManageUsersFunc: func(ctx context.Context, user *models.User) bool {
+					return tt.canManageUsers
+				},
+			}
+
+			handler := NewUserHandler(mockService, mockAuthChecker)
+
+			req := httptest.NewRequest(http.MethodGet, "/api/users/1", nil)
+			ctx := auth.WithUser(req.Context(), tt.currentUser)
+			req = req.WithContext(ctx)
+			w := httptest.NewRecorder()
+
+			handler.GetUser(w, req, "1")
+
+			if w.Code != tt.wantStatus {
+				t.Errorf("Expected status %d, got %d", tt.wantStatus, w.Code)
+			}
+		})
+	}
+}
+
+func TestUpdateUserRole_WithAuthorizationCheck(t *testing.T) {
+	tests := []struct {
+		name           string
+		currentUser    *models.User
+		canManageUsers bool
+		wantStatus     int
+	}{
+		{
+			name: "admin can update user role",
+			currentUser: &models.User{
+				ID:   1,
+				Role: models.RoleAdmin,
+			},
+			canManageUsers: true,
+			wantStatus:     http.StatusOK,
+		},
+		{
+			name: "event manager cannot update user role",
+			currentUser: &models.User{
+				ID:   2,
+				Role: models.RoleEventManager,
+			},
+			canManageUsers: false,
+			wantStatus:     http.StatusForbidden,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mockService := &mockUserService{
+				GetUserByIDFunc: func(ctx context.Context, id int64) (*models.User, error) {
+					return &models.User{
+						ID:   1,
+						Role: models.RoleEventManager,
+					}, nil
+				},
+				UpdateUserRoleFunc: func(ctx context.Context, userID int64, role models.UserRole) error {
+					return nil
+				},
+				CountAdminsFunc: func(ctx context.Context) (int, error) {
+					return 2, nil
+				},
+			}
+
+			mockAuthChecker := &mockAuthorizationChecker{
+				CanManageUsersFunc: func(ctx context.Context, user *models.User) bool {
+					return tt.canManageUsers
+				},
+			}
+
+			handler := NewUserHandler(mockService, mockAuthChecker)
+
+			body, _ := json.Marshal(UpdateRoleRequest{Role: "admin"})
+			req := httptest.NewRequest(http.MethodPatch, "/api/users/1/role", bytes.NewReader(body))
+			ctx := auth.WithUser(req.Context(), tt.currentUser)
+			req = req.WithContext(ctx)
+			w := httptest.NewRecorder()
+
+			handler.UpdateUserRole(w, req, "1")
+
+			if w.Code != tt.wantStatus {
+				t.Errorf("Expected status %d, got %d", tt.wantStatus, w.Code)
+			}
+		})
+	}
+}
+
+func TestDeleteUser_WithAuthorizationCheck(t *testing.T) {
+	tests := []struct {
+		name           string
+		currentUser    *models.User
+		canManageUsers bool
+		wantStatus     int
+	}{
+		{
+			name: "admin can delete user",
+			currentUser: &models.User{
+				ID:   1,
+				Role: models.RoleAdmin,
+			},
+			canManageUsers: true,
+			wantStatus:     http.StatusNoContent,
+		},
+		{
+			name: "event manager cannot delete user",
+			currentUser: &models.User{
+				ID:   2,
+				Role: models.RoleEventManager,
+			},
+			canManageUsers: false,
+			wantStatus:     http.StatusForbidden,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mockService := &mockUserService{
+				GetUserByIDFunc: func(ctx context.Context, id int64) (*models.User, error) {
+					return &models.User{
+						ID:   1,
+						Role: models.RoleEventManager,
+					}, nil
+				},
+				DeleteUserFunc: func(ctx context.Context, id int64) error {
+					return nil
+				},
+			}
+
+			mockAuthChecker := &mockAuthorizationChecker{
+				CanManageUsersFunc: func(ctx context.Context, user *models.User) bool {
+					return tt.canManageUsers
+				},
+			}
+
+			handler := NewUserHandler(mockService, mockAuthChecker)
+
+			req := httptest.NewRequest(http.MethodDelete, "/api/users/1", nil)
+			ctx := auth.WithUser(req.Context(), tt.currentUser)
+			req = req.WithContext(ctx)
+			w := httptest.NewRecorder()
+
+			handler.DeleteUser(w, req, "1")
+
+			if w.Code != tt.wantStatus {
+				t.Errorf("Expected status %d, got %d", tt.wantStatus, w.Code)
 			}
 		})
 	}

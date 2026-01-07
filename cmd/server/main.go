@@ -101,6 +101,7 @@ func main() {
 
 	sessionMgr := auth.NewSessionManager(sessionRepo, false)
 	userService := auth.NewUserService(userRepo)
+	authChecker := auth.NewAuthorizationChecker()
 
 	logger.Info("Initialized auth services")
 
@@ -114,7 +115,7 @@ func main() {
 	mux.Handle("/ready", readinessHandler)
 	logger.Info("Registered readiness endpoint", "path", "/ready")
 
-	userHandler := handlers.NewUserHandler(userService)
+	userHandler := handlers.NewUserHandler(userService, authChecker)
 
 	requireAuth := middleware.RequireAuth(sessionMgr, userService)
 	requireAdmin := middleware.RequireAdmin

@@ -9,6 +9,7 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/yourusername/tinyrsvp/internal/auth"
 	"github.com/yourusername/tinyrsvp/internal/models"
 )
 
@@ -23,11 +24,13 @@ type UserService interface {
 
 type UserHandler struct {
 	userService UserService
+	authChecker auth.AuthorizationChecker
 }
 
-func NewUserHandler(userService UserService) *UserHandler {
+func NewUserHandler(userService UserService, authChecker auth.AuthorizationChecker) *UserHandler {
 	return &UserHandler{
 		userService: userService,
+		authChecker: authChecker,
 	}
 }
 
@@ -56,6 +59,12 @@ type ErrorResponse struct {
 }
 
 func (h *UserHandler) ListUsers(w http.ResponseWriter, r *http.Request) {
+	user, _ := auth.UserFromContext(r.Context())
+	if !h.authChecker.CanManageUsers(r.Context(), user) {
+		respondError(w, http.StatusForbidden, "insufficient permissions")
+		return
+	}
+
 	limit := 50
 	offset := 0
 
@@ -105,6 +114,12 @@ func (h *UserHandler) ListUsers(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *UserHandler) GetUser(w http.ResponseWriter, r *http.Request, userIDStr string) {
+	currentUser, _ := auth.UserFromContext(r.Context())
+	if !h.authChecker.CanManageUsers(r.Context(), currentUser) {
+		respondError(w, http.StatusForbidden, "insufficient permissions")
+		return
+	}
+
 	userID, err := parseUserID(userIDStr)
 	if err != nil {
 		respondError(w, http.StatusBadRequest, "invalid user ID")
@@ -126,6 +141,12 @@ func (h *UserHandler) GetUser(w http.ResponseWriter, r *http.Request, userIDStr 
 }
 
 func (h *UserHandler) UpdateUserRole(w http.ResponseWriter, r *http.Request, userIDStr string) {
+	currentUser, _ := auth.UserFromContext(r.Context())
+	if !h.authChecker.CanManageUsers(r.Context(), currentUser) {
+		respondError(w, http.StatusForbidden, "insufficient permissions")
+		return
+	}
+
 	userID, err := parseUserID(userIDStr)
 	if err != nil {
 		respondError(w, http.StatusBadRequest, "invalid user ID")
@@ -178,6 +199,12 @@ func (h *UserHandler) UpdateUserRole(w http.ResponseWriter, r *http.Request, use
 }
 
 func (h *UserHandler) DeleteUser(w http.ResponseWriter, r *http.Request, userIDStr string) {
+	currentUser, _ := auth.UserFromContext(r.Context())
+	if !h.authChecker.CanManageUsers(r.Context(), currentUser) {
+		respondError(w, http.StatusForbidden, "insufficient permissions")
+		return
+	}
+
 	userID, err := parseUserID(userIDStr)
 	if err != nil {
 		respondError(w, http.StatusBadRequest, "invalid user ID")

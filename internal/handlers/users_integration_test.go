@@ -48,7 +48,8 @@ func TestDeleteUser_CascadesSessions(t *testing.T) {
 	userRepo := repositories.NewUserRepository(database)
 	sessionRepo := repositories.NewSessionRepository(database)
 	userService := auth.NewUserService(userRepo)
-	handler := NewUserHandler(userService)
+	authChecker := auth.NewAuthorizationChecker()
+	handler := NewUserHandler(userService, authChecker)
 
 	ctx := context.Background()
 
@@ -97,6 +98,8 @@ func TestDeleteUser_CascadesSessions(t *testing.T) {
 	}
 
 	req := httptest.NewRequest(http.MethodDelete, "/api/users/2", nil)
+	ctx = auth.WithUser(ctx, admin)
+	req = req.WithContext(ctx)
 	w := httptest.NewRecorder()
 
 	handler.DeleteUser(w, req, "2")
@@ -126,7 +129,8 @@ func TestDeleteUser_LastAdminProtection(t *testing.T) {
 
 	userRepo := repositories.NewUserRepository(database)
 	userService := auth.NewUserService(userRepo)
-	handler := NewUserHandler(userService)
+	authChecker := auth.NewAuthorizationChecker()
+	handler := NewUserHandler(userService, authChecker)
 
 	ctx := context.Background()
 
@@ -140,6 +144,8 @@ func TestDeleteUser_LastAdminProtection(t *testing.T) {
 	}
 
 	req := httptest.NewRequest(http.MethodDelete, "/api/users/1", nil)
+	ctx = auth.WithUser(ctx, admin)
+	req = req.WithContext(ctx)
 	w := httptest.NewRecorder()
 
 	handler.DeleteUser(w, req, "1")
@@ -161,7 +167,8 @@ func TestUpdateUserRole_LastAdminProtection(t *testing.T) {
 
 	userRepo := repositories.NewUserRepository(database)
 	userService := auth.NewUserService(userRepo)
-	handler := NewUserHandler(userService)
+	authChecker := auth.NewAuthorizationChecker()
+	handler := NewUserHandler(userService, authChecker)
 
 	ctx := context.Background()
 
@@ -176,6 +183,8 @@ func TestUpdateUserRole_LastAdminProtection(t *testing.T) {
 
 	reqBody := `{"role": "event_manager"}`
 	req := httptest.NewRequest(http.MethodPatch, "/api/users/1/role", bytes.NewReader([]byte(reqBody)))
+	ctx = auth.WithUser(ctx, admin)
+	req = req.WithContext(ctx)
 	w := httptest.NewRecorder()
 
 	handler.UpdateUserRole(w, req, "1")
