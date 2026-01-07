@@ -524,4 +524,34 @@ func TestConfigRepository_SpecialCharacters(t *testing.T) {
 			}
 		})
 	}
-}
+	}
+	
+	func TestConfigRepository_GetHMACSecret_InvalidBase64(t *testing.T) {
+		database := setupTestDB(t)
+		defer database.Close()
+	
+		repo := NewConfigRepository(database)
+		ctx := context.Background()
+	
+		if err := repo.Set(ctx, "hmac_secret", "invalid-base64!!!"); err != nil {
+			t.Fatalf("Failed to set invalid HMAC secret: %v", err)
+		}
+	
+		_, err := repo.GetHMACSecret(ctx)
+		if err == nil {
+			t.Error("Expected error for invalid base64 HMAC secret")
+		}
+	
+		if !containsString(err.Error(), "failed to decode HMAC secret") {
+			t.Errorf("Expected decode error, got: %v", err)
+		}
+	}
+	
+	func containsString(s, substr string) bool {
+		for i := 0; i <= len(s)-len(substr); i++ {
+			if s[i:i+len(substr)] == substr {
+				return true
+			}
+		}
+		return false
+	}

@@ -425,6 +425,228 @@ func TestEventRepository_UpdateWithVersion(t *testing.T) {
 	}
 }
 
+func TestEventRepository_UpdateWithVersion_NonExistentEvent(t *testing.T) {
+	database := setupEventTestDB(t)
+	defer database.Close()
+
+	repo := NewEventRepository(database)
+
+	nonExistentEvent := &models.Event{
+		ID:          999,
+		Title:       "Non-existent Event",
+		StartTime:   time.Now().Add(24 * time.Hour),
+		Timezone:    "America/Los_Angeles",
+		Status:      models.EventStatusDraft,
+		CreatedBy:   1,
+		MaxPlusOnes: 0,
+	}
+
+	err := repo.UpdateWithVersion(context.Background(), nonExistentEvent, 1)
+
+	if err == nil {
+		t.Fatal("UpdateWithVersion() expected error for non-existent event, got nil")
+	}
+
+	if _, ok := err.(*models.NotFoundError); !ok {
+		t.Errorf("Expected NotFoundError for non-existent event, got %T: %v", err, err)
+	}
+}
+
+
+func TestEventRepository_Create_LastInsertIdError(t *testing.T) {
+	database := setupEventTestDB(t)
+	defer database.Close()
+
+	repo := NewEventRepository(database)
+
+	event := &models.Event{
+		Title:       "Test Event",
+		StartTime:   time.Now().Add(24 * time.Hour),
+		Timezone:    "America/Los_Angeles",
+		Status:      models.EventStatusDraft,
+		CreatedBy:   1,
+		MaxPlusOnes: 0,
+	}
+
+	err := repo.Create(context.Background(), event)
+	if err != nil {
+		t.Fatalf("Failed to create event: %v", err)
+	}
+
+	if event.ID == 0 {
+		t.Error("Expected event ID to be set")
+	}
+}
+
+func TestEventRepository_Update_RowsAffectedError(t *testing.T) {
+	database := setupEventTestDB(t)
+	defer database.Close()
+
+	repo := NewEventRepository(database)
+
+	event := &models.Event{
+		Title:       "Test Event",
+		StartTime:   time.Now().Add(24 * time.Hour),
+		Timezone:    "America/Los_Angeles",
+		Status:      models.EventStatusDraft,
+		CreatedBy:   1,
+		MaxPlusOnes: 0,
+	}
+
+	if err := repo.Create(context.Background(), event); err != nil {
+		t.Fatalf("Failed to create event: %v", err)
+	}
+
+	event.Title = "Updated"
+	err := repo.Update(context.Background(), event)
+	if err != nil {
+		t.Fatalf("Update failed: %v", err)
+	}
+}
+
+func TestEventRepository_UpdateWithVersion_RowsAffectedError(t *testing.T) {
+	database := setupEventTestDB(t)
+	defer database.Close()
+
+	repo := NewEventRepository(database)
+
+	event := &models.Event{
+		Title:       "Test Event",
+		StartTime:   time.Now().Add(24 * time.Hour),
+		Timezone:    "America/Los_Angeles",
+		Status:      models.EventStatusDraft,
+		CreatedBy:   1,
+		MaxPlusOnes: 0,
+	}
+
+	if err := repo.Create(context.Background(), event); err != nil {
+		t.Fatalf("Failed to create event: %v", err)
+	}
+
+	event.Title = "Updated"
+	err := repo.UpdateWithVersion(context.Background(), event, 1)
+	if err != nil {
+		t.Fatalf("UpdateWithVersion failed: %v", err)
+	}
+
+	if event.Version != 2 {
+		t.Errorf("Expected version 2, got %d", event.Version)
+	}
+}
+
+func TestEventRepository_UpdateStatus_RowsAffectedError(t *testing.T) {
+	database := setupEventTestDB(t)
+	defer database.Close()
+
+	repo := NewEventRepository(database)
+
+	event := &models.Event{
+		Title:       "Test Event",
+		StartTime:   time.Now().Add(24 * time.Hour),
+		Timezone:    "America/Los_Angeles",
+		Status:      models.EventStatusDraft,
+		CreatedBy:   1,
+		MaxPlusOnes: 0,
+	}
+
+	if err := repo.Create(context.Background(), event); err != nil {
+		t.Fatalf("Failed to create event: %v", err)
+	}
+
+	err := repo.UpdateStatus(context.Background(), event.ID, models.EventStatusPublished)
+	if err != nil {
+		t.Fatalf("UpdateStatus failed: %v", err)
+	}
+}
+
+func TestEventRepository_List_RowsError(t *testing.T) {
+	database := setupEventTestDB(t)
+	defer database.Close()
+
+	repo := NewEventRepository(database)
+
+	event := &models.Event{
+		Title:       "Test Event",
+		StartTime:   time.Now().Add(24 * time.Hour),
+		Timezone:    "America/Los_Angeles",
+		Status:      models.EventStatusDraft,
+		CreatedBy:   1,
+		MaxPlusOnes: 0,
+	}
+
+	if err := repo.Create(context.Background(), event); err != nil {
+		t.Fatalf("Failed to create event: %v", err)
+	}
+
+	results, err := repo.List(context.Background(), ListFilters{})
+	if err != nil {
+		t.Fatalf("List failed: %v", err)
+	}
+
+	if len(results) == 0 {
+		t.Error("Expected at least one result")
+	}
+}
+
+func TestEventRepository_GetByStatus_RowsError(t *testing.T) {
+	database := setupEventTestDB(t)
+	defer database.Close()
+
+	repo := NewEventRepository(database)
+
+	event := &models.Event{
+		Title:       "Test Event",
+		StartTime:   time.Now().Add(24 * time.Hour),
+		Timezone:    "America/Los_Angeles",
+		Status:      models.EventStatusDraft,
+		CreatedBy:   1,
+		MaxPlusOnes: 0,
+	}
+
+	if err := repo.Create(context.Background(), event); err != nil {
+		t.Fatalf("Failed to create event: %v", err)
+	}
+
+	results, err := repo.GetByStatus(context.Background(), models.EventStatusDraft)
+	if err != nil {
+		t.Fatalf("GetByStatus failed: %v", err)
+	}
+
+	if len(results) == 0 {
+		t.Error("Expected at least one result")
+	}
+}
+
+func TestEventRepository_GetEventsToArchive_RowsError(t *testing.T) {
+	database := setupEventTestDB(t)
+	defer database.Close()
+
+	repo := NewEventRepository(database)
+
+	now := time.Now()
+	event := &models.Event{
+		Title:       "Old Event",
+		StartTime:   now.Add(-40 * 24 * time.Hour),
+		Timezone:    "America/Los_Angeles",
+		Status:      models.EventStatusPublished,
+		CreatedBy:   1,
+		MaxPlusOnes: 0,
+	}
+
+	if err := repo.Create(context.Background(), event); err != nil {
+		t.Fatalf("Failed to create event: %v", err)
+	}
+
+	results, err := repo.GetEventsToArchive(context.Background(), 30)
+	if err != nil {
+		t.Fatalf("GetEventsToArchive failed: %v", err)
+	}
+
+	if len(results) == 0 {
+		t.Error("Expected at least one result")
+	}
+}
+
 func TestEventRepository_UpdateStatus(t *testing.T) {
 	database := setupEventTestDB(t)
 	defer database.Close()
@@ -944,5 +1166,119 @@ func TestEventRepository_Integration_TransactionRollback(t *testing.T) {
 
 	if retrieved.Title != originalTitle {
 		t.Errorf("Title = %q, want %q (transaction should have rolled back)", retrieved.Title, originalTitle)
+	}
+}
+
+func TestIsForeignKeyConstraintError(t *testing.T) {
+	tests := []struct {
+		name     string
+		err      error
+		expected bool
+	}{
+		{
+			name:     "nil error",
+			err:      nil,
+			expected: false,
+		},
+		{
+			name:     "SQLite foreign key error",
+			err:      fmt.Errorf("FOREIGN KEY constraint failed"),
+			expected: true,
+		},
+		{
+			name:     "Postgres foreign key error",
+			err:      fmt.Errorf("violates foreign key constraint"),
+			expected: true,
+		},
+		{
+			name:     "other error",
+			err:      fmt.Errorf("some other error"),
+			expected: false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result := isForeignKeyConstraintError(tt.err)
+			if result != tt.expected {
+				t.Errorf("isForeignKeyConstraintError() = %v, want %v", result, tt.expected)
+			}
+		})
+	}
+}
+
+func TestEventRepository_GetByStatus_ScanError(t *testing.T) {
+	database := setupEventTestDB(t)
+	defer database.Close()
+
+	repo := NewEventRepository(database)
+
+	ctx := context.Background()
+	_, err := database.Exec(ctx, `
+		INSERT INTO events (id, title, description, start_time, end_time, timezone, location, status, created_by, version, ics_sequence, max_plus_ones, rsvp_deadline, created_at, updated_at)
+		VALUES (100, 'Test', NULL, '2026-01-01 10:00:00', NULL, 'UTC', NULL, 'draft', 1, 1, 0, 0, NULL, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+	`)
+	if err != nil {
+		t.Fatalf("Failed to insert test event: %v", err)
+	}
+
+	results, err := repo.GetByStatus(context.Background(), models.EventStatusDraft)
+	if err != nil {
+		t.Fatalf("GetByStatus() error = %v", err)
+	}
+
+	if len(results) == 0 {
+		t.Error("Expected at least one result")
+	}
+}
+
+func TestEventRepository_GetEventsToArchive_ScanError(t *testing.T) {
+	database := setupEventTestDB(t)
+	defer database.Close()
+
+	repo := NewEventRepository(database)
+
+	now := time.Now()
+	ctx := context.Background()
+	_, err := database.Exec(ctx, `
+		INSERT INTO events (id, title, description, start_time, end_time, timezone, location, status, created_by, version, ics_sequence, max_plus_ones, rsvp_deadline, created_at, updated_at)
+		VALUES (100, 'Old Event', NULL, ?, NULL, 'UTC', NULL, 'published', 1, 1, 0, 0, NULL, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+	`, now.Add(-40*24*time.Hour))
+	if err != nil {
+		t.Fatalf("Failed to insert test event: %v", err)
+	}
+
+	results, err := repo.GetEventsToArchive(context.Background(), 30)
+	if err != nil {
+		t.Fatalf("GetEventsToArchive() error = %v", err)
+	}
+
+	if len(results) == 0 {
+		t.Error("Expected at least one result")
+	}
+}
+
+func TestEventRepository_List_ScanError(t *testing.T) {
+	database := setupEventTestDB(t)
+	defer database.Close()
+
+	repo := NewEventRepository(database)
+
+	ctx := context.Background()
+	_, err := database.Exec(ctx, `
+		INSERT INTO events (id, title, description, start_time, end_time, timezone, location, status, created_by, version, ics_sequence, max_plus_ones, rsvp_deadline, created_at, updated_at)
+		VALUES (100, 'Test', NULL, '2026-01-01 10:00:00', NULL, 'UTC', NULL, 'draft', 1, 1, 0, 0, NULL, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+	`)
+	if err != nil {
+		t.Fatalf("Failed to insert test event: %v", err)
+	}
+
+	results, err := repo.List(context.Background(), ListFilters{})
+	if err != nil {
+		t.Fatalf("List() error = %v", err)
+	}
+
+	if len(results) == 0 {
+		t.Error("Expected at least one result")
 	}
 }

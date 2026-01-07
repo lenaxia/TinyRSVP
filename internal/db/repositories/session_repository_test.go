@@ -416,6 +416,17 @@ func TestSessionRepository_DeleteExpired(t *testing.T) {
 			t.Error("Valid session should still exist")
 		}
 	})
+
+	t.Run("delete expired when none exist", func(t *testing.T) {
+		deleted, err := sessionRepo.DeleteExpired(ctx)
+		if err != nil {
+			t.Fatalf("DeleteExpired() error = %v", err)
+		}
+
+		if deleted != 0 {
+			t.Errorf("Expected 0 deleted sessions, got %d", deleted)
+		}
+	})
 }
 
 func TestSessionRepository_UpdateLastAccessed(t *testing.T) {

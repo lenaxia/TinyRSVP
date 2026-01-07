@@ -2,6 +2,7 @@ package repositories
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"sync"
 	"testing"
@@ -58,6 +59,70 @@ func TestUserRepository_CreateWithBootstrapCheck(t *testing.T) {
 
 		if user.Role != models.RoleEventManager {
 			t.Errorf("Expected second user to have event manager role, got %s", user.Role)
+		}
+	})
+
+	t.Run("empty email validation", func(t *testing.T) {
+		user := &models.User{
+			Email: "",
+			Name:  "No Email User",
+		}
+
+		_, err := repo.CreateWithBootstrapCheck(ctx, user)
+		if err == nil {
+			t.Error("Expected error for empty email")
+		}
+
+		var validationErr *models.ValidationError
+		if !errors.As(err, &validationErr) {
+			t.Errorf("Expected ValidationError, got %T", err)
+		}
+	})
+
+	t.Run("duplicate email conflict", func(t *testing.T) {
+		user := &models.User{
+			Email: "first@example.com",
+			Name:  "Duplicate Email User",
+		}
+
+		_, err := repo.CreateWithBootstrapCheck(ctx, user)
+		if err == nil {
+			t.Error("Expected error for duplicate email")
+		}
+
+		var conflictErr *models.ConflictError
+		if !errors.As(err, &conflictErr) {
+			t.Errorf("Expected ConflictError, got %T", err)
+		}
+	})
+
+	t.Run("duplicate oidc_subject conflict", func(t *testing.T) {
+		oidcSubject := "google-oauth2|duplicate"
+		user1 := &models.User{
+			Email:       "oidc_dup1@example.com",
+			Name:        "OIDC Dup 1",
+			OIDCSubject: &oidcSubject,
+		}
+
+		_, err := repo.CreateWithBootstrapCheck(ctx, user1)
+		if err != nil {
+			t.Fatalf("Failed to create first OIDC user: %v", err)
+		}
+
+		user2 := &models.User{
+			Email:       "oidc_dup2@example.com",
+			Name:        "OIDC Dup 2",
+			OIDCSubject: &oidcSubject,
+		}
+
+		_, err = repo.CreateWithBootstrapCheck(ctx, user2)
+		if err == nil {
+			t.Error("Expected error for duplicate oidc_subject")
+		}
+
+		var conflictErr *models.ConflictError
+		if !errors.As(err, &conflictErr) {
+			t.Errorf("Expected ConflictError, got %T", err)
 		}
 	})
 }

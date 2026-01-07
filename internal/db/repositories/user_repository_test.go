@@ -97,6 +97,17 @@ func TestUserRepository_Create(t *testing.T) {
 			},
 			wantErr: true,
 		},
+		{
+			name: "duplicate oidc_subject",
+			user: &models.User{
+				Email:       "oidc_dup@example.com",
+				Name:        "OIDC Duplicate",
+				Role:        models.RoleEventManager,
+				OIDCSubject: stringPtr("google-oauth2|123456"),
+			},
+			wantErr: true,
+			errType: &models.ConflictError{},
+		},
 	}
 
 	for _, tt := range tests {
@@ -385,6 +396,69 @@ func TestUserRepository_Update(t *testing.T) {
 		var notFoundErr *models.NotFoundError
 		if !errors.As(err, &notFoundErr) {
 			t.Errorf("Expected NotFoundError, got %T", err)
+		}
+	})
+
+	t.Run("update with duplicate email", func(t *testing.T) {
+		otherUser := &models.User{
+			Email: "other@example.com",
+			Name:  "Other User",
+			Role:  models.RoleEventManager,
+		}
+		if err := repo.Create(ctx, otherUser); err != nil {
+			t.Fatalf("Failed to create other user: %v", err)
+		}
+
+		user.Email = "other@example.com"
+		err := repo.Update(ctx, user)
+		if err == nil {
+			t.Error("Expected error for duplicate email")
+		}
+
+		var conflictErr *models.ConflictError
+		if !errors.As(err, &conflictErr) {
+			t.Errorf("Expected ConflictError, got %T", err)
+		}
+		if conflictErr.Field != "email" {
+			t.Errorf("Expected conflict on email field, got %s", conflictErr.Field)
+		}
+	})
+
+	t.Run("update with duplicate oidc_subject", func(t *testing.T) {
+		oidcSubject1 := "google-oauth2|user1"
+		user1 := &models.User{
+			Email:       "oidc1@example.com",
+			Name:        "OIDC User 1",
+			Role:        models.RoleEventManager,
+			OIDCSubject: &oidcSubject1,
+		}
+		if err := repo.Create(ctx, user1); err != nil {
+			t.Fatalf("Failed to create oidc user 1: %v", err)
+		}
+
+		oidcSubject2 := "google-oauth2|user2"
+		user2 := &models.User{
+			Email:       "oidc2@example.com",
+			Name:        "OIDC User 2",
+			Role:        models.RoleEventManager,
+			OIDCSubject: &oidcSubject2,
+		}
+		if err := repo.Create(ctx, user2); err != nil {
+			t.Fatalf("Failed to create oidc user 2: %v", err)
+		}
+
+		user2.OIDCSubject = &oidcSubject1
+		err := repo.Update(ctx, user2)
+		if err == nil {
+			t.Error("Expected error for duplicate oidc_subject")
+		}
+
+		var conflictErr *models.ConflictError
+		if !errors.As(err, &conflictErr) {
+			t.Errorf("Expected ConflictError, got %T", err)
+		}
+		if conflictErr.Field != "oidc_subject" {
+			t.Errorf("Expected conflict on oidc_subject field, got %s", conflictErr.Field)
 		}
 	})
 }
@@ -687,4 +761,47 @@ func TestUserRepository_CountByRole(t *testing.T) {
 
 func stringPtr(s string) *string {
 	return &s
+}
+
+func TestIsUniqueConstraintError(t *testing.T) {
+	tests := []struct {
+		name     string
+		err      error
+		expected bool
+	}{
+		{
+			name:     "nil error",
+			err:      nil,
+			expected: false,
+		},
+		{
+			name:     "SQLite unique constraint error",
+			err:      fmt.Errorf("UNIQUE constraint failed: users.email"),
+			expected: true,
+		},
+		{
+			name:     "Postgres duplicate key error",
+			err:      fmt.Errorf("duplicate key value violates unique constraint"),
+			expected: true,
+		},
+		{
+			name:     "generic unique constraint error",
+			err:      fmt.Errorf("unique constraint violation"),
+			expected: true,
+		},
+		{
+			name:     "other error",
+			err:      fmt.Errorf("some other database error"),
+			expected: false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result := isUniqueConstraintError(tt.err)
+			if result != tt.expected {
+				t.Errorf("isUniqueConstraintError() = %v, want %v", result, tt.expected)
+			}
+		})
+	}
 }
