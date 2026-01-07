@@ -19,6 +19,7 @@ type Config struct {
 	Email       EmailConfig
 	Storage     StorageConfig
 	Security    SecurityConfig
+	Token       TokenConfig
 }
 
 type ServerConfig struct {
@@ -74,6 +75,10 @@ type SecurityConfig struct {
 	SessionDuration time.Duration
 	TokenExpiry     time.Duration
 	HMACSecretKey   string
+}
+
+type TokenConfig struct {
+	Secret string
 }
 
 func Load() (*Config, error) {
@@ -193,12 +198,17 @@ func (c *Config) loadFromEnv() error {
 
 	c.Security.HMACSecretKey = getEnvString("SECURITY_HMAC_SECRET", "")
 
+	c.Token.Secret = getEnvString("TOKEN_SECRET", "")
+
 	return nil
 }
 
 func (c *Config) setDefaults() {
 	if c.Security.HMACSecretKey == "" {
 		c.Security.HMACSecretKey = generateHMACSecret()
+	}
+	if c.Token.Secret == "" {
+		c.Token.Secret = generateHMACSecret()
 	}
 }
 
@@ -233,6 +243,10 @@ func (c *Config) Validate() error {
 
 	if err := c.validateSecurity(); err != nil {
 		return fmt.Errorf("security config: %w", err)
+	}
+
+	if err := c.validateToken(); err != nil {
+		return fmt.Errorf("token config: %w", err)
 	}
 
 	return nil
@@ -392,6 +406,14 @@ func (c *Config) validateSecurity() error {
 	return nil
 }
 
+func (c *Config) validateToken() error {
+	if len(c.Token.Secret) < 32 {
+		return fmt.Errorf("token secret must be at least 32 bytes")
+	}
+
+	return nil
+}
+
 func (c *Config) String() string {
 	return fmt.Sprintf(`Config{
   Server: {Host: %s, Port: %d, BaseURL: %s}
@@ -400,6 +422,7 @@ func (c *Config) String() string {
   Email: {SMTPHost: %s, SMTPPort: %d, SMTPUser: %s, SMTPPassword: ***, FromEmail: %s}
   Storage: {Type: %s, LocalPath: %s, S3Bucket: %s, S3Region: %s}
   Security: {SessionDuration: %s, TokenExpiry: %s, HMACSecretKey: ***}
+  Token: {Secret: ***}
 }`,
 		c.Server.Host, c.Server.Port, c.Server.BaseURL,
 		c.Database.Type, c.Database.Path, c.Database.MaxOpenConns, c.Database.MaxIdleConns,

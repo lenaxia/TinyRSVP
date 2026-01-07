@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"encoding/hex"
 	"fmt"
 	"net/http"
 	"os"
@@ -17,7 +18,9 @@ import (
 	"github.com/lenaxia/tinyrsvp/internal/db/repositories"
 	"github.com/lenaxia/tinyrsvp/internal/events"
 	"github.com/lenaxia/tinyrsvp/internal/handlers"
+	"github.com/lenaxia/tinyrsvp/internal/invites"
 	"github.com/lenaxia/tinyrsvp/internal/middleware"
+	"github.com/lenaxia/tinyrsvp/pkg/token"
 )
 
 const appVersion = "0.1.0"
@@ -101,6 +104,7 @@ func main() {
 	userRepo := repositories.NewUserRepository(database)
 	sessionRepo := repositories.NewSessionRepository(database)
 	eventRepo := repositories.NewEventRepository(database)
+	inviteRepo := repositories.NewInviteRepository(database)
 
 	sessionMgr := auth.NewSessionManager(sessionRepo, false)
 	userService := auth.NewUserService(userRepo)
@@ -112,6 +116,15 @@ func main() {
 	eventService := events.NewService(eventRepo, eventValidator, authChecker)
 
 	logger.Info("Initialized event services")
+
+	tokenSecretBytes, err := hex.DecodeString(cfg.Token.Secret)
+	if err != nil {
+		tokenSecretBytes = []byte(cfg.Token.Secret)
+	}
+	tokenGenerator := token.NewGenerator(tokenSecretBytes)
+	inviteService := invites.NewIndividualInviteService(tokenGenerator, inviteRepo, eventRepo)
+
+	logger.Info("Initialized invite services")
 
 	var authenticator auth.Authenticator
 	if cfg.OIDC.Enabled {
@@ -209,9 +222,13 @@ func main() {
 	})
 	eventHandlers.RegisterRoutes(chiRouter)
 
+	inviteHandlers := handlers.NewInviteHandlers(inviteService, cfg.Server.BaseURL)
+	inviteHandlers.RegisterRoutes(chiRouter)
+
 	mux.Handle("/api/events", chiRouter)
 	mux.Handle("/api/events/", chiRouter)
 	logger.Info("Registered event management endpoints", "path", "/api/events", "protection", "authenticated")
+	logger.Info("Registered invite management endpoints", "path", "/api/events/{eventId}/invites", "protection", "authenticated")
 
 	addr := fmt.Sprintf("%s:%d", cfg.Server.Host, cfg.Server.Port)
 	server := &http.Server{
