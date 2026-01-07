@@ -11,6 +11,7 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	"github.com/lenaxia/tinyrsvp/internal/auth"
+	"github.com/lenaxia/tinyrsvp/internal/db/repositories"
 	"github.com/lenaxia/tinyrsvp/internal/invites"
 	"github.com/lenaxia/tinyrsvp/internal/models"
 )
@@ -28,14 +29,16 @@ func NewInviteHandlers(service invites.IndividualInviteService, baseURL string) 
 }
 
 type ImportInviteHandlers struct {
-	service invites.InviteService
-	baseURL string
+	service   invites.InviteService
+	eventRepo repositories.EventRepository
+	baseURL   string
 }
 
-func NewImportInviteHandlers(service invites.InviteService, baseURL string) *ImportInviteHandlers {
+func NewImportInviteHandlers(service invites.InviteService, eventRepo repositories.EventRepository, baseURL string) *ImportInviteHandlers {
 	return &ImportInviteHandlers{
-		service: service,
-		baseURL: baseURL,
+		service:   service,
+		eventRepo: eventRepo,
+		baseURL:   baseURL,
 	}
 }
 
@@ -159,7 +162,7 @@ func handleInviteServiceError(w http.ResponseWriter, err error) {
 }
 
 func (h *ImportInviteHandlers) ImportInvites(w http.ResponseWriter, r *http.Request) {
-	_, ok := auth.UserFromContext(r.Context())
+	user, ok := auth.UserFromContext(r.Context())
 	if !ok {
 		respondError(w, http.StatusUnauthorized, "authentication required")
 		return
@@ -169,6 +172,32 @@ func (h *ImportInviteHandlers) ImportInvites(w http.ResponseWriter, r *http.Requ
 	eventID, err := strconv.ParseInt(eventIDStr, 10, 64)
 	if err != nil || eventID <= 0 {
 		respondError(w, http.StatusBadRequest, "invalid event ID")
+		return
+	}
+
+	event, err := h.eventRepo.GetByID(r.Context(), eventID)
+	if err != nil {
+		var notFoundErr *models.NotFoundError
+		if errors.As(err, &notFoundErr) {
+			respondError(w, http.StatusNotFound, "event not found")
+			return
+		}
+		respondError(w, http.StatusInternalServerError, "failed to retrieve event")
+		return
+	}
+
+	if event.Status == models.EventStatusCancelled {
+		respondError(w, http.StatusBadRequest, "cannot create invite for cancelled event")
+		return
+	}
+
+	if event.Status == models.EventStatusArchived {
+		respondError(w, http.StatusBadRequest, "cannot create invite for archived event")
+		return
+	}
+
+	if !user.IsAdmin() && event.CreatedBy != user.ID {
+		respondError(w, http.StatusForbidden, "permission denied")
 		return
 	}
 
@@ -200,8 +229,8 @@ func (h *ImportInviteHandlers) ImportInvites(w http.ResponseWriter, r *http.Requ
 		return
 	}
 
-	expiresAt := time.Now().Add(60 * 24 * time.Hour)
-	result, err := h.service.ImportCSV(r.Context(), eventID, csvData, 0, expiresAt)
+	expiresAt := event.StartTime.Add(30 * 24 * time.Hour)
+	result, err := h.service.ImportCSV(r.Context(), eventID, csvData, event.MaxPlusOnes, expiresAt)
 	if err != nil {
 		handleInviteServiceError(w, err)
 		return

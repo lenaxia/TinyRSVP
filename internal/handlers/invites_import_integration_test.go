@@ -54,7 +54,7 @@ func TestImportInvites_Integration(t *testing.T) {
 	secret := []byte("test-secret-key-32-bytes-long!!")
 	generator := token.NewGenerator(secret)
 	service := invites.NewInviteService(generator, inviteRepo)
-	handler := NewImportInviteHandlers(service, "https://rsvp.example.com")
+	handler := NewImportInviteHandlers(service, eventRepo, "https://rsvp.example.com")
 
 	csvContent := `email,name,max_plus_ones
 john@example.com,John Doe,2
@@ -171,7 +171,7 @@ func TestImportInvites_Integration_WithDuplicates(t *testing.T) {
 	secret := []byte("test-secret-key-32-bytes-long!!")
 	generator := token.NewGenerator(secret)
 	service := invites.NewInviteService(generator, inviteRepo)
-	handler := NewImportInviteHandlers(service, "https://rsvp.example.com")
+	handler := NewImportInviteHandlers(service, eventRepo, "https://rsvp.example.com")
 
 	existingEmail := "existing@example.com"
 	existingInvite, _, err := service.CreateInvite(ctx, event.ID, nil, &existingEmail, 2, time.Now().Add(60*24*time.Hour))

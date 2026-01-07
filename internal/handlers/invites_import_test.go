@@ -73,6 +73,21 @@ func createMultipartRequest(csvContent string, filename string) (*http.Request, 
 	return req, nil
 }
 
+func createMockEventRepo(userID int64) *mockEventRepository {
+	return &mockEventRepository{
+		getByIDFunc: func(ctx context.Context, id int64) (*models.Event, error) {
+			return &models.Event{
+				ID:          1,
+				Title:       "Test Event",
+				StartTime:   time.Now().Add(30 * 24 * time.Hour),
+				Status:      models.EventStatusDraft,
+				CreatedBy:   userID,
+				MaxPlusOnes: 2,
+			}, nil
+		},
+	}
+}
+
 func TestImportInvitesHandler_Success(t *testing.T) {
 	csvContent := `email,name,max_plus_ones
 john@example.com,John Doe,2
@@ -90,7 +105,19 @@ jane@example.com,Jane Smith,1`
 		},
 	}
 
-	handler := NewImportInviteHandlers(mockService, "https://rsvp.example.com")
+	mockEventRepo := &mockEventRepository{
+		getByIDFunc: func(ctx context.Context, id int64) (*models.Event, error) {
+			return &models.Event{
+				ID:          1,
+				Title:       "Test Event",
+				StartTime:   time.Now().Add(30 * 24 * time.Hour),
+				Status:      models.EventStatusDraft,
+				CreatedBy:   100,
+				MaxPlusOnes: 2,
+			}, nil
+		},
+	}
+	handler := NewImportInviteHandlers(mockService, mockEventRepo, "https://rsvp.example.com")
 
 	req, err := createMultipartRequest(csvContent, "guests.csv")
 	if err != nil {
@@ -150,7 +177,7 @@ bob@example.com,Bob Johnson`
 		},
 	}
 
-	handler := NewImportInviteHandlers(mockService, "https://rsvp.example.com")
+	handler := NewImportInviteHandlers(mockService, createMockEventRepo(100), "https://rsvp.example.com")
 
 	req, err := createMultipartRequest(csvContent, "guests.csv")
 	if err != nil {
@@ -188,7 +215,7 @@ bob@example.com,Bob Johnson`
 
 func TestImportInvitesHandler_NoFile(t *testing.T) {
 	mockService := &mockImportService{}
-	handler := NewImportInviteHandlers(mockService, "https://rsvp.example.com")
+	handler := NewImportInviteHandlers(mockService, createMockEventRepo(100), "https://rsvp.example.com")
 
 	req := httptest.NewRequest(http.MethodPost, "/api/events/1/invites/import", nil)
 	req.Header.Set("Content-Type", "multipart/form-data")
@@ -211,7 +238,7 @@ func TestImportInvitesHandler_NoFile(t *testing.T) {
 
 func TestImportInvitesHandler_InvalidFileExtension(t *testing.T) {
 	mockService := &mockImportService{}
-	handler := NewImportInviteHandlers(mockService, "https://rsvp.example.com")
+	handler := NewImportInviteHandlers(mockService, createMockEventRepo(100), "https://rsvp.example.com")
 
 	req, err := createMultipartRequest("test content", "guests.txt")
 	if err != nil {
@@ -236,7 +263,7 @@ func TestImportInvitesHandler_InvalidFileExtension(t *testing.T) {
 
 func TestImportInvitesHandler_FileTooLarge(t *testing.T) {
 	mockService := &mockImportService{}
-	handler := NewImportInviteHandlers(mockService, "https://rsvp.example.com")
+	handler := NewImportInviteHandlers(mockService, createMockEventRepo(100), "https://rsvp.example.com")
 
 	largeContent := strings.Repeat("a", 2*1024*1024)
 	req, err := createMultipartRequest(largeContent, "guests.csv")
@@ -262,7 +289,7 @@ func TestImportInvitesHandler_FileTooLarge(t *testing.T) {
 
 func TestImportInvitesHandler_Unauthorized(t *testing.T) {
 	mockService := &mockImportService{}
-	handler := NewImportInviteHandlers(mockService, "https://rsvp.example.com")
+	handler := NewImportInviteHandlers(mockService, createMockEventRepo(100), "https://rsvp.example.com")
 
 	req, err := createMultipartRequest("email\ntest@example.com", "guests.csv")
 	if err != nil {
@@ -283,7 +310,7 @@ func TestImportInvitesHandler_Unauthorized(t *testing.T) {
 
 func TestImportInvitesHandler_InvalidEventID(t *testing.T) {
 	mockService := &mockImportService{}
-	handler := NewImportInviteHandlers(mockService, "https://rsvp.example.com")
+	handler := NewImportInviteHandlers(mockService, createMockEventRepo(100), "https://rsvp.example.com")
 
 	req, err := createMultipartRequest("email\ntest@example.com", "guests.csv")
 	if err != nil {
@@ -313,7 +340,7 @@ func TestImportInvitesHandler_ServiceError(t *testing.T) {
 		},
 	}
 
-	handler := NewImportInviteHandlers(mockService, "https://rsvp.example.com")
+	handler := NewImportInviteHandlers(mockService, createMockEventRepo(100), "https://rsvp.example.com")
 
 	req, err := createMultipartRequest("email\ntest@example.com", "guests.csv")
 	if err != nil {

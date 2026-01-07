@@ -122,7 +122,8 @@ func main() {
 		tokenSecretBytes = []byte(cfg.Token.Secret)
 	}
 	tokenGenerator := token.NewGenerator(tokenSecretBytes)
-	inviteService := invites.NewIndividualInviteService(tokenGenerator, inviteRepo, eventRepo)
+	inviteService := invites.NewInviteService(tokenGenerator, inviteRepo)
+	individualInviteService := invites.NewIndividualInviteService(tokenGenerator, inviteRepo, eventRepo)
 
 	logger.Info("Initialized invite services")
 
@@ -222,13 +223,17 @@ func main() {
 	})
 	eventHandlers.RegisterRoutes(chiRouter)
 
-	inviteHandlers := handlers.NewInviteHandlers(inviteService, cfg.Server.BaseURL)
+	inviteHandlers := handlers.NewInviteHandlers(individualInviteService, cfg.Server.BaseURL)
 	inviteHandlers.RegisterRoutes(chiRouter)
+
+	importInviteHandlers := handlers.NewImportInviteHandlers(inviteService, eventRepo, cfg.Server.BaseURL)
+	importInviteHandlers.RegisterRoutes(chiRouter)
 
 	mux.Handle("/api/events", chiRouter)
 	mux.Handle("/api/events/", chiRouter)
 	logger.Info("Registered event management endpoints", "path", "/api/events", "protection", "authenticated")
 	logger.Info("Registered invite management endpoints", "path", "/api/events/{eventId}/invites", "protection", "authenticated")
+	logger.Info("Registered import invite endpoints", "path", "/api/events/{eventId}/invites/import", "protection", "authenticated")
 
 	addr := fmt.Sprintf("%s:%d", cfg.Server.Host, cfg.Server.Port)
 	server := &http.Server{
