@@ -1,9 +1,10 @@
 # User Story: Token Validation
 
-**Epic:** [03_EPIC_invites.md](03_EPIC_invites.md)  
-**Priority:** High  
-**Status:** Not Started  
+**Epic:** [03_EPIC_invites.md](03_EPIC_invites.md)
+**Priority:** High
+**Status:** Complete
 **Estimated Effort:** 0.5 days
+**Completed:** 2026-01-07
 
 ---
 
@@ -15,14 +16,14 @@ As a **system developer**, I want **constant-time token validation** so that **g
 
 ## Acceptance Criteria
 
-- [ ] Token validation uses constant-time comparison
-- [ ] Validator interface allows for testing with mocks
-- [ ] Validation compares computed hash with stored hash
-- [ ] Invalid tokens return false (never panic or error)
-- [ ] Validation is deterministic (same inputs = same result)
-- [ ] Timing is constant regardless of token validity
-- [ ] Validator can be initialized with secret key
-- [ ] Validation handles malformed tokens gracefully
+- [x] Token validation uses constant-time comparison
+- [x] Validator interface allows for testing with mocks
+- [x] Validation compares computed hash with stored hash
+- [x] Invalid tokens return false (never panic or error)
+- [x] Validation is deterministic (same inputs = same result)
+- [x] Timing is constant regardless of token validity
+- [x] Validator can be initialized with secret key
+- [x] Validation handles malformed tokens gracefully
 
 ---
 
@@ -72,28 +73,28 @@ type Validator interface {
 ## Subtasks
 
 ### Implementation
-- [ ] Create `Validator` interface in `validator.go`
-- [ ] Implement `validator` struct with secret key field
-- [ ] Implement `NewValidator(secret []byte) Validator` constructor
-- [ ] Implement `Validate(token, hash string) bool` method
-- [ ] Use `hmac.Equal()` for constant-time comparison
-- [ ] Handle edge cases (empty strings, malformed input)
+- [x] Create `Validator` interface in `validator.go`
+- [x] Implement `validator` struct with secret key field
+- [x] Implement `NewValidator(secret []byte) Validator` constructor
+- [x] Implement `Validate(token, hash string) bool` method
+- [x] Use `hmac.Equal()` for constant-time comparison
+- [x] Handle edge cases (empty strings, malformed input)
 
 ### Testing
-- [ ] Test valid token validation (should return true)
-- [ ] Test invalid token validation (should return false)
-- [ ] Test wrong secret key (should return false)
-- [ ] Test malformed token (should return false)
-- [ ] Test empty token (should return false)
-- [ ] Test empty hash (should return false)
-- [ ] Test timing consistency (constant-time verification)
-- [ ] Benchmark validation performance
+- [x] Test valid token validation (should return true)
+- [x] Test invalid token validation (should return false)
+- [x] Test wrong secret key (should return false)
+- [x] Test malformed token (should return false)
+- [x] Test empty token (should return false)
+- [x] Test empty hash (should return false)
+- [x] Test timing consistency (constant-time verification)
+- [x] Benchmark validation performance
 
 ### Documentation
-- [ ] Add package documentation
-- [ ] Document security considerations
-- [ ] Add usage examples
-- [ ] Document timing attack prevention
+- [x] Add package documentation
+- [x] Document security considerations
+- [x] Add usage examples
+- [x] Document timing attack prevention
 
 ---
 
@@ -346,12 +347,12 @@ func (h *handler) RSVPPage(w http.ResponseWriter, r *http.Request) {
 
 ## Definition of Done
 
-- [ ] All acceptance criteria met
-- [ ] Unit tests written and passing (>90% coverage)
-- [ ] Timing attack tests pass
-- [ ] Performance benchmarks run
-- [ ] Security review passed
-- [ ] Documentation complete
-- [ ] Code reviewed
-- [ ] No linter warnings
-- [ ] Integration with invite service verified
+- [x] All acceptance criteria met
+- [x] Unit tests written and passing (>90% coverage)
+- [x] Timing attack tests pass
+- [x] Performance benchmarks run
+- [x] Security review passed
+- [x] Documentation complete
+- [x] Code reviewed
+- [x] No linter warnings
+- [x] Integration with invite service verified

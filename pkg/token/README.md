@@ -33,12 +33,22 @@ The token package provides cryptographically secure token generation and hashing
 - Safe for use in URL paths without additional encoding
 - Character set: `[A-Za-z0-9_-]`
 
-## Interface
+## Interfaces
+
+### Generator Interface
 
 ```go
 type Generator interface {
     Generate() (string, error)
     Hash(token string) (string, error)
+}
+```
+
+### Validator Interface
+
+```go
+type Validator interface {
+    Validate(token, hash string) bool
 }
 ```
 
@@ -71,6 +81,28 @@ Generates HMAC-SHA256 hash of a token using the secret key.
 - Same token always produces same hash (deterministic)
 - Different tokens produce different hashes
 - Different secret keys produce different hashes for same token
+
+#### `Validate(token, hash string) bool`
+Performs constant-time validation of a token against its hash.
+
+**Parameters:**
+- `token`: The token string to validate
+- `hash`: The expected hash to compare against
+
+**Returns:**
+- `bool`: `true` if token is valid and hash matches, `false` otherwise
+
+**Security Properties:**
+- Uses `hmac.Equal()` for constant-time comparison
+- Execution time independent of where hash mismatch occurs
+- Prevents timing-based token guessing attacks
+- Never panics, always returns boolean
+
+**Error Conditions (returns false):**
+- Empty token or hash
+- Malformed input
+- Wrong secret key
+- Invalid token
 
 ## Usage Examples
 
@@ -152,6 +184,50 @@ func (s *InviteService) ValidateToken(token string) (*Invite, error) {
     invite, err := s.repo.FindByTokenHash(tokenHash)
     if err != nil {
         return nil, err
+    }
+    
+    if !s.tokenVal.Validate(token, invite.TokenHash) {
+        return nil, errors.New("invalid token")
+    }
+    
+    return invite, nil
+}
+```
+
+### Using Validator for Constant-Time Validation
+
+```go
+type InviteService struct {
+    tokenGen token.Generator
+    tokenVal token.Validator
+    repo     InviteRepository
+}
+
+func NewInviteService(secret []byte, repo InviteRepository) *InviteService {
+    return &InviteService{
+        tokenGen: token.NewGenerator(secret),
+        tokenVal: token.NewValidator(secret),
+        repo:     repo,
+    }
+}
+
+func (s *InviteService) ValidateInvite(token string) (*Invite, error) {
+    hash, err := s.tokenGen.Hash(token)
+    if err != nil {
+        return nil, err
+    }
+    
+    invite, err := s.repo.FindByTokenHash(hash)
+    if err != nil {
+        return nil, err
+    }
+    
+    if !s.tokenVal.Validate(token, invite.TokenHash) {
+        return nil, errors.New("invalid token")
+    }
+    
+    if invite.IsExpired() {
+        return nil, errors.New("token expired")
     }
     
     return invite, nil
