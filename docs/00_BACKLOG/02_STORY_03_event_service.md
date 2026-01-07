@@ -507,7 +507,7 @@ func TestEventService_PublishEvent(t *testing.T) {
 - [x] Permission checks verified
 - [x] State transitions validated
 - [x] Documentation complete
-- [ ] Changes committed to git
+- [x] Changes committed to git
 
 ---
 
