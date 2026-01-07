@@ -48,6 +48,14 @@ func (m *mockUserService) ListUsers(ctx context.Context, limit, offset int) ([]*
 	return nil, nil
 }
 
+func (m *mockUserService) CountUsers(ctx context.Context) (int, error) {
+	return 0, nil
+}
+
+func (m *mockUserService) CountAdmins(ctx context.Context) (int, error) {
+	return 1, nil
+}
+
 type mockSessionManager struct {
 	createSessionFunc      func(ctx context.Context, userID int64, r *http.Request) (*models.Session, error)
 	setSessionCookieFunc   func(w http.ResponseWriter, sessionID string) error

@@ -172,6 +172,8 @@ type MockUserService struct {
 	UpdateUserRoleFunc  func(ctx context.Context, userID int64, role models.UserRole) error
 	DeleteUserFunc      func(ctx context.Context, id int64) error
 	ListUsersFunc       func(ctx context.Context, limit, offset int) ([]*models.User, error)
+	CountUsersFunc      func(ctx context.Context) (int, error)
+	CountAdminsFunc     func(ctx context.Context) (int, error)
 }
 
 func (m *MockUserService) CreateUser(ctx context.Context, email, name string, oidcSubject *string) (*models.User, error) {
@@ -228,6 +230,20 @@ func (m *MockUserService) ListUsers(ctx context.Context, limit, offset int) ([]*
 		return m.ListUsersFunc(ctx, limit, offset)
 	}
 	return []*models.User{}, nil
+}
+
+func (m *MockUserService) CountUsers(ctx context.Context) (int, error) {
+	if m.CountUsersFunc != nil {
+		return m.CountUsersFunc(ctx)
+	}
+	return 0, nil
+}
+
+func (m *MockUserService) CountAdmins(ctx context.Context) (int, error) {
+	if m.CountAdminsFunc != nil {
+		return m.CountAdminsFunc(ctx)
+	}
+	return 1, nil
 }
 
 type MockSessionManager struct {

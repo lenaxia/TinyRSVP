@@ -410,6 +410,7 @@ type MockUserRepository struct {
 	DeleteFunc                   func(ctx context.Context, id int64) error
 	ListFunc                     func(ctx context.Context, limit, offset int) ([]*models.User, error)
 	CountFunc                    func(ctx context.Context) (int, error)
+	CountByRoleFunc              func(ctx context.Context, role models.UserRole) (int, error)
 	IsFirstUserFunc              func(ctx context.Context) (bool, error)
 	UpdateLastLoginFunc          func(ctx context.Context, userID int64) error
 }
@@ -475,6 +476,13 @@ func (m *MockUserRepository) List(ctx context.Context, limit, offset int) ([]*mo
 func (m *MockUserRepository) Count(ctx context.Context) (int, error) {
 	if m.CountFunc != nil {
 		return m.CountFunc(ctx)
+	}
+	return 0, nil
+}
+
+func (m *MockUserRepository) CountByRole(ctx context.Context, role models.UserRole) (int, error) {
+	if m.CountByRoleFunc != nil {
+		return m.CountByRoleFunc(ctx, role)
 	}
 	return 0, nil
 }

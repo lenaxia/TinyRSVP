@@ -41,6 +41,8 @@ type UserService interface {
 	UpdateUserRole(ctx context.Context, userID int64, role models.UserRole) error
 	DeleteUser(ctx context.Context, id int64) error
 	ListUsers(ctx context.Context, limit, offset int) ([]*models.User, error)
+	CountUsers(ctx context.Context) (int, error)
+	CountAdmins(ctx context.Context) (int, error)
 }
 
 type SessionManager interface {

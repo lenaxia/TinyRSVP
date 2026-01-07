@@ -22,6 +22,7 @@ type UserRepository interface {
 	Delete(ctx context.Context, id int64) error
 	List(ctx context.Context, limit, offset int) ([]*models.User, error)
 	Count(ctx context.Context) (int, error)
+	CountByRole(ctx context.Context, role models.UserRole) (int, error)
 	IsFirstUser(ctx context.Context) (bool, error)
 	UpdateLastLogin(ctx context.Context, userID int64) error
 }
@@ -394,6 +395,18 @@ func (r *userRepository) Count(ctx context.Context) (int, error) {
 	err := r.db.QueryRow(ctx, query).Scan(&count)
 	if err != nil {
 		return 0, fmt.Errorf("failed to count users: %w", err)
+	}
+
+	return count, nil
+}
+
+func (r *userRepository) CountByRole(ctx context.Context, role models.UserRole) (int, error) {
+	query := `SELECT COUNT(*) FROM users WHERE role = ?`
+
+	var count int
+	err := r.db.QueryRow(ctx, query, role).Scan(&count)
+	if err != nil {
+		return 0, fmt.Errorf("failed to count users by role: %w", err)
 	}
 
 	return count, nil

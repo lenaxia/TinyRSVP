@@ -104,6 +104,14 @@ func (s *userService) ListUsers(ctx context.Context, limit, offset int) ([]*mode
 	return s.repo.List(ctx, limit, offset)
 }
 
+func (s *userService) CountUsers(ctx context.Context) (int, error) {
+	return s.repo.Count(ctx)
+}
+
+func (s *userService) CountAdmins(ctx context.Context) (int, error) {
+	return s.repo.CountByRole(ctx, models.RoleAdmin)
+}
+
 func validateEmail(email string) error {
 	email = strings.TrimSpace(email)
 	if email == "" {

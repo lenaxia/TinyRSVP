@@ -617,6 +617,74 @@ func TestUserRepository_UpdateLastLogin(t *testing.T) {
 	})
 }
 
+func TestUserRepository_CountByRole(t *testing.T) {
+	database := setupTestDB(t)
+	defer database.Close()
+
+	repo := NewUserRepository(database)
+	ctx := context.Background()
+
+	t.Run("count empty database", func(t *testing.T) {
+		count, err := repo.CountByRole(ctx, models.RoleAdmin)
+		if err != nil {
+			t.Fatalf("CountByRole() error = %v", err)
+		}
+
+		if count != 0 {
+			t.Errorf("Expected count 0, got %d", count)
+		}
+	})
+
+	admin1 := &models.User{
+		Email: "admin1@example.com",
+		Name:  "Admin 1",
+		Role:  models.RoleAdmin,
+	}
+	if err := repo.Create(ctx, admin1); err != nil {
+		t.Fatalf("Failed to create admin1: %v", err)
+	}
+
+	admin2 := &models.User{
+		Email: "admin2@example.com",
+		Name:  "Admin 2",
+		Role:  models.RoleAdmin,
+	}
+	if err := repo.Create(ctx, admin2); err != nil {
+		t.Fatalf("Failed to create admin2: %v", err)
+	}
+
+	manager1 := &models.User{
+		Email: "manager1@example.com",
+		Name:  "Manager 1",
+		Role:  models.RoleEventManager,
+	}
+	if err := repo.Create(ctx, manager1); err != nil {
+		t.Fatalf("Failed to create manager1: %v", err)
+	}
+
+	t.Run("count admins", func(t *testing.T) {
+		count, err := repo.CountByRole(ctx, models.RoleAdmin)
+		if err != nil {
+			t.Fatalf("CountByRole() error = %v", err)
+		}
+
+		if count != 2 {
+			t.Errorf("Expected 2 admins, got %d", count)
+		}
+	})
+
+	t.Run("count event managers", func(t *testing.T) {
+		count, err := repo.CountByRole(ctx, models.RoleEventManager)
+		if err != nil {
+			t.Fatalf("CountByRole() error = %v", err)
+		}
+
+		if count != 1 {
+			t.Errorf("Expected 1 event manager, got %d", count)
+		}
+	})
+}
+
 func stringPtr(s string) *string {
 	return &s
 }
