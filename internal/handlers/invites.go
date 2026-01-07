@@ -6,6 +6,8 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
+	"strings"
+	"time"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/lenaxia/tinyrsvp/internal/auth"
@@ -25,9 +27,27 @@ func NewInviteHandlers(service invites.IndividualInviteService, baseURL string) 
 	}
 }
 
+type ImportInviteHandlers struct {
+	service invites.InviteService
+	baseURL string
+}
+
+func NewImportInviteHandlers(service invites.InviteService, baseURL string) *ImportInviteHandlers {
+	return &ImportInviteHandlers{
+		service: service,
+		baseURL: baseURL,
+	}
+}
+
 func (h *InviteHandlers) RegisterRoutes(r chi.Router) {
 	r.Route("/api/events/{eventId}/invites", func(r chi.Router) {
 		r.Post("/", h.CreateInvite)
+	})
+}
+
+func (h *ImportInviteHandlers) RegisterRoutes(r chi.Router) {
+	r.Route("/api/events/{eventId}/invites", func(r chi.Router) {
+		r.Post("/import", h.ImportInvites)
 	})
 }
 
@@ -136,4 +156,56 @@ func handleInviteServiceError(w http.ResponseWriter, err error) {
 	default:
 		respondError(w, http.StatusInternalServerError, "failed to create invite")
 	}
+}
+
+func (h *ImportInviteHandlers) ImportInvites(w http.ResponseWriter, r *http.Request) {
+	_, ok := auth.UserFromContext(r.Context())
+	if !ok {
+		respondError(w, http.StatusUnauthorized, "authentication required")
+		return
+	}
+
+	eventIDStr := chi.URLParam(r, "eventId")
+	eventID, err := strconv.ParseInt(eventIDStr, 10, 64)
+	if err != nil || eventID <= 0 {
+		respondError(w, http.StatusBadRequest, "invalid event ID")
+		return
+	}
+
+	if err := r.ParseMultipartForm(1 << 20); err != nil {
+		respondError(w, http.StatusBadRequest, "failed to parse multipart form")
+		return
+	}
+
+	file, header, err := r.FormFile("file")
+	if err != nil {
+		respondError(w, http.StatusBadRequest, "file is required")
+		return
+	}
+	defer file.Close()
+
+	if header.Size > 1<<20 {
+		respondError(w, http.StatusBadRequest, "file size exceeds 1MB limit")
+		return
+	}
+
+	if !strings.HasSuffix(strings.ToLower(header.Filename), ".csv") {
+		respondError(w, http.StatusBadRequest, "file must be CSV format")
+		return
+	}
+
+	csvData := make([]byte, header.Size)
+	if _, err := file.Read(csvData); err != nil && err.Error() != "EOF" {
+		respondError(w, http.StatusBadRequest, "failed to read file")
+		return
+	}
+
+	expiresAt := time.Now().Add(60 * 24 * time.Hour)
+	result, err := h.service.ImportCSV(r.Context(), eventID, csvData, 0, expiresAt)
+	if err != nil {
+		handleInviteServiceError(w, err)
+		return
+	}
+
+	respondJSON(w, http.StatusOK, result)
 }
