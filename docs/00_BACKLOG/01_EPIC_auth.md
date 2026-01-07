@@ -31,18 +31,18 @@ Implement secure authentication and authorization for admin and event manager us
 ## User Stories
 
 ### Phase 1: Core Authentication
-- [ ] [`01_STORY_oidc_integration.md`](01_STORY_oidc_integration.md) - OIDC authentication flow
-- [ ] [`01_STORY_forward_auth.md`](01_STORY_forward_auth.md) - Forward auth header validation
-- [ ] [`01_STORY_session_management.md`](01_STORY_session_management.md) - Database-backed sessions
+- [ ] [`01_STORY_01_oidc_integration.md`](01_STORY_01_oidc_integration.md) - OIDC authentication flow
+- [ ] [`01_STORY_02_forward_auth.md`](01_STORY_02_forward_auth.md) - Forward auth header validation
+- [ ] [`01_STORY_03_session_management.md`](01_STORY_03_session_management.md) - Database-backed sessions
 
 ### Phase 2: User Management
-- [ ] [`01_STORY_user_model.md`](01_STORY_user_model.md) - User model and repository
-- [ ] [`01_STORY_bootstrap_admin.md`](01_STORY_bootstrap_admin.md) - First user becomes admin
-- [ ] [`01_STORY_user_crud.md`](01_STORY_user_crud.md) - User management endpoints
+- [ ] [`01_STORY_04_user_model.md`](01_STORY_04_user_model.md) - User model and service
+- [ ] [`01_STORY_05_bootstrap_admin.md`](01_STORY_05_bootstrap_admin.md) - First user becomes admin
+- [ ] [`01_STORY_06_user_crud.md`](01_STORY_06_user_crud.md) - User management endpoints
 
 ### Phase 3: Authorization
-- [ ] [`01_STORY_rbac_middleware.md`](01_STORY_rbac_middleware.md) - Role-based access control
-- [ ] [`01_STORY_permission_checks.md`](01_STORY_permission_checks.md) - Permission checking service
+- [ ] [`01_STORY_07_rbac_middleware.md`](01_STORY_07_rbac_middleware.md) - Role-based access control
+- [ ] [`01_STORY_08_permission_checks.md`](01_STORY_08_permission_checks.md) - Permission checking service
 
 ---
 
