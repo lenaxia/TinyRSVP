@@ -9,7 +9,7 @@ import (
 func TestInvite_Validate(t *testing.T) {
 	futureTime := time.Now().Add(30 * 24 * time.Hour)
 	pastTime := time.Now().Add(-24 * time.Hour)
-	validTokenHash := strings.Repeat("a", 44)
+	validTokenHash := strings.Repeat("a", 43)
 	email := "test@example.com"
 	name := "Test User"
 
@@ -101,7 +101,7 @@ func TestInvite_Validate(t *testing.T) {
 				ExpiresAt:   futureTime,
 			},
 			wantErr: true,
-			errMsg:  "token_hash must be 44 characters",
+			errMsg:  "token_hash must be 43 characters",
 		},
 		{
 			name: "invalid - token_hash too long",
@@ -113,7 +113,7 @@ func TestInvite_Validate(t *testing.T) {
 				ExpiresAt:   futureTime,
 			},
 			wantErr: true,
-			errMsg:  "token_hash must be 44 characters",
+			errMsg:  "token_hash must be 43 characters",
 		},
 		{
 			name: "invalid - negative max_plus_ones",
@@ -251,7 +251,107 @@ func TestInvite_Validate(t *testing.T) {
 			name: "valid - email at boundary (255 chars)",
 			invite: &Invite{
 				EventID:     1,
-				Email:       stringPtr(strings.Repeat("a", 255)),
+				Email:       stringPtr(strings.Repeat("a", 240) + "@example.com"),
+				TokenHash:   validTokenHash,
+				MaxPlusOnes: 2,
+				Status:      InviteStatusDraft,
+				ExpiresAt:   futureTime,
+			},
+			wantErr: false,
+		},
+		{
+			name: "invalid - email format (no @)",
+			invite: &Invite{
+				EventID:     1,
+				Email:       stringPtr("notanemail"),
+				TokenHash:   validTokenHash,
+				MaxPlusOnes: 2,
+				Status:      InviteStatusDraft,
+				ExpiresAt:   futureTime,
+			},
+			wantErr: true,
+			errMsg:  "email must be a valid email address",
+		},
+		{
+			name: "invalid - email format (no domain)",
+			invite: &Invite{
+				EventID:     1,
+				Email:       stringPtr("user@"),
+				TokenHash:   validTokenHash,
+				MaxPlusOnes: 2,
+				Status:      InviteStatusDraft,
+				ExpiresAt:   futureTime,
+			},
+			wantErr: true,
+			errMsg:  "email must be a valid email address",
+		},
+		{
+			name: "invalid - email format (no local part)",
+			invite: &Invite{
+				EventID:     1,
+				Email:       stringPtr("@example.com"),
+				TokenHash:   validTokenHash,
+				MaxPlusOnes: 2,
+				Status:      InviteStatusDraft,
+				ExpiresAt:   futureTime,
+			},
+			wantErr: true,
+			errMsg:  "email must be a valid email address",
+		},
+		{
+			name: "invalid - email format (spaces)",
+			invite: &Invite{
+				EventID:     1,
+				Email:       stringPtr("user name@example.com"),
+				TokenHash:   validTokenHash,
+				MaxPlusOnes: 2,
+				Status:      InviteStatusDraft,
+				ExpiresAt:   futureTime,
+			},
+			wantErr: true,
+			errMsg:  "email must be a valid email address",
+		},
+		{
+			name: "valid - email with subdomain",
+			invite: &Invite{
+				EventID:     1,
+				Email:       stringPtr("user@mail.example.com"),
+				TokenHash:   validTokenHash,
+				MaxPlusOnes: 2,
+				Status:      InviteStatusDraft,
+				ExpiresAt:   futureTime,
+			},
+			wantErr: false,
+		},
+		{
+			name: "valid - email with plus addressing",
+			invite: &Invite{
+				EventID:     1,
+				Email:       stringPtr("user+tag@example.com"),
+				TokenHash:   validTokenHash,
+				MaxPlusOnes: 2,
+				Status:      InviteStatusDraft,
+				ExpiresAt:   futureTime,
+			},
+			wantErr: false,
+		},
+		{
+			name: "valid - email with dots",
+			invite: &Invite{
+				EventID:     1,
+				Email:       stringPtr("first.last@example.com"),
+				TokenHash:   validTokenHash,
+				MaxPlusOnes: 2,
+				Status:      InviteStatusDraft,
+				ExpiresAt:   futureTime,
+			},
+			wantErr: false,
+		},
+		{
+			name: "valid - email with numbers",
+			invite: &Invite{
+				EventID:     1,
+				Email:       stringPtr("user123@example456.com"),
 				TokenHash:   validTokenHash,
 				MaxPlusOnes: 2,
 				Status:      InviteStatusDraft,

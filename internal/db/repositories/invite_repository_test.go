@@ -72,7 +72,7 @@ func TestNewInviteRepository(t *testing.T) {
 }
 
 func TestInviteRepository_Create(t *testing.T) {
-	validTokenHash := strings.Repeat("a", 44)
+	validTokenHash := strings.Repeat("a", 43)
 	futureTime := time.Now().Add(30 * 24 * time.Hour)
 	email := "guest@example.com"
 	name := "Guest User"
@@ -100,7 +100,7 @@ func TestInviteRepository_Create(t *testing.T) {
 				EventID:     1,
 				Name:        &name,
 				Email:       &email,
-				TokenHash:   strings.Repeat("b", 44),
+				TokenHash:   strings.Repeat("b", 43),
 				MaxPlusOnes: 1,
 				Status:      models.InviteStatusDraft,
 				ExpiresAt:   futureTime,
@@ -123,7 +123,7 @@ func TestInviteRepository_Create(t *testing.T) {
 			name: "invalid - missing event_id",
 			invite: &models.Invite{
 				EventID:     0,
-				TokenHash:   strings.Repeat("c", 44),
+				TokenHash:   strings.Repeat("c", 43),
 				MaxPlusOnes: 2,
 				Status:      models.InviteStatusDraft,
 				ExpiresAt:   futureTime,
@@ -135,7 +135,7 @@ func TestInviteRepository_Create(t *testing.T) {
 			name: "invalid - non-existent event",
 			invite: &models.Invite{
 				EventID:     999,
-				TokenHash:   strings.Repeat("d", 44),
+				TokenHash:   strings.Repeat("d", 43),
 				MaxPlusOnes: 2,
 				Status:      models.InviteStatusDraft,
 				ExpiresAt:   futureTime,
@@ -200,14 +200,14 @@ func TestInviteRepository_CreateBatch(t *testing.T) {
 			invites: []*models.Invite{
 				{
 					EventID:     1,
-					TokenHash:   strings.Repeat("a", 44),
+					TokenHash:   strings.Repeat("a", 43),
 					MaxPlusOnes: 2,
 					Status:      models.InviteStatusDraft,
 					ExpiresAt:   futureTime,
 				},
 				{
 					EventID:     1,
-					TokenHash:   strings.Repeat("b", 44),
+					TokenHash:   strings.Repeat("b", 43),
 					MaxPlusOnes: 1,
 					Status:      models.InviteStatusDraft,
 					ExpiresAt:   futureTime,
@@ -225,14 +225,14 @@ func TestInviteRepository_CreateBatch(t *testing.T) {
 			invites: []*models.Invite{
 				{
 					EventID:     1,
-					TokenHash:   strings.Repeat("c", 44),
+					TokenHash:   strings.Repeat("c", 43),
 					MaxPlusOnes: 2,
 					Status:      models.InviteStatusDraft,
 					ExpiresAt:   futureTime,
 				},
 				{
 					EventID:     1,
-					TokenHash:   strings.Repeat("c", 44),
+					TokenHash:   strings.Repeat("c", 43),
 					MaxPlusOnes: 1,
 					Status:      models.InviteStatusDraft,
 					ExpiresAt:   futureTime,
@@ -246,14 +246,14 @@ func TestInviteRepository_CreateBatch(t *testing.T) {
 			invites: []*models.Invite{
 				{
 					EventID:     1,
-					TokenHash:   strings.Repeat("d", 44),
+					TokenHash:   strings.Repeat("d", 43),
 					MaxPlusOnes: 2,
 					Status:      models.InviteStatusDraft,
 					ExpiresAt:   futureTime,
 				},
 				{
 					EventID:     0,
-					TokenHash:   strings.Repeat("e", 44),
+					TokenHash:   strings.Repeat("e", 43),
 					MaxPlusOnes: 1,
 					Status:      models.InviteStatusDraft,
 					ExpiresAt:   futureTime,
@@ -321,7 +321,7 @@ func TestInviteRepository_CreateBatch_TooLarge(t *testing.T) {
 	for i := range invites {
 		invites[i] = &models.Invite{
 			EventID:     1,
-			TokenHash:   strings.Repeat("a", 44),
+			TokenHash:   strings.Repeat("a", 43),
 			MaxPlusOnes: 2,
 			Status:      models.InviteStatusDraft,
 			ExpiresAt:   futureTime,
@@ -346,7 +346,7 @@ func TestInviteRepository_GetByID(t *testing.T) {
 
 	invite := &models.Invite{
 		EventID:     1,
-		TokenHash:   strings.Repeat("a", 44),
+		TokenHash:   strings.Repeat("a", 43),
 		MaxPlusOnes: 2,
 		Status:      models.InviteStatusDraft,
 		ExpiresAt:   time.Now().Add(30 * 24 * time.Hour),
@@ -408,7 +408,7 @@ func TestInviteRepository_GetByTokenHash(t *testing.T) {
 
 	repo := NewInviteRepository(database)
 
-	tokenHash := strings.Repeat("a", 44)
+	tokenHash := strings.Repeat("a", 43)
 	invite := &models.Invite{
 		EventID:     1,
 		TokenHash:   tokenHash,
@@ -434,7 +434,7 @@ func TestInviteRepository_GetByTokenHash(t *testing.T) {
 		},
 		{
 			name:      "non-existent token hash",
-			tokenHash: strings.Repeat("z", 44),
+			tokenHash: strings.Repeat("z", 43),
 			wantErr:   true,
 			errType:   "NotFoundError",
 		},
@@ -474,7 +474,7 @@ func TestInviteRepository_Update(t *testing.T) {
 	invite := &models.Invite{
 		EventID:     1,
 		Email:       &email,
-		TokenHash:   strings.Repeat("a", 44),
+		TokenHash:   strings.Repeat("a", 43),
 		MaxPlusOnes: 2,
 		Status:      models.InviteStatusDraft,
 		ExpiresAt:   time.Now().Add(30 * 24 * time.Hour),
@@ -553,7 +553,7 @@ func TestInviteRepository_Delete(t *testing.T) {
 
 	invite := &models.Invite{
 		EventID:     1,
-		TokenHash:   strings.Repeat("a", 44),
+		TokenHash:   strings.Repeat("a", 43),
 		MaxPlusOnes: 2,
 		Status:      models.InviteStatusDraft,
 		ExpiresAt:   time.Now().Add(30 * 24 * time.Hour),
@@ -618,7 +618,7 @@ func TestInviteRepository_ListByEventID(t *testing.T) {
 	invites := []*models.Invite{
 		{
 			EventID:      1,
-			TokenHash:    strings.Repeat("a", 44),
+			TokenHash:    strings.Repeat("a", 43),
 			MaxPlusOnes:  2,
 			Status:       models.InviteStatusDraft,
 			ExpiresAt:    futureTime,
@@ -628,7 +628,7 @@ func TestInviteRepository_ListByEventID(t *testing.T) {
 		{
 			EventID:      1,
 			Email:        &email1,
-			TokenHash:    strings.Repeat("b", 44),
+			TokenHash:    strings.Repeat("b", 43),
 			MaxPlusOnes:  1,
 			Status:       models.InviteStatusSent,
 			ExpiresAt:    futureTime,
@@ -637,7 +637,7 @@ func TestInviteRepository_ListByEventID(t *testing.T) {
 		},
 		{
 			EventID:      1,
-			TokenHash:    strings.Repeat("c", 44),
+			TokenHash:    strings.Repeat("c", 43),
 			MaxPlusOnes:  0,
 			Status:       models.InviteStatusDraft,
 			ExpiresAt:    futureTime,
@@ -725,7 +725,7 @@ func TestInviteRepository_CountByEventID(t *testing.T) {
 	for i := 0; i < 5; i++ {
 		invite := &models.Invite{
 			EventID:     1,
-			TokenHash:   strings.Repeat(string(rune('a'+i)), 44),
+			TokenHash:   strings.Repeat(string(rune('a'+i)), 43),
 			MaxPlusOnes: 2,
 			Status:      models.InviteStatusDraft,
 			ExpiresAt:   futureTime,
@@ -765,7 +765,7 @@ func TestInviteRepository_GetStats(t *testing.T) {
 		email := "user" + string(rune('a'+i)) + "@example.com"
 		invite := &models.Invite{
 			EventID:     1,
-			TokenHash:   strings.Repeat(string(rune('a'+i)), 44),
+			TokenHash:   strings.Repeat(string(rune('a'+i)), 43),
 			MaxPlusOnes: 2,
 			Status:      status,
 			ExpiresAt:   futureTime,
@@ -817,7 +817,7 @@ func TestInviteRepository_FindDuplicateEmails(t *testing.T) {
 		invite := &models.Invite{
 			EventID:     1,
 			Email:       &e,
-			TokenHash:   strings.Repeat(string(rune('a'+i)), 44),
+			TokenHash:   strings.Repeat(string(rune('a'+i)), 43),
 			MaxPlusOnes: 2,
 			Status:      models.InviteStatusDraft,
 			ExpiresAt:   futureTime,
@@ -890,9 +890,9 @@ func TestInviteRepository_DeleteExpired(t *testing.T) {
 			(1, ?, 2, 'draft', ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
 			(1, ?, 2, 'draft', ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
 	`,
-		strings.Repeat("a", 44), now.Add(-24*time.Hour),
-		strings.Repeat("b", 44), now.Add(-48*time.Hour),
-		strings.Repeat("c", 44), now.Add(24*time.Hour),
+		strings.Repeat("a", 43), now.Add(-24*time.Hour),
+		strings.Repeat("b", 43), now.Add(-48*time.Hour),
+		strings.Repeat("c", 43), now.Add(24*time.Hour),
 	)
 	if err != nil {
 		t.Fatalf("Failed to insert test invites: %v", err)

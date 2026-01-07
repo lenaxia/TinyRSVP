@@ -2,6 +2,7 @@ package models
 
 import (
 	"fmt"
+	"net/mail"
 	"time"
 )
 
@@ -47,10 +48,10 @@ func (i *Invite) Validate() error {
 		}
 	}
 
-	if len(i.TokenHash) != 44 {
+	if len(i.TokenHash) != 43 {
 		return &ValidationError{
 			Field:   "token_hash",
-			Message: "token_hash must be 44 characters",
+			Message: "token_hash must be 43 characters",
 		}
 	}
 
@@ -96,10 +97,18 @@ func (i *Invite) Validate() error {
 		}
 	}
 
-	if i.Email != nil && len(*i.Email) > 255 {
-		return &ValidationError{
-			Field:   "email",
-			Message: "email must not exceed 255 characters",
+	if i.Email != nil {
+		if len(*i.Email) > 255 {
+			return &ValidationError{
+				Field:   "email",
+				Message: "email must not exceed 255 characters",
+			}
+		}
+		if _, err := mail.ParseAddress(*i.Email); err != nil {
+			return &ValidationError{
+				Field:   "email",
+				Message: "email must be a valid email address",
+			}
 		}
 	}
 
