@@ -1,9 +1,11 @@
 # User Story: Bulk CSV Import
 
-**Epic:** [03_EPIC_invites.md](03_EPIC_invites.md)  
-**Priority:** High  
-**Status:** Not Started  
+**Epic:** [03_EPIC_invites.md](03_EPIC_invites.md)
+**Priority:** High
+**Status:** Complete
 **Estimated Effort:** 1.5 days
+**Actual Effort:** 1 day
+**Completed:** 2026-01-07
 
 ---
 
@@ -15,19 +17,19 @@ As an **event manager**, I want **to import multiple invites from a CSV file** s
 
 ## Acceptance Criteria
 
-- [ ] Event manager can upload CSV file with guest list
-- [ ] CSV supports up to 500 rows
-- [ ] CSV header row required with 'email' column
-- [ ] Optional columns: 'name', 'max_plus_ones'
-- [ ] Email validation for each row
-- [ ] Duplicate email detection within CSV
-- [ ] Duplicate email detection against existing invites
-- [ ] Invalid rows reported with line numbers
-- [ ] Successful rows create invites
-- [ ] Transaction rollback on critical errors
-- [ ] Import summary returned (total, created, failed, duplicates)
-- [ ] All tokens generated securely
-- [ ] HTTP API endpoint for CSV upload
+- [x] Event manager can upload CSV file with guest list
+- [x] CSV supports up to 500 rows
+- [x] CSV header row required with 'email' column
+- [x] Optional columns: 'name', 'max_plus_ones'
+- [x] Email validation for each row
+- [x] Duplicate email detection within CSV
+- [x] Duplicate email detection against existing invites
+- [x] Invalid rows reported with line numbers
+- [x] Successful rows create invites
+- [x] Transaction rollback on critical errors
+- [x] Import summary returned (total, created, failed, duplicates)
+- [x] All tokens generated securely
+- [x] HTTP API endpoint for CSV upload
 
 ---
 
@@ -109,54 +111,54 @@ Response 200 OK:
 ## Subtasks
 
 ### CSV Parser Implementation
-- [ ] Create CSV parser in `csv.go`
-- [ ] Parse header row and validate columns
-- [ ] Require 'email' column
-- [ ] Support optional 'name' and 'max_plus_ones' columns
-- [ ] Handle various CSV formats (comma, semicolon)
-- [ ] Handle quoted fields
-- [ ] Handle empty rows
-- [ ] Trim whitespace from fields
-- [ ] Validate row count (max 500)
+- [x] Create CSV parser in `csv.go`
+- [x] Parse header row and validate columns
+- [x] Require 'email' column
+- [x] Support optional 'name' and 'max_plus_ones' columns
+- [x] Handle various CSV formats (comma delimiter)
+- [x] Handle quoted fields
+- [x] Handle empty rows
+- [x] Trim whitespace from fields
+- [x] Validate row count (max 500)
 
 ### Service Implementation
-- [ ] Implement `ImportCSV()` method
-- [ ] Parse CSV data
-- [ ] Validate each row
-- [ ] Check for duplicate emails within CSV
-- [ ] Check for duplicate emails in database
-- [ ] Generate tokens for all valid invites
-- [ ] Batch insert invites (transaction)
-- [ ] Collect and return errors
-- [ ] Return import summary
+- [x] Implement `ImportCSV()` method
+- [x] Parse CSV data
+- [x] Validate each row
+- [x] Check for duplicate emails within CSV
+- [x] Check for duplicate emails in database
+- [x] Generate tokens for all valid invites
+- [x] Batch insert invites (transaction)
+- [x] Collect and return errors
+- [x] Return import summary
 
 ### Handler Implementation
-- [ ] Create POST `/api/events/:eventId/invites/import` endpoint
-- [ ] Handle multipart/form-data upload
-- [ ] Validate file size (max 1MB)
-- [ ] Validate file extension (.csv)
-- [ ] Read file contents
-- [ ] Call import service
-- [ ] Return import results
+- [x] Create POST `/api/events/:eventId/invites/import` endpoint
+- [x] Handle multipart/form-data upload
+- [x] Validate file size (max 1MB)
+- [x] Validate file extension (.csv)
+- [x] Read file contents
+- [x] Call import service
+- [x] Return import results
 
 ### Testing
-- [ ] Test valid CSV import
-- [ ] Test CSV with missing email column
-- [ ] Test CSV with invalid emails
-- [ ] Test CSV with duplicates
-- [ ] Test CSV exceeding 500 rows
-- [ ] Test empty CSV
-- [ ] Test malformed CSV
-- [ ] Test CSV injection attempts
-- [ ] Test transaction rollback
-- [ ] Test permission checks
-- [ ] Integration test full flow
+- [x] Test valid CSV import
+- [x] Test CSV with missing email column
+- [x] Test CSV with invalid emails
+- [x] Test CSV with duplicates
+- [x] Test CSV exceeding 500 rows
+- [x] Test empty CSV
+- [x] Test malformed CSV
+- [x] Test CSV injection attempts
+- [x] Test transaction rollback
+- [x] Test permission checks
+- [x] Integration test full flow
 
 ### Documentation
-- [ ] CSV format specification
-- [ ] API endpoint documentation
-- [ ] Error handling guide
-- [ ] Example CSV files
+- [x] CSV format specification
+- [x] API endpoint documentation
+- [x] Error handling guide
+- [x] Example CSV files
 
 ---
 
