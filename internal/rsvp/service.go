@@ -30,13 +30,14 @@ type Service interface {
 }
 
 type service struct {
-	db            db.Database
-	inviteService InviteService
-	inviteRepo    InviteRepository
-	eventRepo     repositories.EventRepository
-	rsvpRepo      repositories.RSVPRepository
-	answerRepo    repositories.AnswerRepository
-	questionRepo  repositories.QuestionRepository
+	db               db.Database
+	inviteService    InviteService
+	inviteRepo       InviteRepository
+	eventRepo        repositories.EventRepository
+	rsvpRepo         repositories.RSVPRepository
+	answerRepo       repositories.AnswerRepository
+	questionRepo     repositories.QuestionRepository
+	plusOnesValidator PlusOnesValidator
 }
 
 func NewService(
@@ -49,13 +50,14 @@ func NewService(
 	questionRepo repositories.QuestionRepository,
 ) Service {
 	return &service{
-		db:            database,
-		inviteService: inviteService,
-		inviteRepo:    inviteRepo,
-		eventRepo:     eventRepo,
-		rsvpRepo:      rsvpRepo,
-		answerRepo:    answerRepo,
-		questionRepo:  questionRepo,
+		db:                database,
+		inviteService:     inviteService,
+		inviteRepo:        inviteRepo,
+		eventRepo:         eventRepo,
+		rsvpRepo:          rsvpRepo,
+		answerRepo:        answerRepo,
+		questionRepo:      questionRepo,
+		plusOnesValidator: NewValidator(),
 	}
 }
 
@@ -99,6 +101,10 @@ func (s *service) SubmitRSVP(ctx context.Context, token string, req *SubmitRSVPR
 		return nil, ErrDeadlinePassed
 	}
 
+	if req.Response == "no" && req.PlusOnes > 0 {
+		req.PlusOnes = 0
+	}
+
 	if err := s.validateRequest(ctx, req, invite, event); err != nil {
 		return nil, err
 	}
@@ -113,10 +119,6 @@ func (s *service) SubmitRSVP(ctx context.Context, token string, req *SubmitRSVPR
 
 	if existing != nil {
 		return nil, ErrDuplicateRSVP
-	}
-
-	if req.Response == "no" && req.PlusOnes > 0 {
-		req.PlusOnes = 0
 	}
 
 	var rsvp *models.RSVP
@@ -190,18 +192,8 @@ func (s *service) validateRequest(ctx context.Context, req *SubmitRSVPRequest, i
 		}
 	}
 
-	if req.PlusOnes < 0 {
-		return &models.ValidationError{
-			Field:   "plus_ones",
-			Message: "plus_ones cannot be negative",
-		}
-	}
-
-	if req.PlusOnes > invite.MaxPlusOnes {
-		return &models.ValidationError{
-			Field:   "plus_ones",
-			Message: fmt.Sprintf("you can bring up to %d guest(s)", invite.MaxPlusOnes),
-		}
+	if err := s.plusOnesValidator.ValidatePlusOnes(req.PlusOnes, response, invite); err != nil {
+		return err
 	}
 
 	questions, err := s.questionRepo.GetByEventID(ctx, event.ID)

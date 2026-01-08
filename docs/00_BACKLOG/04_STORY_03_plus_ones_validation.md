@@ -2,7 +2,7 @@
 
 **Epic:** [04_EPIC_rsvp.md](04_EPIC_rsvp.md)
 **Priority:** High
-**Status:** Not Started
+**Status:** Complete
 **Estimated Effort:** 4 hours
 
 ---
@@ -15,14 +15,14 @@ As a **developer**, I want **comprehensive plus ones validation logic** so that 
 
 ## Acceptance Criteria
 
-- [ ] Plus ones validated against invite.max_plus_ones
-- [ ] Plus ones must be >= 0
-- [ ] Plus ones automatically set to 0 for "no" response
-- [ ] Plus ones cannot exceed event.max_plus_ones
-- [ ] Clear error messages for validation failures
-- [ ] Validation occurs before database save
-- [ ] All validation tests pass with timeout
-- [ ] Edge cases handled (null, negative, overflow)
+- [x] Plus ones validated against invite.max_plus_ones
+- [x] Plus ones must be >= 0
+- [x] Plus ones automatically set to 0 for "no" response
+- [x] Plus ones cannot exceed event.max_plus_ones
+- [x] Clear error messages for validation failures
+- [x] Validation occurs before database save
+- [x] All validation tests pass with timeout
+- [x] Edge cases handled (null, negative, overflow)
 
 ---
 
@@ -56,27 +56,27 @@ func NewValidator() PlusOnesValidator {
 ## Tasks
 
 ### Phase 1: Validator Implementation (TDD)
-- [ ] Write test for valid plus ones (0 to limit)
-- [ ] Write test for negative plus ones
-- [ ] Write test for exceeding invite limit
-- [ ] Write test for "no" response with plus ones
-- [ ] Write test for "maybe" response with plus ones
-- [ ] Write test for zero max_plus_ones
-- [ ] Write test for boundary values
-- [ ] Implement ValidatePlusOnes method
-- [ ] Run tests (should pass)
+- [x] Write test for valid plus ones (0 to limit)
+- [x] Write test for negative plus ones
+- [x] Write test for exceeding invite limit
+- [x] Write test for "no" response with plus ones
+- [x] Write test for "maybe" response with plus ones
+- [x] Write test for zero max_plus_ones
+- [x] Write test for boundary values
+- [x] Implement ValidatePlusOnes method
+- [x] Run tests (should pass)
 
 ### Phase 2: Integration with RSVP Service
-- [ ] Wire validator into RSVP service
-- [ ] Test validation in submission flow
-- [ ] Test validation in update flow
-- [ ] Verify error messages
+- [x] Wire validator into RSVP service
+- [x] Test validation in submission flow
+- [x] Test validation in update flow
+- [x] Verify error messages
 
 ### Phase 3: Edge Cases
-- [ ] Test with max int value
-- [ ] Test with invite.max_plus_ones = 0
-- [ ] Test with invite.max_plus_ones = 10 (max)
-- [ ] Test concurrent validations
+- [x] Test with max int value
+- [x] Test with invite.max_plus_ones = 0
+- [x] Test with invite.max_plus_ones = 10 (max)
+- [x] Test concurrent validations
 
 ---
 
@@ -239,15 +239,15 @@ func TestPlusOnesValidator_ValidatePlusOnes(t *testing.T) {
 
 ## Definition of Done
 
-- [ ] All acceptance criteria met
-- [ ] Validator implemented and tested
-- [ ] Unit tests passing (100% coverage)
-- [ ] Integration tests passing
-- [ ] Error messages clear and actionable
-- [ ] Edge cases handled
-- [ ] Documentation updated
-- [ ] Code reviewed
-- [ ] No linter warnings
+- [x] All acceptance criteria met
+- [x] Validator implemented and tested
+- [x] Unit tests passing (100% coverage)
+- [x] Integration tests passing
+- [x] Error messages clear and actionable
+- [x] Edge cases handled
+- [x] Documentation updated
+- [x] Code reviewed
+- [x] No linter warnings
 
 ---
 
