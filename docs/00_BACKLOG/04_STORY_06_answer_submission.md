@@ -47,7 +47,7 @@ As a **guest**, I want **my preference question answers to be saved with my RSVP
         },
         {
             "question_id": 3,
-            "answer_boolean": true
+            "answer_option": "Yes"
         }
     ]
 }
@@ -75,11 +75,10 @@ func (s *service) SubmitRSVP(ctx context.Context, token string, req *SubmitRSVPR
         // Create answers
         for _, ansReq := range req.Answers {
             answer := &models.RSVPAnswer{
-                RSVPID:        rsvp.ID,
-                QuestionID:    ansReq.QuestionID,
-                AnswerText:    ansReq.AnswerText,
-                AnswerOption:  ansReq.AnswerOption,
-                AnswerBoolean: ansReq.AnswerBoolean,
+                RSVPID:       rsvp.ID,
+                QuestionID:   ansReq.QuestionID,
+                AnswerText:   ansReq.AnswerText,
+                AnswerOption: ansReq.AnswerOption,
             }
             if err := s.answerRepo.Create(ctx, answer); err != nil {
                 return err
@@ -108,10 +107,9 @@ func (s *service) SubmitRSVP(ctx context.Context, token string, req *SubmitRSVPR
 ## Validation Rules
 
 - Required questions must have answers
-- Answer type must match question type
+- Answer type must match question type (text, single_choice, multiple_choice)
 - Text: max 500 characters
-- Option: must match question options
-- Boolean: must be true or false
+- Single choice/Multiple choice: must match one of the question's options
 - One answer per question
 
 ---
