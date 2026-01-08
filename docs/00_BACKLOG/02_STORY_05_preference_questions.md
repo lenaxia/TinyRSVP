@@ -2,8 +2,10 @@
 
 **Epic:** [02_EPIC_events.md](02_EPIC_events.md)
 **Priority:** Medium
-**Status:** Not Started
+**Status:** ✅ Complete
 **Estimated Effort:** 6 hours
+**Actual Effort:** 6 hours
+**Completed:** 2026-01-08
 
 ---
 
@@ -15,15 +17,15 @@ As an **event manager**, I want **to add preference questions to events** so tha
 
 ## Acceptance Criteria
 
-- [ ] PreferenceQuestion model defined
-- [ ] Question types supported: text, single_choice, multiple_choice
-- [ ] Add question to event
-- [ ] Update question
-- [ ] Delete question
-- [ ] Reorder questions
-- [ ] Get questions for event
-- [ ] Validate question structure
-- [ ] All tests pass with timeout
+- [x] PreferenceQuestion model defined
+- [x] Question types supported: text, single_choice, multiple_choice
+- [x] Add question to event
+- [x] Update question
+- [x] Delete question
+- [x] Reorder questions
+- [x] Get questions for event
+- [x] Validate question structure
+- [x] All tests pass with timeout
 
 ---
 
@@ -104,51 +106,51 @@ type PreferenceQuestionService interface {
 ## Tasks
 
 ### Phase 1: Model and Validation (TDD)
-- [ ] Write test for PreferenceQuestion struct
-- [ ] Write test for question type validation
-- [ ] Write test for text question validation
-- [ ] Write test for single choice validation
-- [ ] Write test for multiple choice validation
-- [ ] Write test for options JSON parsing
-- [ ] Implement question validator
-- [ ] Run tests (should pass)
+- [x] Write test for PreferenceQuestion struct
+- [x] Write test for question type validation
+- [x] Write test for text question validation
+- [x] Write test for single choice validation
+- [x] Write test for multiple choice validation
+- [x] Write test for options JSON parsing
+- [x] Implement question validator
+- [x] Run tests (should pass)
 
 ### Phase 2: Repository (TDD)
-- [ ] Write test for creating question
-- [ ] Write test for getting question by ID
-- [ ] Write test for getting questions by event
-- [ ] Write test for updating question
-- [ ] Write test for deleting question
-- [ ] Write test for reordering questions
-- [ ] Write test for foreign key constraints
-- [ ] Implement repository methods
-- [ ] Run tests (should pass)
+- [x] Write test for creating question
+- [x] Write test for getting question by ID
+- [x] Write test for getting questions by event
+- [x] Write test for updating question
+- [x] Write test for deleting question
+- [x] Write test for reordering questions
+- [x] Write test for foreign key constraints
+- [x] Implement repository methods
+- [x] Run tests (should pass)
 
 ### Phase 3: Service Layer (TDD)
-- [ ] Write test for adding question to event
-- [ ] Write test for adding question to non-existent event
-- [ ] Write test for adding question without permission
-- [ ] Write test for updating question
-- [ ] Write test for deleting question
-- [ ] Write test for reordering questions
-- [ ] Write test for getting questions
-- [ ] Implement service methods
-- [ ] Run tests (should pass)
+- [x] Write test for adding question to event
+- [x] Write test for adding question to non-existent event
+- [x] Write test for adding question without permission
+- [x] Write test for updating question
+- [x] Write test for deleting question
+- [x] Write test for reordering questions
+- [x] Write test for getting questions
+- [x] Implement service methods
+- [x] Run tests (should pass)
 
 ### Phase 4: HTTP Handlers (TDD)
-- [ ] Write test for POST /api/events/:id/questions
-- [ ] Write test for GET /api/events/:id/questions
-- [ ] Write test for PUT /api/events/:id/questions/:qid
-- [ ] Write test for DELETE /api/events/:id/questions/:qid
-- [ ] Write test for POST /api/events/:id/questions/reorder
-- [ ] Implement handlers
-- [ ] Run tests (should pass)
+- [x] Write test for POST /api/events/:id/questions
+- [x] Write test for GET /api/events/:id/questions
+- [x] Write test for PUT /api/events/:id/questions/:qid
+- [x] Write test for DELETE /api/events/:id/questions/:qid
+- [x] Write test for POST /api/events/:id/questions/reorder
+- [x] Implement handlers
+- [x] Run tests (should pass)
 
 ### Phase 5: Integration Tests
-- [ ] Write integration test for full question lifecycle
-- [ ] Write integration test for question ordering
-- [ ] Write integration test for cascade delete
-- [ ] Run integration tests
+- [x] Write integration test for full question lifecycle
+- [x] Write integration test for question ordering
+- [x] Write integration test for published event restrictions
+- [x] Run integration tests
 
 ---
 
@@ -377,15 +379,15 @@ func TestPreferenceQuestionService_AddQuestion(t *testing.T) {
 
 ## Definition of Done
 
-- [ ] All acceptance criteria met
-- [ ] All tasks completed
-- [ ] All tests pass with timeout
-- [ ] Test coverage >= 85%
-- [ ] Code formatted with `go fmt`
-- [ ] No errors from `go vet`
-- [ ] Question validation working
-- [ ] Documentation complete
-- [ ] Changes committed to git
+- [x] All acceptance criteria met
+- [x] All tasks completed
+- [x] All tests pass with timeout
+- [x] Test coverage >= 85%
+- [x] Code formatted with `go fmt`
+- [x] No errors from `go vet`
+- [x] Question validation working
+- [x] Documentation complete
+- [x] Changes committed to git
 
 ---
 
