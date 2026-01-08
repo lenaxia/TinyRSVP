@@ -25,7 +25,7 @@ type mockEventService struct {
 	PublishEventFunc       func(ctx context.Context, id int64) error
 	CancelEventFunc        func(ctx context.Context, id int64, reason string) error
 	ArchiveEventFunc       func(ctx context.Context, id int64) error
-	GetEventsToArchiveFunc func(ctx context.Context) ([]*models.Event, error)
+	GetEventsToArchiveFunc func(ctx context.Context, daysAfterEvent int) ([]*models.Event, error)
 }
 
 func (m *mockEventService) CreateEvent(ctx context.Context, event *models.Event) error {
@@ -84,9 +84,9 @@ func (m *mockEventService) ArchiveEvent(ctx context.Context, id int64) error {
 	return nil
 }
 
-func (m *mockEventService) GetEventsToArchive(ctx context.Context) ([]*models.Event, error) {
+func (m *mockEventService) GetEventsToArchive(ctx context.Context, daysAfterEvent int) ([]*models.Event, error) {
 	if m.GetEventsToArchiveFunc != nil {
-		return m.GetEventsToArchiveFunc(ctx)
+		return m.GetEventsToArchiveFunc(ctx, daysAfterEvent)
 	}
 	return nil, nil
 }
