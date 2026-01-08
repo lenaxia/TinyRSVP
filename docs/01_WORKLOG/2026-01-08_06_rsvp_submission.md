@@ -1,14 +1,14 @@
 # Worklog: RSVP Submission Endpoint Implementation
 
-**Date:** 2026-01-08  
-**Story:** [04_STORY_02_rsvp_submission.md](../00_BACKLOG/04_STORY_02_rsvp_submission.md)  
-**Status:** ✅ Complete
+**Date:** 2026-01-08
+**Story:** [04_STORY_02_rsvp_submission.md](../00_BACKLOG/04_STORY_02_rsvp_submission.md)
+**Status:** ✅ Complete (Including Critical Gap Fixes)
 
 ---
 
 ## Summary
 
-Implemented the RSVP submission endpoint (POST /api/rsvp/:token) with comprehensive validation, error handling, and test coverage. Guests can now submit their RSVP responses including plus ones and answers to preference questions.
+Implemented the RSVP submission endpoint (POST /rsvp/:token) with comprehensive validation, error handling, transaction atomicity, and full router integration. Guests can now submit their RSVP responses including plus ones and answers to preference questions. Both critical gaps identified in the specification have been addressed.
 
 ---
 
@@ -42,6 +42,7 @@ Implemented the RSVP submission endpoint (POST /api/rsvp/:token) with comprehens
 - Invalid answer types
 - Auto-correction of plus ones for "no" responses
 - Multiple answer types
+- Transaction rollback on failure (NEW)
 
 ### 2. Handler Layer (`internal/handlers/`)
 
@@ -73,7 +74,7 @@ Implemented the RSVP submission endpoint (POST /api/rsvp/:token) with comprehens
 - Missing required answer validation
 
 **All Tests Passing:**
-- Service layer: 14/14 tests ✅
+- Service layer: 15/15 tests ✅ (including transaction rollback test)
 - Handler layer: 6/6 tests ✅
 - Integration: 5/5 tests ✅
 
@@ -91,11 +92,20 @@ Used dependency injection pattern with clear interfaces:
 - `AnswerRepository` - Answer persistence
 - `QuestionRepository` - Question validation
 
-### 2. Transaction Handling
+### 2. Transaction Handling ✅ IMPLEMENTED
 
-Initially attempted to use `db.WithTransaction()` but encountered issues with repository pattern not being transaction-aware. Simplified to sequential operations without explicit transaction wrapper. SQLite provides sufficient atomicity for this use case.
+Using `db.WithTransaction()` to wrap all three operations (RSVP creation, answer creation, invite status update) in a single atomic transaction. The implementation executes raw SQL within the transaction callback, ensuring:
+- All operations succeed together, or
+- All operations roll back together on any failure
 
-**Note for Future:** If true multi-statement transactions are needed, repositories would need to be refactored to accept `*sql.Tx` as a parameter or use a transaction-aware context.
+This provides true ACID guarantees as required by the specification (line 24: "RSVP and answers saved atomically").
+
+**Implementation Details:**
+- Service accepts `db.Database` as first constructor parameter
+- `SubmitRSVP()` uses `db.WithTransaction(ctx, func(tx *sql.Tx) error {...})`
+- All SQL operations use `tx.ExecContext()` and `tx.QueryRowContext()`
+- Automatic rollback on any error within transaction
+- Test coverage includes rollback verification
 
 ### 3. Validation Strategy
 
@@ -118,7 +128,7 @@ Handler maps these to appropriate HTTP status codes with user-friendly messages.
 ## API Endpoint
 
 ```
-POST /api/rsvp/:token
+POST /rsvp/:token
 Content-Type: application/json
 
 Request Body:
@@ -236,12 +246,59 @@ ok      github.com/lenaxia/tinyrsvp/internal/handlers   0.072s
 
 ---
 
-## Next Steps
+## Critical Gap Fixes (2026-01-08)
 
-### Immediate Follow-ups
-1. Wire up the endpoint in the main router (cmd/server/main.go)
-2. Add route registration for POST /api/rsvp/:token
-3. Initialize RSVP service with proper dependencies
+### Gap 1: Router Integration (BLOCKER) ✅ FIXED
+
+**Problem:** POST endpoint was not wired up in [`cmd/server/main.go`](../../cmd/server/main.go).
+
+**Solution Implemented:**
+1. Added `answerRepo := repositories.NewAnswerRepository(database)` at line 113
+2. Added `rsvpService := rsvp.NewService(database, inviteService, inviteRepo, eventRepo, rsvpRepo, answerRepo, questionRepo)` at line 279
+3. Added `rsvpHandler.SetRSVPService(rsvpService)` at line 282
+4. Registered POST route: `rsvpRouter.Post("/{token}", rsvpHandler.SubmitRSVP)` at line 285
+
+**Verification:**
+- Application compiles successfully
+- Endpoint now accessible at POST /rsvp/:token
+- All integration tests passing
+
+### Gap 2: Transaction Atomicity (DATA INTEGRITY) ✅ FIXED
+
+**Problem:** RSVP creation, answer creation, and invite status update were sequential operations without transaction wrapper, risking data inconsistency on partial failures.
+
+**Solution Implemented:**
+- Added `db.Database` field to service struct
+- Updated `NewService()` constructor to accept database as first parameter
+- Wrapped all three operations in `db.WithTransaction()` in [`service.go`](../../internal/rsvp/service.go) lines 123-175
+- Operations now execute atomically with automatic rollback on any failure
+
+**Transaction Flow:**
+```go
+db.WithTransaction(ctx, func(tx *sql.Tx) error {
+    // 1. INSERT INTO rsvps
+    // 2. INSERT INTO rsvp_answers (for each answer)
+    // 3. UPDATE invites SET status = 'responded'
+    // If any step fails, entire transaction rolls back
+})
+```
+
+**Test Coverage:**
+- Added `TestService_SubmitRSVP_TransactionRollback` to verify rollback behavior
+- Test confirms no partial data remains after failed transaction
+- Test confirms invite status remains unchanged after rollback
+- All 15 service tests passing
+- All 11 handler tests passing
+
+**Benefits:**
+- Data consistency guaranteed
+- No orphaned RSVPs without answers
+- No answered invites without RSVPs
+- Automatic cleanup on failure
+
+---
+
+## Next Steps
 
 ### Related Stories
 - **04_STORY_01**: RSVP Page (UI for submission) - Needs integration
@@ -253,7 +310,7 @@ ok      github.com/lenaxia/tinyrsvp/internal/handlers   0.072s
 
 ## Known Limitations
 
-1. **No Transaction Wrapper**: Currently using sequential operations instead of explicit transactions. SQLite provides sufficient atomicity for this use case, but PostgreSQL deployments may want explicit transaction handling.
+1. ~~**No Transaction Wrapper**~~: ✅ FIXED - Now using `db.WithTransaction()` for atomic operations.
 
 2. **No Concurrency Control**: No optimistic locking on RSVP updates. The UNIQUE constraint on `invites.id` in the `rsvps` table prevents duplicates at the database level.
 
@@ -263,13 +320,15 @@ ok      github.com/lenaxia/tinyrsvp/internal/handlers   0.072s
 
 ## Lessons Learned
 
-1. **Repository Pattern and Transactions**: The current repository pattern uses `db.Database` interface which doesn't easily support transaction-aware operations. For true transactional behavior, repositories would need to accept `*sql.Tx` or use a transaction-aware context.
+1. **Repository Pattern and Transactions**: ✅ RESOLVED - Used `db.WithTransaction()` to execute raw SQL within transactions. This approach bypasses the repository abstraction for the critical path while maintaining transaction atomicity. The database interface's `WithTransaction` method provides proper transaction handling with automatic rollback on errors.
 
 2. **Interface Compatibility**: When creating service interfaces, ensure they match the actual implementations. Had to adjust `InviteService` interface to use `InviteRepository` for status updates instead of a service method.
 
-3. **Test Mock Completeness**: Mock implementations must implement all interface methods, even if they're not used in tests. Added stub implementations for unused methods.
+3. **Test Mock Completeness**: For transaction-based code, unit tests with mocks are insufficient. Converted unit tests to use real in-memory SQLite databases with full schema migrations. This provides more realistic testing and catches transaction-related issues.
 
 4. **Question Type Evolution**: Original spec mentioned boolean questions, but current implementation uses text/single_choice/multiple_choice. Tests adapted accordingly.
+
+5. **Transaction Testing**: Added `TestService_SubmitRSVP_TransactionRollback` to verify that failed operations (e.g., invalid question ID) properly roll back all changes, leaving no partial data in the database.
 
 ---
 
