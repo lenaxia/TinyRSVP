@@ -104,6 +104,7 @@ func setupTestDB(t *testing.T) db.Database {
 		status TEXT NOT NULL DEFAULT 'draft',
 		sent_at TIMESTAMP,
 		viewed_at TIMESTAMP,
+		revocation_reason TEXT,
 		unsubscribed BOOLEAN NOT NULL DEFAULT FALSE,
 		email_invalid BOOLEAN NOT NULL DEFAULT FALSE,
 		created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -244,6 +245,17 @@ func TestIntegration_FullInviteWorkflow(t *testing.T) {
 
 			if retrieved.Status != models.InviteStatusRevoked {
 				t.Errorf("status = %s, want %s", retrieved.Status, models.InviteStatusRevoked)
+			}
+		})
+
+		t.Run("revoked token cannot be used for RSVP", func(t *testing.T) {
+			_, err := service.GetInviteByToken(ctx, plainToken)
+			if err == nil {
+				t.Error("expected error when retrieving revoked token")
+			}
+
+			if !strings.Contains(err.Error(), "revoked") {
+				t.Errorf("error = %v, want error containing 'revoked'", err)
 			}
 		})
 

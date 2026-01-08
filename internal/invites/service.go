@@ -132,6 +132,10 @@ func (s *inviteService) GetInviteByToken(ctx context.Context, plainToken string)
 		return nil, fmt.Errorf("invite has expired")
 	}
 
+	if invite.Status == models.InviteStatusRevoked {
+		return nil, fmt.Errorf("invite has been revoked")
+	}
+
 	return invite, nil
 }
 
@@ -155,6 +159,7 @@ func (s *inviteService) RevokeInvite(ctx context.Context, req *RevokeInviteReque
 	}
 
 	invite.Status = models.InviteStatusRevoked
+	invite.RevocationReason = req.Reason
 	invite.UpdatedAt = time.Now()
 
 	if err := s.repo.Update(ctx, invite); err != nil {

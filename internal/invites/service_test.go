@@ -468,6 +468,25 @@ func TestInviteService_RevokeInvite(t *testing.T) {
 			wantErr: false,
 		},
 		{
+			name:     "successful revocation from viewed",
+			inviteID: 1,
+			mockGen:  &mockGenerator{},
+			mockRepo: &mockInviteRepository{
+				getByIDFunc: func(ctx context.Context, id int64) (*models.Invite, error) {
+					return &models.Invite{
+						ID:          1,
+						EventID:     1,
+						Email:       &email,
+						TokenHash:   strings.Repeat("b", 43),
+						MaxPlusOnes: 2,
+						Status:      models.InviteStatusViewed,
+						ExpiresAt:   time.Now().Add(30 * 24 * time.Hour),
+					}, nil
+				},
+			},
+			wantErr: false,
+		},
+		{
 			name:     "invite not found",
 			inviteID: 999,
 			mockGen:  &mockGenerator{},
@@ -498,6 +517,26 @@ func TestInviteService_RevokeInvite(t *testing.T) {
 			},
 			wantErr:     true,
 			errContains: "cannot transition from revoked",
+		},
+		{
+			name:     "cannot revoke responded invite",
+			inviteID: 1,
+			mockGen:  &mockGenerator{},
+			mockRepo: &mockInviteRepository{
+				getByIDFunc: func(ctx context.Context, id int64) (*models.Invite, error) {
+					return &models.Invite{
+						ID:          1,
+						EventID:     1,
+						Email:       &email,
+						TokenHash:   strings.Repeat("b", 43),
+						MaxPlusOnes: 2,
+						Status:      models.InviteStatusResponded,
+						ExpiresAt:   time.Now().Add(30 * 24 * time.Hour),
+					}, nil
+				},
+			},
+			wantErr:     true,
+			errContains: "cannot transition from responded",
 		},
 		{
 			name:     "update failure",
@@ -668,6 +707,30 @@ func TestInviteService_GetInviteByToken_ExpiredToken(t *testing.T) {
 			},
 			wantErr:     true,
 			errContains: "invite has expired",
+		},
+		{
+			name:  "revoked token rejected",
+			token: validToken,
+			mockGen: &mockGenerator{
+				hashFunc: func(t string) (string, error) {
+					return validHash, nil
+				},
+			},
+			mockRepo: &mockInviteRepository{
+				getByTokenHashFunc: func(ctx context.Context, tokenHash string) (*models.Invite, error) {
+					return &models.Invite{
+						ID:          1,
+						EventID:     1,
+						Email:       &email,
+						TokenHash:   validHash,
+						MaxPlusOnes: 2,
+						Status:      models.InviteStatusRevoked,
+						ExpiresAt:   time.Now().Add(24 * time.Hour),
+					}, nil
+				},
+			},
+			wantErr:     true,
+			errContains: "revoked",
 		},
 		{
 			name:  "valid token not expired",

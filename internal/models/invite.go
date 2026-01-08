@@ -17,20 +17,21 @@ const (
 )
 
 type Invite struct {
-	ID           int64        `db:"id" json:"id"`
-	EventID      int64        `db:"event_id" json:"event_id"`
-	Name         *string      `db:"name" json:"name,omitempty"`
-	Email        *string      `db:"email" json:"email,omitempty"`
-	TokenHash    string       `db:"token_hash" json:"-"`
-	MaxPlusOnes  int          `db:"max_plus_ones" json:"max_plus_ones"`
-	Status       InviteStatus `db:"status" json:"status"`
-	SentAt       *time.Time   `db:"sent_at" json:"sent_at,omitempty"`
-	ViewedAt     *time.Time   `db:"viewed_at" json:"viewed_at,omitempty"`
-	Unsubscribed bool         `db:"unsubscribed" json:"unsubscribed"`
-	EmailInvalid bool         `db:"email_invalid" json:"email_invalid"`
-	CreatedAt    time.Time    `db:"created_at" json:"created_at"`
-	UpdatedAt    time.Time    `db:"updated_at" json:"updated_at"`
-	ExpiresAt    time.Time    `db:"expires_at" json:"expires_at"`
+	ID               int64        `db:"id" json:"id"`
+	EventID          int64        `db:"event_id" json:"event_id"`
+	Name             *string      `db:"name" json:"name,omitempty"`
+	Email            *string      `db:"email" json:"email,omitempty"`
+	TokenHash        string       `db:"token_hash" json:"-"`
+	MaxPlusOnes      int          `db:"max_plus_ones" json:"max_plus_ones"`
+	Status           InviteStatus `db:"status" json:"status"`
+	SentAt           *time.Time   `db:"sent_at" json:"sent_at,omitempty"`
+	ViewedAt         *time.Time   `db:"viewed_at" json:"viewed_at,omitempty"`
+	RevocationReason *string      `db:"revocation_reason" json:"revocation_reason,omitempty"`
+	Unsubscribed     bool         `db:"unsubscribed" json:"unsubscribed"`
+	EmailInvalid     bool         `db:"email_invalid" json:"email_invalid"`
+	CreatedAt        time.Time    `db:"created_at" json:"created_at"`
+	UpdatedAt        time.Time    `db:"updated_at" json:"updated_at"`
+	ExpiresAt        time.Time    `db:"expires_at" json:"expires_at"`
 }
 
 func (i *Invite) Validate() error {
