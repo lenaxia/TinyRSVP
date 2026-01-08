@@ -2,8 +2,10 @@
 
 **Epic:** [04_EPIC_rsvp.md](04_EPIC_rsvp.md)
 **Priority:** Critical
-**Status:** Not Started
+**Status:** Complete
 **Estimated Effort:** 4 hours
+**Actual Effort:** 2 hours
+**Completed:** 2026-01-08
 
 ---
 
@@ -15,17 +17,17 @@ As a **developer**, I want **a complete RSVP model with repository layer** so th
 
 ## Acceptance Criteria
 
-- [ ] RSVP struct matches database schema
-- [ ] RSVPResponse enum with all response types defined
-- [ ] RSVP repository interface defined
-- [ ] RSVP repository implementation with CRUD operations
-- [ ] RSVPAnswer model for preference question answers
-- [ ] Answer repository interface and implementation
-- [ ] Unique constraint enforced (one RSVP per invite)
-- [ ] Plus ones validation (0 to invite.max_plus_ones)
-- [ ] Response validation (yes/no/maybe only)
-- [ ] All repository tests pass with timeout
-- [ ] Integration tests for RSVP creation with answers
+- [x] RSVP struct matches database schema
+- [x] RSVPResponse enum with all response types defined
+- [x] RSVP repository interface defined
+- [x] RSVP repository implementation with CRUD operations
+- [x] RSVPAnswer model for preference question answers
+- [x] Answer repository interface and implementation
+- [x] Unique constraint enforced (one RSVP per invite)
+- [x] Plus ones validation (0 to invite.max_plus_ones)
+- [x] Response validation (yes/no/maybe only)
+- [x] All repository tests pass with timeout
+- [x] Integration tests for RSVP creation with answers
 
 ---
 
@@ -103,49 +105,49 @@ type RSVPStats struct {
 ## Tasks
 
 ### Phase 1: RSVP Model (TDD)
-- [ ] Create RSVP struct in [`internal/models/rsvp.go`](../../internal/models/rsvp.go)
-- [ ] Define RSVPResponse enum with constants
-- [ ] Write tests for RSVP validation
-- [ ] Add validation methods to RSVP model
-- [ ] Create RSVPAnswer struct in same file
-- [ ] Write tests for answer type validation
+- [x] Create RSVP struct in [`internal/models/rsvp.go`](../../internal/models/rsvp.go)
+- [x] Define RSVPResponse enum with constants
+- [x] Write tests for RSVP validation
+- [x] Add validation methods to RSVP model
+- [x] Create RSVPAnswer struct in same file
+- [x] Write tests for answer type validation
 
 ### Phase 2: RSVP Repository (TDD)
-- [ ] Create repository interface in [`internal/db/repositories/rsvp_repository.go`](../../internal/db/repositories/rsvp_repository.go)
-- [ ] Write test for Create with valid RSVP
-- [ ] Write test for Create with duplicate invite_id (should fail)
-- [ ] Write test for GetByID
-- [ ] Write test for GetByInviteID
-- [ ] Write test for GetByEventID
-- [ ] Write test for Update
-- [ ] Write test for GetStats
-- [ ] Implement repository methods
-- [ ] Run tests (should pass)
+- [x] Create repository interface in [`internal/db/repositories/rsvp_repository.go`](../../internal/db/repositories/rsvp_repository.go)
+- [x] Write test for Create with valid RSVP
+- [x] Write test for Create with duplicate invite_id (should fail)
+- [x] Write test for GetByID
+- [x] Write test for GetByInviteID
+- [x] Write test for GetByEventID
+- [x] Write test for Update
+- [x] Write test for GetStats
+- [x] Implement repository methods
+- [x] Run tests (should pass)
 
 ### Phase 3: Answer Repository (TDD)
-- [ ] Create repository interface in [`internal/db/repositories/answer_repository.go`](../../internal/db/repositories/answer_repository.go)
-- [ ] Write test for Create with text answer
-- [ ] Write test for Create with option answer
-- [ ] Write test for Create with boolean answer
-- [ ] Write test for GetByRSVPID
-- [ ] Write test for GetByQuestionID
-- [ ] Write test for Update
-- [ ] Write test for DeleteByRSVPID
-- [ ] Implement repository methods
-- [ ] Run tests (should pass)
+- [x] Create repository interface in [`internal/db/repositories/answer_repository.go`](../../internal/db/repositories/answer_repository.go)
+- [x] Write test for Create with text answer
+- [x] Write test for Create with option answer
+- [x] Write test for Create with boolean answer
+- [x] Write test for GetByRSVPID
+- [x] Write test for GetByQuestionID
+- [x] Write test for Update
+- [x] Write test for DeleteByRSVPID
+- [x] Implement repository methods
+- [x] Run tests (should pass)
 
 ### Phase 4: Integration Tests
-- [ ] Write integration test for RSVP creation
-- [ ] Write integration test for RSVP with multiple answers
-- [ ] Write integration test for duplicate RSVP prevention
-- [ ] Write integration test for GetStats calculation
-- [ ] Run all tests with timeout
+- [x] Write integration test for RSVP creation
+- [x] Write integration test for RSVP with multiple answers
+- [x] Write integration test for duplicate RSVP prevention
+- [x] Write integration test for GetStats calculation
+- [x] Run all tests with timeout
 
 ### Phase 5: Documentation
-- [ ] Document RSVP model in README
-- [ ] Document repository interfaces
-- [ ] Add usage examples
-- [ ] Update database schema documentation
+- [x] Document RSVP model in README
+- [x] Document repository interfaces
+- [x] Add usage examples
+- [x] Update database schema documentation
 
 ---
 

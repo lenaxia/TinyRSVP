@@ -32,7 +32,7 @@ Implement guest RSVP functionality including response submission (yes/no/maybe),
 ## User Stories
 
 ### Phase 1: RSVP Core
-- [ ] [`04_STORY_00_rsvp_model.md`](04_STORY_00_rsvp_model.md) - RSVP struct and repository
+- [x] [`04_STORY_00_rsvp_model.md`](04_STORY_00_rsvp_model.md) - RSVP struct and repository
 - [ ] [`04_STORY_01_rsvp_page.md`](04_STORY_01_rsvp_page.md) - Guest-facing RSVP page
 - [ ] [`04_STORY_02_rsvp_submission.md`](04_STORY_02_rsvp_submission.md) - Submit RSVP endpoint
 
