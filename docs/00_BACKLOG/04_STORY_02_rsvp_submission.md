@@ -2,8 +2,9 @@
 
 **Epic:** [04_EPIC_rsvp.md](04_EPIC_rsvp.md)
 **Priority:** Critical
-**Status:** Not Started
+**Status:** Complete
 **Estimated Effort:** 1 day
+**Completed:** 2026-01-08
 
 ---
 
@@ -15,17 +16,17 @@ As a **guest**, I want **to submit my RSVP response** so that **the host knows w
 
 ## Acceptance Criteria
 
-- [ ] Guest can submit RSVP via POST endpoint
-- [ ] Response validated (yes/no/maybe only)
-- [ ] Plus ones validated against invite limit
-- [ ] Token validated before submission
-- [ ] Deadline enforced (no submission after deadline)
-- [ ] RSVP and answers saved atomically (transaction)
-- [ ] Invite status updated to "responded"
-- [ ] Duplicate RSVP prevented (one per invite)
-- [ ] Clear error messages for validation failures
-- [ ] Success response includes RSVP details
-- [ ] All tests pass with timeout
+- [x] Guest can submit RSVP via POST endpoint
+- [x] Response validated (yes/no/maybe only)
+- [x] Plus ones validated against invite limit
+- [x] Token validated before submission
+- [x] Deadline enforced (no submission after deadline)
+- [x] RSVP and answers saved atomically (transaction)
+- [x] Invite status updated to "responded"
+- [x] Duplicate RSVP prevented (one per invite)
+- [x] Clear error messages for validation failures
+- [x] Success response includes RSVP details
+- [x] All tests pass with timeout
 
 ---
 
@@ -96,51 +97,51 @@ type AnswerRequest struct {
 ## Tasks
 
 ### Phase 1: Service Layer (TDD)
-- [ ] Create RSVP service interface
-- [ ] Write test for valid RSVP submission
-- [ ] Write test for invalid token
-- [ ] Write test for expired token
-- [ ] Write test for revoked invite
-- [ ] Write test for invalid response value
-- [ ] Write test for plus ones exceeding limit
-- [ ] Write test for negative plus ones
-- [ ] Write test for deadline passed
-- [ ] Write test for duplicate RSVP
-- [ ] Write test for cancelled event
-- [ ] Write test for missing required answers
-- [ ] Write test for invalid answer types
-- [ ] Implement SubmitRSVP method
-- [ ] Run tests (should pass)
+- [x] Create RSVP service interface
+- [x] Write test for valid RSVP submission
+- [x] Write test for invalid token
+- [x] Write test for expired token
+- [x] Write test for revoked invite
+- [x] Write test for invalid response value
+- [x] Write test for plus ones exceeding limit
+- [x] Write test for negative plus ones
+- [x] Write test for deadline passed
+- [x] Write test for duplicate RSVP
+- [x] Write test for cancelled event
+- [x] Write test for missing required answers
+- [x] Write test for invalid answer types
+- [x] Implement SubmitRSVP method
+- [x] Run tests (should pass)
 
 ### Phase 2: Handler Layer (TDD)
-- [ ] Create RSVP handler
-- [ ] Write test for successful submission
-- [ ] Write test for invalid JSON
-- [ ] Write test for missing required fields
-- [ ] Write test for validation errors
-- [ ] Write test for service errors
-- [ ] Implement POST handler
-- [ ] Run tests (should pass)
+- [x] Create RSVP handler
+- [x] Write test for successful submission
+- [x] Write test for invalid JSON
+- [x] Write test for missing required fields
+- [x] Write test for validation errors
+- [x] Write test for service errors
+- [x] Implement POST handler
+- [x] Run tests (should pass)
 
 ### Phase 3: Validation Logic
-- [ ] Implement response validation
-- [ ] Implement plus ones validation
-- [ ] Implement deadline checking
-- [ ] Implement answer validation
-- [ ] Test all validation rules
+- [x] Implement response validation
+- [x] Implement plus ones validation
+- [x] Implement deadline checking
+- [x] Implement answer validation
+- [x] Test all validation rules
 
 ### Phase 4: Transaction Management
-- [ ] Implement atomic RSVP + answers save
-- [ ] Test transaction rollback on error
-- [ ] Test invite status update
-- [ ] Verify data consistency
+- [x] Implement atomic RSVP + answers save
+- [x] Test transaction rollback on error
+- [x] Test invite status update
+- [x] Verify data consistency
 
 ### Phase 5: Integration Testing
-- [ ] Test full submission flow
-- [ ] Test with various response types
-- [ ] Test with multiple answers
-- [ ] Test error scenarios
-- [ ] Test concurrent submissions
+- [x] Test full submission flow
+- [x] Test with various response types
+- [x] Test with multiple answers
+- [x] Test error scenarios
+- [x] Test concurrent submissions
 
 ---
 
@@ -488,17 +489,17 @@ func TestRSVPSubmission_Integration(t *testing.T) {
 
 ## Definition of Done
 
-- [ ] All acceptance criteria met
-- [ ] Service layer implemented and tested
-- [ ] Handler layer implemented and tested
-- [ ] Validation logic complete
-- [ ] Transaction management working
-- [ ] Unit tests passing (>90% coverage)
-- [ ] Integration tests passing
-- [ ] Error handling complete
-- [ ] Documentation updated
-- [ ] Code reviewed
-- [ ] No linter warnings
+- [x] All acceptance criteria met
+- [x] Service layer implemented and tested
+- [x] Handler layer implemented and tested
+- [x] Validation logic complete
+- [x] Transaction management working
+- [x] Unit tests passing (>90% coverage)
+- [x] Integration tests passing
+- [x] Error handling complete
+- [x] Documentation updated
+- [x] Code reviewed
+- [x] No linter warnings
 
 ---
 
