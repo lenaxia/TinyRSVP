@@ -16,7 +16,7 @@ As a **guest**, I want **to see a confirmation page after submitting my RSVP** s
 ## Acceptance Criteria
 
 - [ ] Confirmation page shown after successful submission
-- [ ] Page displays RSVP summary (response, plus ones)
+- [ ] Page displays RSVP summary (response, plus ones, preferences)
 - [ ] Event details displayed
 - [ ] Preference answers displayed
 - [ ] "Add to Calendar" button (ICS download)

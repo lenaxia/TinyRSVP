@@ -768,3 +768,270 @@ func TestRSVPHandler_Integration_SubmitRSVP_MissingRequiredAnswer(t *testing.T) 
 		t.Error("Response should mention required questions")
 	}
 }
+
+func TestRSVPHandler_Integration_UpdateRSVP_Success(t *testing.T) {
+	database := setupIntegrationTestDB(t)
+	defer database.Close()
+
+	user := createTestUser(t, database)
+	event := createTestEventForRSVP(t, database, user.ID)
+	invite, inviteToken := createTestInviteForRSVP(t, database, event.ID)
+
+	secret := []byte("test-secret-key-32-bytes-long!!")
+	generator := token.NewGenerator(secret)
+	inviteRepo := repositories.NewInviteRepository(database)
+	inviteService := invites.NewInviteService(generator, inviteRepo)
+	eventRepo := repositories.NewEventRepository(database)
+	rsvpRepo := repositories.NewRSVPRepository(database)
+	questionRepo := repositories.NewQuestionRepository(database)
+	answerRepo := repositories.NewAnswerRepository(database)
+
+	rsvpService := rsvp.NewService(database, inviteService, inviteRepo, eventRepo, rsvpRepo, answerRepo, questionRepo)
+	handler := NewRSVPHandler(inviteService, eventRepo, rsvpRepo, questionRepo)
+	handler.SetRSVPService(rsvpService)
+
+	r := chi.NewRouter()
+	r.Post("/api/rsvp/{token}", handler.SubmitRSVP)
+	r.Put("/api/rsvp/{token}", handler.UpdateRSVP)
+
+	submitBody := `{"response":"yes","plus_ones":2,"answers":[]}`
+	submitReq := httptest.NewRequest("POST", "/api/rsvp/"+inviteToken, strings.NewReader(submitBody))
+	submitReq.Header.Set("Content-Type", "application/json")
+	submitW := httptest.NewRecorder()
+
+	r.ServeHTTP(submitW, submitReq)
+
+	if submitW.Code != http.StatusCreated {
+		t.Fatalf("Initial submission should succeed, got %d. Body: %s", submitW.Code, submitW.Body.String())
+	}
+
+	updateBody := `{"response":"maybe","plus_ones":1,"answers":[]}`
+	updateReq := httptest.NewRequest("PUT", "/api/rsvp/"+inviteToken, strings.NewReader(updateBody))
+	updateReq.Header.Set("Content-Type", "application/json")
+	updateW := httptest.NewRecorder()
+
+	r.ServeHTTP(updateW, updateReq)
+
+	if updateW.Code != http.StatusOK {
+		t.Errorf("Expected status 200, got %d. Body: %s", updateW.Code, updateW.Body.String())
+	}
+
+	updatedRSVP, err := rsvpRepo.GetByInviteID(context.Background(), invite.ID)
+	if err != nil {
+		t.Fatalf("Failed to get updated RSVP: %v", err)
+	}
+
+	if updatedRSVP.Response != models.RSVPResponseMaybe {
+		t.Errorf("Expected response 'maybe', got '%s'", updatedRSVP.Response)
+	}
+
+	if updatedRSVP.PlusOnes != 1 {
+		t.Errorf("Expected plus_ones 1, got %d", updatedRSVP.PlusOnes)
+	}
+}
+
+func TestRSVPHandler_Integration_UpdateRSVP_WithAnswers(t *testing.T) {
+	database := setupIntegrationTestDB(t)
+	defer database.Close()
+
+	user := createTestUser(t, database)
+	event := createTestEventForRSVP(t, database, user.ID)
+	invite, inviteToken := createTestInviteForRSVP(t, database, event.ID)
+
+	questionRepo := repositories.NewQuestionRepository(database)
+	question := &models.PreferenceQuestion{
+		EventID:      event.ID,
+		QuestionText: "Dietary restrictions?",
+		QuestionType: models.QuestionTypeText,
+		Required:     true,
+		DisplayOrder: 1,
+	}
+	if err := questionRepo.Create(context.Background(), question); err != nil {
+		t.Fatalf("Failed to create question: %v", err)
+	}
+
+	secret := []byte("test-secret-key-32-bytes-long!!")
+	generator := token.NewGenerator(secret)
+	inviteRepo := repositories.NewInviteRepository(database)
+	inviteService := invites.NewInviteService(generator, inviteRepo)
+	eventRepo := repositories.NewEventRepository(database)
+	rsvpRepo := repositories.NewRSVPRepository(database)
+	answerRepo := repositories.NewAnswerRepository(database)
+
+	rsvpService := rsvp.NewService(database, inviteService, inviteRepo, eventRepo, rsvpRepo, answerRepo, questionRepo)
+	handler := NewRSVPHandler(inviteService, eventRepo, rsvpRepo, questionRepo)
+	handler.SetRSVPService(rsvpService)
+
+	r := chi.NewRouter()
+	r.Post("/api/rsvp/{token}", handler.SubmitRSVP)
+	r.Put("/api/rsvp/{token}", handler.UpdateRSVP)
+
+	submitBody := `{
+		"response":"yes",
+		"plus_ones":2,
+		"answers":[
+			{"question_id":` + fmt.Sprintf("%d", question.ID) + `,"answer_text":"Vegetarian"}
+		]
+	}`
+	submitReq := httptest.NewRequest("POST", "/api/rsvp/"+inviteToken, strings.NewReader(submitBody))
+	submitReq.Header.Set("Content-Type", "application/json")
+	submitW := httptest.NewRecorder()
+
+	r.ServeHTTP(submitW, submitReq)
+
+	if submitW.Code != http.StatusCreated {
+		t.Fatalf("Initial submission should succeed, got %d. Body: %s", submitW.Code, submitW.Body.String())
+	}
+
+	updateBody := `{
+		"response":"yes",
+		"plus_ones":1,
+		"answers":[
+			{"question_id":` + fmt.Sprintf("%d", question.ID) + `,"answer_text":"Vegan"}
+		]
+	}`
+	updateReq := httptest.NewRequest("PUT", "/api/rsvp/"+inviteToken, strings.NewReader(updateBody))
+	updateReq.Header.Set("Content-Type", "application/json")
+	updateW := httptest.NewRecorder()
+
+	r.ServeHTTP(updateW, updateReq)
+
+	if updateW.Code != http.StatusOK {
+		t.Errorf("Expected status 200, got %d. Body: %s", updateW.Code, updateW.Body.String())
+	}
+
+	updatedRSVP, err := rsvpRepo.GetByInviteID(context.Background(), invite.ID)
+	if err != nil {
+		t.Fatalf("Failed to get updated RSVP: %v", err)
+	}
+
+	if updatedRSVP.PlusOnes != 1 {
+		t.Errorf("Expected plus_ones 1, got %d", updatedRSVP.PlusOnes)
+	}
+
+	answers, err := answerRepo.GetByRSVPID(context.Background(), updatedRSVP.ID)
+	if err != nil {
+		t.Fatalf("Failed to get answers: %v", err)
+	}
+
+	if len(answers) != 1 {
+		t.Errorf("Expected 1 answer, got %d", len(answers))
+	}
+
+	if answers[0].AnswerText == nil || *answers[0].AnswerText != "Vegan" {
+		t.Errorf("Expected answer text 'Vegan', got '%v'", answers[0].AnswerText)
+	}
+}
+
+func TestRSVPHandler_Integration_UpdateRSVP_NoExistingRSVP(t *testing.T) {
+	database := setupIntegrationTestDB(t)
+	defer database.Close()
+
+	user := createTestUser(t, database)
+	event := createTestEventForRSVP(t, database, user.ID)
+	_, inviteToken := createTestInviteForRSVP(t, database, event.ID)
+
+	secret := []byte("test-secret-key-32-bytes-long!!")
+	generator := token.NewGenerator(secret)
+	inviteRepo := repositories.NewInviteRepository(database)
+	inviteService := invites.NewInviteService(generator, inviteRepo)
+	eventRepo := repositories.NewEventRepository(database)
+	rsvpRepo := repositories.NewRSVPRepository(database)
+	questionRepo := repositories.NewQuestionRepository(database)
+	answerRepo := repositories.NewAnswerRepository(database)
+
+	rsvpService := rsvp.NewService(database, inviteService, inviteRepo, eventRepo, rsvpRepo, answerRepo, questionRepo)
+	handler := NewRSVPHandler(inviteService, eventRepo, rsvpRepo, questionRepo)
+	handler.SetRSVPService(rsvpService)
+
+	r := chi.NewRouter()
+	r.Put("/api/rsvp/{token}", handler.UpdateRSVP)
+
+	updateBody := `{"response":"yes","plus_ones":1,"answers":[]}`
+	updateReq := httptest.NewRequest("PUT", "/api/rsvp/"+inviteToken, strings.NewReader(updateBody))
+	updateReq.Header.Set("Content-Type", "application/json")
+	updateW := httptest.NewRecorder()
+
+	r.ServeHTTP(updateW, updateReq)
+
+	if updateW.Code != http.StatusNotFound {
+		t.Errorf("Expected status 404, got %d. Body: %s", updateW.Code, updateW.Body.String())
+	}
+
+	responseBody := updateW.Body.String()
+	if !strings.Contains(responseBody, "no existing RSVP") {
+		t.Error("Response should indicate no existing RSVP")
+	}
+}
+
+func TestRSVPHandler_Integration_UpdateRSVP_DeadlinePassed(t *testing.T) {
+	database := setupIntegrationTestDB(t)
+	defer database.Close()
+
+	user := createTestUser(t, database)
+	
+	eventRepo := repositories.NewEventRepository(database)
+	startTime := time.Now().Add(30 * 24 * time.Hour)
+	endTime := startTime.Add(2 * time.Hour)
+	pastDeadline := time.Now().Add(-1 * time.Hour)
+	desc := "Test event"
+	loc := "Test Location"
+
+	event := &models.Event{
+		Title:        "Test Event",
+		Description:  &desc,
+		StartTime:    startTime,
+		EndTime:      &endTime,
+		Timezone:     "America/Los_Angeles",
+		Location:     &loc,
+		Status:       models.EventStatusPublished,
+		CreatedBy:    user.ID,
+		MaxPlusOnes:  3,
+		RSVPDeadline: &pastDeadline,
+	}
+	if err := eventRepo.Create(context.Background(), event); err != nil {
+		t.Fatalf("Failed to create event: %v", err)
+	}
+
+	invite, inviteToken := createTestInviteForRSVP(t, database, event.ID)
+
+	rsvpRepo := repositories.NewRSVPRepository(database)
+	existingRSVP := &models.RSVP{
+		InviteID: invite.ID,
+		Response: models.RSVPResponseYes,
+		PlusOnes: 2,
+	}
+	if err := rsvpRepo.Create(context.Background(), existingRSVP); err != nil {
+		t.Fatalf("Failed to create existing RSVP: %v", err)
+	}
+
+	secret := []byte("test-secret-key-32-bytes-long!!")
+	generator := token.NewGenerator(secret)
+	inviteRepo := repositories.NewInviteRepository(database)
+	inviteService := invites.NewInviteService(generator, inviteRepo)
+	questionRepo := repositories.NewQuestionRepository(database)
+	answerRepo := repositories.NewAnswerRepository(database)
+
+	rsvpService := rsvp.NewService(database, inviteService, inviteRepo, eventRepo, rsvpRepo, answerRepo, questionRepo)
+	handler := NewRSVPHandler(inviteService, eventRepo, rsvpRepo, questionRepo)
+	handler.SetRSVPService(rsvpService)
+
+	r := chi.NewRouter()
+	r.Put("/api/rsvp/{token}", handler.UpdateRSVP)
+
+	updateBody := `{"response":"no","plus_ones":0,"answers":[]}`
+	updateReq := httptest.NewRequest("PUT", "/api/rsvp/"+inviteToken, strings.NewReader(updateBody))
+	updateReq.Header.Set("Content-Type", "application/json")
+	updateW := httptest.NewRecorder()
+
+	r.ServeHTTP(updateW, updateReq)
+
+	if updateW.Code != http.StatusForbidden {
+		t.Errorf("Expected status 403, got %d. Body: %s", updateW.Code, updateW.Body.String())
+	}
+
+	responseBody := updateW.Body.String()
+	if !strings.Contains(responseBody, "deadline") {
+		t.Error("Response should mention deadline")
+	}
+}

@@ -486,11 +486,19 @@ func TestRSVPHandler_GetRSVPPage_EventNotFound(t *testing.T) {
 
 type mockRSVPService struct {
 	submitRSVPFunc func(ctx context.Context, token string, req *rsvp.SubmitRSVPRequest) (*models.RSVP, error)
+	updateRSVPFunc func(ctx context.Context, token string, req *rsvp.SubmitRSVPRequest) (*models.RSVP, error)
 }
 
 func (m *mockRSVPService) SubmitRSVP(ctx context.Context, token string, req *rsvp.SubmitRSVPRequest) (*models.RSVP, error) {
 	if m.submitRSVPFunc != nil {
 		return m.submitRSVPFunc(ctx, token, req)
+	}
+	return nil, errors.New("not implemented")
+}
+
+func (m *mockRSVPService) UpdateRSVP(ctx context.Context, token string, req *rsvp.SubmitRSVPRequest) (*models.RSVP, error) {
+	if m.updateRSVPFunc != nil {
+		return m.updateRSVPFunc(ctx, token, req)
 	}
 	return nil, errors.New("not implemented")
 }
@@ -678,6 +686,166 @@ func TestRSVPHandler_GetRSVPPage_EmptyToken(t *testing.T) {
 
 	if w.Code != http.StatusNotFound {
 		t.Errorf("Expected status 404, got %d", w.Code)
+	}
+}
+
+func TestRSVPHandler_UpdateRSVP_Success(t *testing.T) {
+	mockService := &mockRSVPService{
+		updateRSVPFunc: func(ctx context.Context, token string, req *rsvp.SubmitRSVPRequest) (*models.RSVP, error) {
+			return &models.RSVP{
+				ID:        1,
+				InviteID:  1,
+				Response:  models.RSVPResponseMaybe,
+				PlusOnes:  1,
+				CreatedAt: time.Now(),
+				UpdatedAt: time.Now(),
+			}, nil
+		},
+	}
+
+	handler := &RSVPHandler{rsvpService: mockService}
+
+	body := `{"response":"maybe","plus_ones":1,"answers":[]}`
+	req := httptest.NewRequest("PUT", "/api/rsvp/validtoken", strings.NewReader(body))
+	req.Header.Set("Content-Type", "application/json")
+	
+	rctx := chi.NewRouteContext()
+	rctx.URLParams.Add("token", "validtoken")
+	req = req.WithContext(context.WithValue(req.Context(), chi.RouteCtxKey, rctx))
+
+	w := httptest.NewRecorder()
+
+	handler.UpdateRSVP(w, req)
+
+	if w.Code != http.StatusOK {
+		t.Errorf("Expected status 200, got %d", w.Code)
+	}
+
+	if w.Header().Get("Content-Type") != "application/json" {
+		t.Errorf("Expected Content-Type application/json, got %s", w.Header().Get("Content-Type"))
+	}
+}
+
+func TestRSVPHandler_UpdateRSVP_NoExistingRSVP(t *testing.T) {
+	mockService := &mockRSVPService{
+		updateRSVPFunc: func(ctx context.Context, token string, req *rsvp.SubmitRSVPRequest) (*models.RSVP, error) {
+			return nil, &models.NotFoundError{Resource: "rsvp"}
+		},
+	}
+
+	handler := &RSVPHandler{rsvpService: mockService}
+
+	body := `{"response":"yes","plus_ones":0,"answers":[]}`
+	req := httptest.NewRequest("PUT", "/api/rsvp/validtoken", strings.NewReader(body))
+	req.Header.Set("Content-Type", "application/json")
+	
+	rctx := chi.NewRouteContext()
+	rctx.URLParams.Add("token", "validtoken")
+	req = req.WithContext(context.WithValue(req.Context(), chi.RouteCtxKey, rctx))
+
+	w := httptest.NewRecorder()
+
+	handler.UpdateRSVP(w, req)
+
+	if w.Code != http.StatusNotFound {
+		t.Errorf("Expected status 404, got %d", w.Code)
+	}
+}
+
+func TestRSVPHandler_UpdateRSVP_DeadlinePassed(t *testing.T) {
+	mockService := &mockRSVPService{
+		updateRSVPFunc: func(ctx context.Context, token string, req *rsvp.SubmitRSVPRequest) (*models.RSVP, error) {
+			return nil, rsvp.ErrDeadlinePassed
+		},
+	}
+
+	handler := &RSVPHandler{rsvpService: mockService}
+
+	body := `{"response":"no","plus_ones":0,"answers":[]}`
+	req := httptest.NewRequest("PUT", "/api/rsvp/validtoken", strings.NewReader(body))
+	req.Header.Set("Content-Type", "application/json")
+	
+	rctx := chi.NewRouteContext()
+	rctx.URLParams.Add("token", "validtoken")
+	req = req.WithContext(context.WithValue(req.Context(), chi.RouteCtxKey, rctx))
+
+	w := httptest.NewRecorder()
+
+	handler.UpdateRSVP(w, req)
+
+	if w.Code != http.StatusForbidden {
+		t.Errorf("Expected status 403, got %d", w.Code)
+	}
+}
+
+func TestRSVPHandler_UpdateRSVP_ValidationError(t *testing.T) {
+	mockService := &mockRSVPService{
+		updateRSVPFunc: func(ctx context.Context, token string, req *rsvp.SubmitRSVPRequest) (*models.RSVP, error) {
+			return nil, &models.ValidationError{
+				Field:   "plus_ones",
+				Message: "you can bring up to 2 guest(s)",
+			}
+		},
+	}
+
+	handler := &RSVPHandler{rsvpService: mockService}
+
+	body := `{"response":"yes","plus_ones":5,"answers":[]}`
+	req := httptest.NewRequest("PUT", "/api/rsvp/validtoken", strings.NewReader(body))
+	req.Header.Set("Content-Type", "application/json")
+	
+	rctx := chi.NewRouteContext()
+	rctx.URLParams.Add("token", "validtoken")
+	req = req.WithContext(context.WithValue(req.Context(), chi.RouteCtxKey, rctx))
+
+	w := httptest.NewRecorder()
+
+	handler.UpdateRSVP(w, req)
+
+	if w.Code != http.StatusBadRequest {
+		t.Errorf("Expected status 400, got %d", w.Code)
+	}
+}
+
+func TestRSVPHandler_UpdateRSVP_InvalidJSON(t *testing.T) {
+	mockService := &mockRSVPService{}
+	handler := &RSVPHandler{rsvpService: mockService}
+
+	body := `{invalid json`
+	req := httptest.NewRequest("PUT", "/api/rsvp/validtoken", strings.NewReader(body))
+	req.Header.Set("Content-Type", "application/json")
+	
+	rctx := chi.NewRouteContext()
+	rctx.URLParams.Add("token", "validtoken")
+	req = req.WithContext(context.WithValue(req.Context(), chi.RouteCtxKey, rctx))
+
+	w := httptest.NewRecorder()
+
+	handler.UpdateRSVP(w, req)
+
+	if w.Code != http.StatusBadRequest {
+		t.Errorf("Expected status 400, got %d", w.Code)
+	}
+}
+
+func TestRSVPHandler_UpdateRSVP_EmptyToken(t *testing.T) {
+	mockService := &mockRSVPService{}
+	handler := &RSVPHandler{rsvpService: mockService}
+
+	body := `{"response":"yes","plus_ones":0,"answers":[]}`
+	req := httptest.NewRequest("PUT", "/api/rsvp/", strings.NewReader(body))
+	req.Header.Set("Content-Type", "application/json")
+	
+	rctx := chi.NewRouteContext()
+	rctx.URLParams.Add("token", "")
+	req = req.WithContext(context.WithValue(req.Context(), chi.RouteCtxKey, rctx))
+
+	w := httptest.NewRecorder()
+
+	handler.UpdateRSVP(w, req)
+
+	if w.Code != http.StatusBadRequest {
+		t.Errorf("Expected status 400, got %d", w.Code)
 	}
 }
 

@@ -23,6 +23,7 @@ type RSVPInviteService interface {
 
 type RSVPService interface {
 	SubmitRSVP(ctx context.Context, token string, req *rsvp.SubmitRSVPRequest) (*models.RSVP, error)
+	UpdateRSVP(ctx context.Context, token string, req *rsvp.SubmitRSVPRequest) (*models.RSVP, error)
 }
 
 type RSVPHandler struct {
@@ -327,4 +328,85 @@ func (h *RSVPHandler) respondJSON(w http.ResponseWriter, status int, data interf
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(status)
 	json.NewEncoder(w).Encode(data)
+}
+
+func (h *RSVPHandler) UpdateRSVP(w http.ResponseWriter, r *http.Request) {
+	token := chi.URLParam(r, "token")
+	if token == "" {
+		h.respondJSON(w, http.StatusBadRequest, map[string]string{
+			"error": "token is required",
+		})
+		return
+	}
+
+	var req rsvp.SubmitRSVPRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		h.respondJSON(w, http.StatusBadRequest, map[string]string{
+			"error": "invalid request body",
+		})
+		return
+	}
+
+	result, err := h.rsvpService.UpdateRSVP(r.Context(), token, &req)
+	if err != nil {
+		h.handleUpdateError(w, err)
+		return
+	}
+
+	h.respondJSON(w, http.StatusOK, map[string]interface{}{
+		"rsvp":    result,
+		"message": "RSVP updated successfully",
+	})
+}
+
+func (h *RSVPHandler) handleUpdateError(w http.ResponseWriter, err error) {
+	var validationErr *models.ValidationError
+	if errors.As(err, &validationErr) {
+		h.respondJSON(w, http.StatusBadRequest, map[string]string{
+			"error": validationErr.Message,
+			"field": validationErr.Field,
+		})
+		return
+	}
+
+	var notFoundErr *models.NotFoundError
+	if errors.As(err, &notFoundErr) {
+		h.respondJSON(w, http.StatusNotFound, map[string]string{
+			"error": "no existing RSVP found to update",
+		})
+		return
+	}
+
+	if errors.Is(err, rsvp.ErrDeadlinePassed) {
+		h.respondJSON(w, http.StatusForbidden, map[string]string{
+			"error": "RSVP deadline has passed",
+		})
+		return
+	}
+
+	errMsg := err.Error()
+	if strings.Contains(errMsg, "expired") {
+		h.respondJSON(w, http.StatusForbidden, map[string]string{
+			"error": "this invite has expired",
+		})
+		return
+	}
+
+	if strings.Contains(errMsg, "revoked") {
+		h.respondJSON(w, http.StatusForbidden, map[string]string{
+			"error": "this invite has been revoked",
+		})
+		return
+	}
+
+	if strings.Contains(errMsg, "cancelled") {
+		h.respondJSON(w, http.StatusBadRequest, map[string]string{
+			"error": "this event has been cancelled",
+		})
+		return
+	}
+
+	h.respondJSON(w, http.StatusInternalServerError, map[string]string{
+		"error": "failed to update RSVP, please try again",
+	})
 }

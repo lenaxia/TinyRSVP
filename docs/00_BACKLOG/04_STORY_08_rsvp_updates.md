@@ -2,8 +2,9 @@
 
 **Epic:** [04_EPIC_rsvp.md](04_EPIC_rsvp.md)
 **Priority:** High
-**Status:** Not Started
+**Status:** Complete
 **Estimated Effort:** 1 day
+**Completed:** 2026-01-08
 
 ---
 
@@ -15,15 +16,15 @@ As a **guest**, I want **to update my RSVP response** so that **I can change my 
 
 ## Acceptance Criteria
 
-- [ ] Guest can update RSVP via same token link
-- [ ] Existing RSVP loaded and displayed
-- [ ] Guest can change response (yes/no/maybe)
-- [ ] Guest can change plus ones
-- [ ] Guest can update preference answers
-- [ ] Deadline enforced (no updates after deadline)
-- [ ] Updates saved atomically (transaction)
-- [ ] Confirmation shown after update
-- [ ] All tests pass with timeout
+- [x] Guest can update RSVP via same token link
+- [x] Existing RSVP loaded and displayed
+- [x] Guest can change response (yes/no/maybe)
+- [x] Guest can change plus ones
+- [x] Guest can update preference answers
+- [x] Deadline enforced (no updates after deadline)
+- [x] Updates saved atomically (transaction)
+- [x] Confirmation shown after update
+- [x] All tests pass with timeout
 
 ---
 
@@ -109,14 +110,14 @@ func (s *service) UpdateRSVP(ctx context.Context, token string, req *UpdateRSVPR
 
 ## Tasks
 
-- [ ] Implement UpdateRSVP service method
-- [ ] Create PUT handler endpoint
-- [ ] Load existing RSVP in page handler
-- [ ] Pre-populate form with existing values
-- [ ] Write tests for successful update
-- [ ] Write tests for deadline enforcement
-- [ ] Write tests for validation
-- [ ] Integration test full update flow
+- [x] Implement UpdateRSVP service method
+- [x] Create PUT handler endpoint
+- [x] Load existing RSVP in page handler
+- [x] Pre-populate form with existing values
+- [x] Write tests for successful update
+- [x] Write tests for deadline enforcement
+- [x] Write tests for validation
+- [x] Integration test full update flow
 
 ---
 
@@ -157,13 +158,13 @@ func (s *service) UpdateRSVP(ctx context.Context, token string, req *UpdateRSVPR
 
 ## Definition of Done
 
-- [ ] All acceptance criteria met
-- [ ] Service method implemented
-- [ ] Handler implemented
-- [ ] UI updated
-- [ ] Tests passing (>90% coverage)
-- [ ] Integration tests passing
-- [ ] Documentation updated
+- [x] All acceptance criteria met
+- [x] Service method implemented
+- [x] Handler implemented
+- [x] UI updated (existing page handler loads RSVP)
+- [x] Tests passing (>90% coverage)
+- [x] Integration tests passing
+- [x] Documentation updated
 
 ---
 

@@ -27,6 +27,7 @@ type InviteRepository interface {
 
 type Service interface {
 	SubmitRSVP(ctx context.Context, token string, req *SubmitRSVPRequest) (*models.RSVP, error)
+	UpdateRSVP(ctx context.Context, token string, req *SubmitRSVPRequest) (*models.RSVP, error)
 }
 
 type service struct {
@@ -280,4 +281,96 @@ func (s *service) validateAnswer(ansReq AnswerRequest, question *models.Preferen
 	}
 
 	return nil
+}
+
+func (s *service) UpdateRSVP(ctx context.Context, token string, req *SubmitRSVPRequest) (*models.RSVP, error) {
+	invite, err := s.inviteService.GetInviteByToken(ctx, token)
+	if err != nil {
+		return nil, err
+	}
+
+	if !invite.ExpiresAt.IsZero() && invite.ExpiresAt.Before(time.Now()) {
+		return nil, errors.New("invite has expired")
+	}
+
+	if invite.Status == models.InviteStatusRevoked {
+		return nil, errors.New("invite has been revoked")
+	}
+
+	existing, err := s.rsvpRepo.GetByInviteID(ctx, invite.ID)
+	if err != nil {
+		return nil, err
+	}
+
+	event, err := s.eventRepo.GetByID(ctx, invite.EventID)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get event: %w", err)
+	}
+
+	if event.Status == models.EventStatusCancelled {
+		return nil, errors.New("event has been cancelled")
+	}
+
+	if event.RSVPDeadline != nil && event.RSVPDeadline.Before(time.Now()) {
+		return nil, ErrDeadlinePassed
+	}
+
+	if req.Response == "no" && req.PlusOnes > 0 {
+		req.PlusOnes = 0
+	}
+
+	if err := s.validateRequest(ctx, req, invite, event); err != nil {
+		return nil, err
+	}
+
+	var rsvp *models.RSVP
+	err = s.db.WithTransaction(ctx, func(tx *sql.Tx) error {
+		existing.Response = models.RSVPResponse(req.Response)
+		existing.PlusOnes = req.PlusOnes
+
+		if err := existing.Validate(); err != nil {
+			return fmt.Errorf("validation failed: %w", err)
+		}
+
+		_, err := tx.ExecContext(ctx,
+			`UPDATE rsvps SET response = ?, plus_ones = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?`,
+			existing.Response, existing.PlusOnes, existing.ID)
+		if err != nil {
+			return fmt.Errorf("failed to update RSVP: %w", err)
+		}
+
+		_, err = tx.ExecContext(ctx,
+			`DELETE FROM rsvp_answers WHERE rsvp_id = ?`,
+			existing.ID)
+		if err != nil {
+			return fmt.Errorf("failed to delete old answers: %w", err)
+		}
+
+		for _, ansReq := range req.Answers {
+			_, err := tx.ExecContext(ctx,
+				`INSERT INTO rsvp_answers (rsvp_id, question_id, answer_text, answer_option, answer_boolean, created_at)
+				 VALUES (?, ?, ?, ?, ?, CURRENT_TIMESTAMP)`,
+				existing.ID, ansReq.QuestionID, ansReq.AnswerText, ansReq.AnswerOption, ansReq.AnswerBoolean)
+			if err != nil {
+				return fmt.Errorf("failed to create answer: %w", err)
+			}
+		}
+
+		err = tx.QueryRowContext(ctx,
+			`SELECT id, invite_id, response, plus_ones, created_at, updated_at FROM rsvps WHERE id = ?`,
+			existing.ID).Scan(&existing.ID, &existing.InviteID, &existing.Response,
+			&existing.PlusOnes, &existing.CreatedAt, &existing.UpdatedAt)
+		if err != nil {
+			return fmt.Errorf("failed to retrieve updated RSVP: %w", err)
+		}
+
+		rsvp = existing
+		return nil
+	})
+
+	if err != nil {
+		return nil, err
+	}
+
+	return rsvp, nil
 }
