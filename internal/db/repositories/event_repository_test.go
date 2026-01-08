@@ -1025,6 +1025,14 @@ func TestEventRepository_GetEventsToArchive(t *testing.T) {
 			CreatedBy:   1,
 			MaxPlusOnes: 0,
 		},
+		{
+			Title:       "Old Draft Event",
+			StartTime:   now.Add(-40 * 24 * time.Hour),
+			Timezone:    "America/Los_Angeles",
+			Status:      models.EventStatusDraft,
+			CreatedBy:   1,
+			MaxPlusOnes: 0,
+		},
 	}
 
 	for _, e := range events {
@@ -1045,6 +1053,14 @@ func TestEventRepository_GetEventsToArchive(t *testing.T) {
 	for _, event := range results {
 		if event.Status == models.EventStatusArchived {
 			t.Error("GetEventsToArchive() returned already archived event")
+		}
+
+		if event.Status == models.EventStatusDraft {
+			t.Error("GetEventsToArchive() returned draft event")
+		}
+
+		if event.Status != models.EventStatusPublished && event.Status != models.EventStatusCancelled {
+			t.Errorf("GetEventsToArchive() returned event with invalid status: %v", event.Status)
 		}
 
 		daysSinceEvent := int(now.Sub(event.StartTime).Hours() / 24)

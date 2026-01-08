@@ -19,7 +19,9 @@ import (
 	"github.com/lenaxia/tinyrsvp/internal/events"
 	"github.com/lenaxia/tinyrsvp/internal/handlers"
 	"github.com/lenaxia/tinyrsvp/internal/invites"
+	"github.com/lenaxia/tinyrsvp/internal/jobs"
 	"github.com/lenaxia/tinyrsvp/internal/middleware"
+	"github.com/lenaxia/tinyrsvp/internal/models"
 	"github.com/lenaxia/tinyrsvp/pkg/token"
 )
 
@@ -318,6 +320,33 @@ func main() {
 		}
 	}()
 	logger.Info("Invite token cleanup background job started")
+
+	eventArchiver := jobs.NewEventArchiver(eventService, 30)
+	go func() {
+		ticker := time.NewTicker(24 * time.Hour)
+		defer ticker.Stop()
+
+		for {
+			select {
+			case <-ticker.C:
+				systemUser := &models.User{
+					ID:    0,
+					Email: "system@tinyrsvp.local",
+					Name:  "System",
+					Role:  models.RoleAdmin,
+				}
+				archiveCtx := auth.WithUser(context.Background(), systemUser)
+
+				if err := eventArchiver.Run(archiveCtx); err != nil {
+					logger.Error("Event archiving job failed", "error", err)
+				}
+			case <-cleanupCtx.Done():
+				logger.Info("Event archiving goroutine stopped")
+				return
+			}
+		}
+	}()
+	logger.Info("Event archiving background job started")
 
 	serverErrors := make(chan error, 1)
 	go func() {

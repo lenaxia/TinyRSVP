@@ -2,8 +2,10 @@
 
 **Epic:** [02_EPIC_events.md](02_EPIC_events.md)
 **Priority:** Low
-**Status:** Not Started
+**Status:** Complete
 **Estimated Effort:** 4 hours
+**Actual Effort:** 2 hours
+**Completed:** 2026-01-08
 
 ---
 
@@ -15,14 +17,14 @@ As a **system administrator**, I want **events to automatically archive 30 days 
 
 ## Acceptance Criteria
 
-- [ ] Scheduled job runs daily
-- [ ] Job identifies events older than 30 days
-- [ ] Job only archives published or cancelled events
-- [ ] Job updates event status to archived
-- [ ] Job is idempotent (safe to run multiple times)
-- [ ] Job logs archiving activity
-- [ ] Job handles errors gracefully
-- [ ] All tests pass with timeout
+- [x] Scheduled job runs daily
+- [x] Job identifies events older than 30 days
+- [x] Job only archives published or cancelled events
+- [x] Job updates event status to archived
+- [x] Job is idempotent (safe to run multiple times)
+- [x] Job logs archiving activity
+- [x] Job handles errors gracefully
+- [x] All tests pass with timeout
 
 ---
 
@@ -134,36 +136,36 @@ jobs:
 ## Tasks
 
 ### Phase 1: Job Implementation (TDD)
-- [ ] Write test for identifying events to archive
-- [ ] Write test for archiving single event
-- [ ] Write test for archiving multiple events
-- [ ] Write test for handling errors
-- [ ] Write test for idempotency
-- [ ] Write test for logging
-- [ ] Implement EventArchiver
-- [ ] Run tests (should pass)
+- [x] Write test for identifying events to archive
+- [x] Write test for archiving single event
+- [x] Write test for archiving multiple events
+- [x] Write test for handling errors
+- [x] Write test for idempotency
+- [x] Write test for logging
+- [x] Implement EventArchiver
+- [x] Run tests (should pass)
 
 ### Phase 2: Service Integration (TDD)
-- [ ] Write test for GetEventsToArchive
-- [ ] Write test for ArchiveEvent
-- [ ] Write test for date threshold calculation
-- [ ] Write test for status filtering
-- [ ] Implement service methods
-- [ ] Run tests (should pass)
+- [x] Write test for GetEventsToArchive
+- [x] Write test for ArchiveEvent
+- [x] Write test for date threshold calculation
+- [x] Write test for status filtering
+- [x] Implement service methods
+- [x] Run tests (should pass)
 
 ### Phase 3: Scheduler Setup (TDD)
-- [ ] Write test for scheduler initialization
-- [ ] Write test for job execution
-- [ ] Write test for error handling
-- [ ] Write test for graceful shutdown
-- [ ] Implement scheduler
-- [ ] Run tests (should pass)
+- [x] Write test for scheduler initialization
+- [x] Write test for job execution
+- [x] Write test for error handling
+- [x] Write test for graceful shutdown
+- [x] Implement scheduler
+- [x] Run tests (should pass)
 
 ### Phase 4: Integration Tests
-- [ ] Write integration test for full archiving cycle
-- [ ] Write integration test with real database
-- [ ] Write integration test for concurrent execution
-- [ ] Run integration tests
+- [x] Write integration test for full archiving cycle
+- [x] Write integration test with real database
+- [x] Write integration test for concurrent execution
+- [x] Run integration tests
 
 ---
 
@@ -422,15 +424,15 @@ func TestEventArchiver_Integration(t *testing.T) {
 
 ## Definition of Done
 
-- [ ] All acceptance criteria met
-- [ ] All tasks completed
-- [ ] All tests pass with timeout
-- [ ] Test coverage >= 85%
-- [ ] Code formatted with `go fmt`
-- [ ] No errors from `go vet`
-- [ ] Job runs successfully
-- [ ] Logging implemented
-- [ ] Documentation complete
+- [x] All acceptance criteria met
+- [x] All tasks completed
+- [x] All tests pass with timeout
+- [x] Test coverage >= 85%
+- [x] Code formatted with `go fmt`
+- [x] No errors from `go vet`
+- [x] Job runs successfully
+- [x] Logging implemented
+- [x] Documentation complete
 - [ ] Changes committed to git
 
 ---

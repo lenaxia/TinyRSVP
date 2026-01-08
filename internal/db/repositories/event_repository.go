@@ -405,12 +405,12 @@ func (r *eventRepository) GetEventsToArchive(ctx context.Context, daysAfterEvent
 			status, created_by, version, ics_sequence, max_plus_ones, rsvp_deadline,
 			created_at, updated_at
 		FROM events
-		WHERE status != ?
+		WHERE status IN (?, ?)
 			AND start_time < datetime('now', '-' || ? || ' days')
 		ORDER BY start_time ASC
 	`
 
-	rows, err := r.db.Query(ctx, query, models.EventStatusArchived, daysAfterEvent)
+	rows, err := r.db.Query(ctx, query, models.EventStatusPublished, models.EventStatusCancelled, daysAfterEvent)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get events to archive: %w", err)
 	}
