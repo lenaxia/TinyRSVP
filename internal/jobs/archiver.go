@@ -9,7 +9,7 @@ import (
 )
 
 type EventService interface {
-	GetEventsToArchive(ctx context.Context) ([]*models.Event, error)
+	GetEventsToArchive(ctx context.Context, daysAfterEvent int) ([]*models.Event, error)
 	ArchiveEvent(ctx context.Context, id int64) error
 }
 
@@ -28,7 +28,7 @@ func NewEventArchiver(service EventService, daysAfterEvent int) *EventArchiver {
 func (a *EventArchiver) Run(ctx context.Context) error {
 	log.Printf("Starting event archiving job (threshold: %d days)", a.daysAfterEvent)
 
-	eventsToArchive, err := a.service.GetEventsToArchive(ctx)
+	eventsToArchive, err := a.service.GetEventsToArchive(ctx, a.daysAfterEvent)
 	if err != nil {
 		return fmt.Errorf("failed to get events to archive: %w", err)
 	}

@@ -433,7 +433,7 @@ func TestEventArchiver_Integration(t *testing.T) {
 - [x] Job runs successfully
 - [x] Logging implemented
 - [x] Documentation complete
-- [ ] Changes committed to git
+- [x] Changes committed to git
 
 ---
 

@@ -9,8 +9,6 @@ import (
 	"github.com/lenaxia/tinyrsvp/internal/models"
 )
 
-const defaultArchiveDays = 30
-
 type Service interface {
 	CreateEvent(ctx context.Context, event *models.Event) error
 	GetEvent(ctx context.Context, id int64) (*models.Event, error)
@@ -20,7 +18,7 @@ type Service interface {
 	PublishEvent(ctx context.Context, id int64) error
 	CancelEvent(ctx context.Context, id int64, reason string) error
 	ArchiveEvent(ctx context.Context, id int64) error
-	GetEventsToArchive(ctx context.Context) ([]*models.Event, error)
+	GetEventsToArchive(ctx context.Context, daysAfterEvent int) ([]*models.Event, error)
 }
 
 type ListFilters struct {
@@ -302,7 +300,7 @@ func (s *service) ArchiveEvent(ctx context.Context, id int64) error {
 	return nil
 }
 
-func (s *service) GetEventsToArchive(ctx context.Context) ([]*models.Event, error) {
+func (s *service) GetEventsToArchive(ctx context.Context, daysAfterEvent int) ([]*models.Event, error) {
 	user, ok := auth.UserFromContext(ctx)
 	if !ok {
 		return nil, &models.PermissionDeniedError{
@@ -318,7 +316,7 @@ func (s *service) GetEventsToArchive(ctx context.Context) ([]*models.Event, erro
 		}
 	}
 
-	events, err := s.repo.GetEventsToArchive(ctx, defaultArchiveDays)
+	events, err := s.repo.GetEventsToArchive(ctx, daysAfterEvent)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get events to archive: %w", err)
 	}

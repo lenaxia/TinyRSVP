@@ -1405,7 +1405,7 @@ func TestService_GetEventsToArchive(t *testing.T) {
 				ctx = auth.WithUser(ctx, tt.user)
 			}
 
-			events, err := service.GetEventsToArchive(ctx)
+			events, err := service.GetEventsToArchive(ctx, 30)
 
 			if (err != nil) != tt.wantErr {
 				t.Errorf("GetEventsToArchive() error = %v, wantErr %v", err, tt.wantErr)

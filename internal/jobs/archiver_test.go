@@ -10,13 +10,13 @@ import (
 )
 
 type mockEventService struct {
-	getEventsToArchiveFunc func(ctx context.Context) ([]*models.Event, error)
+	getEventsToArchiveFunc func(ctx context.Context, daysAfterEvent int) ([]*models.Event, error)
 	archiveEventFunc       func(ctx context.Context, id int64) error
 }
 
-func (m *mockEventService) GetEventsToArchive(ctx context.Context) ([]*models.Event, error) {
+func (m *mockEventService) GetEventsToArchive(ctx context.Context, daysAfterEvent int) ([]*models.Event, error) {
 	if m.getEventsToArchiveFunc != nil {
-		return m.getEventsToArchiveFunc(ctx)
+		return m.getEventsToArchiveFunc(ctx, daysAfterEvent)
 	}
 	return nil, nil
 }
@@ -43,7 +43,7 @@ func TestNewEventArchiver(t *testing.T) {
 
 func TestEventArchiver_Run_NoEvents(t *testing.T) {
 	mockService := &mockEventService{
-		getEventsToArchiveFunc: func(ctx context.Context) ([]*models.Event, error) {
+		getEventsToArchiveFunc: func(ctx context.Context, daysAfterEvent int) ([]*models.Event, error) {
 			return []*models.Event{}, nil
 		},
 	}
@@ -59,7 +59,7 @@ func TestEventArchiver_Run_NoEvents(t *testing.T) {
 func TestEventArchiver_Run_SingleEvent(t *testing.T) {
 	archivedCount := 0
 	mockService := &mockEventService{
-		getEventsToArchiveFunc: func(ctx context.Context) ([]*models.Event, error) {
+		getEventsToArchiveFunc: func(ctx context.Context, daysAfterEvent int) ([]*models.Event, error) {
 			return []*models.Event{
 				{
 					ID:        1,
@@ -93,7 +93,7 @@ func TestEventArchiver_Run_SingleEvent(t *testing.T) {
 func TestEventArchiver_Run_MultipleEvents(t *testing.T) {
 	archivedIDs := []int64{}
 	mockService := &mockEventService{
-		getEventsToArchiveFunc: func(ctx context.Context) ([]*models.Event, error) {
+		getEventsToArchiveFunc: func(ctx context.Context, daysAfterEvent int) ([]*models.Event, error) {
 			return []*models.Event{
 				{
 					ID:        1,
@@ -143,7 +143,7 @@ func TestEventArchiver_Run_MultipleEvents(t *testing.T) {
 func TestEventArchiver_Run_PartialFailure(t *testing.T) {
 	archivedIDs := []int64{}
 	mockService := &mockEventService{
-		getEventsToArchiveFunc: func(ctx context.Context) ([]*models.Event, error) {
+		getEventsToArchiveFunc: func(ctx context.Context, daysAfterEvent int) ([]*models.Event, error) {
 			return []*models.Event{
 				{
 					ID:        1,
@@ -192,7 +192,7 @@ func TestEventArchiver_Run_PartialFailure(t *testing.T) {
 
 func TestEventArchiver_Run_GetEventsError(t *testing.T) {
 	mockService := &mockEventService{
-		getEventsToArchiveFunc: func(ctx context.Context) ([]*models.Event, error) {
+		getEventsToArchiveFunc: func(ctx context.Context, daysAfterEvent int) ([]*models.Event, error) {
 			return nil, fmt.Errorf("database connection error")
 		},
 	}
@@ -208,7 +208,7 @@ func TestEventArchiver_Run_GetEventsError(t *testing.T) {
 func TestEventArchiver_Run_Idempotency(t *testing.T) {
 	callCount := 0
 	mockService := &mockEventService{
-		getEventsToArchiveFunc: func(ctx context.Context) ([]*models.Event, error) {
+		getEventsToArchiveFunc: func(ctx context.Context, daysAfterEvent int) ([]*models.Event, error) {
 			callCount++
 			if callCount == 1 {
 				return []*models.Event{
@@ -245,7 +245,7 @@ func TestEventArchiver_Run_Idempotency(t *testing.T) {
 func TestEventArchiver_Run_ContextCancellation(t *testing.T) {
 	archivedCount := 0
 	mockService := &mockEventService{
-		getEventsToArchiveFunc: func(ctx context.Context) ([]*models.Event, error) {
+		getEventsToArchiveFunc: func(ctx context.Context, daysAfterEvent int) ([]*models.Event, error) {
 			return []*models.Event{
 				{ID: 1, Title: "Event 1", StartTime: time.Now().Add(-40 * 24 * time.Hour)},
 				{ID: 2, Title: "Event 2", StartTime: time.Now().Add(-35 * 24 * time.Hour)},
