@@ -2,10 +2,12 @@ package rsvp
 
 import (
 	"context"
+	"database/sql"
 	"errors"
 	"fmt"
 	"time"
 
+	"github.com/lenaxia/tinyrsvp/internal/db"
 	"github.com/lenaxia/tinyrsvp/internal/db/repositories"
 	"github.com/lenaxia/tinyrsvp/internal/models"
 )
@@ -28,6 +30,7 @@ type Service interface {
 }
 
 type service struct {
+	db            db.Database
 	inviteService InviteService
 	inviteRepo    InviteRepository
 	eventRepo     repositories.EventRepository
@@ -37,6 +40,7 @@ type service struct {
 }
 
 func NewService(
+	database db.Database,
 	inviteService InviteService,
 	inviteRepo InviteRepository,
 	eventRepo repositories.EventRepository,
@@ -45,6 +49,7 @@ func NewService(
 	questionRepo repositories.QuestionRepository,
 ) Service {
 	return &service{
+		db:            database,
 		inviteService: inviteService,
 		inviteRepo:    inviteRepo,
 		eventRepo:     eventRepo,
@@ -114,33 +119,63 @@ func (s *service) SubmitRSVP(ctx context.Context, token string, req *SubmitRSVPR
 		req.PlusOnes = 0
 	}
 
-	rsvp := &models.RSVP{
-		InviteID: invite.ID,
-		Response: models.RSVPResponse(req.Response),
-		PlusOnes: req.PlusOnes,
-	}
-
-	if err := s.rsvpRepo.Create(ctx, rsvp); err != nil {
-		return nil, fmt.Errorf("failed to create RSVP: %w", err)
-	}
-
-	for _, ansReq := range req.Answers {
-		answer := &models.RSVPAnswer{
-			RSVPID:        rsvp.ID,
-			QuestionID:    ansReq.QuestionID,
-			AnswerText:    ansReq.AnswerText,
-			AnswerOption:  ansReq.AnswerOption,
-			AnswerBoolean: ansReq.AnswerBoolean,
+	var rsvp *models.RSVP
+	err = s.db.WithTransaction(ctx, func(tx *sql.Tx) error {
+		rsvpModel := &models.RSVP{
+			InviteID: invite.ID,
+			Response: models.RSVPResponse(req.Response),
+			PlusOnes: req.PlusOnes,
 		}
 
-		if err := s.answerRepo.Create(ctx, answer); err != nil {
-			return nil, fmt.Errorf("failed to create answer: %w", err)
+		if err := rsvpModel.Validate(); err != nil {
+			return fmt.Errorf("validation failed: %w", err)
 		}
-	}
 
-	invite.Status = models.InviteStatusResponded
-	if err := s.inviteRepo.Update(ctx, invite); err != nil {
-		return nil, fmt.Errorf("failed to update invite status: %w", err)
+		result, err := tx.ExecContext(ctx,
+			`INSERT INTO rsvps (invite_id, response, plus_ones, created_at, updated_at)
+			 VALUES (?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)`,
+			rsvpModel.InviteID, rsvpModel.Response, rsvpModel.PlusOnes)
+		if err != nil {
+			return fmt.Errorf("failed to create RSVP: %w", err)
+		}
+
+		rsvpID, err := result.LastInsertId()
+		if err != nil {
+			return fmt.Errorf("failed to get RSVP ID: %w", err)
+		}
+		rsvpModel.ID = rsvpID
+
+		for _, ansReq := range req.Answers {
+			_, err := tx.ExecContext(ctx,
+				`INSERT INTO rsvp_answers (rsvp_id, question_id, answer_text, answer_option, answer_boolean, created_at)
+				 VALUES (?, ?, ?, ?, ?, CURRENT_TIMESTAMP)`,
+				rsvpID, ansReq.QuestionID, ansReq.AnswerText, ansReq.AnswerOption, ansReq.AnswerBoolean)
+			if err != nil {
+				return fmt.Errorf("failed to create answer: %w", err)
+			}
+		}
+
+		_, err = tx.ExecContext(ctx,
+			`UPDATE invites SET status = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?`,
+			models.InviteStatusResponded, invite.ID)
+		if err != nil {
+			return fmt.Errorf("failed to update invite status: %w", err)
+		}
+
+		err = tx.QueryRowContext(ctx,
+			`SELECT id, invite_id, response, plus_ones, created_at, updated_at FROM rsvps WHERE id = ?`,
+			rsvpID).Scan(&rsvpModel.ID, &rsvpModel.InviteID, &rsvpModel.Response,
+			&rsvpModel.PlusOnes, &rsvpModel.CreatedAt, &rsvpModel.UpdatedAt)
+		if err != nil {
+			return fmt.Errorf("failed to retrieve created RSVP: %w", err)
+		}
+
+		rsvp = rsvpModel
+		return nil
+	})
+
+	if err != nil {
+		return nil, err
 	}
 
 	return rsvp, nil

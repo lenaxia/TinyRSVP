@@ -23,6 +23,7 @@ import (
 	"github.com/lenaxia/tinyrsvp/internal/jobs"
 	"github.com/lenaxia/tinyrsvp/internal/middleware"
 	"github.com/lenaxia/tinyrsvp/internal/models"
+	"github.com/lenaxia/tinyrsvp/internal/rsvp"
 	"github.com/lenaxia/tinyrsvp/pkg/token"
 )
 
@@ -110,6 +111,7 @@ func main() {
 	inviteRepo := repositories.NewInviteRepository(database)
 	questionRepo := repositories.NewQuestionRepository(database)
 	rsvpRepo := repositories.NewRSVPRepository(database)
+	answerRepo := repositories.NewAnswerRepository(database)
 
 	sessionMgr := auth.NewSessionManager(sessionRepo, false)
 	userService := auth.NewUserService(userRepo)
@@ -276,13 +278,19 @@ func main() {
 	}
 	logger.Info("RSVP templates loaded successfully")
 
+	rsvpService := rsvp.NewService(database, inviteService, inviteRepo, eventRepo, rsvpRepo, answerRepo, questionRepo)
+	logger.Info("Initialized RSVP service")
+
 	rsvpHandler := handlers.NewRSVPHandler(inviteService, eventRepo, rsvpRepo, questionRepo)
 	rsvpHandler.SetTemplates(rsvpTemplates)
+	rsvpHandler.SetRSVPService(rsvpService)
 	
 	rsvpRouter := chi.NewRouter()
 	rsvpRouter.Get("/{token}", rsvpHandler.GetRSVPPage)
+	rsvpRouter.Post("/{token}", rsvpHandler.SubmitRSVP)
 	mux.Handle("/rsvp/", http.StripPrefix("/rsvp", rsvpRouter))
 	logger.Info("Registered RSVP page endpoint", "path", "/rsvp/{token}", "method", "GET", "protection", "none")
+	logger.Info("Registered RSVP submission endpoint", "path", "/rsvp/{token}", "method", "POST", "protection", "none")
 
 	addr := fmt.Sprintf("%s:%d", cfg.Server.Host, cfg.Server.Port)
 	server := &http.Server{

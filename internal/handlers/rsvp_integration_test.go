@@ -469,7 +469,7 @@ func TestRSVPHandler_Integration_SubmitRSVP_Success(t *testing.T) {
 	questionRepo := repositories.NewQuestionRepository(database)
 	answerRepo := repositories.NewAnswerRepository(database)
 
-	rsvpService := rsvp.NewService(inviteService, inviteRepo, eventRepo, rsvpRepo, answerRepo, questionRepo)
+	rsvpService := rsvp.NewService(database, inviteService, inviteRepo, eventRepo, rsvpRepo, answerRepo, questionRepo)
 	handler := NewRSVPHandler(inviteService, eventRepo, rsvpRepo, questionRepo)
 	handler.SetRSVPService(rsvpService)
 
@@ -551,7 +551,7 @@ func TestRSVPHandler_Integration_SubmitRSVP_WithAnswers(t *testing.T) {
 	rsvpRepo := repositories.NewRSVPRepository(database)
 	answerRepo := repositories.NewAnswerRepository(database)
 
-	rsvpService := rsvp.NewService(inviteService, inviteRepo, eventRepo, rsvpRepo, answerRepo, questionRepo)
+	rsvpService := rsvp.NewService(database, inviteService, inviteRepo, eventRepo, rsvpRepo, answerRepo, questionRepo)
 	handler := NewRSVPHandler(inviteService, eventRepo, rsvpRepo, questionRepo)
 	handler.SetRSVPService(rsvpService)
 
@@ -625,7 +625,7 @@ func TestRSVPHandler_Integration_SubmitRSVP_DeadlinePassed(t *testing.T) {
 	questionRepo := repositories.NewQuestionRepository(database)
 	answerRepo := repositories.NewAnswerRepository(database)
 
-	rsvpService := rsvp.NewService(inviteService, inviteRepo, eventRepo, rsvpRepo, answerRepo, questionRepo)
+	rsvpService := rsvp.NewService(database, inviteService, inviteRepo, eventRepo, rsvpRepo, answerRepo, questionRepo)
 	handler := NewRSVPHandler(inviteService, eventRepo, rsvpRepo, questionRepo)
 	handler.SetRSVPService(rsvpService)
 
@@ -666,7 +666,7 @@ func TestRSVPHandler_Integration_SubmitRSVP_DuplicateSubmission(t *testing.T) {
 	questionRepo := repositories.NewQuestionRepository(database)
 	answerRepo := repositories.NewAnswerRepository(database)
 
-	rsvpService := rsvp.NewService(inviteService, inviteRepo, eventRepo, rsvpRepo, answerRepo, questionRepo)
+	rsvpService := rsvp.NewService(database, inviteService, inviteRepo, eventRepo, rsvpRepo, answerRepo, questionRepo)
 	handler := NewRSVPHandler(inviteService, eventRepo, rsvpRepo, questionRepo)
 	handler.SetRSVPService(rsvpService)
 
@@ -745,7 +745,7 @@ func TestRSVPHandler_Integration_SubmitRSVP_MissingRequiredAnswer(t *testing.T) 
 	rsvpRepo := repositories.NewRSVPRepository(database)
 	answerRepo := repositories.NewAnswerRepository(database)
 
-	rsvpService := rsvp.NewService(inviteService, inviteRepo, eventRepo, rsvpRepo, answerRepo, questionRepo)
+	rsvpService := rsvp.NewService(database, inviteService, inviteRepo, eventRepo, rsvpRepo, answerRepo, questionRepo)
 	handler := NewRSVPHandler(inviteService, eventRepo, rsvpRepo, questionRepo)
 	handler.SetRSVPService(rsvpService)
 
