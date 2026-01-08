@@ -55,12 +55,14 @@ type ForwardAuthConfig struct {
 }
 
 type EmailConfig struct {
-	SMTPHost     string
-	SMTPPort     int
-	SMTPUser     string
-	SMTPPassword string
-	FromEmail    string
-	FromName     string
+	SMTPHost              string
+	SMTPPort              int
+	SMTPUser              string
+	SMTPPassword          string
+	FromEmail             string
+	FromName              string
+	ProcessorBatchSize    int
+	ProcessorPollInterval time.Duration
 }
 
 type StorageConfig struct {
@@ -179,6 +181,16 @@ func (c *Config) loadFromEnv() error {
 	}
 
 	c.Email.FromName = getEnvString("EMAIL_FROM_NAME", "TinyRSVP")
+
+	c.Email.ProcessorBatchSize, err = getEnvInt("EMAIL_PROCESSOR_BATCH_SIZE", 50)
+	if err != nil {
+		return fmt.Errorf("EMAIL_PROCESSOR_BATCH_SIZE: %w", err)
+	}
+
+	c.Email.ProcessorPollInterval, err = getEnvDuration("EMAIL_PROCESSOR_POLL_INTERVAL", 60*time.Second)
+	if err != nil {
+		return fmt.Errorf("EMAIL_PROCESSOR_POLL_INTERVAL: %w", err)
+	}
 
 	c.Storage.Type = getEnvString("STORAGE_TYPE", "local")
 	c.Storage.LocalPath = getEnvString("STORAGE_LOCAL_PATH", "/data/uploads")
@@ -356,6 +368,14 @@ func (c *Config) validateEmail() error {
 
 	if !strings.Contains(c.Email.FromEmail, "@") {
 		return fmt.Errorf("invalid from email format")
+	}
+
+	if c.Email.ProcessorBatchSize < 1 || c.Email.ProcessorBatchSize > 1000 {
+		return fmt.Errorf("processor batch size must be between 1 and 1000")
+	}
+
+	if c.Email.ProcessorPollInterval < 10*time.Second {
+		return fmt.Errorf("processor poll interval must be >= 10s")
 	}
 
 	return nil

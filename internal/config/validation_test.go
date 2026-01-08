@@ -283,9 +283,11 @@ func TestConfig_Validate_Email(t *testing.T) {
 		{
 			name: "valid email config",
 			config: EmailConfig{
-				SMTPHost:  "smtp.example.com",
-				SMTPPort:  587,
-				FromEmail: "test@example.com",
+				SMTPHost:              "smtp.example.com",
+				SMTPPort:              587,
+				FromEmail:             "test@example.com",
+				ProcessorBatchSize:    50,
+				ProcessorPollInterval: 60 * time.Second,
 			},
 			wantErr: false,
 		},

@@ -247,6 +247,140 @@ func TestConfig_Load_WithAllFields(t *testing.T) {
 	}
 }
 
+func TestConfig_Load_EmailProcessorDefaults(t *testing.T) {
+	env := map[string]string{
+		"SERVER_PORT":     "8080",
+		"DATABASE_PATH":   "/tmp/test.db",
+		"SMTP_HOST":       "localhost",
+		"EMAIL_FROM":      "test@example.com",
+		"SERVER_BASE_URL": "http://localhost:8080",
+	}
+	setTestEnv(t, env)
+
+	cfg, err := Load()
+	if err != nil {
+		t.Fatalf("Load() error = %v, want nil", err)
+	}
+
+	if cfg.Email.ProcessorBatchSize != 50 {
+		t.Errorf("Email.ProcessorBatchSize = %d, want 50", cfg.Email.ProcessorBatchSize)
+	}
+
+	if cfg.Email.ProcessorPollInterval != 60*time.Second {
+		t.Errorf("Email.ProcessorPollInterval = %v, want 60s", cfg.Email.ProcessorPollInterval)
+	}
+}
+
+func TestConfig_Load_EmailProcessorCustomValues(t *testing.T) {
+	env := map[string]string{
+		"SERVER_PORT":                   "8080",
+		"DATABASE_PATH":                 "/tmp/test.db",
+		"SMTP_HOST":                     "localhost",
+		"EMAIL_FROM":                    "test@example.com",
+		"SERVER_BASE_URL":               "http://localhost:8080",
+		"EMAIL_PROCESSOR_BATCH_SIZE":    "100",
+		"EMAIL_PROCESSOR_POLL_INTERVAL": "30s",
+	}
+	setTestEnv(t, env)
+
+	cfg, err := Load()
+	if err != nil {
+		t.Fatalf("Load() error = %v, want nil", err)
+	}
+
+	if cfg.Email.ProcessorBatchSize != 100 {
+		t.Errorf("Email.ProcessorBatchSize = %d, want 100", cfg.Email.ProcessorBatchSize)
+	}
+
+	if cfg.Email.ProcessorPollInterval != 30*time.Second {
+		t.Errorf("Email.ProcessorPollInterval = %v, want 30s", cfg.Email.ProcessorPollInterval)
+	}
+}
+
+func TestConfig_Load_EmailProcessorInvalidValues(t *testing.T) {
+	tests := []struct {
+		name   string
+		env    map[string]string
+		errMsg string
+	}{
+		{
+			name: "invalid batch size - zero",
+			env: map[string]string{
+				"SERVER_PORT":                "8080",
+				"DATABASE_PATH":              "/tmp/test.db",
+				"SMTP_HOST":                  "localhost",
+				"EMAIL_FROM":                 "test@example.com",
+				"SERVER_BASE_URL":            "http://localhost:8080",
+				"EMAIL_PROCESSOR_BATCH_SIZE": "0",
+			},
+			errMsg: "batch size",
+		},
+		{
+			name: "invalid batch size - negative",
+			env: map[string]string{
+				"SERVER_PORT":                "8080",
+				"DATABASE_PATH":              "/tmp/test.db",
+				"SMTP_HOST":                  "localhost",
+				"EMAIL_FROM":                 "test@example.com",
+				"SERVER_BASE_URL":            "http://localhost:8080",
+				"EMAIL_PROCESSOR_BATCH_SIZE": "-1",
+			},
+			errMsg: "batch size",
+		},
+		{
+			name: "invalid batch size - too large",
+			env: map[string]string{
+				"SERVER_PORT":                "8080",
+				"DATABASE_PATH":              "/tmp/test.db",
+				"SMTP_HOST":                  "localhost",
+				"EMAIL_FROM":                 "test@example.com",
+				"SERVER_BASE_URL":            "http://localhost:8080",
+				"EMAIL_PROCESSOR_BATCH_SIZE": "1001",
+			},
+			errMsg: "batch size",
+		},
+		{
+			name: "invalid poll interval - zero",
+			env: map[string]string{
+				"SERVER_PORT":                   "8080",
+				"DATABASE_PATH":                 "/tmp/test.db",
+				"SMTP_HOST":                     "localhost",
+				"EMAIL_FROM":                    "test@example.com",
+				"SERVER_BASE_URL":               "http://localhost:8080",
+				"EMAIL_PROCESSOR_POLL_INTERVAL": "0s",
+			},
+			errMsg: "poll interval",
+		},
+		{
+			name: "invalid poll interval - too short",
+			env: map[string]string{
+				"SERVER_PORT":                   "8080",
+				"DATABASE_PATH":                 "/tmp/test.db",
+				"SMTP_HOST":                     "localhost",
+				"EMAIL_FROM":                    "test@example.com",
+				"SERVER_BASE_URL":               "http://localhost:8080",
+				"EMAIL_PROCESSOR_POLL_INTERVAL": "5s",
+			},
+			errMsg: "poll interval",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			setTestEnv(t, tt.env)
+
+			_, err := Load()
+			if err == nil {
+				t.Fatal("Load() error = nil, want error")
+			}
+
+			if !strings.Contains(err.Error(), tt.errMsg) {
+				t.Errorf("Expected error containing %q, got %v", tt.errMsg, err)
+			}
+		})
+	}
+}
+
 func setTestEnv(t *testing.T, env map[string]string) {
 	t.Helper()
 

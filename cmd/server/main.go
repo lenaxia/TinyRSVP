@@ -17,6 +17,7 @@ import (
 	"github.com/lenaxia/tinyrsvp/internal/config"
 	"github.com/lenaxia/tinyrsvp/internal/db"
 	"github.com/lenaxia/tinyrsvp/internal/db/repositories"
+	"github.com/lenaxia/tinyrsvp/internal/email"
 	"github.com/lenaxia/tinyrsvp/internal/events"
 	"github.com/lenaxia/tinyrsvp/internal/handlers"
 	"github.com/lenaxia/tinyrsvp/internal/invites"
@@ -112,6 +113,7 @@ func main() {
 	questionRepo := repositories.NewQuestionRepository(database)
 	rsvpRepo := repositories.NewRSVPRepository(database)
 	answerRepo := repositories.NewAnswerRepository(database)
+	emailQueueRepo := repositories.NewEmailQueueRepository(database)
 
 	sessionMgr := auth.NewSessionManager(sessionRepo, false)
 	userService := auth.NewUserService(userRepo)
@@ -378,6 +380,31 @@ func main() {
 	}()
 	logger.Info("Event archiving background job started")
 
+	smtpSender := email.NewStubSMTPSender()
+	rateLimiter := email.NewStubRateLimiter()
+	emailProcessor := email.NewQueueProcessor(
+		emailQueueRepo,
+		smtpSender,
+		rateLimiter,
+		cfg.Email.ProcessorBatchSize,
+		cfg.Email.ProcessorPollInterval,
+	)
+
+	processorCtx, processorCancel := context.WithCancel(context.Background())
+	defer processorCancel()
+
+	processorErrors := make(chan error, 1)
+	go func() {
+		if err := emailProcessor.Start(processorCtx); err != nil && err != context.Canceled {
+			logger.Error("Email processor error", "error", err)
+			processorErrors <- err
+		}
+	}()
+	logger.Info("Email queue processor started",
+		"batch_size", cfg.Email.ProcessorBatchSize,
+		"poll_interval", cfg.Email.ProcessorPollInterval,
+	)
+
 	serverErrors := make(chan error, 1)
 	go func() {
 		logger.Info("Server starting", "address", addr)
@@ -395,10 +422,24 @@ func main() {
 	case sig := <-shutdown:
 		logger.Info("Shutdown signal received", "signal", sig)
 
-		ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
-		defer cancel()
+		shutdownCtx, shutdownCancel := context.WithTimeout(context.Background(), 30*time.Second)
+		defer shutdownCancel()
 
-		if err := server.Shutdown(ctx); err != nil {
+		logger.Info("Stopping email processor")
+		processorCancel()
+		processorStopCtx, processorStopCancel := context.WithTimeout(context.Background(), 10*time.Second)
+		defer processorStopCancel()
+		if err := emailProcessor.Stop(processorStopCtx); err != nil {
+			logger.Error("Email processor shutdown failed", "error", err)
+		} else {
+			logger.Info("Email processor stopped gracefully")
+		}
+
+		logger.Info("Stopping background jobs")
+		cleanupCancel()
+
+		logger.Info("Stopping HTTP server")
+		if err := server.Shutdown(shutdownCtx); err != nil {
 			logger.Error("Graceful shutdown failed", "error", err)
 			if err := server.Close(); err != nil {
 				logger.Error("Force close failed", "error", err)

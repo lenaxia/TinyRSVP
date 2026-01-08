@@ -139,6 +139,9 @@ func (p *queueProcessor) processEmail(ctx context.Context, email *models.EmailQu
 	}
 
 	if !p.rateLimiter.Allow() {
+		if err := p.repo.UpdateStatus(ctx, email.ID, models.EmailStatusPending); err != nil {
+			return fmt.Errorf("failed to reset status: %w", err)
+		}
 		return p.repo.Reschedule(ctx, email.ID, time.Now().Add(time.Minute))
 	}
 
@@ -198,6 +201,10 @@ func (p *queueProcessor) handleSendError(ctx context.Context, email *models.Emai
 
 	backoff := calculateBackoff(email.Attempts + 1)
 	scheduledFor := time.Now().Add(backoff)
+
+	if err := p.repo.UpdateStatus(ctx, email.ID, models.EmailStatusPending); err != nil {
+		return fmt.Errorf("failed to reset status to pending: %w", err)
+	}
 
 	if err := p.repo.Reschedule(ctx, email.ID, scheduledFor); err != nil {
 		return fmt.Errorf("failed to reschedule: %w", err)
