@@ -17,9 +17,9 @@ As a **guest**, I want **to see preference questions on the RSVP page** so that 
 
 - [x] Questions loaded from database for event
 - [x] Questions displayed in order (by display_order)
-- [x] Question types rendered correctly (text/select/boolean)
+- [x] Question types rendered correctly (text/single_choice/multiple_choice)
 - [x] Required questions marked with asterisk
-- [ ] Help text displayed if provided
+- [x] Help text displayed if provided
 - [x] Mobile-responsive layout
 - [x] Accessible (ARIA labels, keyboard navigation)
 - [x] Questions only shown if event has questions
@@ -44,43 +44,47 @@ type RSVPPageData struct {
 
 ```html
 {{range .Questions}}
-<div class="question-group" data-question-id="{{.ID}}" data-type="{{.Type}}">
+<div class="question-group" data-question-id="{{.ID}}" data-type="{{.QuestionType}}">
     <label for="question_{{.ID}}">
         {{.QuestionText}}
         {{if .Required}}<span class="required">*</span>{{end}}
     </label>
     
-    {{if eq .Type "text"}}
-        <textarea 
-            id="question_{{.ID}}" 
+    {{if eq .QuestionType "text"}}
+        <textarea
+            id="question_{{.ID}}"
             name="answers[{{.ID}}][text]"
             maxlength="500"
             {{if .Required}}required{{end}}
-            aria-describedby="help_{{.ID}}"
+            {{if .HelpText}}aria-describedby="help_{{.ID}}"{{end}}
         ></textarea>
-    {{else if eq .Type "select"}}
-        <select 
-            id="question_{{.ID}}" 
+    {{else if eq .QuestionType "single_choice"}}
+        <select
+            id="question_{{.ID}}"
             name="answers[{{.ID}}][option]"
             {{if .Required}}required{{end}}
-            aria-describedby="help_{{.ID}}"
+            {{if .HelpText}}aria-describedby="help_{{.ID}}"{{end}}
         >
-            <option value="">-- Select --</option>
-            {{range .Options}}
+            <option value="">-- Select an option --</option>
+            {{range .ParsedOptions}}
             <option value="{{.}}">{{.}}</option>
             {{end}}
         </select>
-    {{else if eq .Type "boolean"}}
-        <div class="radio-group">
-            <label>
-                <input type="radio" name="answers[{{.ID}}][boolean]" value="true" {{if .Required}}required{{end}}>
-                Yes
+    {{else if eq .QuestionType "multiple_choice"}}
+        <fieldset class="checkbox-group">
+            <legend class="sr-only">{{.QuestionText}}</legend>
+            {{range $idx, $opt := .ParsedOptions}}
+            <label class="checkbox-label">
+                <input
+                    type="checkbox"
+                    name="answers[{{$.ID}}][options][]"
+                    value="{{$opt}}"
+                    id="question_{{$.ID}}_{{$idx}}"
+                />
+                <span class="checkbox-text">{{$opt}}</span>
             </label>
-            <label>
-                <input type="radio" name="answers[{{.ID}}][boolean]" value="false" {{if .Required}}required{{end}}>
-                No
-            </label>
-        </div>
+            {{end}}
+        </fieldset>
     {{end}}
     
     {{if .HelpText}}

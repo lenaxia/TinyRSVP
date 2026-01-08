@@ -159,3 +159,51 @@ func TestPreferenceQuestion_SetOptions(t *testing.T) {
 		})
 	}
 }
+
+func TestPreferenceQuestion_HelpText(t *testing.T) {
+	tests := []struct {
+		name     string
+		helpText *string
+		want     string
+		isNil    bool
+	}{
+		{
+			name:     "with help text",
+			helpText: stringPtr("This is helpful information"),
+			want:     "This is helpful information",
+			isNil:    false,
+		},
+		{
+			name:     "nil help text",
+			helpText: nil,
+			want:     "",
+			isNil:    true,
+		},
+		{
+			name:     "empty help text",
+			helpText: stringPtr(""),
+			want:     "",
+			isNil:    false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			q := &PreferenceQuestion{HelpText: tt.helpText}
+
+			if tt.isNil && q.HelpText != nil {
+				t.Errorf("HelpText should be nil, got %v", q.HelpText)
+				return
+			}
+
+			if !tt.isNil && q.HelpText == nil {
+				t.Errorf("HelpText should not be nil")
+				return
+			}
+
+			if !tt.isNil && *q.HelpText != tt.want {
+				t.Errorf("HelpText = %v, want %v", *q.HelpText, tt.want)
+			}
+		})
+	}
+}

@@ -743,6 +743,7 @@
                                 name="answers[{{.ID}}][text]"
                                 maxlength="500"
                                 {{if .Required}}required aria-required="true"{{end}}
+                                {{if .HelpText}}aria-describedby="help_{{.ID}}"{{end}}
                                 class="question-textarea"
                             ></textarea>
                         {{else if eq .QuestionType "single_choice"}}
@@ -750,6 +751,7 @@
                                 id="question_{{.ID}}"
                                 name="answers[{{.ID}}][option]"
                                 {{if .Required}}required aria-required="true"{{end}}
+                                {{if .HelpText}}aria-describedby="help_{{.ID}}"{{end}}
                                 class="question-select"
                             >
                                 <option value="">-- Select an option --</option>
@@ -758,7 +760,7 @@
                                 {{end}}
                             </select>
                         {{else if eq .QuestionType "multiple_choice"}}
-                            <fieldset class="checkbox-group">
+                            <fieldset class="checkbox-group" {{if .HelpText}}aria-describedby="help_{{.ID}}"{{end}}>
                                 <legend class="sr-only">{{.QuestionText}}</legend>
                                 {{range $idx, $opt := .ParsedOptions}}
                                 <label class="checkbox-label">
@@ -772,6 +774,10 @@
                                 </label>
                                 {{end}}
                             </fieldset>
+                        {{end}}
+                        
+                        {{if .HelpText}}
+                        <small id="help_{{.ID}}" class="help-text">{{.HelpText}}</small>
                         {{end}}
                     </div>
                     {{end}}

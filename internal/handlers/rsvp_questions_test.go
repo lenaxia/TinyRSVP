@@ -420,3 +420,77 @@ func TestRSVPHandler_GetRSVPPage_QuestionLoadError(t *testing.T) {
 		t.Errorf("Expected status 500, got %d", w.Code)
 	}
 }
+
+func TestRSVPHandler_GetRSVPPage_WithHelpText(t *testing.T) {
+	startTime := time.Now().Add(24 * time.Hour)
+	helpText := "Please provide detailed information about your dietary needs"
+
+	mockInviteSvc := &mockRSVPInviteService{
+		getInviteByTokenFunc: func(ctx context.Context, token string) (*models.Invite, error) {
+			email := "test@example.com"
+			return &models.Invite{
+				ID:        1,
+				EventID:   1,
+				Email:     &email,
+				Status:    models.InviteStatusSent,
+				ExpiresAt: time.Now().Add(30 * 24 * time.Hour),
+			}, nil
+		},
+		markViewedFunc: func(ctx context.Context, inviteID int64) error {
+			return nil
+		},
+	}
+
+	mockEventRepo := &mockRSVPEventRepository{
+		getByIDFunc: func(ctx context.Context, id int64) (*models.Event, error) {
+			return &models.Event{
+				ID:        1,
+				Title:     "Test Event",
+				StartTime: startTime,
+				Timezone:  "America/Los_Angeles",
+				Status:    models.EventStatusPublished,
+			}, nil
+		},
+	}
+
+	mockRSVPRepo := &mockRSVPRSVPRepository{
+		getByInviteIDFunc: func(ctx context.Context, inviteID int64) (*models.RSVP, error) {
+			return nil, &models.NotFoundError{Resource: "rsvp"}
+		},
+	}
+
+	mockQuestionRepo := &mockRSVPQuestionRepository{
+		getByEventIDFunc: func(ctx context.Context, eventID int64) ([]*models.PreferenceQuestion, error) {
+			return []*models.PreferenceQuestion{
+				{
+					ID:           1,
+					EventID:      1,
+					QuestionText: "What are your dietary restrictions?",
+					QuestionType: models.QuestionTypeText,
+					Required:     true,
+					DisplayOrder: 1,
+					HelpText:     &helpText,
+				},
+			}, nil
+		},
+	}
+
+	handler := NewRSVPHandler(mockInviteSvc, mockEventRepo, mockRSVPRepo, mockQuestionRepo)
+
+	r := chi.NewRouter()
+	r.Get("/rsvp/{token}", handler.GetRSVPPage)
+
+	req := httptest.NewRequest("GET", "/rsvp/validtoken", nil)
+	w := httptest.NewRecorder()
+
+	r.ServeHTTP(w, req)
+
+	if w.Code != http.StatusOK {
+		t.Errorf("Expected status 200, got %d", w.Code)
+	}
+
+	body := w.Body.String()
+	if body == "" {
+		t.Error("Expected non-empty response body")
+	}
+}

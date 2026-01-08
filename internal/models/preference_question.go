@@ -21,6 +21,7 @@ type PreferenceQuestion struct {
 	Required     bool         `db:"required" json:"required"`
 	DisplayOrder int          `db:"display_order" json:"display_order"`
 	Options      *string      `db:"options" json:"options,omitempty"`
+	HelpText     *string      `db:"help_text" json:"help_text,omitempty"`
 	CreatedAt    time.Time    `db:"created_at" json:"created_at"`
 	UpdatedAt    time.Time    `db:"updated_at" json:"updated_at"`
 }
