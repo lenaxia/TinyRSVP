@@ -45,6 +45,7 @@ type InviteService interface {
 	RevokeInvite(ctx context.Context, id int64) error
 	ListInvitesByEventID(ctx context.Context, eventID int64, filters repositories.InviteFilters) ([]*models.Invite, error)
 	ImportCSV(ctx context.Context, eventID int64, csvData []byte, defaultMaxPlusOnes int, expiresAt time.Time) (*ImportResult, error)
+	CleanupExpiredTokens(ctx context.Context) (int64, error)
 }
 
 type inviteService struct {
@@ -120,6 +121,10 @@ func (s *inviteService) GetInviteByToken(ctx context.Context, plainToken string)
 	invite, err := s.repo.GetByTokenHash(ctx, tokenHash)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get invite: %w", err)
+	}
+
+	if invite.ExpiresAt.Before(time.Now()) {
+		return nil, fmt.Errorf("invite has expired")
 	}
 
 	return invite, nil
@@ -304,4 +309,12 @@ func (s *inviteService) ImportCSV(ctx context.Context, eventID int64, csvData []
 	result.Created = len(finalInvites)
 
 	return result, nil
+}
+
+func (s *inviteService) CleanupExpiredTokens(ctx context.Context) (int64, error) {
+	count, err := s.repo.DeleteExpired(ctx, time.Now())
+	if err != nil {
+		return 0, fmt.Errorf("failed to cleanup expired tokens: %w", err)
+	}
+	return count, nil
 }

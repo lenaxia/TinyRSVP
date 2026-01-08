@@ -53,6 +53,10 @@ func (m *mockManualInviteService) ImportCSV(ctx context.Context, eventID int64, 
 	return nil, errors.New("not implemented")
 }
 
+func (m *mockManualInviteService) CleanupExpiredTokens(ctx context.Context) (int64, error) {
+	return 0, errors.New("not implemented")
+}
+
 func TestManualInviteHandlers_CreateManualInvite(t *testing.T) {
 	tests := []struct {
 		name           string

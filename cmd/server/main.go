@@ -232,6 +232,10 @@ func main() {
 	manualInviteHandlers := handlers.NewManualInviteHandlers(inviteService, eventRepo, cfg.Server.BaseURL)
 	manualInviteHandlers.RegisterRoutes(chiRouter)
 
+	cleanupHandler := handlers.NewCleanupHandler(inviteService)
+	mux.Handle("/api/invites/cleanup", requireAuth(requireAdmin(cleanupHandler)))
+	logger.Info("Registered invite cleanup endpoint", "path", "/api/invites/cleanup", "method", "POST", "protection", "admin")
+
 	mux.Handle("/api/events", chiRouter)
 	mux.Handle("/api/events/", chiRouter)
 	logger.Info("Registered event management endpoints", "path", "/api/events", "protection", "authenticated")
@@ -271,6 +275,27 @@ func main() {
 		}
 	}()
 	logger.Info("Session cleanup background job started")
+
+	go func() {
+		ticker := time.NewTicker(24 * time.Hour)
+		defer ticker.Stop()
+
+		for {
+			select {
+			case <-ticker.C:
+				count, err := inviteService.CleanupExpiredTokens(context.Background())
+				if err != nil {
+					logger.Error("Invite token cleanup failed", "error", err)
+				} else {
+					logger.Info("Invite token cleanup completed", "deleted", count)
+				}
+			case <-cleanupCtx.Done():
+				logger.Info("Invite token cleanup goroutine stopped")
+				return
+			}
+		}
+	}()
+	logger.Info("Invite token cleanup background job started")
 
 	serverErrors := make(chan error, 1)
 	go func() {

@@ -15,14 +15,14 @@ As a **system administrator**, I want **automatic token expiration and cleanup**
 
 ## Acceptance Criteria
 
-- [ ] Tokens expire 30 days after event date
-- [ ] Expired tokens cannot be used for RSVP
-- [ ] Cleanup job removes expired tokens
-- [ ] Cleanup job runs daily
-- [ ] Cleanup job logs statistics
-- [ ] Manual cleanup endpoint for admins
-- [ ] Expiration date calculated on invite creation
-- [ ] Expiration check on token validation
+- [x] Tokens expire 30 days after event date
+- [x] Expired tokens cannot be used for RSVP
+- [x] Cleanup job removes expired tokens
+- [x] Cleanup job runs daily
+- [x] Cleanup job logs statistics
+- [x] Manual cleanup endpoint for admins
+- [x] Expiration date calculated on invite creation
+- [x] Expiration check on token validation
 
 ---
 
@@ -69,25 +69,25 @@ func startCleanupJob(service invites.Service) {
 ## Subtasks
 
 ### Implementation
-- [ ] Add expiration check to token validation
-- [ ] Implement `DeleteExpired()` in repository
-- [ ] Implement `CleanupExpiredTokens()` in service
-- [ ] Add scheduled cleanup job
-- [ ] Add manual cleanup endpoint for admins
-- [ ] Add logging for cleanup operations
+- [x] Add expiration check to token validation
+- [x] Implement `DeleteExpired()` in repository
+- [x] Implement `CleanupExpiredTokens()` in service
+- [x] Add scheduled cleanup job
+- [x] Add manual cleanup endpoint for admins
+- [x] Add logging for cleanup operations
 
 ### Testing
-- [ ] Test expiration date calculation
-- [ ] Test expired token rejection
-- [ ] Test cleanup deletes expired tokens
-- [ ] Test cleanup preserves valid tokens
-- [ ] Test cleanup statistics
-- [ ] Test scheduled job execution
+- [x] Test expiration date calculation
+- [x] Test expired token rejection
+- [x] Test cleanup deletes expired tokens
+- [x] Test cleanup preserves valid tokens
+- [x] Test cleanup statistics
+- [x] Test scheduled job execution
 
 ### Documentation
-- [ ] Document expiration policy
-- [ ] Document cleanup schedule
-- [ ] Document manual cleanup endpoint
+- [x] Document expiration policy
+- [x] Document cleanup schedule
+- [x] Document manual cleanup endpoint
 
 ---
 
@@ -100,9 +100,17 @@ func startCleanupJob(service invites.Service) {
 
 ## Definition of Done
 
-- [ ] All acceptance criteria met
-- [ ] Expiration logic implemented
-- [ ] Cleanup job implemented
-- [ ] Tests passing (>90% coverage)
-- [ ] Documentation complete
-- [ ] Code reviewed
+- [x] All acceptance criteria met
+- [x] Expiration logic implemented
+- [x] Cleanup job implemented
+- [x] Tests passing (>90% coverage)
+- [x] Documentation complete
+- [x] Code reviewed
+
+---
+
+## Status
+
+**Status:** Complete
+**Completed:** 2026-01-07
+**Coverage:** 92.0% (invites package)

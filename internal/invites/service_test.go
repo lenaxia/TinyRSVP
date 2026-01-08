@@ -105,6 +105,18 @@ func (m *mockInviteRepository) DeleteExpired(ctx context.Context, before time.Ti
 	return 0, nil
 }
 
+type mockInviteRepositoryWithDeleteExpired struct {
+	mockInviteRepository
+	deleteExpiredFunc func(ctx context.Context, before time.Time) (int64, error)
+}
+
+func (m *mockInviteRepositoryWithDeleteExpired) DeleteExpired(ctx context.Context, before time.Time) (int64, error) {
+	if m.deleteExpiredFunc != nil {
+		return m.deleteExpiredFunc(ctx, before)
+	}
+	return 0, nil
+}
+
 func TestInviteService_CreateInvite(t *testing.T) {
 	ctx := context.Background()
 	futureTime := time.Now().Add(30 * 24 * time.Hour)
@@ -526,6 +538,174 @@ func TestInviteService_RevokeInvite(t *testing.T) {
 				if !strings.Contains(err.Error(), tt.errContains) {
 					t.Errorf("RevokeInvite() error = %v, want error containing %q", err, tt.errContains)
 				}
+			}
+		})
+	}
+}
+
+func TestInviteService_GetInviteByToken_ExpiredToken(t *testing.T) {
+	ctx := context.Background()
+	validToken := strings.Repeat("a", 43)
+	validHash := strings.Repeat("b", 43)
+	email := "test@example.com"
+
+	tests := []struct {
+		name        string
+		token       string
+		mockGen     *mockGenerator
+		mockRepo    *mockInviteRepository
+		wantErr     bool
+		errContains string
+	}{
+		{
+			name:  "expired token rejected",
+			token: validToken,
+			mockGen: &mockGenerator{
+				hashFunc: func(t string) (string, error) {
+					return validHash, nil
+				},
+			},
+			mockRepo: &mockInviteRepository{
+				getByTokenHashFunc: func(ctx context.Context, tokenHash string) (*models.Invite, error) {
+					return &models.Invite{
+						ID:          1,
+						EventID:     1,
+						Email:       &email,
+						TokenHash:   validHash,
+						MaxPlusOnes: 2,
+						Status:      models.InviteStatusSent,
+						ExpiresAt:   time.Now().Add(-24 * time.Hour),
+					}, nil
+				},
+			},
+			wantErr:     true,
+			errContains: "invite has expired",
+		},
+		{
+			name:  "valid token not expired",
+			token: validToken,
+			mockGen: &mockGenerator{
+				hashFunc: func(t string) (string, error) {
+					return validHash, nil
+				},
+			},
+			mockRepo: &mockInviteRepository{
+				getByTokenHashFunc: func(ctx context.Context, tokenHash string) (*models.Invite, error) {
+					return &models.Invite{
+						ID:          1,
+						EventID:     1,
+						Email:       &email,
+						TokenHash:   validHash,
+						MaxPlusOnes: 2,
+						Status:      models.InviteStatusSent,
+						ExpiresAt:   time.Now().Add(24 * time.Hour),
+					}, nil
+				},
+			},
+			wantErr: false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			service := NewInviteService(tt.mockGen, tt.mockRepo)
+			invite, err := service.GetInviteByToken(ctx, tt.token)
+
+			if (err != nil) != tt.wantErr {
+				t.Errorf("GetInviteByToken() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+
+			if tt.wantErr {
+				if err != nil && !strings.Contains(err.Error(), tt.errContains) {
+					t.Errorf("GetInviteByToken() error = %v, want error containing %q", err, tt.errContains)
+				}
+				return
+			}
+
+			if invite == nil {
+				t.Fatal("invite is nil")
+			}
+		})
+	}
+}
+
+func TestInviteService_CleanupExpiredTokens(t *testing.T) {
+	ctx := context.Background()
+
+	tests := []struct {
+		name           string
+		mockGen        *mockGenerator
+		mockRepo       *mockInviteRepositoryWithDeleteExpired
+		wantErr        bool
+		errContains    string
+		validateResult func(t *testing.T, count int64)
+	}{
+		{
+			name:    "successful cleanup with deleted tokens",
+			mockGen: &mockGenerator{},
+			mockRepo: &mockInviteRepositoryWithDeleteExpired{
+				deleteExpiredFunc: func(ctx context.Context, before time.Time) (int64, error) {
+					if before.After(time.Now()) {
+						t.Error("before time should not be in the future")
+					}
+					return 5, nil
+				},
+			},
+			wantErr: false,
+			validateResult: func(t *testing.T, count int64) {
+				if count != 5 {
+					t.Errorf("CleanupExpiredTokens() count = %d, want 5", count)
+				}
+			},
+		},
+		{
+			name:    "successful cleanup with no expired tokens",
+			mockGen: &mockGenerator{},
+			mockRepo: &mockInviteRepositoryWithDeleteExpired{
+				deleteExpiredFunc: func(ctx context.Context, before time.Time) (int64, error) {
+					return 0, nil
+				},
+			},
+			wantErr: false,
+			validateResult: func(t *testing.T, count int64) {
+				if count != 0 {
+					t.Errorf("CleanupExpiredTokens() count = %d, want 0", count)
+				}
+			},
+		},
+		{
+			name:    "repository error",
+			mockGen: &mockGenerator{},
+			mockRepo: &mockInviteRepositoryWithDeleteExpired{
+				deleteExpiredFunc: func(ctx context.Context, before time.Time) (int64, error) {
+					return 0, errors.New("database error")
+				},
+			},
+			wantErr:     true,
+			errContains: "failed to cleanup expired tokens",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			service := NewInviteService(tt.mockGen, tt.mockRepo)
+			count, err := service.CleanupExpiredTokens(ctx)
+
+			if (err != nil) != tt.wantErr {
+				t.Errorf("CleanupExpiredTokens() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+
+			if tt.wantErr {
+				if err != nil && !strings.Contains(err.Error(), tt.errContains) {
+					t.Errorf("CleanupExpiredTokens() error = %v, want error containing %q", err, tt.errContains)
+				}
+				return
+			}
+
+			if tt.validateResult != nil {
+				tt.validateResult(t, count)
 			}
 		})
 	}

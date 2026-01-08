@@ -20,8 +20,9 @@ import (
 )
 
 type mockImportService struct {
-	importCSVFunc          func(ctx context.Context, eventID int64, csvData []byte, defaultMaxPlusOnes int, expiresAt time.Time) (*invites.ImportResult, error)
-	createManualInviteFunc func(ctx context.Context, req *invites.CreateManualInviteRequest, expiresAt time.Time) (*invites.CreateManualInviteResponse, error)
+	importCSVFunc            func(ctx context.Context, eventID int64, csvData []byte, defaultMaxPlusOnes int, expiresAt time.Time) (*invites.ImportResult, error)
+	createManualInviteFunc   func(ctx context.Context, req *invites.CreateManualInviteRequest, expiresAt time.Time) (*invites.CreateManualInviteResponse, error)
+	cleanupExpiredTokensFunc func(ctx context.Context) (int64, error)
 }
 
 func (m *mockImportService) CreateInvite(ctx context.Context, eventID int64, name *string, email *string, maxPlusOnes int, expiresAt time.Time) (*models.Invite, string, error) {
@@ -56,6 +57,13 @@ func (m *mockImportService) ImportCSV(ctx context.Context, eventID int64, csvDat
 		return m.importCSVFunc(ctx, eventID, csvData, defaultMaxPlusOnes, expiresAt)
 	}
 	return nil, nil
+}
+
+func (m *mockImportService) CleanupExpiredTokens(ctx context.Context) (int64, error) {
+	if m.cleanupExpiredTokensFunc != nil {
+		return m.cleanupExpiredTokensFunc(ctx)
+	}
+	return 0, nil
 }
 
 func createMultipartRequest(csvContent string, filename string) (*http.Request, error) {
