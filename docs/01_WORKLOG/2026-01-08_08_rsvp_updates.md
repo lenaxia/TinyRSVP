@@ -142,11 +142,13 @@ Created `handleUpdateError()` separate from `handleSubmitError()` to provide app
 - [ ] Story 11: Confirmation Email
 
 ### Integration Points:
-The UpdateRSVP endpoint is ready to be wired into the router in `cmd/server/main.go`:
+✅ **COMPLETE** - The UpdateRSVP endpoint has been registered in the router in `cmd/server/main.go`:
 
 ```go
-r.Put("/api/rsvp/{token}", rsvpHandler.UpdateRSVP)
+rsvpRouter.Put("/{token}", rsvpHandler.UpdateRSVP)
 ```
+
+The endpoint is now accessible at `PUT /rsvp/{token}` and fully operational.
 
 ---
 
@@ -182,3 +184,16 @@ Total test execution time: ~30 seconds
 - All validation reused from SubmitRSVP
 - Transaction safety maintained
 - Error handling comprehensive
+
+---
+
+## Router Integration (2026-01-08)
+
+**Completed:** Router integration for UpdateRSVP endpoint
+
+**Changes Made:**
+1. Added `rsvpRouter.Put("/{token}", rsvpHandler.UpdateRSVP)` to `cmd/server/main.go`
+2. Added logging line for PUT endpoint registration
+3. Verified all tests pass with `-timeout 30s`
+
+**Result:** The UpdateRSVP feature is now fully operational and accessible via `PUT /rsvp/{token}`. All acceptance criteria for Story 08 are now met.
