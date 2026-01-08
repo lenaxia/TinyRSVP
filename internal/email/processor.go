@@ -34,6 +34,9 @@ type SMTPSender interface {
 type RateLimiter interface {
 	Allow() bool
 	AvailableSlots() int
+	WaitTime() time.Duration
+	Record()
+	Reset()
 }
 
 type QueueProcessor interface {

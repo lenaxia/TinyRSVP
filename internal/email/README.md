@@ -38,10 +38,16 @@ type SMTPSender interface {
 ### Rate Limiter
 ```go
 type RateLimiter interface {
-    Allow() bool
-    AvailableSlots() int
+	Allow() bool
+	AvailableSlots() int
+	WaitTime() time.Duration
+	Record()
+	Reset()
 }
 ```
+
+Implementation: Sliding window algorithm with thread-safe operations.
+Default: 50 emails per minute (configurable).
 
 ## Usage
 
@@ -127,14 +133,64 @@ if err := processor.Stop(ctx); err != nil {
 - Queue processor uses optimistic locking to prevent duplicate sends
 - Rate limiter is checked before each send operation
 
-## Future Implementation
+## Implementation Status
 
-The full email service implementation (Epic 05) will include:
-- Story 03: SMTP sender with TLS support
-- Story 04: Template rendering with Go html/template
-- Story 06: Rate limiting implementation
+Completed:
+- Story 01: Email queue repository ✓
+- Story 02: Email queue processor ✓
+- Story 03: SMTP sender with TLS support ✓
+- Story 04: Template rendering with Go html/template ✓
+- Story 06: Rate limiting implementation ✓
+
+Remaining (Epic 05):
+- Story 05: Retry logic (partially complete)
 - Story 07: Email configuration management
 - Story 08: Monitoring and observability
+
+## Rate Limiter
+
+The rate limiter uses a sliding window algorithm to enforce email sending limits:
+
+### Features
+- Sliding window algorithm for accurate rate limiting
+- Thread-safe for concurrent access
+- Configurable limit (default: 50 emails per minute)
+- Automatic cleanup of expired timestamps
+- Returns available slots for batch sizing
+- Provides wait time until next available slot
+
+### Usage
+```go
+// Create rate limiter with 50 emails per minute
+limiter := email.NewRateLimiter(50)
+
+// Check if send is allowed
+if limiter.Allow() {
+    // Send email
+    err := sender.Send(ctx, msg)
+    if err == nil {
+        // Record successful send
+        limiter.Record()
+    }
+}
+
+// Get available slots for batch sizing
+available := limiter.AvailableSlots()
+
+// Get wait time if at limit
+waitTime := limiter.WaitTime()
+if waitTime > 0 {
+    time.Sleep(waitTime)
+}
+```
+
+### Algorithm
+The sliding window algorithm maintains a list of timestamps for recent sends:
+1. On each operation, expired timestamps (older than 1 minute) are removed
+2. `Allow()` checks if current count is below the limit
+3. `Record()` adds a new timestamp for the current send
+4. `AvailableSlots()` returns remaining capacity
+5. `WaitTime()` calculates time until oldest timestamp expires
 
 ## Dependencies
 

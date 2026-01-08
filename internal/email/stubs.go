@@ -3,6 +3,7 @@ package email
 import (
 	"context"
 	"log"
+	"time"
 )
 
 type stubSMTPSender struct{}
@@ -38,4 +39,14 @@ func (r *stubRateLimiter) Allow() bool {
 
 func (r *stubRateLimiter) AvailableSlots() int {
 	return 1000
+}
+
+func (r *stubRateLimiter) WaitTime() time.Duration {
+	return 0
+}
+
+func (r *stubRateLimiter) Record() {
+}
+
+func (r *stubRateLimiter) Reset() {
 }

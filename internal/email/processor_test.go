@@ -119,6 +119,9 @@ func (m *MockSMTPSender) Close() error {
 type MockRateLimiter struct {
 	AllowFunc          func() bool
 	AvailableSlotsFunc func() int
+	WaitTimeFunc       func() time.Duration
+	RecordFunc         func()
+	ResetFunc          func()
 }
 
 func (m *MockRateLimiter) Allow() bool {
@@ -133,6 +136,25 @@ func (m *MockRateLimiter) AvailableSlots() int {
 		return m.AvailableSlotsFunc()
 	}
 	return 100
+}
+
+func (m *MockRateLimiter) WaitTime() time.Duration {
+	if m.WaitTimeFunc != nil {
+		return m.WaitTimeFunc()
+	}
+	return 0
+}
+
+func (m *MockRateLimiter) Record() {
+	if m.RecordFunc != nil {
+		m.RecordFunc()
+	}
+}
+
+func (m *MockRateLimiter) Reset() {
+	if m.ResetFunc != nil {
+		m.ResetFunc()
+	}
 }
 
 func TestNewQueueProcessor(t *testing.T) {
