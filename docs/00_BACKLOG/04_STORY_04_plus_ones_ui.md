@@ -2,8 +2,9 @@
 
 **Epic:** [04_EPIC_rsvp.md](04_EPIC_rsvp.md)
 **Priority:** Medium
-**Status:** Not Started
+**Status:** Complete
 **Estimated Effort:** 6 hours
+**Actual Effort:** 1 hour
 
 ---
 

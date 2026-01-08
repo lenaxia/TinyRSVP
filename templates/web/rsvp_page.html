@@ -249,6 +249,174 @@
             white-space: nowrap;
             border-width: 0;
         }
+
+        .rsvp-form {
+            margin-top: 1.5rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            font-size: 1rem;
+            color: var(--text-primary);
+        }
+
+        .limit-text {
+            color: var(--text-secondary);
+            font-weight: 400;
+            font-size: 0.875rem;
+        }
+
+        .radio-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .radio-label {
+            display: flex;
+            align-items: center;
+            padding: 0.75rem;
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            background-color: var(--bg-primary);
+        }
+
+        .radio-label:hover {
+            border-color: var(--primary-color);
+            background-color: var(--bg-secondary);
+        }
+
+        .radio-label:has(input:checked) {
+            border-color: var(--primary-color);
+            background-color: #eff6ff;
+        }
+
+        .radio-label:has(input:focus) {
+            outline: 2px solid var(--primary-color);
+            outline-offset: 2px;
+        }
+
+        .radio-label input[type="radio"] {
+            width: 1.25rem;
+            height: 1.25rem;
+            margin-right: 0.75rem;
+            cursor: pointer;
+            flex-shrink: 0;
+        }
+
+        .radio-text {
+            font-size: 1rem;
+            color: var(--text-primary);
+        }
+
+        .number-input {
+            width: 100%;
+            min-height: 44px;
+            padding: 0.75rem;
+            font-size: 1rem;
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            transition: border-color 0.2s;
+            background-color: var(--bg-primary);
+        }
+
+        .number-input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        }
+
+        .number-input:disabled {
+            background-color: #f5f5f5;
+            color: #999;
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
+
+        .plus-ones-group.disabled {
+            opacity: 0.6;
+        }
+
+        .form-text {
+            display: block;
+            margin-top: 0.5rem;
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+        }
+
+        .plus-ones-group .error-message {
+            display: block;
+            margin-top: 0.5rem;
+            font-size: 0.875rem;
+            color: var(--error-color);
+            font-weight: 500;
+        }
+
+        .plus-ones-group .error-message:empty {
+            display: none;
+        }
+
+        .number-input.invalid {
+            border-color: var(--error-color);
+        }
+
+        .form-actions {
+            margin-top: 2rem;
+            display: flex;
+            gap: 1rem;
+        }
+
+        .btn {
+            padding: 0.75rem 1.5rem;
+            font-size: 1rem;
+            font-weight: 600;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            min-height: 44px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .btn-primary {
+            background-color: var(--primary-color);
+            color: white;
+            flex: 1;
+        }
+
+        .btn-primary:hover {
+            background-color: var(--primary-hover);
+        }
+
+        .btn-primary:focus {
+            outline: 2px solid var(--primary-color);
+            outline-offset: 2px;
+        }
+
+        .btn-primary:active {
+            transform: scale(0.98);
+        }
+
+        @media (min-width: 768px) {
+            .number-input {
+                max-width: 200px;
+            }
+
+            .btn {
+                flex: 0 0 auto;
+                min-width: 200px;
+            }
+        }
     </style>
 </head>
 <body>
@@ -381,17 +549,122 @@
 
             {{if not .DeadlinePassed}}
             {{if not .EventPassed}}
-            <div class="event-card">
+            <form class="event-card rsvp-form" method="POST" action="/rsvp/{{.Token}}" novalidate>
                 <h2 style="font-size: 1.5rem; font-weight: 600; margin-bottom: 1rem;">
                     {{if .ExistingRSVP}}Update Your RSVP{{else}}Please Respond{{end}}
                 </h2>
-                <p style="color: var(--text-secondary); margin-bottom: 1.5rem;">
-                    RSVP form will be implemented in the next story.
-                </p>
-            </div>
+                
+                <div class="form-group">
+                    <fieldset>
+                        <legend class="form-label">Will you attend?</legend>
+                        <div class="radio-group">
+                            <label class="radio-label">
+                                <input type="radio" name="response" value="yes" {{if .ExistingRSVP}}{{if eq .ExistingRSVP.Response "yes"}}checked{{end}}{{end}} required>
+                                <span class="radio-text">Yes, I'll be there</span>
+                            </label>
+                            <label class="radio-label">
+                                <input type="radio" name="response" value="maybe" {{if .ExistingRSVP}}{{if eq .ExistingRSVP.Response "maybe"}}checked{{end}}{{end}}>
+                                <span class="radio-text">Maybe</span>
+                            </label>
+                            <label class="radio-label">
+                                <input type="radio" name="response" value="no" {{if .ExistingRSVP}}{{if eq .ExistingRSVP.Response "no"}}checked{{end}}{{end}}>
+                                <span class="radio-text">No, I can't make it</span>
+                            </label>
+                        </div>
+                    </fieldset>
+                </div>
+
+                {{if .Invite}}
+                {{if gt .Invite.MaxPlusOnes 0}}
+                <div class="form-group plus-ones-group" data-max-plus-ones="{{.Invite.MaxPlusOnes}}">
+                    <label for="plus_ones" class="form-label">
+                        Additional Guests
+                        <span class="limit-text">(up to {{.Invite.MaxPlusOnes}})</span>
+                    </label>
+                    
+                    <input
+                        type="number"
+                        id="plus_ones"
+                        name="plus_ones"
+                        min="0"
+                        max="{{.Invite.MaxPlusOnes}}"
+                        value="{{if .ExistingRSVP}}{{.ExistingRSVP.PlusOnes}}{{else}}0{{end}}"
+                        aria-describedby="plus_ones_help"
+                        class="number-input"
+                    />
+                    
+                    <small id="plus_ones_help" class="form-text">
+                        How many additional guests will you bring?
+                    </small>
+                    
+                    <div class="error-message" role="alert" aria-live="polite"></div>
+                </div>
+                {{end}}
+                {{end}}
+
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">
+                        {{if .ExistingRSVP}}Update RSVP{{else}}Submit RSVP{{end}}
+                    </button>
+                </div>
+            </form>
             {{end}}
             {{end}}
         {{end}}
     </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const responseInputs = document.querySelectorAll('input[name="response"]');
+            const plusOnesInput = document.getElementById('plus_ones');
+            const plusOnesGroup = document.querySelector('.plus-ones-group');
+            
+            if (!responseInputs.length || !plusOnesInput) return;
+            
+            function updatePlusOnesState() {
+                const selectedResponse = document.querySelector('input[name="response"]:checked');
+                
+                if (selectedResponse && selectedResponse.value === 'no') {
+                    plusOnesInput.value = '0';
+                    plusOnesInput.disabled = true;
+                    if (plusOnesGroup) {
+                        plusOnesGroup.classList.add('disabled');
+                    }
+                } else {
+                    plusOnesInput.disabled = false;
+                    if (plusOnesGroup) {
+                        plusOnesGroup.classList.remove('disabled');
+                    }
+                }
+            }
+            
+            responseInputs.forEach(function(input) {
+                input.addEventListener('change', updatePlusOnesState);
+            });
+            
+            plusOnesInput.addEventListener('input', function() {
+                const value = parseInt(this.value);
+                const max = parseInt(this.max);
+                const errorDiv = plusOnesGroup ? plusOnesGroup.querySelector('.error-message') : null;
+                
+                if (!errorDiv) return;
+                
+                if (isNaN(value) || value < 0) {
+                    errorDiv.textContent = 'Cannot be negative';
+                    this.setCustomValidity('Cannot be negative');
+                    this.classList.add('invalid');
+                } else if (value > max) {
+                    errorDiv.textContent = 'You can bring up to ' + max + ' guest(s)';
+                    this.setCustomValidity('Maximum ' + max + ' guests');
+                    this.classList.add('invalid');
+                } else {
+                    errorDiv.textContent = '';
+                    this.setCustomValidity('');
+                    this.classList.remove('invalid');
+                }
+            });
+            
+            updatePlusOnesState();
+        });
+    </script>
 </body>
 </html>
