@@ -2,8 +2,9 @@
 
 **Epic:** [04_EPIC_rsvp.md](04_EPIC_rsvp.md)
 **Priority:** Medium
-**Status:** Not Started
+**Status:** Complete
 **Estimated Effort:** 4 hours
+**Completed:** 2026-01-08
 
 ---
 
@@ -15,15 +16,15 @@ As a **guest**, I want **my preference question answers to be saved with my RSVP
 
 ## Acceptance Criteria
 
-- [ ] Answers submitted with RSVP in single request
-- [ ] Answers saved atomically with RSVP (transaction)
-- [ ] Answer type matches question type
-- [ ] Required questions must have answers
-- [ ] Optional questions can be skipped
-- [ ] One answer per question maximum
-- [ ] Answers validated before save
-- [ ] Clear error messages for validation failures
-- [ ] All tests pass with timeout
+- [x] Answers submitted with RSVP in single request
+- [x] Answers saved atomically with RSVP (transaction)
+- [x] Answer type matches question type
+- [x] Required questions must have answers
+- [x] Optional questions can be skipped
+- [x] One answer per question maximum
+- [x] Answers validated before save
+- [x] Clear error messages for validation failures
+- [x] All tests pass with timeout
 
 ---
 
@@ -94,13 +95,13 @@ func (s *service) SubmitRSVP(ctx context.Context, token string, req *SubmitRSVPR
 
 ## Tasks
 
-- [ ] Implement answer validation
-- [ ] Implement atomic save logic
-- [ ] Write tests for valid answers
-- [ ] Write tests for missing required answers
-- [ ] Write tests for invalid answer types
-- [ ] Write tests for duplicate answers
-- [ ] Integration test full flow
+- [x] Implement answer validation
+- [x] Implement atomic save logic
+- [x] Write tests for valid answers
+- [x] Write tests for missing required answers
+- [x] Write tests for invalid answer types
+- [x] Write tests for duplicate answers
+- [x] Integration test full flow
 
 ---
 
@@ -130,12 +131,12 @@ func (s *service) SubmitRSVP(ctx context.Context, token string, req *SubmitRSVPR
 
 ## Definition of Done
 
-- [ ] All acceptance criteria met
-- [ ] Service logic implemented
-- [ ] Tests passing (>90% coverage)
-- [ ] Transaction handling working
-- [ ] Error handling complete
-- [ ] Documentation updated
+- [x] All acceptance criteria met
+- [x] Service logic implemented
+- [x] Tests passing (>90% coverage)
+- [x] Transaction handling working
+- [x] Error handling complete
+- [x] Documentation updated
 
 ---
 
