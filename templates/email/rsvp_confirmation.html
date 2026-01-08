@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RSVP Confirmation</title>
+</head>
+<body style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f5f5f5;">
+    <div style="background: #28a745; color: white; padding: 20px; border-radius: 8px 8px 0 0; text-align: center;">
+        <h1 style="margin: 0; font-size: 24px;">✓ RSVP Confirmed</h1>
+    </div>
+    
+    <div style="background: white; padding: 20px; border-radius: 0 0 8px 8px;">
+        <p style="font-size: 16px; color: #333;">Hi {{.GuestName}},</p>
+        
+        <p style="font-size: 16px; color: #333;">Thank you for responding to the invitation!</p>
+        
+        <div style="background: #f8f9fa; border-left: 4px solid #28a745; padding: 15px; margin: 20px 0;">
+            <h2 style="margin-top: 0; font-size: 18px; color: #333;">Your Response</h2>
+            <p style="margin: 5px 0; font-size: 16px;"><strong>Status:</strong> {{.Response | title}}</p>
+            {{if gt .PlusOnes 0}}
+            <p style="margin: 5px 0; font-size: 16px;"><strong>Additional Guests:</strong> {{.PlusOnes}}</p>
+            {{end}}
+        </div>
+        
+        <div style="background: #f8f9fa; border-left: 4px solid #007bff; padding: 15px; margin: 20px 0;">
+            <h2 style="margin-top: 0; font-size: 18px; color: #333;">Event Details</h2>
+            <p style="margin: 5px 0; font-size: 16px;"><strong>{{.EventTitle}}</strong></p>
+            <p style="margin: 5px 0; font-size: 16px;">📅 {{.EventDate}}</p>
+            {{if .EventLocation}}
+            <p style="margin: 5px 0; font-size: 16px;">📍 {{.EventLocation}}</p>
+            {{end}}
+        </div>
+        
+        {{if .Answers}}
+        <div style="background: #f8f9fa; border-left: 4px solid #6c757d; padding: 15px; margin: 20px 0;">
+            <h2 style="margin-top: 0; font-size: 18px; color: #333;">Your Preferences</h2>
+            {{range .Answers}}
+            <p style="margin: 5px 0; font-size: 16px;"><strong>{{.Question}}:</strong> {{.Answer}}</p>
+            {{end}}
+        </div>
+        {{end}}
+        
+        <div style="text-align: center; margin: 30px 0;">
+            <a href="{{.UpdateURL}}" style="display: inline-block; background: #007bff; color: white; padding: 14px 28px; text-decoration: none; border-radius: 4px; font-size: 16px; font-weight: bold;">
+                Update RSVP
+            </a>
+        </div>
+        
+        <div style="background: #fff3cd; border: 1px solid #ffc107; padding: 15px; border-radius: 4px; margin: 20px 0;">
+            <p style="margin: 0; font-size: 14px; color: #856404;">
+                📎 A calendar file (event.ics) is attached to this email. Add it to your calendar so you don't forget!
+            </p>
+        </div>
+        
+        <div style="border-top: 1px solid #ddd; padding-top: 20px; margin-top: 30px;">
+            <p style="color: #666; font-size: 12px; text-align: center; margin: 0;">
+                This is an automated confirmation email from TinyRSVP.
+            </p>
+        </div>
+    </div>
+</body>
+</html>

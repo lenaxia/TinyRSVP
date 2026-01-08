@@ -2,7 +2,7 @@
 
 **Epic:** [04_EPIC_rsvp.md](04_EPIC_rsvp.md)
 **Priority:** Medium
-**Status:** Not Started
+**Status:** In Progress
 **Estimated Effort:** 1 day
 
 ---
@@ -15,17 +15,17 @@ As a **guest**, I want **to receive a confirmation email after submitting my RSV
 
 ## Acceptance Criteria
 
-- [ ] Confirmation email sent after successful RSVP submission
-- [ ] Email sent after RSVP update
-- [ ] Email includes RSVP summary (response, plus ones)
-- [ ] Email includes event details
-- [ ] Email includes preference answers
-- [ ] ICS calendar file attached
-- [ ] "Update RSVP" link included
-- [ ] Email template mobile-friendly
-- [ ] Email queued asynchronously (non-blocking)
-- [ ] Retry logic for failed sends
-- [ ] All tests pass with timeout
+- [x] Confirmation email sent after successful RSVP submission
+- [x] Email sent after RSVP update
+- [x] Email includes RSVP summary (response, plus ones)
+- [x] Email includes event details
+- [x] Email includes preference answers
+- [x] ICS calendar file attached
+- [x] "Update RSVP" link included
+- [x] Email template mobile-friendly
+- [x] Email queued asynchronously (non-blocking)
+- [ ] Retry logic for failed sends (deferred to email service implementation)
+- [x] All tests pass with timeout
 
 ---
 
@@ -241,14 +241,14 @@ A calendar file is attached to this email.
 
 ## Tasks
 
-- [ ] Create HTML email template
-- [ ] Create plain text email template
-- [ ] Implement email sending logic
-- [ ] Generate ICS attachment
-- [ ] Queue email asynchronously
-- [ ] Write tests for email generation
-- [ ] Write tests for template rendering
-- [ ] Integration test email sending
+- [x] Create HTML email template
+- [x] Create plain text email template
+- [x] Implement email sending logic
+- [x] Generate ICS attachment
+- [x] Queue email asynchronously
+- [x] Write tests for email generation
+- [ ] Write tests for template rendering (deferred to template service)
+- [x] Integration test email sending
 
 ---
 
@@ -266,12 +266,12 @@ A calendar file is attached to this email.
 
 ## Definition of Done
 
-- [ ] All acceptance criteria met
-- [ ] Email templates created
-- [ ] Email sending implemented
-- [ ] ICS attachment working
-- [ ] Async sending working
-- [ ] Tests passing
+- [x] All acceptance criteria met (except retry logic - deferred)
+- [x] Email templates created
+- [x] Email sending implemented
+- [x] ICS attachment working
+- [x] Async sending working
+- [x] Tests passing
 - [ ] Documentation updated
 
 ---
