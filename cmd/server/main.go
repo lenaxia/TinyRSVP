@@ -25,6 +25,7 @@ import (
 	"github.com/lenaxia/tinyrsvp/internal/middleware"
 	"github.com/lenaxia/tinyrsvp/internal/models"
 	"github.com/lenaxia/tinyrsvp/internal/rsvp"
+	"github.com/lenaxia/tinyrsvp/pkg/ics"
 	"github.com/lenaxia/tinyrsvp/pkg/token"
 )
 
@@ -114,6 +115,16 @@ func main() {
 	rsvpRepo := repositories.NewRSVPRepository(database)
 	answerRepo := repositories.NewAnswerRepository(database)
 	emailQueueRepo := repositories.NewEmailQueueRepository(database)
+
+	templateRenderer, err := email.NewTemplateRenderer(&email.TemplateConfig{
+		TemplateDir:  "templates/email",
+		CacheEnabled: true,
+	})
+	if err != nil {
+		logger.Error("Failed to initialize template renderer", "error", err)
+		os.Exit(1)
+	}
+	logger.Info("Email template renderer initialized")
 
 	sessionMgr := auth.NewSessionManager(sessionRepo, false)
 	userService := auth.NewUserService(userRepo)
@@ -280,8 +291,12 @@ func main() {
 	}
 	logger.Info("RSVP templates loaded successfully")
 
-	rsvpService := rsvp.NewService(database, inviteService, inviteRepo, eventRepo, rsvpRepo, answerRepo, questionRepo)
-	logger.Info("Initialized RSVP service")
+	icsGenerator := ics.NewGenerator()
+	emailService := email.NewConfirmationService(templateRenderer, emailQueueRepo, icsGenerator)
+	logger.Info("Initialized email confirmation service")
+
+	rsvpService := rsvp.NewServiceWithEmail(database, inviteService, inviteRepo, eventRepo, rsvpRepo, answerRepo, questionRepo, emailService)
+	logger.Info("Initialized RSVP service with email support")
 
 	rsvpHandler := handlers.NewRSVPHandler(inviteService, eventRepo, rsvpRepo, questionRepo)
 	rsvpHandler.SetTemplates(rsvpTemplates)

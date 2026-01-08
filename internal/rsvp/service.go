@@ -231,7 +231,7 @@ func (s *service) SubmitRSVP(ctx context.Context, token string, req *SubmitRSVPR
 			log.Printf("Failed to get answers for confirmation email: %v", err)
 		} else {
 			go func() {
-				if err := s.emailService.SendConfirmationEmail(context.Background(), rsvp, invite, event, answers); err != nil {
+				if err := s.emailService.SendConfirmationEmail(context.Background(), token, rsvp, invite, event, answers); err != nil {
 					log.Printf("Failed to send confirmation email: %v", err)
 				}
 			}()
@@ -435,7 +435,7 @@ func (s *service) UpdateRSVP(ctx context.Context, token string, req *SubmitRSVPR
 			log.Printf("Failed to get answers for confirmation email: %v", err)
 		} else {
 			go func() {
-				if err := s.emailService.SendConfirmationEmail(context.Background(), rsvp, invite, event, answers); err != nil {
+				if err := s.emailService.SendConfirmationEmail(context.Background(), token, rsvp, invite, event, answers); err != nil {
 					log.Printf("Failed to send confirmation email: %v", err)
 				}
 			}()

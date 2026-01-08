@@ -61,7 +61,7 @@ func TestService_SubmitRSVP_SendsConfirmationEmail(t *testing.T) {
 	var wg sync.WaitGroup
 	wg.Add(1)
 	mockEmail := &email.MockService{
-		SendConfirmationEmailFunc: func(ctx context.Context, rsvp *models.RSVP, invite *models.Invite, event *models.Event, answers []*models.RSVPAnswer) error {
+		SendConfirmationEmailFunc: func(ctx context.Context, token string, rsvp *models.RSVP, invite *models.Invite, event *models.Event, answers []*models.RSVPAnswer) error {
 			defer wg.Done()
 			return nil
 		},
@@ -140,7 +140,7 @@ func TestService_SubmitRSVP_EmailFailureDoesNotBlockRSVP(t *testing.T) {
 	var wg sync.WaitGroup
 	wg.Add(1)
 	mockEmail := &email.MockService{
-		SendConfirmationEmailFunc: func(ctx context.Context, rsvp *models.RSVP, invite *models.Invite, event *models.Event, answers []*models.RSVPAnswer) error {
+		SendConfirmationEmailFunc: func(ctx context.Context, token string, rsvp *models.RSVP, invite *models.Invite, event *models.Event, answers []*models.RSVPAnswer) error {
 			defer wg.Done()
 			return errors.New("email service unavailable")
 		},
@@ -228,7 +228,7 @@ func TestService_UpdateRSVP_SendsConfirmationEmail(t *testing.T) {
 	var wg sync.WaitGroup
 	wg.Add(1)
 	mockEmail := &email.MockService{
-		SendConfirmationEmailFunc: func(ctx context.Context, rsvp *models.RSVP, invite *models.Invite, event *models.Event, answers []*models.RSVPAnswer) error {
+		SendConfirmationEmailFunc: func(ctx context.Context, token string, rsvp *models.RSVP, invite *models.Invite, event *models.Event, answers []*models.RSVPAnswer) error {
 			defer wg.Done()
 			return nil
 		},
