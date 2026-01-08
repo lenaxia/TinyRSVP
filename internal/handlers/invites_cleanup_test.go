@@ -34,7 +34,7 @@ func (m *mockInviteServiceWithCleanup) GetInviteByID(ctx context.Context, id int
 	return nil, nil
 }
 
-func (m *mockInviteServiceWithCleanup) RevokeInvite(ctx context.Context, id int64) error {
+func (m *mockInviteServiceWithCleanup) RevokeInvite(ctx context.Context, req *invites.RevokeInviteRequest) error {
 	return nil
 }
 

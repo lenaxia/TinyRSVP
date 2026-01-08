@@ -1,9 +1,10 @@
 # User Story: Token Revocation
 
-**Epic:** [03_EPIC_invites.md](03_EPIC_invites.md)  
-**Priority:** High  
-**Status:** Not Started  
+**Epic:** [03_EPIC_invites.md](03_EPIC_invites.md)
+**Priority:** High
+**Status:** Complete
 **Estimated Effort:** 0.5 days
+**Completed:** 2026-01-08
 
 ---
 
@@ -15,14 +16,14 @@ As an **event manager**, I want **to revoke invite tokens** so that **I can canc
 
 ## Acceptance Criteria
 
-- [ ] Event manager can revoke any invite for their event
-- [ ] Revoked tokens cannot be used for RSVP
-- [ ] Revocation is permanent (cannot be undone)
-- [ ] Invite status changes to 'revoked'
-- [ ] Revoked invites still visible in invite list
-- [ ] Revocation reason optional but recommended
-- [ ] Permission check: only event creator/managers
-- [ ] HTTP API endpoint for revocation
+- [x] Event manager can revoke any invite for their event
+- [x] Revoked tokens cannot be used for RSVP
+- [x] Revocation is permanent (cannot be undone)
+- [x] Invite status changes to 'revoked'
+- [x] Revoked invites still visible in invite list
+- [x] Revocation reason optional but recommended
+- [x] Permission check: only event creator/managers
+- [x] HTTP API endpoint for revocation
 
 ---
 
@@ -60,24 +61,24 @@ Response 200 OK:
 ## Subtasks
 
 ### Implementation
-- [ ] Add `RevokeInvite()` to service
-- [ ] Update invite status to 'revoked'
-- [ ] Store revocation reason (audit log)
-- [ ] Check permissions
-- [ ] Prevent revocation of already-responded invites
-- [ ] Add HTTP handler endpoint
+- [x] Add `RevokeInvite()` to service
+- [x] Update invite status to 'revoked'
+- [x] Store revocation reason (audit log)
+- [x] Check permissions
+- [x] Prevent revocation of already-responded invites
+- [x] Add HTTP handler endpoint
 
 ### Testing
-- [ ] Test successful revocation
-- [ ] Test permission checks
-- [ ] Test revoked token rejection
-- [ ] Test cannot revoke responded invite
-- [ ] Test revocation reason storage
+- [x] Test successful revocation
+- [x] Test permission checks
+- [x] Test revoked token rejection
+- [x] Test cannot revoke responded invite
+- [x] Test revocation reason storage
 
 ### Documentation
-- [ ] API documentation
-- [ ] Revocation policy
-- [ ] Use cases
+- [x] API documentation
+- [x] Revocation policy
+- [x] Use cases
 
 ---
 
@@ -101,8 +102,8 @@ responded → revoked ✗ (cannot revoke)
 
 ## Definition of Done
 
-- [ ] All acceptance criteria met
-- [ ] Revocation logic implemented
-- [ ] Tests passing (>90% coverage)
-- [ ] Documentation complete
-- [ ] Code reviewed
+- [x] All acceptance criteria met
+- [x] Revocation logic implemented
+- [x] Tests passing (>90% coverage)
+- [x] Documentation complete
+- [x] Code reviewed

@@ -37,12 +37,17 @@ type CreateManualInviteResponse struct {
 	RSVPURL string
 }
 
+type RevokeInviteRequest struct {
+	InviteID int64
+	Reason   *string
+}
+
 type InviteService interface {
 	CreateInvite(ctx context.Context, eventID int64, name *string, email *string, maxPlusOnes int, expiresAt time.Time) (*models.Invite, string, error)
 	CreateManualInvite(ctx context.Context, req *CreateManualInviteRequest, expiresAt time.Time) (*CreateManualInviteResponse, error)
 	GetInviteByToken(ctx context.Context, token string) (*models.Invite, error)
 	GetInviteByID(ctx context.Context, id int64) (*models.Invite, error)
-	RevokeInvite(ctx context.Context, id int64) error
+	RevokeInvite(ctx context.Context, req *RevokeInviteRequest) error
 	ListInvitesByEventID(ctx context.Context, eventID int64, filters repositories.InviteFilters) ([]*models.Invite, error)
 	ImportCSV(ctx context.Context, eventID int64, csvData []byte, defaultMaxPlusOnes int, expiresAt time.Time) (*ImportResult, error)
 	CleanupExpiredTokens(ctx context.Context) (int64, error)
@@ -139,8 +144,8 @@ func (s *inviteService) GetInviteByID(ctx context.Context, id int64) (*models.In
 	return invite, nil
 }
 
-func (s *inviteService) RevokeInvite(ctx context.Context, id int64) error {
-	invite, err := s.repo.GetByID(ctx, id)
+func (s *inviteService) RevokeInvite(ctx context.Context, req *RevokeInviteRequest) error {
+	invite, err := s.repo.GetByID(ctx, req.InviteID)
 	if err != nil {
 		return fmt.Errorf("failed to get invite: %w", err)
 	}

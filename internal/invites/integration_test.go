@@ -229,7 +229,10 @@ func TestIntegration_FullInviteWorkflow(t *testing.T) {
 		})
 
 		t.Run("revoke invite", func(t *testing.T) {
-			err := service.RevokeInvite(ctx, invite.ID)
+			req := &RevokeInviteRequest{
+				InviteID: invite.ID,
+			}
+			err := service.RevokeInvite(ctx, req)
 			if err != nil {
 				t.Fatalf("RevokeInvite() error = %v", err)
 			}
@@ -245,7 +248,10 @@ func TestIntegration_FullInviteWorkflow(t *testing.T) {
 		})
 
 		t.Run("cannot revoke already revoked invite", func(t *testing.T) {
-			err := service.RevokeInvite(ctx, invite.ID)
+			req := &RevokeInviteRequest{
+				InviteID: invite.ID,
+			}
+			err := service.RevokeInvite(ctx, req)
 			if err == nil {
 				t.Error("expected error when revoking already revoked invite")
 			}

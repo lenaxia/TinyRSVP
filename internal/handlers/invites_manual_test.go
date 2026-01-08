@@ -41,7 +41,7 @@ func (m *mockManualInviteService) GetInviteByID(ctx context.Context, id int64) (
 	return nil, errors.New("not implemented")
 }
 
-func (m *mockManualInviteService) RevokeInvite(ctx context.Context, id int64) error {
+func (m *mockManualInviteService) RevokeInvite(ctx context.Context, req *invites.RevokeInviteRequest) error {
 	return errors.New("not implemented")
 }
 

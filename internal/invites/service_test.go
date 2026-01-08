@@ -527,7 +527,95 @@ func TestInviteService_RevokeInvite(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			service := NewInviteService(tt.mockGen, tt.mockRepo)
-			err := service.RevokeInvite(ctx, tt.inviteID)
+			req := &RevokeInviteRequest{
+				InviteID: tt.inviteID,
+			}
+			err := service.RevokeInvite(ctx, req)
+
+			if (err != nil) != tt.wantErr {
+				t.Errorf("RevokeInvite() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+
+			if tt.wantErr && err != nil {
+				if !strings.Contains(err.Error(), tt.errContains) {
+					t.Errorf("RevokeInvite() error = %v, want error containing %q", err, tt.errContains)
+				}
+			}
+		})
+	}
+}
+
+func TestInviteService_RevokeInvite_WithReason(t *testing.T) {
+	ctx := context.Background()
+	email := "test@example.com"
+	reason := "Wrong email address"
+
+	tests := []struct {
+		name        string
+		inviteID    int64
+		reason      *string
+		mockGen     *mockGenerator
+		mockRepo    *mockInviteRepository
+		wantErr     bool
+		errContains string
+	}{
+		{
+			name:     "successful revocation with reason",
+			inviteID: 1,
+			reason:   &reason,
+			mockGen:  &mockGenerator{},
+			mockRepo: &mockInviteRepository{
+				getByIDFunc: func(ctx context.Context, id int64) (*models.Invite, error) {
+					return &models.Invite{
+						ID:          1,
+						EventID:     1,
+						Email:       &email,
+						TokenHash:   strings.Repeat("b", 43),
+						MaxPlusOnes: 2,
+						Status:      models.InviteStatusDraft,
+						ExpiresAt:   time.Now().Add(30 * 24 * time.Hour),
+					}, nil
+				},
+				updateFunc: func(ctx context.Context, invite *models.Invite) error {
+					if invite.Status != models.InviteStatusRevoked {
+						t.Errorf("Status = %s, want %s", invite.Status, models.InviteStatusRevoked)
+					}
+					return nil
+				},
+			},
+			wantErr: false,
+		},
+		{
+			name:     "successful revocation without reason",
+			inviteID: 1,
+			reason:   nil,
+			mockGen:  &mockGenerator{},
+			mockRepo: &mockInviteRepository{
+				getByIDFunc: func(ctx context.Context, id int64) (*models.Invite, error) {
+					return &models.Invite{
+						ID:          1,
+						EventID:     1,
+						Email:       &email,
+						TokenHash:   strings.Repeat("b", 43),
+						MaxPlusOnes: 2,
+						Status:      models.InviteStatusDraft,
+						ExpiresAt:   time.Now().Add(30 * 24 * time.Hour),
+					}, nil
+				},
+			},
+			wantErr: false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			service := NewInviteService(tt.mockGen, tt.mockRepo)
+			req := &RevokeInviteRequest{
+				InviteID: tt.inviteID,
+				Reason:   tt.reason,
+			}
+			err := service.RevokeInvite(ctx, req)
 
 			if (err != nil) != tt.wantErr {
 				t.Errorf("RevokeInvite() error = %v, wantErr %v", err, tt.wantErr)

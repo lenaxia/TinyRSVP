@@ -44,7 +44,7 @@ func (m *mockImportService) GetInviteByID(ctx context.Context, id int64) (*model
 	return nil, nil
 }
 
-func (m *mockImportService) RevokeInvite(ctx context.Context, id int64) error {
+func (m *mockImportService) RevokeInvite(ctx context.Context, req *invites.RevokeInviteRequest) error {
 	return nil
 }
 
