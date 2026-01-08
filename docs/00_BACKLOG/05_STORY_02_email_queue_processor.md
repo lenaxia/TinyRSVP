@@ -2,7 +2,7 @@
 
 **Epic:** [05_EPIC_email.md](05_EPIC_email.md)
 **Priority:** High
-**Status:** Not Started
+**Status:** Complete
 **Estimated Effort:** 2 days
 
 ---
@@ -15,17 +15,17 @@ As a **system**, I want **a background worker to process the email queue** so th
 
 ## Acceptance Criteria
 
-- [ ] Background worker runs on configurable interval (default 60 seconds)
-- [ ] Processes pending emails in batches
-- [ ] Respects rate limiting (max emails per minute)
-- [ ] Updates email status atomically (pending → sending → sent/failed)
-- [ ] Implements exponential backoff for retries
-- [ ] Handles SMTP errors gracefully
-- [ ] Prevents duplicate sends via optimistic locking
-- [ ] Graceful shutdown on application stop
-- [ ] Logs processing activity
-- [ ] All tests pass with timeout
-- [ ] Integration tests with mock SMTP
+- [x] Background worker runs on configurable interval (default 60 seconds)
+- [x] Processes pending emails in batches
+- [x] Respects rate limiting (max emails per minute)
+- [x] Updates email status atomically (pending → sending → sent/failed)
+- [x] Implements exponential backoff for retries
+- [x] Handles SMTP errors gracefully
+- [x] Prevents duplicate sends via optimistic locking
+- [x] Graceful shutdown on application stop
+- [x] Logs processing activity
+- [x] All tests pass with timeout
+- [x] Integration tests with mock SMTP
 
 ---
 
@@ -262,47 +262,47 @@ func min(a, b int) int {
 ## Tasks
 
 ### Phase 1: Interface & Structure (TDD)
-- [ ] Define QueueProcessor interface
-- [ ] Define configuration struct
-- [ ] Write test for processor initialization
-- [ ] Implement processor struct
-- [ ] Write test for Start/Stop lifecycle
-- [ ] Implement Start/Stop methods
+- [x] Define QueueProcessor interface
+- [x] Define configuration struct
+- [x] Write test for processor initialization
+- [x] Implement processor struct
+- [x] Write test for Start/Stop lifecycle
+- [x] Implement Start/Stop methods
 
 ### Phase 2: Batch Processing (TDD)
-- [ ] Write test for ProcessBatch with no emails
-- [ ] Write test for ProcessBatch with emails
-- [ ] Implement ProcessBatch method
-- [ ] Write test for rate limit respect
-- [ ] Implement rate limit checking
-- [ ] Write test for batch size limiting
-- [ ] Implement batch size limiting
+- [x] Write test for ProcessBatch with no emails
+- [x] Write test for ProcessBatch with emails
+- [x] Implement ProcessBatch method
+- [x] Write test for rate limit respect
+- [x] Implement rate limit checking
+- [x] Write test for batch size limiting
+- [x] Implement batch size limiting
 
 ### Phase 3: Email Processing (TDD)
-- [ ] Write test for successful email send
-- [ ] Implement processEmail method
-- [ ] Write test for send failure handling
-- [ ] Implement error handling
-- [ ] Write test for retry scheduling
-- [ ] Implement retry logic
-- [ ] Write test for max attempts reached
-- [ ] Implement permanent failure handling
+- [x] Write test for successful email send
+- [x] Implement processEmail method
+- [x] Write test for send failure handling
+- [x] Implement error handling
+- [x] Write test for retry scheduling
+- [x] Implement retry logic
+- [x] Write test for max attempts reached
+- [x] Implement permanent failure handling
 
 ### Phase 4: Concurrency & Safety (TDD)
-- [ ] Write test for optimistic locking
-- [ ] Implement status update with locking
-- [ ] Write test for concurrent processing
-- [ ] Verify no duplicate sends
-- [ ] Write test for graceful shutdown
-- [ ] Implement shutdown with in-flight handling
+- [x] Write test for optimistic locking
+- [x] Implement status update with locking
+- [x] Write test for concurrent processing
+- [x] Verify no duplicate sends
+- [x] Write test for graceful shutdown
+- [x] Implement shutdown with in-flight handling
 
 ### Phase 5: Integration Testing
-- [ ] Test with mock SMTP sender
-- [ ] Test with real database
-- [ ] Test full retry cycle
-- [ ] Test rate limiting enforcement
-- [ ] Test graceful shutdown
-- [ ] Test error recovery
+- [x] Test with mock SMTP sender
+- [x] Test with real database
+- [x] Test full retry cycle
+- [x] Test rate limiting enforcement
+- [x] Test graceful shutdown
+- [x] Test error recovery
 
 ---
 
@@ -321,15 +321,15 @@ func min(a, b int) int {
 
 ## Definition of Done
 
-- [ ] All acceptance criteria met
-- [ ] Interface defined and documented
-- [ ] Implementation complete
-- [ ] All unit tests passing
-- [ ] Integration tests passing
-- [ ] Concurrency tests passing
-- [ ] Graceful shutdown working
-- [ ] Code reviewed
-- [ ] Documentation updated
+- [x] All acceptance criteria met
+- [x] Interface defined and documented
+- [x] Implementation complete
+- [x] All unit tests passing
+- [x] Integration tests passing
+- [x] Concurrency tests passing
+- [x] Graceful shutdown working
+- [x] Code reviewed
+- [x] Documentation updated
 
 ---
 
