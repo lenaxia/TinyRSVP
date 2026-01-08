@@ -131,10 +131,11 @@ func setupTestDB(t *testing.T) db.Database {
 func createTestEvent(t *testing.T, database db.Database) int64 {
 	t.Helper()
 
+	slug := "test-event-" + time.Now().Format("20060102150405.000000")
 	result, err := database.Exec(context.Background(), `
 		INSERT INTO events (title, slug, description, location, start_time, end_time, timezone, status)
 		VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-	`, "Test Event", "test-event", "Test Description", "Test Location",
+	`, "Test Event", slug, "Test Description", "Test Location",
 		time.Now().Add(7*24*time.Hour), time.Now().Add(8*24*time.Hour), "America/Los_Angeles", "published")
 
 	if err != nil {

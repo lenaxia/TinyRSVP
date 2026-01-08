@@ -468,3 +468,256 @@ func TestListInvitesHandler_DefaultValues(t *testing.T) {
 		t.Errorf("expected status 200, got %d: %s", rr.Code, rr.Body.String())
 	}
 }
+
+func TestListInvitesHandler_ServiceValidationError(t *testing.T) {
+	mockService := &mockListInviteService{
+		listInvitesFunc: func(ctx context.Context, req *invites.ListInvitesRequest) (*invites.ListInvitesResponse, error) {
+			return nil, &models.ValidationError{
+				Field:   "status",
+				Message: "invalid status value",
+			}
+		},
+	}
+
+	mockEventRepo := &mockListEventRepository{
+		getByIDFunc: func(ctx context.Context, id int64) (*models.Event, error) {
+			return &models.Event{
+				ID:        1,
+				Title:     "Test Event",
+				Status:    models.EventStatusPublished,
+				CreatedBy: 1,
+			}, nil
+		},
+	}
+
+	handler := NewListInviteHandlers(mockService, mockEventRepo)
+
+	r := chi.NewRouter()
+	handler.RegisterRoutes(r)
+
+	req := httptest.NewRequest(http.MethodGet, "/api/events/1/invites?status=invalid", nil)
+	user := &models.User{ID: 1, Role: models.RoleAdmin}
+	ctx := auth.WithUser(req.Context(), user)
+	req = req.WithContext(ctx)
+
+	rr := httptest.NewRecorder()
+	r.ServeHTTP(rr, req)
+
+	if rr.Code != http.StatusBadRequest {
+		t.Errorf("expected status 400, got %d: %s", rr.Code, rr.Body.String())
+	}
+}
+
+func TestListInvitesHandler_ServiceInternalError(t *testing.T) {
+	mockService := &mockListInviteService{
+		listInvitesFunc: func(ctx context.Context, req *invites.ListInvitesRequest) (*invites.ListInvitesResponse, error) {
+			return nil, context.DeadlineExceeded
+		},
+	}
+
+	mockEventRepo := &mockListEventRepository{
+		getByIDFunc: func(ctx context.Context, id int64) (*models.Event, error) {
+			return &models.Event{
+				ID:        1,
+				Title:     "Test Event",
+				Status:    models.EventStatusPublished,
+				CreatedBy: 1,
+			}, nil
+		},
+	}
+
+	handler := NewListInviteHandlers(mockService, mockEventRepo)
+
+	r := chi.NewRouter()
+	handler.RegisterRoutes(r)
+
+	req := httptest.NewRequest(http.MethodGet, "/api/events/1/invites", nil)
+	user := &models.User{ID: 1, Role: models.RoleAdmin}
+	ctx := auth.WithUser(req.Context(), user)
+	req = req.WithContext(ctx)
+
+	rr := httptest.NewRecorder()
+	r.ServeHTTP(rr, req)
+
+	if rr.Code != http.StatusInternalServerError {
+		t.Errorf("expected status 500, got %d: %s", rr.Code, rr.Body.String())
+	}
+}
+
+func TestListInvitesHandler_ResponseJSONStructure(t *testing.T) {
+	email := "test@example.com"
+	name := "Test User"
+	now := time.Now()
+	sentAt := now.Add(-1 * time.Hour)
+
+	mockService := &mockListInviteService{
+		listInvitesFunc: func(ctx context.Context, req *invites.ListInvitesRequest) (*invites.ListInvitesResponse, error) {
+			return &invites.ListInvitesResponse{
+				Invites: []*models.Invite{
+					{
+						ID:          1,
+						EventID:     1,
+						Email:       &email,
+						Name:        &name,
+						TokenHash:   "hash123",
+						MaxPlusOnes: 2,
+						Status:      models.InviteStatusSent,
+						SentAt:      &sentAt,
+						ExpiresAt:   now.Add(30 * 24 * time.Hour),
+						CreatedAt:   now,
+						UpdatedAt:   now,
+					},
+				},
+				Total: 1,
+				Stats: &repositories.InviteStats{
+					Total: 1,
+					Sent:  1,
+				},
+			}, nil
+		},
+	}
+
+	mockEventRepo := &mockListEventRepository{
+		getByIDFunc: func(ctx context.Context, id int64) (*models.Event, error) {
+			return &models.Event{
+				ID:        1,
+				Title:     "Test Event",
+				Status:    models.EventStatusPublished,
+				CreatedBy: 1,
+			}, nil
+		},
+	}
+
+	handler := NewListInviteHandlers(mockService, mockEventRepo)
+
+	r := chi.NewRouter()
+	handler.RegisterRoutes(r)
+
+	req := httptest.NewRequest(http.MethodGet, "/api/events/1/invites", nil)
+	user := &models.User{ID: 1, Role: models.RoleAdmin}
+	ctx := auth.WithUser(req.Context(), user)
+	req = req.WithContext(ctx)
+
+	rr := httptest.NewRecorder()
+	r.ServeHTTP(rr, req)
+
+	if rr.Code != http.StatusOK {
+		t.Fatalf("expected status 200, got %d: %s", rr.Code, rr.Body.String())
+	}
+
+	var response invites.ListInvitesResponse
+	if err := json.NewDecoder(rr.Body).Decode(&response); err != nil {
+		t.Fatalf("failed to decode response: %v", err)
+	}
+
+	if len(response.Invites) != 1 {
+		t.Errorf("expected 1 invite, got %d", len(response.Invites))
+	}
+
+	if response.Total != 1 {
+		t.Errorf("expected total 1, got %d", response.Total)
+	}
+
+	if response.Stats == nil {
+		t.Fatal("expected stats, got nil")
+	}
+
+	if response.Stats.Total != 1 {
+		t.Errorf("expected stats total 1, got %d", response.Stats.Total)
+	}
+
+	if response.Stats.Sent != 1 {
+		t.Errorf("expected stats sent 1, got %d", response.Stats.Sent)
+	}
+
+	invite := response.Invites[0]
+	if invite.ID != 1 {
+		t.Errorf("expected invite ID 1, got %d", invite.ID)
+	}
+	if invite.Email == nil || *invite.Email != email {
+		t.Errorf("expected email %s, got %v", email, invite.Email)
+	}
+	if invite.Name == nil || *invite.Name != name {
+		t.Errorf("expected name %s, got %v", name, invite.Name)
+	}
+	if invite.Status != models.InviteStatusSent {
+		t.Errorf("expected status %s, got %s", models.InviteStatusSent, invite.Status)
+	}
+}
+
+func TestListInvitesHandler_LimitBoundaryValues(t *testing.T) {
+	tests := []struct {
+		name       string
+		limit      string
+		wantStatus int
+		wantLimit  int
+	}{
+		{
+			name:       "limit 1",
+			limit:      "1",
+			wantStatus: http.StatusOK,
+			wantLimit:  1,
+		},
+		{
+			name:       "limit 100",
+			limit:      "100",
+			wantStatus: http.StatusOK,
+			wantLimit:  100,
+		},
+		{
+			name:       "limit 0",
+			limit:      "0",
+			wantStatus: http.StatusBadRequest,
+		},
+		{
+			name:       "limit 101",
+			limit:      "101",
+			wantStatus: http.StatusBadRequest,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mockService := &mockListInviteService{
+				listInvitesFunc: func(ctx context.Context, req *invites.ListInvitesRequest) (*invites.ListInvitesResponse, error) {
+					if tt.wantStatus == http.StatusOK && req.Limit != tt.wantLimit {
+						t.Errorf("expected limit %d, got %d", tt.wantLimit, req.Limit)
+					}
+					return &invites.ListInvitesResponse{
+						Invites: []*models.Invite{},
+						Total:   0,
+						Stats:   &repositories.InviteStats{},
+					}, nil
+				},
+			}
+
+			mockEventRepo := &mockListEventRepository{
+				getByIDFunc: func(ctx context.Context, id int64) (*models.Event, error) {
+					return &models.Event{
+						ID:        1,
+						Title:     "Test Event",
+						Status:    models.EventStatusPublished,
+						CreatedBy: 1,
+					}, nil
+				},
+			}
+
+			handler := NewListInviteHandlers(mockService, mockEventRepo)
+
+			r := chi.NewRouter()
+			handler.RegisterRoutes(r)
+
+			req := httptest.NewRequest(http.MethodGet, "/api/events/1/invites?limit="+tt.limit, nil)
+			user := &models.User{ID: 1, Role: models.RoleAdmin}
+			ctx := auth.WithUser(req.Context(), user)
+			req = req.WithContext(ctx)
+
+			rr := httptest.NewRecorder()
+			r.ServeHTTP(rr, req)
+
+			if rr.Code != tt.wantStatus {
+				t.Errorf("expected status %d, got %d: %s", tt.wantStatus, rr.Code, rr.Body.String())
+			}
+		})
+	}
+}

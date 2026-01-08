@@ -130,6 +130,39 @@ func (m *mockInviteRepository) CountByEventID(ctx context.Context, eventID int64
 	return count, nil
 }
 
+func (m *mockInviteRepository) CountByEventIDWithFilters(ctx context.Context, eventID int64, filters repositories.InviteFilters) (int, error) {
+	count := 0
+	for _, invite := range m.invites {
+		if invite.EventID != eventID {
+			continue
+		}
+		
+		if filters.Status != nil && invite.Status != *filters.Status {
+			continue
+		}
+		
+		if filters.Unsubscribed != nil && invite.Unsubscribed != *filters.Unsubscribed {
+			continue
+		}
+		
+		if filters.EmailInvalid != nil && invite.EmailInvalid != *filters.EmailInvalid {
+			continue
+		}
+		
+		if filters.Search != nil && *filters.Search != "" {
+			searchLower := strings.ToLower(*filters.Search)
+			emailMatch := invite.Email != nil && strings.Contains(strings.ToLower(*invite.Email), searchLower)
+			nameMatch := invite.Name != nil && strings.Contains(strings.ToLower(*invite.Name), searchLower)
+			if !emailMatch && !nameMatch {
+				continue
+			}
+		}
+		
+		count++
+	}
+	return count, nil
+}
+
 func (m *mockInviteRepository) GetStats(ctx context.Context, eventID int64) (*repositories.InviteStats, error) {
 	if m.getStatsFunc != nil {
 		return m.getStatsFunc(ctx, eventID)

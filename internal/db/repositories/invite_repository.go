@@ -21,6 +21,7 @@ type InviteRepository interface {
 	Delete(ctx context.Context, id int64) error
 	ListByEventID(ctx context.Context, eventID int64, filters InviteFilters) ([]*models.Invite, error)
 	CountByEventID(ctx context.Context, eventID int64) (int, error)
+	CountByEventIDWithFilters(ctx context.Context, eventID int64, filters InviteFilters) (int, error)
 	GetStats(ctx context.Context, eventID int64) (*InviteStats, error)
 	FindDuplicateEmails(ctx context.Context, eventID int64, emails []string) ([]string, error)
 	DeleteExpired(ctx context.Context, before time.Time) (int64, error)
@@ -450,15 +451,49 @@ func (r *inviteRepository) CountByEventID(ctx context.Context, eventID int64) (i
 	return count, nil
 }
 
+func (r *inviteRepository) CountByEventIDWithFilters(ctx context.Context, eventID int64, filters InviteFilters) (int, error) {
+	query := `SELECT COUNT(*) FROM invites WHERE event_id = ?`
+	args := []interface{}{eventID}
+
+	if filters.Status != nil {
+		query += " AND status = ?"
+		args = append(args, *filters.Status)
+	}
+
+	if filters.Unsubscribed != nil {
+		query += " AND unsubscribed = ?"
+		args = append(args, *filters.Unsubscribed)
+	}
+
+	if filters.EmailInvalid != nil {
+		query += " AND email_invalid = ?"
+		args = append(args, *filters.EmailInvalid)
+	}
+
+	if filters.Search != nil && *filters.Search != "" {
+		query += " AND (LOWER(email) LIKE LOWER(?) OR LOWER(name) LIKE LOWER(?))"
+		searchPattern := "%" + *filters.Search + "%"
+		args = append(args, searchPattern, searchPattern)
+	}
+
+	var count int
+	err := r.db.QueryRow(ctx, query, args...).Scan(&count)
+	if err != nil {
+		return 0, fmt.Errorf("failed to count invites with filters: %w", err)
+	}
+
+	return count, nil
+}
+
 func (r *inviteRepository) GetStats(ctx context.Context, eventID int64) (*InviteStats, error) {
 	query := `
-		SELECT 
+		SELECT
 			COUNT(*) as total,
-			SUM(CASE WHEN status = 'draft' THEN 1 ELSE 0 END) as draft,
-			SUM(CASE WHEN status = 'sent' THEN 1 ELSE 0 END) as sent,
-			SUM(CASE WHEN status = 'viewed' THEN 1 ELSE 0 END) as viewed,
-			SUM(CASE WHEN status = 'responded' THEN 1 ELSE 0 END) as responded,
-			SUM(CASE WHEN status = 'revoked' THEN 1 ELSE 0 END) as revoked
+			COALESCE(SUM(CASE WHEN status = 'draft' THEN 1 ELSE 0 END), 0) as draft,
+			COALESCE(SUM(CASE WHEN status = 'sent' THEN 1 ELSE 0 END), 0) as sent,
+			COALESCE(SUM(CASE WHEN status = 'viewed' THEN 1 ELSE 0 END), 0) as viewed,
+			COALESCE(SUM(CASE WHEN status = 'responded' THEN 1 ELSE 0 END), 0) as responded,
+			COALESCE(SUM(CASE WHEN status = 'revoked' THEN 1 ELSE 0 END), 0) as revoked
 		FROM invites
 		WHERE event_id = ?
 	`

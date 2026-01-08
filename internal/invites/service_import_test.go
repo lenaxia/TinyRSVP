@@ -53,6 +53,10 @@ func (m *mockInviteRepo) CountByEventID(ctx context.Context, eventID int64) (int
 	return 0, nil
 }
 
+func (m *mockInviteRepo) CountByEventIDWithFilters(ctx context.Context, eventID int64, filters repositories.InviteFilters) (int, error) {
+	return 0, nil
+}
+
 func (m *mockInviteRepo) GetStats(ctx context.Context, eventID int64) (*repositories.InviteStats, error) {
 	return nil, nil
 }

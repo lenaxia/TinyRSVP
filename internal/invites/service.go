@@ -313,7 +313,7 @@ func (s *inviteService) ListInvites(ctx context.Context, req *ListInvitesRequest
 		return nil, fmt.Errorf("failed to list invites: %w", err)
 	}
 
-	total, err := s.repo.CountByEventID(ctx, req.EventID)
+	total, err := s.repo.CountByEventIDWithFilters(ctx, req.EventID, filters)
 	if err != nil {
 		return nil, fmt.Errorf("failed to count invites: %w", err)
 	}
