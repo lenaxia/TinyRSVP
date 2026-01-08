@@ -154,6 +154,8 @@ func (p *queueProcessor) processEmail(ctx context.Context, email *models.EmailQu
 		return p.handleSendError(ctx, email, err)
 	}
 
+	p.rateLimiter.Record()
+
 	if err := p.repo.MarkSent(ctx, email.ID); err != nil {
 		log.Printf("Warning: email sent but failed to mark as sent: %v", err)
 	}

@@ -404,3 +404,73 @@ func (s *slowSender) TestConnection(ctx context.Context) error {
 func (s *slowSender) Close() error {
 	return nil
 }
+
+func TestProcessorIntegration_RateLimiting(t *testing.T) {
+	database := setupTestDatabase(t)
+	defer database.Close()
+
+	repo := repositories.NewEmailQueueRepository(database)
+	sender := &trackingSender{sent: make([]string, 0)}
+	limiter := NewRateLimiter(2)
+
+	processor := NewQueueProcessor(repo, sender, limiter, 10, 100*time.Millisecond)
+
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	go func() {
+		processor.Start(ctx)
+	}()
+
+	for i := 0; i < 5; i++ {
+		email := &models.EmailQueue{
+			ToEmail:      "test@example.com",
+			Subject:      "Test Subject",
+			BodyText:     "Test body",
+			Status:       models.EmailStatusPending,
+			ScheduledFor: time.Now(),
+			MaxAttempts:  3,
+			Attempts:     0,
+		}
+
+		err := repo.Create(context.Background(), email)
+		if err != nil {
+			t.Fatalf("Failed to create email %d: %v", i, err)
+		}
+	}
+
+	time.Sleep(300 * time.Millisecond)
+
+	sentCount := sender.getSentCount()
+	if sentCount != 2 {
+		t.Errorf("Sent count = %d, want 2 (rate limit should block remaining)", sentCount)
+	}
+
+	availableSlots := limiter.AvailableSlots()
+	if availableSlots != 0 {
+		t.Errorf("AvailableSlots() = %d, want 0 (limit should be reached)", availableSlots)
+	}
+
+	pendingEmails, err := repo.GetPending(context.Background(), 10)
+	if err != nil {
+		t.Fatalf("Failed to get pending emails: %v", err)
+	}
+
+	if len(pendingEmails) != 3 {
+		t.Errorf("Pending emails = %d, want 3 (remaining should be rescheduled)", len(pendingEmails))
+	}
+
+	cutoff := time.Now().Add(-5 * time.Second)
+	for _, email := range pendingEmails {
+		if email.ScheduledFor.Before(cutoff) {
+			t.Errorf("Rescheduled email scheduled for %v, which is more than 5 seconds in the past", email.ScheduledFor)
+		}
+	}
+
+	cancel()
+	stopCtx, stopCancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer stopCancel()
+	if err := processor.Stop(stopCtx); err != nil {
+		t.Errorf("Stop() error = %v", err)
+	}
+}

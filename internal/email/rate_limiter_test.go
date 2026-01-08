@@ -84,7 +84,11 @@ func TestRateLimiter_WaitTime_AtLimit(t *testing.T) {
 }
 
 func TestRateLimiter_WindowSliding(t *testing.T) {
-	limiter := NewRateLimiter(2)
+	limiter := &rateLimiter{
+		maxPerMinute: 2,
+		windowSize:   2 * time.Second,
+		timestamps:   make([]time.Time, 0, 2),
+	}
 
 	limiter.Record()
 	limiter.Record()
@@ -93,7 +97,7 @@ func TestRateLimiter_WindowSliding(t *testing.T) {
 		t.Error("Allow() = true when limit reached, want false")
 	}
 
-	time.Sleep(61 * time.Second)
+	time.Sleep(2100 * time.Millisecond)
 
 	if !limiter.Allow() {
 		t.Error("Allow() = false after window expired, want true")

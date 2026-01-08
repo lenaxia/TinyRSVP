@@ -405,7 +405,7 @@ func main() {
 	}
 	logger.Info("SMTP connection test passed")
 	
-	rateLimiter := email.NewStubRateLimiter()
+	rateLimiter := email.NewRateLimiter(50)
 	emailProcessor := email.NewQueueProcessor(
 		emailQueueRepo,
 		smtpSender,
