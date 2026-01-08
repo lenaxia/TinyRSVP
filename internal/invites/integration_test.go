@@ -470,3 +470,185 @@ func TestIntegration_EmailValidation(t *testing.T) {
 		})
 	}
 }
+
+func TestIntegration_InviteStatusTracking(t *testing.T) {
+	db := setupTestDB(t)
+	defer db.Close()
+
+	eventID := createTestEvent(t, db)
+
+	secret := []byte("test-secret-key-32-bytes-long!")
+	generator := token.NewGenerator(secret)
+	repo := repositories.NewInviteRepository(db)
+	service := NewInviteService(generator, repo)
+
+	ctx := context.Background()
+	email := "test@example.com"
+	name := "Test User"
+	expiresAt := time.Now().Add(30 * 24 * time.Hour)
+
+	invite, plainToken, err := service.CreateInvite(ctx, eventID, &name, &email, 2, expiresAt)
+	if err != nil {
+		t.Fatalf("CreateInvite() error = %v", err)
+	}
+
+	if invite.Status != models.InviteStatusDraft {
+		t.Errorf("initial status = %s, want %s", invite.Status, models.InviteStatusDraft)
+	}
+
+	t.Run("mark invite as sent", func(t *testing.T) {
+		err := service.MarkInviteSent(ctx, invite.ID)
+		if err != nil {
+			t.Fatalf("MarkInviteSent() error = %v", err)
+		}
+
+		updated, err := service.GetInviteByID(ctx, invite.ID)
+		if err != nil {
+			t.Fatalf("GetInviteByID() error = %v", err)
+		}
+
+		if updated.Status != models.InviteStatusSent {
+			t.Errorf("status = %s, want %s", updated.Status, models.InviteStatusSent)
+		}
+
+		if updated.SentAt == nil {
+			t.Error("SentAt is nil, want timestamp")
+		}
+	})
+
+	t.Run("mark invite as viewed", func(t *testing.T) {
+		err := service.MarkInviteViewed(ctx, invite.ID)
+		if err != nil {
+			t.Fatalf("MarkInviteViewed() error = %v", err)
+		}
+
+		updated, err := service.GetInviteByID(ctx, invite.ID)
+		if err != nil {
+			t.Fatalf("GetInviteByID() error = %v", err)
+		}
+
+		if updated.Status != models.InviteStatusViewed {
+			t.Errorf("status = %s, want %s", updated.Status, models.InviteStatusViewed)
+		}
+
+		if updated.ViewedAt == nil {
+			t.Error("ViewedAt is nil, want timestamp")
+		}
+	})
+
+	t.Run("mark invite as responded", func(t *testing.T) {
+		err := service.MarkInviteResponded(ctx, invite.ID)
+		if err != nil {
+			t.Fatalf("MarkInviteResponded() error = %v", err)
+		}
+
+		updated, err := service.GetInviteByID(ctx, invite.ID)
+		if err != nil {
+			t.Fatalf("GetInviteByID() error = %v", err)
+		}
+
+		if updated.Status != models.InviteStatusResponded {
+			t.Errorf("status = %s, want %s", updated.Status, models.InviteStatusResponded)
+		}
+	})
+
+	t.Run("token still works after status changes", func(t *testing.T) {
+		retrieved, err := service.GetInviteByToken(ctx, plainToken)
+		if err != nil {
+			t.Fatalf("GetInviteByToken() error = %v", err)
+		}
+
+		if retrieved.ID != invite.ID {
+			t.Errorf("retrieved ID = %d, want %d", retrieved.ID, invite.ID)
+		}
+
+		if retrieved.Status != models.InviteStatusResponded {
+			t.Errorf("status = %s, want %s", retrieved.Status, models.InviteStatusResponded)
+		}
+	})
+}
+
+func TestIntegration_InviteStatusIdempotency(t *testing.T) {
+	db := setupTestDB(t)
+	defer db.Close()
+
+	eventID := createTestEvent(t, db)
+
+	secret := []byte("test-secret-key-32-bytes-long!")
+	generator := token.NewGenerator(secret)
+	repo := repositories.NewInviteRepository(db)
+	service := NewInviteService(generator, repo)
+
+	ctx := context.Background()
+	email := "test@example.com"
+	name := "Test User"
+	expiresAt := time.Now().Add(30 * 24 * time.Hour)
+
+	invite, _, err := service.CreateInvite(ctx, eventID, &name, &email, 2, expiresAt)
+	if err != nil {
+		t.Fatalf("CreateInvite() error = %v", err)
+	}
+
+	err = service.MarkInviteSent(ctx, invite.ID)
+	if err != nil {
+		t.Fatalf("MarkInviteSent() error = %v", err)
+	}
+
+	t.Run("marking sent again is idempotent", func(t *testing.T) {
+		err := service.MarkInviteSent(ctx, invite.ID)
+		if err != nil {
+			t.Errorf("MarkInviteSent() second call error = %v", err)
+		}
+
+		updated, err := service.GetInviteByID(ctx, invite.ID)
+		if err != nil {
+			t.Fatalf("GetInviteByID() error = %v", err)
+		}
+
+		if updated.Status != models.InviteStatusSent {
+			t.Errorf("status = %s, want %s", updated.Status, models.InviteStatusSent)
+		}
+	})
+
+	err = service.MarkInviteViewed(ctx, invite.ID)
+	if err != nil {
+		t.Fatalf("MarkInviteViewed() error = %v", err)
+	}
+
+	t.Run("marking viewed again is idempotent", func(t *testing.T) {
+		err := service.MarkInviteViewed(ctx, invite.ID)
+		if err != nil {
+			t.Errorf("MarkInviteViewed() second call error = %v", err)
+		}
+
+		updated, err := service.GetInviteByID(ctx, invite.ID)
+		if err != nil {
+			t.Fatalf("GetInviteByID() error = %v", err)
+		}
+
+		if updated.Status != models.InviteStatusViewed {
+			t.Errorf("status = %s, want %s", updated.Status, models.InviteStatusViewed)
+		}
+	})
+
+	err = service.MarkInviteResponded(ctx, invite.ID)
+	if err != nil {
+		t.Fatalf("MarkInviteResponded() error = %v", err)
+	}
+
+	t.Run("marking responded again is idempotent", func(t *testing.T) {
+		err := service.MarkInviteResponded(ctx, invite.ID)
+		if err != nil {
+			t.Errorf("MarkInviteResponded() second call error = %v", err)
+		}
+
+		updated, err := service.GetInviteByID(ctx, invite.ID)
+		if err != nil {
+			t.Fatalf("GetInviteByID() error = %v", err)
+		}
+
+		if updated.Status != models.InviteStatusResponded {
+			t.Errorf("status = %s, want %s", updated.Status, models.InviteStatusResponded)
+		}
+	})
+}

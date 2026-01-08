@@ -57,6 +57,9 @@ type InviteService interface {
 	ListInvitesByEventID(ctx context.Context, eventID int64, filters repositories.InviteFilters) ([]*models.Invite, error)
 	ImportCSV(ctx context.Context, eventID int64, csvData []byte, defaultMaxPlusOnes int, expiresAt time.Time) (*ImportResult, error)
 	CleanupExpiredTokens(ctx context.Context) (int64, error)
+	MarkInviteSent(ctx context.Context, inviteID int64) error
+	MarkInviteViewed(ctx context.Context, inviteID int64) error
+	MarkInviteResponded(ctx context.Context, inviteID int64) error
 }
 
 type inviteService struct {
@@ -372,4 +375,80 @@ func (s *inviteService) CleanupExpiredTokens(ctx context.Context) (int64, error)
 		return 0, fmt.Errorf("failed to cleanup expired tokens: %w", err)
 	}
 	return count, nil
+}
+
+func (s *inviteService) MarkInviteSent(ctx context.Context, inviteID int64) error {
+	invite, err := s.repo.GetByID(ctx, inviteID)
+	if err != nil {
+		return fmt.Errorf("failed to get invite: %w", err)
+	}
+
+	if invite.Status == models.InviteStatusSent {
+		return nil
+	}
+
+	if err := invite.CanTransitionTo(models.InviteStatusSent); err != nil {
+		return err
+	}
+
+	now := time.Now()
+	invite.Status = models.InviteStatusSent
+	invite.SentAt = &now
+	invite.UpdatedAt = now
+
+	if err := s.repo.Update(ctx, invite); err != nil {
+		return fmt.Errorf("failed to update invite: %w", err)
+	}
+
+	return nil
+}
+
+func (s *inviteService) MarkInviteViewed(ctx context.Context, inviteID int64) error {
+	invite, err := s.repo.GetByID(ctx, inviteID)
+	if err != nil {
+		return fmt.Errorf("failed to get invite: %w", err)
+	}
+
+	if invite.Status == models.InviteStatusViewed {
+		return nil
+	}
+
+	if err := invite.CanTransitionTo(models.InviteStatusViewed); err != nil {
+		return err
+	}
+
+	now := time.Now()
+	invite.Status = models.InviteStatusViewed
+	invite.ViewedAt = &now
+	invite.UpdatedAt = now
+
+	if err := s.repo.Update(ctx, invite); err != nil {
+		return fmt.Errorf("failed to update invite: %w", err)
+	}
+
+	return nil
+}
+
+func (s *inviteService) MarkInviteResponded(ctx context.Context, inviteID int64) error {
+	invite, err := s.repo.GetByID(ctx, inviteID)
+	if err != nil {
+		return fmt.Errorf("failed to get invite: %w", err)
+	}
+
+	if invite.Status == models.InviteStatusResponded {
+		return nil
+	}
+
+	if err := invite.CanTransitionTo(models.InviteStatusResponded); err != nil {
+		return err
+	}
+
+	invite.Status = models.InviteStatusResponded
+	invite.UpdatedAt = time.Now()
+
+	if err := s.repo.Update(ctx, invite); err != nil {
+		return fmt.Errorf("failed to update invite: %w", err)
+	}
+
+	return nil
 }
