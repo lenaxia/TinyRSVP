@@ -145,10 +145,13 @@ func (h *RSVPHandler) GetRSVPPage(w http.ResponseWriter, r *http.Request) {
 		localEndTime = event.EndTime.In(loc).Format("3:04 PM MST")
 	}
 
-	now := time.Now()
+	now := time.Now().UTC()
 	deadlinePassed := false
-	if event.RSVPDeadline != nil && event.RSVPDeadline.Before(now) {
-		deadlinePassed = true
+	if event.RSVPDeadline != nil {
+		deadline := event.RSVPDeadline.UTC()
+		if deadline.Before(now) {
+			deadlinePassed = true
+		}
 	}
 
 	eventPassed := event.StartTime.Before(now)

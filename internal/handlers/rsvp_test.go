@@ -3,6 +3,7 @@ package handlers
 import (
 	"context"
 	"errors"
+	"html/template"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -831,6 +832,218 @@ func TestRSVPHandler_UpdateRSVP_InvalidJSON(t *testing.T) {
 
 	if w.Code != http.StatusBadRequest {
 		t.Errorf("Expected status 400, got %d", w.Code)
+	}
+}
+
+func TestRSVPHandler_GetRSVPPage_DeadlinePassed(t *testing.T) {
+	startTime := time.Now().Add(24 * time.Hour)
+	pastDeadline := time.Now().Add(-1 * time.Hour)
+
+	mockInviteSvc := &mockRSVPInviteService{
+		getInviteByTokenFunc: func(ctx context.Context, token string) (*models.Invite, error) {
+			email := "test@example.com"
+			return &models.Invite{
+				ID:        1,
+				EventID:   1,
+				Email:     &email,
+				Status:    models.InviteStatusSent,
+				ExpiresAt: time.Now().Add(30 * 24 * time.Hour),
+			}, nil
+		},
+		markViewedFunc: func(ctx context.Context, inviteID int64) error {
+			return nil
+		},
+	}
+
+	mockEventRepo := &mockRSVPEventRepository{
+		getByIDFunc: func(ctx context.Context, id int64) (*models.Event, error) {
+			return &models.Event{
+				ID:           1,
+				Title:        "Test Event",
+				StartTime:    startTime,
+				Timezone:     "America/Los_Angeles",
+				Status:       models.EventStatusPublished,
+				RSVPDeadline: &pastDeadline,
+			}, nil
+		},
+	}
+
+	mockRSVPRepo := &mockRSVPRSVPRepository{
+		getByInviteIDFunc: func(ctx context.Context, inviteID int64) (*models.RSVP, error) {
+			return nil, &models.NotFoundError{Resource: "rsvp"}
+		},
+	}
+
+	mockQuestionRepo := &mockRSVPQuestionRepository{
+		getByEventIDFunc: func(ctx context.Context, eventID int64) ([]*models.PreferenceQuestion, error) {
+			return []*models.PreferenceQuestion{}, nil
+		},
+	}
+
+	handler := NewRSVPHandler(mockInviteSvc, mockEventRepo, mockRSVPRepo, mockQuestionRepo)
+
+	tmpl := template.Must(template.New("rsvp_page.html").Parse(`{{.Event.Title}}|DeadlinePassed:{{.DeadlinePassed}}`))
+	handler.SetTemplates(tmpl)
+
+	r := chi.NewRouter()
+	r.Get("/rsvp/{token}", handler.GetRSVPPage)
+
+	req := httptest.NewRequest("GET", "/rsvp/validtoken", nil)
+	w := httptest.NewRecorder()
+
+	r.ServeHTTP(w, req)
+
+	if w.Code != http.StatusOK {
+		t.Errorf("Expected status 200, got %d", w.Code)
+	}
+
+	body := w.Body.String()
+	if !strings.Contains(body, "Test Event") {
+		t.Error("Expected response to contain event title")
+	}
+	if !strings.Contains(body, "DeadlinePassed:true") {
+		t.Errorf("Expected DeadlinePassed to be true, got: %s", body)
+	}
+}
+
+func TestRSVPHandler_GetRSVPPage_DeadlineNotPassed(t *testing.T) {
+	startTime := time.Now().Add(24 * time.Hour)
+	futureDeadline := time.Now().Add(12 * time.Hour)
+
+	mockInviteSvc := &mockRSVPInviteService{
+		getInviteByTokenFunc: func(ctx context.Context, token string) (*models.Invite, error) {
+			email := "test@example.com"
+			return &models.Invite{
+				ID:        1,
+				EventID:   1,
+				Email:     &email,
+				Status:    models.InviteStatusSent,
+				ExpiresAt: time.Now().Add(30 * 24 * time.Hour),
+			}, nil
+		},
+		markViewedFunc: func(ctx context.Context, inviteID int64) error {
+			return nil
+		},
+	}
+
+	mockEventRepo := &mockRSVPEventRepository{
+		getByIDFunc: func(ctx context.Context, id int64) (*models.Event, error) {
+			return &models.Event{
+				ID:           1,
+				Title:        "Test Event",
+				StartTime:    startTime,
+				Timezone:     "America/Los_Angeles",
+				Status:       models.EventStatusPublished,
+				RSVPDeadline: &futureDeadline,
+			}, nil
+		},
+	}
+
+	mockRSVPRepo := &mockRSVPRSVPRepository{
+		getByInviteIDFunc: func(ctx context.Context, inviteID int64) (*models.RSVP, error) {
+			return nil, &models.NotFoundError{Resource: "rsvp"}
+		},
+	}
+
+	mockQuestionRepo := &mockRSVPQuestionRepository{
+		getByEventIDFunc: func(ctx context.Context, eventID int64) ([]*models.PreferenceQuestion, error) {
+			return []*models.PreferenceQuestion{}, nil
+		},
+	}
+
+	handler := NewRSVPHandler(mockInviteSvc, mockEventRepo, mockRSVPRepo, mockQuestionRepo)
+
+	tmpl := template.Must(template.New("rsvp_page.html").Parse(`{{.Event.Title}}|DeadlinePassed:{{.DeadlinePassed}}`))
+	handler.SetTemplates(tmpl)
+
+	r := chi.NewRouter()
+	r.Get("/rsvp/{token}", handler.GetRSVPPage)
+
+	req := httptest.NewRequest("GET", "/rsvp/validtoken", nil)
+	w := httptest.NewRecorder()
+
+	r.ServeHTTP(w, req)
+
+	if w.Code != http.StatusOK {
+		t.Errorf("Expected status 200, got %d", w.Code)
+	}
+
+	body := w.Body.String()
+	if !strings.Contains(body, "Test Event") {
+		t.Error("Expected response to contain event title")
+	}
+	if !strings.Contains(body, "DeadlinePassed:false") {
+		t.Errorf("Expected DeadlinePassed to be false, got: %s", body)
+	}
+}
+
+func TestRSVPHandler_GetRSVPPage_NoDeadline(t *testing.T) {
+	startTime := time.Now().Add(24 * time.Hour)
+
+	mockInviteSvc := &mockRSVPInviteService{
+		getInviteByTokenFunc: func(ctx context.Context, token string) (*models.Invite, error) {
+			email := "test@example.com"
+			return &models.Invite{
+				ID:        1,
+				EventID:   1,
+				Email:     &email,
+				Status:    models.InviteStatusSent,
+				ExpiresAt: time.Now().Add(30 * 24 * time.Hour),
+			}, nil
+		},
+		markViewedFunc: func(ctx context.Context, inviteID int64) error {
+			return nil
+		},
+	}
+
+	mockEventRepo := &mockRSVPEventRepository{
+		getByIDFunc: func(ctx context.Context, id int64) (*models.Event, error) {
+			return &models.Event{
+				ID:           1,
+				Title:        "Test Event",
+				StartTime:    startTime,
+				Timezone:     "America/Los_Angeles",
+				Status:       models.EventStatusPublished,
+				RSVPDeadline: nil,
+			}, nil
+		},
+	}
+
+	mockRSVPRepo := &mockRSVPRSVPRepository{
+		getByInviteIDFunc: func(ctx context.Context, inviteID int64) (*models.RSVP, error) {
+			return nil, &models.NotFoundError{Resource: "rsvp"}
+		},
+	}
+
+	mockQuestionRepo := &mockRSVPQuestionRepository{
+		getByEventIDFunc: func(ctx context.Context, eventID int64) ([]*models.PreferenceQuestion, error) {
+			return []*models.PreferenceQuestion{}, nil
+		},
+	}
+
+	handler := NewRSVPHandler(mockInviteSvc, mockEventRepo, mockRSVPRepo, mockQuestionRepo)
+
+	tmpl := template.Must(template.New("rsvp_page.html").Parse(`{{.Event.Title}}|DeadlinePassed:{{.DeadlinePassed}}`))
+	handler.SetTemplates(tmpl)
+
+	r := chi.NewRouter()
+	r.Get("/rsvp/{token}", handler.GetRSVPPage)
+
+	req := httptest.NewRequest("GET", "/rsvp/validtoken", nil)
+	w := httptest.NewRecorder()
+
+	r.ServeHTTP(w, req)
+
+	if w.Code != http.StatusOK {
+		t.Errorf("Expected status 200, got %d", w.Code)
+	}
+
+	body := w.Body.String()
+	if !strings.Contains(body, "Test Event") {
+		t.Error("Expected response to contain event title")
+	}
+	if !strings.Contains(body, "DeadlinePassed:false") {
+		t.Errorf("Expected DeadlinePassed to be false when no deadline, got: %s", body)
 	}
 }
 
