@@ -52,11 +52,16 @@ func (h *RSVPHandler) SetRSVPService(service RSVPService) {
 	h.rsvpService = service
 }
 
+type QuestionWithOptions struct {
+	*models.PreferenceQuestion
+	ParsedOptions []string
+}
+
 type RSVPPageData struct {
 	Event          *models.Event
 	Invite         *models.Invite
 	ExistingRSVP   *models.RSVP
-	Questions      []*models.PreferenceQuestion
+	Questions      []*QuestionWithOptions
 	Token          string
 	DeadlinePassed bool
 	EventPassed    bool
@@ -116,6 +121,15 @@ func (h *RSVPHandler) GetRSVPPage(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	questionsWithOptions := make([]*QuestionWithOptions, len(questions))
+	for i, q := range questions {
+		opts, _ := q.ParseOptions()
+		questionsWithOptions[i] = &QuestionWithOptions{
+			PreferenceQuestion: q,
+			ParsedOptions:      opts,
+		}
+	}
+
 	if err := h.inviteService.MarkInviteViewed(r.Context(), invite.ID); err != nil {
 	}
 
@@ -159,7 +173,7 @@ func (h *RSVPHandler) GetRSVPPage(w http.ResponseWriter, r *http.Request) {
 		Event:          event,
 		Invite:         invite,
 		ExistingRSVP:   existingRSVP,
-		Questions:      questions,
+		Questions:      questionsWithOptions,
 		Token:          token,
 		DeadlinePassed: deadlinePassed,
 		EventPassed:    eventPassed,

@@ -417,6 +417,131 @@
                 min-width: 200px;
             }
         }
+
+        .questions-section {
+            margin-top: 2rem;
+            padding-top: 2rem;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .questions-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+            color: var(--text-primary);
+        }
+
+        .question-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .question-label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            font-size: 1rem;
+            color: var(--text-primary);
+        }
+
+        .required {
+            color: var(--error-color);
+            margin-left: 0.25rem;
+        }
+
+        .question-textarea {
+            width: 100%;
+            min-height: 100px;
+            padding: 0.75rem;
+            font-size: 1rem;
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            transition: border-color 0.2s;
+            background-color: var(--bg-primary);
+            font-family: inherit;
+            resize: vertical;
+        }
+
+        .question-textarea:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        }
+
+        .question-select {
+            width: 100%;
+            min-height: 44px;
+            padding: 0.75rem;
+            font-size: 1rem;
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            transition: border-color 0.2s;
+            background-color: var(--bg-primary);
+            cursor: pointer;
+        }
+
+        .question-select:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        }
+
+        .checkbox-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .checkbox-label {
+            display: flex;
+            align-items: center;
+            padding: 0.75rem;
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            background-color: var(--bg-primary);
+        }
+
+        .checkbox-label:hover {
+            border-color: var(--primary-color);
+            background-color: var(--bg-secondary);
+        }
+
+        .checkbox-label:has(input:checked) {
+            border-color: var(--primary-color);
+            background-color: #eff6ff;
+        }
+
+        .checkbox-label:has(input:focus) {
+            outline: 2px solid var(--primary-color);
+            outline-offset: 2px;
+        }
+
+        .checkbox-label input[type="checkbox"] {
+            width: 1.25rem;
+            height: 1.25rem;
+            margin-right: 0.75rem;
+            cursor: pointer;
+            flex-shrink: 0;
+        }
+
+        .checkbox-text {
+            font-size: 1rem;
+            color: var(--text-primary);
+        }
+
+        .help-text {
+            display: block;
+            margin-top: 0.5rem;
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+        }
+
+        @media (min-width: 768px) {
+            .question-select {
+                max-width: 400px;
+            }
+        }
     </style>
 </head>
 <body>
@@ -600,6 +725,57 @@
                     <div class="error-message" role="alert" aria-live="polite"></div>
                 </div>
                 {{end}}
+                {{end}}
+
+                {{if .Questions}}
+                <div class="questions-section">
+                    <h3 class="questions-title">Additional Information</h3>
+                    {{range .Questions}}
+                    <div class="question-group" data-question-id="{{.ID}}" data-type="{{.QuestionType}}">
+                        <label for="question_{{.ID}}" class="question-label">
+                            {{.QuestionText}}
+                            {{if .Required}}<span class="required" aria-label="required">*</span>{{end}}
+                        </label>
+                        
+                        {{if eq .QuestionType "text"}}
+                            <textarea
+                                id="question_{{.ID}}"
+                                name="answers[{{.ID}}][text]"
+                                maxlength="500"
+                                {{if .Required}}required aria-required="true"{{end}}
+                                class="question-textarea"
+                            ></textarea>
+                        {{else if eq .QuestionType "single_choice"}}
+                            <select
+                                id="question_{{.ID}}"
+                                name="answers[{{.ID}}][option]"
+                                {{if .Required}}required aria-required="true"{{end}}
+                                class="question-select"
+                            >
+                                <option value="">-- Select an option --</option>
+                                {{range .ParsedOptions}}
+                                <option value="{{.}}">{{.}}</option>
+                                {{end}}
+                            </select>
+                        {{else if eq .QuestionType "multiple_choice"}}
+                            <fieldset class="checkbox-group">
+                                <legend class="sr-only">{{.QuestionText}}</legend>
+                                {{range $idx, $opt := .ParsedOptions}}
+                                <label class="checkbox-label">
+                                    <input
+                                        type="checkbox"
+                                        name="answers[{{$.ID}}][options][]"
+                                        value="{{$opt}}"
+                                        id="question_{{$.ID}}_{{$idx}}"
+                                    />
+                                    <span class="checkbox-text">{{$opt}}</span>
+                                </label>
+                                {{end}}
+                            </fieldset>
+                        {{end}}
+                    </div>
+                    {{end}}
+                </div>
                 {{end}}
 
                 <div class="form-actions">
