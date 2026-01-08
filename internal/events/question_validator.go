@@ -8,13 +8,13 @@ import (
 	"github.com/lenaxia/tinyrsvp/internal/models"
 )
 
-type QuestionValidator struct{}
+type questionValidator struct{}
 
-func NewQuestionValidator() *QuestionValidator {
-	return &QuestionValidator{}
+func NewQuestionValidator() QuestionValidator {
+	return &questionValidator{}
 }
 
-func (v *QuestionValidator) ValidateCreate(ctx context.Context, question *models.PreferenceQuestion) error {
+func (v *questionValidator) ValidateCreate(ctx context.Context, question *models.PreferenceQuestion) error {
 	if question.EventID == 0 {
 		return &models.ValidationError{
 			Field:   "event_id",
@@ -37,7 +37,7 @@ func (v *QuestionValidator) ValidateCreate(ctx context.Context, question *models
 	return nil
 }
 
-func (v *QuestionValidator) ValidateUpdate(ctx context.Context, question *models.PreferenceQuestion) error {
+func (v *questionValidator) ValidateUpdate(ctx context.Context, question *models.PreferenceQuestion) error {
 	if question.ID == 0 {
 		return &models.ValidationError{
 			Field:   "id",
@@ -67,7 +67,7 @@ func (v *QuestionValidator) ValidateUpdate(ctx context.Context, question *models
 	return nil
 }
 
-func (v *QuestionValidator) validateQuestionText(text string) error {
+func (v *questionValidator) validateQuestionText(text string) error {
 	if text == "" {
 		return &models.ValidationError{
 			Field:   "question_text",
@@ -92,7 +92,7 @@ func (v *QuestionValidator) validateQuestionText(text string) error {
 	return nil
 }
 
-func (v *QuestionValidator) validateQuestionType(qtype models.QuestionType) error {
+func (v *questionValidator) validateQuestionType(qtype models.QuestionType) error {
 	if qtype == "" {
 		return &models.ValidationError{
 			Field:   "question_type",
@@ -112,7 +112,7 @@ func (v *QuestionValidator) validateQuestionType(qtype models.QuestionType) erro
 	return nil
 }
 
-func (v *QuestionValidator) validateOptions(question *models.PreferenceQuestion) error {
+func (v *questionValidator) validateOptions(question *models.PreferenceQuestion) error {
 	isChoiceQuestion := question.QuestionType == models.QuestionTypeSingleChoice ||
 		question.QuestionType == models.QuestionTypeMultipleChoice
 
