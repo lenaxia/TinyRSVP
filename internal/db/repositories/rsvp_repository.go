@@ -84,6 +84,12 @@ func (r *rsvpRepository) GetByID(ctx context.Context, id int64) (*models.RSVP, e
 	)
 
 	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, &models.NotFoundError{
+				Resource: "rsvp",
+				ID:       id,
+			}
+		}
 		return nil, err
 	}
 
@@ -108,6 +114,12 @@ func (r *rsvpRepository) GetByInviteID(ctx context.Context, inviteID int64) (*mo
 	)
 
 	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, &models.NotFoundError{
+				Resource: "rsvp",
+				ID:       inviteID,
+			}
+		}
 		return nil, err
 	}
 

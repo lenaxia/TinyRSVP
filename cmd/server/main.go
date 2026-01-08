@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/hex"
 	"fmt"
+	"html/template"
 	"net/http"
 	"os"
 	"os/signal"
@@ -108,6 +109,7 @@ func main() {
 	eventRepo := repositories.NewEventRepository(database)
 	inviteRepo := repositories.NewInviteRepository(database)
 	questionRepo := repositories.NewQuestionRepository(database)
+	rsvpRepo := repositories.NewRSVPRepository(database)
 
 	sessionMgr := auth.NewSessionManager(sessionRepo, false)
 	userService := auth.NewUserService(userRepo)
@@ -266,6 +268,21 @@ func main() {
 	logger.Info("Registered revoke invite endpoints", "path", "/api/invites/{inviteId}/revoke", "protection", "authenticated")
 	logger.Info("Registered regenerate invite endpoints", "path", "/api/invites/{inviteId}/regenerate", "protection", "authenticated")
 	logger.Info("Registered list invite endpoints", "path", "/api/events/{eventId}/invites", "method", "GET", "protection", "authenticated")
+
+	rsvpTemplates, err := template.ParseFiles("templates/web/rsvp_page.html")
+	if err != nil {
+		logger.Error("Failed to load RSVP templates", "error", err)
+		os.Exit(1)
+	}
+	logger.Info("RSVP templates loaded successfully")
+
+	rsvpHandler := handlers.NewRSVPHandler(inviteService, eventRepo, rsvpRepo, questionRepo)
+	rsvpHandler.SetTemplates(rsvpTemplates)
+	
+	rsvpRouter := chi.NewRouter()
+	rsvpRouter.Get("/{token}", rsvpHandler.GetRSVPPage)
+	mux.Handle("/rsvp/", http.StripPrefix("/rsvp", rsvpRouter))
+	logger.Info("Registered RSVP page endpoint", "path", "/rsvp/{token}", "method", "GET", "protection", "none")
 
 	addr := fmt.Sprintf("%s:%d", cfg.Server.Host, cfg.Server.Port)
 	server := &http.Server{

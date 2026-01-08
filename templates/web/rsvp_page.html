@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{if .Event}}RSVP - {{.Event.Title}}{{else}}RSVP{{end}}</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary-color: #2563eb;
+            --primary-hover: #1d4ed8;
+            --success-color: #16a34a;
+            --warning-color: #ea580c;
+            --error-color: #dc2626;
+            --text-primary: #1f2937;
+            --text-secondary: #6b7280;
+            --bg-primary: #ffffff;
+            --bg-secondary: #f9fafb;
+            --border-color: #e5e7eb;
+            --shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            line-height: 1.6;
+            color: var(--text-primary);
+            background-color: var(--bg-secondary);
+            padding: 1rem;
+        }
+
+        .container {
+            max-width: 100%;
+            margin: 0 auto;
+        }
+
+        .error-container {
+            background-color: var(--bg-primary);
+            border: 2px solid var(--error-color);
+            border-radius: 8px;
+            padding: 2rem;
+            margin: 2rem auto;
+            max-width: 600px;
+            text-align: center;
+        }
+
+        .error-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+
+        .error-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--error-color);
+            margin-bottom: 0.5rem;
+        }
+
+        .error-message {
+            color: var(--text-secondary);
+            font-size: 1rem;
+        }
+
+        .event-card {
+            background-color: var(--bg-primary);
+            border-radius: 8px;
+            box-shadow: var(--shadow);
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .event-header {
+            margin-bottom: 1.5rem;
+        }
+
+        .event-title {
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .event-status {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.875rem;
+            font-weight: 500;
+        }
+
+        .status-responded {
+            background-color: #dcfce7;
+            color: #166534;
+        }
+
+        .event-info {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .info-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 0.75rem;
+        }
+
+        .info-icon {
+            flex-shrink: 0;
+            width: 1.25rem;
+            height: 1.25rem;
+            margin-top: 0.125rem;
+        }
+
+        .info-content {
+            flex: 1;
+        }
+
+        .info-label {
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: var(--text-secondary);
+            margin-bottom: 0.25rem;
+        }
+
+        .info-value {
+            font-size: 1rem;
+            color: var(--text-primary);
+        }
+
+        .deadline-warning {
+            background-color: #fef3c7;
+            border-left: 4px solid var(--warning-color);
+            padding: 1rem;
+            margin: 1.5rem 0;
+            border-radius: 4px;
+        }
+
+        .deadline-warning-title {
+            font-weight: 600;
+            color: #92400e;
+            margin-bottom: 0.25rem;
+        }
+
+        .deadline-warning-text {
+            color: #78350f;
+            font-size: 0.875rem;
+        }
+
+        .description {
+            margin-top: 1.5rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .description-title {
+            font-size: 1.125rem;
+            font-weight: 600;
+            margin-bottom: 0.75rem;
+        }
+
+        .description-text {
+            color: var(--text-secondary);
+            white-space: pre-wrap;
+        }
+
+        .existing-rsvp {
+            background-color: #dcfce7;
+            border: 2px solid var(--success-color);
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .existing-rsvp-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #166534;
+            margin-bottom: 0.75rem;
+        }
+
+        .existing-rsvp-details {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .existing-rsvp-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .existing-rsvp-label {
+            font-weight: 500;
+            color: #166534;
+        }
+
+        .existing-rsvp-value {
+            font-weight: 600;
+            color: #166534;
+        }
+
+        @media (min-width: 768px) {
+            body {
+                padding: 2rem;
+            }
+
+            .container {
+                max-width: 768px;
+            }
+
+            .event-card {
+                padding: 2rem;
+            }
+
+            .event-title {
+                font-size: 2rem;
+            }
+
+            .info-item {
+                gap: 1rem;
+            }
+        }
+
+        @media (min-width: 1024px) {
+            .container {
+                max-width: 1024px;
+            }
+
+            .event-title {
+                font-size: 2.25rem;
+            }
+        }
+
+        .sr-only {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            white-space: nowrap;
+            border-width: 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        {{if .ErrorMessage}}
+            <div class="error-container" role="alert">
+                <div class="error-icon" aria-hidden="true">⚠️</div>
+                <h1 class="error-title">Unable to Load RSVP</h1>
+                <p class="error-message">{{.ErrorMessage}}</p>
+            </div>
+        {{else if .Event}}
+            {{if .ExistingRSVP}}
+            <div class="existing-rsvp" role="status">
+                <h2 class="existing-rsvp-title">✓ You've Already Responded</h2>
+                <div class="existing-rsvp-details">
+                    <div class="existing-rsvp-item">
+                        <span class="existing-rsvp-label">Response:</span>
+                        <span class="existing-rsvp-value">{{.ExistingRSVP.Response}}</span>
+                    </div>
+                    {{if eq .ExistingRSVP.Response "yes"}}
+                    <div class="existing-rsvp-item">
+                        <span class="existing-rsvp-label">Plus Ones:</span>
+                        <span class="existing-rsvp-value">{{.ExistingRSVP.PlusOnes}}</span>
+                    </div>
+                    {{end}}
+                    {{if .CanUpdate}}
+                    <p style="margin-top: 1rem; font-size: 0.875rem; color: #166534;">
+                        You can update your response below if needed.
+                    </p>
+                    {{end}}
+                </div>
+            </div>
+            {{end}}
+
+            <article class="event-card" role="main">
+                <header class="event-header">
+                    <h1 class="event-title">{{.Event.Title}}</h1>
+                    {{if .ExistingRSVP}}
+                    <span class="event-status status-responded">Responded</span>
+                    {{end}}
+                </header>
+
+                <section class="event-info">
+                    <h2 class="sr-only">Event Information</h2>
+                    
+                    <div class="info-item">
+                        <svg class="info-icon" aria-hidden="true" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                        </svg>
+                        <div class="info-content">
+                            <div class="info-label">Date & Time</div>
+                            <time class="info-value" datetime="{{.Event.StartTime.Format "2006-01-02T15:04:05Z07:00"}}">
+                                {{.LocalStartTime}}{{if .LocalEndTime}} - {{.LocalEndTime}}{{end}}
+                            </time>
+                            {{if .TimeUntilEvent}}
+                            <div style="font-size: 0.875rem; color: var(--text-secondary); margin-top: 0.25rem;">
+                                {{.TimeUntilEvent}} from now
+                            </div>
+                            {{end}}
+                        </div>
+                    </div>
+
+                    {{if .Event.Location}}
+                    <div class="info-item">
+                        <svg class="info-icon" aria-hidden="true" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
+                        </svg>
+                        <div class="info-content">
+                            <div class="info-label">Location</div>
+                            <address class="info-value" style="font-style: normal;">{{.Event.Location}}</address>
+                        </div>
+                    </div>
+                    {{end}}
+
+                    {{if .Event.RSVPDeadline}}
+                    <div class="info-item">
+                        <svg class="info-icon" aria-hidden="true" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                        </svg>
+                        <div class="info-content">
+                            <div class="info-label">RSVP Deadline</div>
+                            <time class="info-value" datetime="{{.Event.RSVPDeadline.Format "2006-01-02T15:04:05Z07:00"}}">
+                                {{.Event.RSVPDeadline.Format "Monday, January 2, 2006 at 3:04 PM MST"}}
+                            </time>
+                        </div>
+                    </div>
+                    {{end}}
+
+                    {{if .Invite}}
+                    <div class="info-item">
+                        <svg class="info-icon" aria-hidden="true" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+                        </svg>
+                        <div class="info-content">
+                            <div class="info-label">Invited Guest</div>
+                            <div class="info-value">
+                                {{if .Invite.Name}}{{.Invite.Name}}{{end}}
+                                {{if and .Invite.Name .Invite.Email}}<br>{{end}}
+                                {{if .Invite.Email}}<span style="font-size: 0.875rem; color: var(--text-secondary);">{{.Invite.Email}}</span>{{end}}
+                            </div>
+                        </div>
+                    </div>
+                    {{end}}
+                </section>
+
+                {{if .DeadlinePassed}}
+                <div class="deadline-warning" role="alert">
+                    <div class="deadline-warning-title">⏰ RSVP Deadline Passed</div>
+                    <p class="deadline-warning-text">
+                        The deadline to respond to this invitation has passed. Please contact the event organizer if you need to make changes.
+                    </p>
+                </div>
+                {{else if .EventPassed}}
+                <div class="deadline-warning" role="alert">
+                    <div class="deadline-warning-title">📅 Event Has Passed</div>
+                    <p class="deadline-warning-text">
+                        This event has already occurred. RSVPs are no longer being accepted.
+                    </p>
+                </div>
+                {{end}}
+
+                {{if .Event.Description}}
+                <section class="description">
+                    <h2 class="description-title">About This Event</h2>
+                    <p class="description-text">{{.Event.Description}}</p>
+                </section>
+                {{end}}
+            </article>
+
+            {{if not .DeadlinePassed}}
+            {{if not .EventPassed}}
+            <div class="event-card">
+                <h2 style="font-size: 1.5rem; font-weight: 600; margin-bottom: 1rem;">
+                    {{if .ExistingRSVP}}Update Your RSVP{{else}}Please Respond{{end}}
+                </h2>
+                <p style="color: var(--text-secondary); margin-bottom: 1.5rem;">
+                    RSVP form will be implemented in the next story.
+                </p>
+            </div>
+            {{end}}
+            {{end}}
+        {{end}}
+    </div>
+</body>
+</html>

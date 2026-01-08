@@ -2,7 +2,7 @@ package repositories
 
 import (
 	"context"
-	"database/sql"
+	"errors"
 	"fmt"
 	"testing"
 	"time"
@@ -246,8 +246,11 @@ func TestRSVPRepository_GetByID_NotFound(t *testing.T) {
 	ctx := context.Background()
 
 	_, err := repo.GetByID(ctx, 99999)
-	if err != sql.ErrNoRows {
-		t.Errorf("GetByID() error = %v, want sql.ErrNoRows", err)
+	var notFoundErr *models.NotFoundError
+	if err == nil {
+		t.Error("GetByID() expected error, got nil")
+	} else if !errors.As(err, &notFoundErr) {
+		t.Errorf("GetByID() error = %v, want NotFoundError", err)
 	}
 }
 
@@ -293,8 +296,11 @@ func TestRSVPRepository_GetByInviteID_NotFound(t *testing.T) {
 	ctx := context.Background()
 
 	_, err := repo.GetByInviteID(ctx, 99999)
-	if err != sql.ErrNoRows {
-		t.Errorf("GetByInviteID() error = %v, want sql.ErrNoRows", err)
+	var notFoundErr *models.NotFoundError
+	if err == nil {
+		t.Error("GetByInviteID() expected error, got nil")
+	} else if !errors.As(err, &notFoundErr) {
+		t.Errorf("GetByInviteID() error = %v, want NotFoundError", err)
 	}
 }
 
