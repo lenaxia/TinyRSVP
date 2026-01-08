@@ -15,15 +15,15 @@ As a **guest**, I want **to see preference questions on the RSVP page** so that 
 
 ## Acceptance Criteria
 
-- [ ] Questions loaded from database for event
-- [ ] Questions displayed in order (by display_order)
-- [ ] Question types rendered correctly (text/select/boolean)
-- [ ] Required questions marked with asterisk
+- [x] Questions loaded from database for event
+- [x] Questions displayed in order (by display_order)
+- [x] Question types rendered correctly (text/select/boolean)
+- [x] Required questions marked with asterisk
 - [ ] Help text displayed if provided
-- [ ] Mobile-responsive layout
-- [ ] Accessible (ARIA labels, keyboard navigation)
-- [ ] Questions only shown if event has questions
-- [ ] Works without JavaScript
+- [x] Mobile-responsive layout
+- [x] Accessible (ARIA labels, keyboard navigation)
+- [x] Questions only shown if event has questions
+- [x] Works without JavaScript
 
 ---
 
@@ -94,14 +94,14 @@ type RSVPPageData struct {
 
 ## Tasks
 
-- [ ] Load questions in handler
-- [ ] Pass questions to template
-- [ ] Create question rendering template
-- [ ] Style question inputs (mobile-first)
-- [ ] Add accessibility attributes
-- [ ] Test with various question types
-- [ ] Test required vs optional questions
-- [ ] Test without JavaScript
+- [x] Load questions in handler
+- [x] Pass questions to template
+- [x] Create question rendering template
+- [x] Style question inputs (mobile-first)
+- [x] Add accessibility attributes
+- [x] Test with various question types
+- [x] Test required vs optional questions
+- [x] Test without JavaScript
 
 ---
 
@@ -118,12 +118,12 @@ type RSVPPageData struct {
 
 ## Definition of Done
 
-- [ ] All acceptance criteria met
-- [ ] Questions render correctly
-- [ ] Mobile-responsive
-- [ ] Accessible
-- [ ] Tests passing
-- [ ] Documentation updated
+- [x] All acceptance criteria met (except help text - not in current design)
+- [x] Questions render correctly
+- [x] Mobile-responsive
+- [x] Accessible
+- [x] Tests passing
+- [x] Documentation updated
 
 ---
 
