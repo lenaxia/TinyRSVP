@@ -61,6 +61,18 @@ func (m *mockManualInviteService) CleanupExpiredTokens(ctx context.Context) (int
 	return 0, errors.New("not implemented")
 }
 
+func (m *mockManualInviteService) MarkInviteSent(ctx context.Context, inviteID int64) error {
+	return errors.New("not implemented")
+}
+
+func (m *mockManualInviteService) MarkInviteViewed(ctx context.Context, inviteID int64) error {
+	return errors.New("not implemented")
+}
+
+func (m *mockManualInviteService) MarkInviteResponded(ctx context.Context, inviteID int64) error {
+	return errors.New("not implemented")
+}
+
 func TestManualInviteHandlers_CreateManualInvite(t *testing.T) {
 	tests := []struct {
 		name           string

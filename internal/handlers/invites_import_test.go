@@ -70,6 +70,18 @@ func (m *mockImportService) CleanupExpiredTokens(ctx context.Context) (int64, er
 	return 0, nil
 }
 
+func (m *mockImportService) MarkInviteSent(ctx context.Context, inviteID int64) error {
+	return nil
+}
+
+func (m *mockImportService) MarkInviteViewed(ctx context.Context, inviteID int64) error {
+	return nil
+}
+
+func (m *mockImportService) MarkInviteResponded(ctx context.Context, inviteID int64) error {
+	return nil
+}
+
 func createMultipartRequest(csvContent string, filename string) (*http.Request, error) {
 	body := &bytes.Buffer{}
 	writer := multipart.NewWriter(body)
