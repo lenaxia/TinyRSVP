@@ -1,9 +1,10 @@
 # User Story: Token Regeneration
 
-**Epic:** [03_EPIC_invites.md](03_EPIC_invites.md)  
-**Priority:** Medium  
-**Status:** Not Started  
+**Epic:** [03_EPIC_invites.md](03_EPIC_invites.md)
+**Priority:** Medium
+**Status:** Complete
 **Estimated Effort:** 0.5 days
+**Completed:** 2026-01-08
 
 ---
 
@@ -15,15 +16,15 @@ As an **event manager**, I want **to regenerate invite tokens** so that **I can 
 
 ## Acceptance Criteria
 
-- [ ] Event manager can regenerate token for any invite
-- [ ] Old token immediately invalidated
-- [ ] New token generated securely
-- [ ] New token returned once to caller
-- [ ] Invite status preserved (draft/sent/viewed)
-- [ ] Cannot regenerate revoked invites
-- [ ] Cannot regenerate responded invites
-- [ ] Permission check: only event creator/managers
-- [ ] HTTP API endpoint for regeneration
+- [x] Event manager can regenerate token for any invite
+- [x] Old token immediately invalidated
+- [x] New token generated securely
+- [x] New token returned once to caller
+- [x] Invite status preserved (draft/sent/viewed)
+- [x] Cannot regenerate revoked invites
+- [x] Cannot regenerate responded invites
+- [x] Permission check: only event creator/managers
+- [x] HTTP API endpoint for regeneration
 
 ---
 
@@ -58,26 +59,26 @@ Response 200 OK:
 ## Subtasks
 
 ### Implementation
-- [ ] Add `RegenerateToken()` to service
-- [ ] Validate invite can be regenerated
-- [ ] Generate new secure token
-- [ ] Hash new token
-- [ ] Update invite with new token hash
-- [ ] Return new token
-- [ ] Add HTTP handler endpoint
+- [x] Add `RegenerateToken()` to service
+- [x] Validate invite can be regenerated
+- [x] Generate new secure token
+- [x] Hash new token
+- [x] Update invite with new token hash
+- [x] Return new token
+- [x] Add HTTP handler endpoint
 
 ### Testing
-- [ ] Test successful regeneration
-- [ ] Test old token invalidated
-- [ ] Test new token works
-- [ ] Test cannot regenerate revoked
-- [ ] Test cannot regenerate responded
-- [ ] Test permission checks
+- [x] Test successful regeneration
+- [x] Test old token invalidated
+- [x] Test new token works
+- [x] Test cannot regenerate revoked
+- [x] Test cannot regenerate responded
+- [x] Test permission checks
 
 ### Documentation
-- [ ] API documentation
-- [ ] Use cases
-- [ ] Security considerations
+- [x] API documentation
+- [x] Use cases
+- [x] Security considerations
 
 ---
 
@@ -108,8 +109,8 @@ Response 200 OK:
 
 ## Definition of Done
 
-- [ ] All acceptance criteria met
-- [ ] Regeneration logic implemented
-- [ ] Tests passing (>90% coverage)
-- [ ] Documentation complete
-- [ ] Code reviewed
+- [x] All acceptance criteria met
+- [x] Regeneration logic implemented
+- [x] Tests passing (>90% coverage)
+- [x] Documentation complete
+- [x] Code reviewed

@@ -45,6 +45,10 @@ func (m *mockManualInviteService) RevokeInvite(ctx context.Context, req *invites
 	return errors.New("not implemented")
 }
 
+func (m *mockManualInviteService) RegenerateToken(ctx context.Context, inviteID int64) (*invites.RegenerateTokenResponse, error) {
+	return nil, errors.New("not implemented")
+}
+
 func (m *mockManualInviteService) ListInvitesByEventID(ctx context.Context, eventID int64, filters repositories.InviteFilters) ([]*models.Invite, error) {
 	return nil, errors.New("not implemented")
 }

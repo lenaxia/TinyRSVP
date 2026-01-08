@@ -48,6 +48,10 @@ func (m *mockImportService) RevokeInvite(ctx context.Context, req *invites.Revok
 	return nil
 }
 
+func (m *mockImportService) RegenerateToken(ctx context.Context, inviteID int64) (*invites.RegenerateTokenResponse, error) {
+	return nil, nil
+}
+
 func (m *mockImportService) ListInvitesByEventID(ctx context.Context, eventID int64, filters repositories.InviteFilters) ([]*models.Invite, error) {
 	return nil, nil
 }

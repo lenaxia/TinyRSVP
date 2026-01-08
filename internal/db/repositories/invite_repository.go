@@ -271,8 +271,8 @@ func (r *inviteRepository) Update(ctx context.Context, invite *models.Invite) er
 
 	query := `
 		UPDATE invites
-		SET name = ?, email = ?, max_plus_ones = ?, status = ?,
-			sent_at = ?, viewed_at = ?, unsubscribed = ?, email_invalid = ?,
+		SET name = ?, email = ?, token_hash = ?, max_plus_ones = ?, status = ?,
+			sent_at = ?, viewed_at = ?, revocation_reason = ?, unsubscribed = ?, email_invalid = ?,
 			updated_at = ?, expires_at = ?
 		WHERE id = ?
 	`
@@ -281,10 +281,12 @@ func (r *inviteRepository) Update(ctx context.Context, invite *models.Invite) er
 	result, err := r.db.Exec(ctx, query,
 		invite.Name,
 		invite.Email,
+		invite.TokenHash,
 		invite.MaxPlusOnes,
 		invite.Status,
 		invite.SentAt,
 		invite.ViewedAt,
+		invite.RevocationReason,
 		invite.Unsubscribed,
 		invite.EmailInvalid,
 		now,

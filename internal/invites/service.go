@@ -42,12 +42,18 @@ type RevokeInviteRequest struct {
 	Reason   *string
 }
 
+type RegenerateTokenResponse struct {
+	Token   string
+	RSVPURL string
+}
+
 type InviteService interface {
 	CreateInvite(ctx context.Context, eventID int64, name *string, email *string, maxPlusOnes int, expiresAt time.Time) (*models.Invite, string, error)
 	CreateManualInvite(ctx context.Context, req *CreateManualInviteRequest, expiresAt time.Time) (*CreateManualInviteResponse, error)
 	GetInviteByToken(ctx context.Context, token string) (*models.Invite, error)
 	GetInviteByID(ctx context.Context, id int64) (*models.Invite, error)
 	RevokeInvite(ctx context.Context, req *RevokeInviteRequest) error
+	RegenerateToken(ctx context.Context, inviteID int64) (*RegenerateTokenResponse, error)
 	ListInvitesByEventID(ctx context.Context, eventID int64, filters repositories.InviteFilters) ([]*models.Invite, error)
 	ImportCSV(ctx context.Context, eventID int64, csvData []byte, defaultMaxPlusOnes int, expiresAt time.Time) (*ImportResult, error)
 	CleanupExpiredTokens(ctx context.Context) (int64, error)
@@ -167,6 +173,45 @@ func (s *inviteService) RevokeInvite(ctx context.Context, req *RevokeInviteReque
 	}
 
 	return nil
+}
+
+func (s *inviteService) RegenerateToken(ctx context.Context, inviteID int64) (*RegenerateTokenResponse, error) {
+	invite, err := s.repo.GetByID(ctx, inviteID)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get invite: %w", err)
+	}
+
+	if invite.Status == models.InviteStatusRevoked {
+		return nil, fmt.Errorf("cannot regenerate token for revoked invite")
+	}
+
+	if invite.Status == models.InviteStatusResponded {
+		return nil, fmt.Errorf("cannot regenerate token for responded invite")
+	}
+
+	plainToken, err := s.generator.Generate()
+	if err != nil {
+		return nil, fmt.Errorf("failed to generate token: %w", err)
+	}
+
+	tokenHash, err := s.generator.Hash(plainToken)
+	if err != nil {
+		return nil, fmt.Errorf("failed to hash token: %w", err)
+	}
+
+	invite.TokenHash = tokenHash
+	invite.UpdatedAt = time.Now()
+
+	if err := s.repo.Update(ctx, invite); err != nil {
+		return nil, fmt.Errorf("failed to update invite: %w", err)
+	}
+
+	rsvpURL := fmt.Sprintf("/rsvp/%s", plainToken)
+
+	return &RegenerateTokenResponse{
+		Token:   plainToken,
+		RSVPURL: rsvpURL,
+	}, nil
 }
 
 func (s *inviteService) ListInvitesByEventID(ctx context.Context, eventID int64, filters repositories.InviteFilters) ([]*models.Invite, error) {
