@@ -2,6 +2,7 @@ package rsvp
 
 import (
 	"context"
+	"database/sql"
 	"errors"
 	"testing"
 	"time"
@@ -12,7 +13,6 @@ import (
 
 type mockInviteService struct {
 	getInviteByTokenFunc func(ctx context.Context, token string) (*models.Invite, error)
-	updateStatusFunc     func(ctx context.Context, inviteID int64, status models.InviteStatus) error
 }
 
 func (m *mockInviteService) GetInviteByToken(ctx context.Context, token string) (*models.Invite, error) {
@@ -22,9 +22,13 @@ func (m *mockInviteService) GetInviteByToken(ctx context.Context, token string) 
 	return nil, errors.New("not implemented")
 }
 
-func (m *mockInviteService) UpdateStatus(ctx context.Context, inviteID int64, status models.InviteStatus) error {
-	if m.updateStatusFunc != nil {
-		return m.updateStatusFunc(ctx, inviteID, status)
+type mockInviteRepository struct {
+	updateFunc func(ctx context.Context, invite *models.Invite) error
+}
+
+func (m *mockInviteRepository) Update(ctx context.Context, invite *models.Invite) error {
+	if m.updateFunc != nil {
+		return m.updateFunc(ctx, invite)
 	}
 	return nil
 }
@@ -170,14 +174,38 @@ func (m *mockQuestionRepository) Reorder(ctx context.Context, eventID int64, que
 }
 
 type mockDatabase struct {
-	execInTransactionFunc func(ctx context.Context, fn func(context.Context) error) error
+	withTransactionFunc func(ctx context.Context, fn func(*sql.Tx) error) error
 }
 
-func (m *mockDatabase) ExecInTransaction(ctx context.Context, fn func(context.Context) error) error {
-	if m.execInTransactionFunc != nil {
-		return m.execInTransactionFunc(ctx, fn)
+func (m *mockDatabase) WithTransaction(ctx context.Context, fn func(*sql.Tx) error) error {
+	if m.withTransactionFunc != nil {
+		return m.withTransactionFunc(ctx, fn)
 	}
-	return fn(ctx)
+	return fn(nil)
+}
+
+func (m *mockDatabase) DB() *sql.DB {
+	return nil
+}
+
+func (m *mockDatabase) Close() error {
+	return nil
+}
+
+func (m *mockDatabase) Ping(ctx context.Context) error {
+	return nil
+}
+
+func (m *mockDatabase) Exec(ctx context.Context, query string, args ...interface{}) (sql.Result, error) {
+	return nil, errors.New("not implemented")
+}
+
+func (m *mockDatabase) Query(ctx context.Context, query string, args ...interface{}) (*sql.Rows, error) {
+	return nil, errors.New("not implemented")
+}
+
+func (m *mockDatabase) QueryRow(ctx context.Context, query string, args ...interface{}) *sql.Row {
+	return nil
 }
 
 func strPtr(s string) *string {
@@ -233,9 +261,9 @@ func TestService_SubmitRSVP_ValidYesWithPlusOnes(t *testing.T) {
 	}
 
 	answerRepo := &mockAnswerRepository{}
-	db := &mockDatabase{}
 
-	service := NewService(inviteService, eventRepo, rsvpRepo, answerRepo, questionRepo, db)
+	inviteRepo := &mockInviteRepository{}
+	service := NewService(inviteService, inviteRepo, eventRepo, rsvpRepo, answerRepo, questionRepo)
 
 	req := &SubmitRSVPRequest{
 		Response: "yes",
@@ -271,7 +299,8 @@ func TestService_SubmitRSVP_InvalidToken(t *testing.T) {
 		},
 	}
 
-	service := NewService(inviteService, nil, nil, nil, nil, nil)
+	inviteRepo := &mockInviteRepository{}
+	service := NewService(inviteService, inviteRepo, nil, nil, nil, nil)
 
 	req := &SubmitRSVPRequest{
 		Response: "yes",
@@ -300,7 +329,8 @@ func TestService_SubmitRSVP_ExpiredInvite(t *testing.T) {
 		},
 	}
 
-	service := NewService(inviteService, nil, nil, nil, nil, nil)
+	inviteRepo := &mockInviteRepository{}
+	service := NewService(inviteService, inviteRepo, nil, nil, nil, nil)
 
 	req := &SubmitRSVPRequest{
 		Response: "yes",
@@ -327,7 +357,8 @@ func TestService_SubmitRSVP_RevokedInvite(t *testing.T) {
 		},
 	}
 
-	service := NewService(inviteService, nil, nil, nil, nil, nil)
+	inviteRepo := &mockInviteRepository{}
+	service := NewService(inviteService, inviteRepo, nil, nil, nil, nil)
 
 	req := &SubmitRSVPRequest{
 		Response: "yes",
@@ -365,7 +396,8 @@ func TestService_SubmitRSVP_InvalidResponse(t *testing.T) {
 		},
 	}
 
-	service := NewService(inviteService, eventRepo, nil, nil, nil, nil)
+	inviteRepo := &mockInviteRepository{}
+	service := NewService(inviteService, inviteRepo, eventRepo, nil, nil, nil)
 
 	testCases := []struct {
 		name     string
@@ -424,7 +456,8 @@ func TestService_SubmitRSVP_PlusOnesExceedLimit(t *testing.T) {
 		},
 	}
 
-	service := NewService(inviteService, eventRepo, nil, nil, questionRepo, nil)
+	inviteRepo := &mockInviteRepository{}
+	service := NewService(inviteService, inviteRepo, eventRepo, nil, nil, questionRepo)
 
 	req := &SubmitRSVPRequest{
 		Response: "yes",
@@ -473,7 +506,8 @@ func TestService_SubmitRSVP_NegativePlusOnes(t *testing.T) {
 		},
 	}
 
-	service := NewService(inviteService, eventRepo, nil, nil, questionRepo, nil)
+	inviteRepo := &mockInviteRepository{}
+	service := NewService(inviteService, inviteRepo, eventRepo, nil, nil, questionRepo)
 
 	req := &SubmitRSVPRequest{
 		Response: "yes",
@@ -511,7 +545,8 @@ func TestService_SubmitRSVP_DeadlinePassed(t *testing.T) {
 		},
 	}
 
-	service := NewService(inviteService, eventRepo, nil, nil, nil, nil)
+	inviteRepo := &mockInviteRepository{}
+	service := NewService(inviteService, inviteRepo, eventRepo, nil, nil, nil)
 
 	req := &SubmitRSVPRequest{
 		Response: "yes",
@@ -569,7 +604,8 @@ func TestService_SubmitRSVP_DuplicateRSVP(t *testing.T) {
 		},
 	}
 
-	service := NewService(inviteService, eventRepo, rsvpRepo, nil, questionRepo, nil)
+	inviteRepo := &mockInviteRepository{}
+	service := NewService(inviteService, inviteRepo, eventRepo, rsvpRepo, nil, questionRepo)
 
 	req := &SubmitRSVPRequest{
 		Response: "yes",
@@ -609,7 +645,8 @@ func TestService_SubmitRSVP_CancelledEvent(t *testing.T) {
 		},
 	}
 
-	service := NewService(inviteService, eventRepo, nil, nil, nil, nil)
+	inviteRepo := &mockInviteRepository{}
+	service := NewService(inviteService, inviteRepo, eventRepo, nil, nil, nil)
 
 	req := &SubmitRSVPRequest{
 		Response: "yes",
@@ -666,7 +703,8 @@ func TestService_SubmitRSVP_MissingRequiredAnswer(t *testing.T) {
 		},
 	}
 
-	service := NewService(inviteService, eventRepo, rsvpRepo, nil, questionRepo, nil)
+	inviteRepo := &mockInviteRepository{}
+	service := NewService(inviteService, inviteRepo, eventRepo, rsvpRepo, nil, questionRepo)
 
 	req := &SubmitRSVPRequest{
 		Response: "yes",
@@ -697,9 +735,6 @@ func TestService_SubmitRSVP_InvalidAnswerType(t *testing.T) {
 				EventID: 1,
 				Status:  models.InviteStatusSent,
 			}, nil
-		},
-		updateStatusFunc: func(ctx context.Context, inviteID int64, status models.InviteStatus) error {
-			return nil
 		},
 	}
 
@@ -742,7 +777,8 @@ func TestService_SubmitRSVP_InvalidAnswerType(t *testing.T) {
 		},
 	}
 
-	service := NewService(inviteService, eventRepo, rsvpRepo, nil, questionRepo, nil)
+	inviteRepo := &mockInviteRepository{}
+	service := NewService(inviteService, inviteRepo, eventRepo, rsvpRepo, nil, questionRepo)
 
 	req := &SubmitRSVPRequest{
 		Response: "yes",
@@ -809,9 +845,9 @@ func TestService_SubmitRSVP_NoResponseAutoCorrectsPlusOnes(t *testing.T) {
 	}
 
 	answerRepo := &mockAnswerRepository{}
-	db := &mockDatabase{}
 
-	service := NewService(inviteService, eventRepo, rsvpRepo, answerRepo, questionRepo, db)
+	inviteRepo := &mockInviteRepository{}
+	service := NewService(inviteService, inviteRepo, eventRepo, rsvpRepo, answerRepo, questionRepo)
 
 	req := &SubmitRSVPRequest{
 		Response: "no",
@@ -929,9 +965,9 @@ func TestService_SubmitRSVP_WithValidAnswers(t *testing.T) {
 		},
 	}
 
-	db := &mockDatabase{}
 
-	service := NewService(inviteService, eventRepo, rsvpRepo, answerRepo, questionRepo, db)
+	inviteRepo := &mockInviteRepository{}
+	service := NewService(inviteService, inviteRepo, eventRepo, rsvpRepo, answerRepo, questionRepo)
 
 	req := &SubmitRSVPRequest{
 		Response: "yes",

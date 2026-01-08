@@ -17,11 +17,10 @@ var (
 
 type InviteService interface {
 	GetInviteByToken(ctx context.Context, token string) (*models.Invite, error)
-	UpdateStatus(ctx context.Context, inviteID int64, status models.InviteStatus) error
 }
 
-type Database interface {
-	ExecInTransaction(ctx context.Context, fn func(context.Context) error) error
+type InviteRepository interface {
+	Update(ctx context.Context, invite *models.Invite) error
 }
 
 type Service interface {
@@ -30,28 +29,28 @@ type Service interface {
 
 type service struct {
 	inviteService InviteService
+	inviteRepo    InviteRepository
 	eventRepo     repositories.EventRepository
 	rsvpRepo      repositories.RSVPRepository
 	answerRepo    repositories.AnswerRepository
 	questionRepo  repositories.QuestionRepository
-	db            Database
 }
 
 func NewService(
 	inviteService InviteService,
+	inviteRepo InviteRepository,
 	eventRepo repositories.EventRepository,
 	rsvpRepo repositories.RSVPRepository,
 	answerRepo repositories.AnswerRepository,
 	questionRepo repositories.QuestionRepository,
-	db Database,
 ) Service {
 	return &service{
 		inviteService: inviteService,
+		inviteRepo:    inviteRepo,
 		eventRepo:     eventRepo,
 		rsvpRepo:      rsvpRepo,
 		answerRepo:    answerRepo,
 		questionRepo:  questionRepo,
-		db:            db,
 	}
 }
 
@@ -121,27 +120,11 @@ func (s *service) SubmitRSVP(ctx context.Context, token string, req *SubmitRSVPR
 		PlusOnes: req.PlusOnes,
 	}
 
-	if s.db != nil {
-		err = s.db.ExecInTransaction(ctx, func(txCtx context.Context) error {
-			return s.createRSVPWithAnswers(txCtx, rsvp, req.Answers, invite.ID)
-		})
-	} else {
-		err = s.createRSVPWithAnswers(ctx, rsvp, req.Answers, invite.ID)
-	}
-
-	if err != nil {
-		return nil, err
-	}
-
-	return rsvp, nil
-}
-
-func (s *service) createRSVPWithAnswers(ctx context.Context, rsvp *models.RSVP, answers []AnswerRequest, inviteID int64) error {
 	if err := s.rsvpRepo.Create(ctx, rsvp); err != nil {
-		return fmt.Errorf("failed to create RSVP: %w", err)
+		return nil, fmt.Errorf("failed to create RSVP: %w", err)
 	}
 
-	for _, ansReq := range answers {
+	for _, ansReq := range req.Answers {
 		answer := &models.RSVPAnswer{
 			RSVPID:        rsvp.ID,
 			QuestionID:    ansReq.QuestionID,
@@ -151,15 +134,16 @@ func (s *service) createRSVPWithAnswers(ctx context.Context, rsvp *models.RSVP, 
 		}
 
 		if err := s.answerRepo.Create(ctx, answer); err != nil {
-			return fmt.Errorf("failed to create answer: %w", err)
+			return nil, fmt.Errorf("failed to create answer: %w", err)
 		}
 	}
 
-	if err := s.inviteService.UpdateStatus(ctx, inviteID, models.InviteStatusResponded); err != nil {
-		return fmt.Errorf("failed to update invite status: %w", err)
+	invite.Status = models.InviteStatusResponded
+	if err := s.inviteRepo.Update(ctx, invite); err != nil {
+		return nil, fmt.Errorf("failed to update invite status: %w", err)
 	}
 
-	return nil
+	return rsvp, nil
 }
 
 func (s *service) validateRequest(ctx context.Context, req *SubmitRSVPRequest, invite *models.Invite, event *models.Event) error {
