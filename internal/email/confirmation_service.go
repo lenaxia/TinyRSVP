@@ -10,6 +10,22 @@ import (
 	"github.com/lenaxia/tinyrsvp/pkg/ics"
 )
 
+type RSVPAnswerData struct {
+	Question string
+	Answer   string
+}
+
+type RSVPConfirmationTemplateData struct {
+	GuestName     string
+	Response      string
+	PlusOnes      int
+	EventTitle    string
+	EventDate     string
+	EventLocation string
+	UpdateURL     string
+	Answers       []RSVPAnswerData
+}
+
 type confirmationService struct {
 	renderer   TemplateRenderer
 	emailQueue repositories.EmailQueueRepository
@@ -94,7 +110,7 @@ func (s *confirmationService) prepareTemplateData(
 	invite *models.Invite,
 	event *models.Event,
 	answers []*models.RSVPAnswer,
-) map[string]interface{} {
+) *RSVPConfirmationTemplateData {
 	guestName := "Guest"
 	if invite.Name != nil {
 		guestName = *invite.Name
@@ -109,18 +125,18 @@ func (s *confirmationService) prepareTemplateData(
 
 	updateURL := fmt.Sprintf("https://example.com/rsvp/%s", token)
 
-	data := map[string]interface{}{
-		"GuestName":     guestName,
-		"Response":      string(rsvp.Response),
-		"PlusOnes":      rsvp.PlusOnes,
-		"EventTitle":    event.Title,
-		"EventDate":     eventDate,
-		"EventLocation": eventLocation,
-		"UpdateURL":     updateURL,
+	data := &RSVPConfirmationTemplateData{
+		GuestName:     guestName,
+		Response:      string(rsvp.Response),
+		PlusOnes:      rsvp.PlusOnes,
+		EventTitle:    event.Title,
+		EventDate:     eventDate,
+		EventLocation: eventLocation,
+		UpdateURL:     updateURL,
 	}
 
 	if len(answers) > 0 {
-		answerData := make([]map[string]string, len(answers))
+		answerData := make([]RSVPAnswerData, len(answers))
 		for i, answer := range answers {
 			answerValue := ""
 			if answer.AnswerText != nil {
@@ -134,12 +150,12 @@ func (s *confirmationService) prepareTemplateData(
 					answerValue = "No"
 				}
 			}
-			answerData[i] = map[string]string{
-				"Question": fmt.Sprintf("Question %d", answer.QuestionID),
-				"Answer":   answerValue,
+			answerData[i] = RSVPAnswerData{
+				Question: fmt.Sprintf("Question %d", answer.QuestionID),
+				Answer:   answerValue,
 			}
 		}
-		data["Answers"] = answerData
+		data.Answers = answerData
 	}
 
 	return data

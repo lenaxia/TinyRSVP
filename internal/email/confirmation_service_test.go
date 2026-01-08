@@ -572,30 +572,41 @@ func TestSendConfirmationEmail_WithAnswers(t *testing.T) {
 		t.Fatal("Expected template data to be captured")
 	}
 
-	dataMap, ok := capturedData.(map[string]interface{})
+	templateData, ok := capturedData.(*RSVPConfirmationTemplateData)
 	if !ok {
-		t.Fatal("Expected template data to be a map")
+		t.Fatalf("Expected template data to be *RSVPConfirmationTemplateData, got %T", capturedData)
 	}
 
-	if dataMap["GuestName"] != guestName {
-		t.Errorf("Expected GuestName to be %s, got %v", guestName, dataMap["GuestName"])
+	if templateData.GuestName != guestName {
+		t.Errorf("Expected GuestName to be %s, got %s", guestName, templateData.GuestName)
 	}
 
-	if dataMap["Response"] != "yes" {
-		t.Errorf("Expected Response to be 'yes', got %v", dataMap["Response"])
+	if templateData.Response != "yes" {
+		t.Errorf("Expected Response to be 'yes', got %s", templateData.Response)
 	}
 
-	if dataMap["PlusOnes"] != 1 {
-		t.Errorf("Expected PlusOnes to be 1, got %v", dataMap["PlusOnes"])
+	if templateData.PlusOnes != 1 {
+		t.Errorf("Expected PlusOnes to be 1, got %d", templateData.PlusOnes)
 	}
 
-	answersData, ok := dataMap["Answers"].([]map[string]string)
-	if !ok {
-		t.Fatal("Expected Answers to be a slice of maps")
+	if len(templateData.Answers) != 2 {
+		t.Fatalf("Expected 2 answers, got %d", len(templateData.Answers))
 	}
 
-	if len(answersData) != 2 {
-		t.Fatalf("Expected 2 answers, got %d", len(answersData))
+	if templateData.Answers[0].Question != "Question 1" {
+		t.Errorf("Expected first answer question to be 'Question 1', got %s", templateData.Answers[0].Question)
+	}
+
+	if templateData.Answers[0].Answer != answer1 {
+		t.Errorf("Expected first answer to be %s, got %s", answer1, templateData.Answers[0].Answer)
+	}
+
+	if templateData.Answers[1].Question != "Question 2" {
+		t.Errorf("Expected second answer question to be 'Question 2', got %s", templateData.Answers[1].Question)
+	}
+
+	if templateData.Answers[1].Answer != answer2 {
+		t.Errorf("Expected second answer to be %s, got %s", answer2, templateData.Answers[1].Answer)
 	}
 }
 
