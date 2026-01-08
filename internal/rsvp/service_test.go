@@ -3,6 +3,7 @@ package rsvp
 import (
 	"context"
 	"errors"
+	"strings"
 	"testing"
 	"time"
 
@@ -1103,5 +1104,505 @@ func TestService_SubmitRSVP_TransactionRollback(t *testing.T) {
 
 	if updatedInvite.Status != models.InviteStatusSent {
 		t.Errorf("Expected invite status to remain 'sent' after rollback, got '%s'", updatedInvite.Status)
+	}
+}
+
+func TestService_SubmitRSVP_TextAnswerTooLong(t *testing.T) {
+	database := setupTestDB(t)
+	defer database.Close()
+
+	ctx := context.Background()
+	future := time.Now().Add(48 * time.Hour)
+	rsvpDeadline := time.Now().Add(24 * time.Hour)
+
+	eventRepo := repositories.NewEventRepository(database)
+	event := &models.Event{
+		Title:        "Test Event",
+		Description:  strPtr("Test Description"),
+		StartTime:    future,
+		Timezone:     "UTC",
+		Status:       models.EventStatusPublished,
+		RSVPDeadline: &rsvpDeadline,
+		CreatedBy:    1,
+	}
+	if err := eventRepo.Create(ctx, event); err != nil {
+		t.Fatalf("Failed to create test event: %v", err)
+	}
+
+	questionRepo := repositories.NewQuestionRepository(database)
+	question := &models.PreferenceQuestion{
+		EventID:      event.ID,
+		QuestionText: "Text question",
+		QuestionType: models.QuestionTypeText,
+		Required:     true,
+		DisplayOrder: 1,
+	}
+	if err := questionRepo.Create(ctx, question); err != nil {
+		t.Fatalf("Failed to create test question: %v", err)
+	}
+
+	inviteRepo := repositories.NewInviteRepository(database)
+	invite := &models.Invite{
+		EventID:     event.ID,
+		TokenHash:   hashToken("validtoken"),
+		Email:       strPtr("guest@example.com"),
+		Name:        strPtr("Test Guest"),
+		
+		Status:      models.InviteStatusSent,
+		MaxPlusOnes: 2,
+		ExpiresAt:   future,
+	}
+	if err := inviteRepo.Create(ctx, invite); err != nil {
+		t.Fatalf("Failed to create test invite: %v", err)
+	}
+
+	inviteService := &mockInviteService{
+		getInviteByTokenFunc: func(ctx context.Context, token string) (*models.Invite, error) {
+			return invite, nil
+		},
+	}
+
+	rsvpRepo := repositories.NewRSVPRepository(database)
+	answerRepo := repositories.NewAnswerRepository(database)
+
+	service := NewService(database, inviteService, inviteRepo, eventRepo, rsvpRepo, answerRepo, questionRepo)
+
+	longText := strings.Repeat("a", 501)
+	req := &SubmitRSVPRequest{
+		Response: "yes",
+		PlusOnes: 0,
+		Answers: []AnswerRequest{
+			{
+				QuestionID: question.ID,
+				AnswerText: strPtr(longText),
+			},
+		},
+	}
+
+	_, err := service.SubmitRSVP(ctx, "validtoken", req)
+
+	if err == nil {
+		t.Fatal("Expected error for text answer exceeding 500 characters")
+	}
+
+	var validationErr *models.ValidationError
+	if !errors.As(err, &validationErr) {
+		t.Fatalf("Expected ValidationError, got %T", err)
+	}
+
+	if validationErr.Field != "answers" {
+		t.Errorf("Expected field 'answers', got '%s'", validationErr.Field)
+	}
+
+	if !strings.Contains(validationErr.Message, "500 characters") {
+		t.Errorf("Expected error message about 500 characters, got '%s'", validationErr.Message)
+	}
+
+	existingRSVP, err := rsvpRepo.GetByInviteID(ctx, invite.ID)
+	if err == nil {
+		t.Errorf("Expected no RSVP to be saved, but found RSVP with ID %d", existingRSVP.ID)
+	}
+}
+
+func TestService_SubmitRSVP_InvalidChoiceOption(t *testing.T) {
+	database := setupTestDB(t)
+	defer database.Close()
+
+	ctx := context.Background()
+	future := time.Now().Add(48 * time.Hour)
+	rsvpDeadline := time.Now().Add(24 * time.Hour)
+
+	eventRepo := repositories.NewEventRepository(database)
+	event := &models.Event{
+		Title:        "Test Event",
+		Description:  strPtr("Test Description"),
+		StartTime:    future,
+		Timezone:     "UTC",
+		Status:       models.EventStatusPublished,
+		RSVPDeadline: &rsvpDeadline,
+		CreatedBy:    1,
+	}
+	if err := eventRepo.Create(ctx, event); err != nil {
+		t.Fatalf("Failed to create test event: %v", err)
+	}
+
+	questionRepo := repositories.NewQuestionRepository(database)
+	question := &models.PreferenceQuestion{
+		EventID:      event.ID,
+		QuestionText: "Choice question",
+		QuestionType: models.QuestionTypeSingleChoice,
+		Options:      strPtr(`["Option A","Option B"]`),
+		Required:     true,
+		DisplayOrder: 1,
+	}
+	if err := questionRepo.Create(ctx, question); err != nil {
+		t.Fatalf("Failed to create test question: %v", err)
+	}
+
+	inviteRepo := repositories.NewInviteRepository(database)
+	invite := &models.Invite{
+		EventID:     event.ID,
+		TokenHash:   hashToken("validtoken"),
+		Email:       strPtr("guest@example.com"),
+		Name:        strPtr("Test Guest"),
+		
+		Status:      models.InviteStatusSent,
+		MaxPlusOnes: 2,
+		ExpiresAt:   future,
+	}
+	if err := inviteRepo.Create(ctx, invite); err != nil {
+		t.Fatalf("Failed to create test invite: %v", err)
+	}
+
+	inviteService := &mockInviteService{
+		getInviteByTokenFunc: func(ctx context.Context, token string) (*models.Invite, error) {
+			return invite, nil
+		},
+	}
+
+	rsvpRepo := repositories.NewRSVPRepository(database)
+	answerRepo := repositories.NewAnswerRepository(database)
+
+	service := NewService(database, inviteService, inviteRepo, eventRepo, rsvpRepo, answerRepo, questionRepo)
+
+	req := &SubmitRSVPRequest{
+		Response: "yes",
+		PlusOnes: 0,
+		Answers: []AnswerRequest{
+			{
+				QuestionID:   question.ID,
+				AnswerOption: strPtr("Invalid Option"),
+			},
+		},
+	}
+
+	_, err := service.SubmitRSVP(ctx, "validtoken", req)
+
+	if err == nil {
+		t.Fatal("Expected error for invalid choice option")
+	}
+
+	var validationErr *models.ValidationError
+	if !errors.As(err, &validationErr) {
+		t.Fatalf("Expected ValidationError, got %T", err)
+	}
+
+	if validationErr.Field != "answers" {
+		t.Errorf("Expected field 'answers', got '%s'", validationErr.Field)
+	}
+
+	if !strings.Contains(validationErr.Message, "invalid option") {
+		t.Errorf("Expected error message about invalid option, got '%s'", validationErr.Message)
+	}
+
+	existingRSVP, err := rsvpRepo.GetByInviteID(ctx, invite.ID)
+	if err == nil {
+		t.Errorf("Expected no RSVP to be saved, but found RSVP with ID %d", existingRSVP.ID)
+	}
+}
+
+func TestService_SubmitRSVP_EmptyTextForRequired(t *testing.T) {
+	database := setupTestDB(t)
+	defer database.Close()
+
+	ctx := context.Background()
+	future := time.Now().Add(48 * time.Hour)
+	rsvpDeadline := time.Now().Add(24 * time.Hour)
+
+	eventRepo := repositories.NewEventRepository(database)
+	event := &models.Event{
+		Title:        "Test Event",
+		Description:  strPtr("Test Description"),
+		StartTime:    future,
+		Timezone:     "UTC",
+		Status:       models.EventStatusPublished,
+		RSVPDeadline: &rsvpDeadline,
+		CreatedBy:    1,
+	}
+	if err := eventRepo.Create(ctx, event); err != nil {
+		t.Fatalf("Failed to create test event: %v", err)
+	}
+
+	questionRepo := repositories.NewQuestionRepository(database)
+	question := &models.PreferenceQuestion{
+		EventID:      event.ID,
+		QuestionText: "Required text question",
+		QuestionType: models.QuestionTypeText,
+		Required:     true,
+		DisplayOrder: 1,
+	}
+	if err := questionRepo.Create(ctx, question); err != nil {
+		t.Fatalf("Failed to create test question: %v", err)
+	}
+
+	inviteRepo := repositories.NewInviteRepository(database)
+	invite := &models.Invite{
+		EventID:     event.ID,
+		TokenHash:   hashToken("validtoken"),
+		Email:       strPtr("guest@example.com"),
+		Name:        strPtr("Test Guest"),
+		
+		Status:      models.InviteStatusSent,
+		MaxPlusOnes: 2,
+		ExpiresAt:   future,
+	}
+	if err := inviteRepo.Create(ctx, invite); err != nil {
+		t.Fatalf("Failed to create test invite: %v", err)
+	}
+
+	inviteService := &mockInviteService{
+		getInviteByTokenFunc: func(ctx context.Context, token string) (*models.Invite, error) {
+			return invite, nil
+		},
+	}
+
+	rsvpRepo := repositories.NewRSVPRepository(database)
+	answerRepo := repositories.NewAnswerRepository(database)
+
+	service := NewService(database, inviteService, inviteRepo, eventRepo, rsvpRepo, answerRepo, questionRepo)
+
+	req := &SubmitRSVPRequest{
+		Response: "yes",
+		PlusOnes: 0,
+		Answers: []AnswerRequest{
+			{
+				QuestionID: question.ID,
+				AnswerText: strPtr(""),
+			},
+		},
+	}
+
+	_, err := service.SubmitRSVP(ctx, "validtoken", req)
+
+	if err == nil {
+		t.Fatal("Expected error for empty text answer on required question")
+	}
+
+	var validationErr *models.ValidationError
+	if !errors.As(err, &validationErr) {
+		t.Fatalf("Expected ValidationError, got %T", err)
+	}
+
+	if validationErr.Field != "answers" {
+		t.Errorf("Expected field 'answers', got '%s'", validationErr.Field)
+	}
+
+	if !strings.Contains(validationErr.Message, "non-empty") {
+		t.Errorf("Expected error message about non-empty text, got '%s'", validationErr.Message)
+	}
+}
+
+func TestService_SubmitRSVP_MultipleChoiceValidation(t *testing.T) {
+	database := setupTestDB(t)
+	defer database.Close()
+
+	ctx := context.Background()
+	future := time.Now().Add(48 * time.Hour)
+	rsvpDeadline := time.Now().Add(24 * time.Hour)
+
+	eventRepo := repositories.NewEventRepository(database)
+	event := &models.Event{
+		Title:        "Test Event",
+		Description:  strPtr("Test Description"),
+		StartTime:    future,
+		Timezone:     "UTC",
+		Status:       models.EventStatusPublished,
+		RSVPDeadline: &rsvpDeadline,
+		CreatedBy:    1,
+	}
+	if err := eventRepo.Create(ctx, event); err != nil {
+		t.Fatalf("Failed to create test event: %v", err)
+	}
+
+	questionRepo := repositories.NewQuestionRepository(database)
+	question := &models.PreferenceQuestion{
+		EventID:      event.ID,
+		QuestionText: "Multiple choice question",
+		QuestionType: models.QuestionTypeMultipleChoice,
+		Options:      strPtr(`["A","B","C"]`),
+		Required:     true,
+		DisplayOrder: 1,
+	}
+	if err := questionRepo.Create(ctx, question); err != nil {
+		t.Fatalf("Failed to create test question: %v", err)
+	}
+
+	inviteRepo := repositories.NewInviteRepository(database)
+	invite := &models.Invite{
+		EventID:     event.ID,
+		TokenHash:   hashToken("validtoken"),
+		Email:       strPtr("guest@example.com"),
+		Name:        strPtr("Test Guest"),
+		
+		Status:      models.InviteStatusSent,
+		MaxPlusOnes: 2,
+		ExpiresAt:   future,
+	}
+	if err := inviteRepo.Create(ctx, invite); err != nil {
+		t.Fatalf("Failed to create test invite: %v", err)
+	}
+
+	inviteService := &mockInviteService{
+		getInviteByTokenFunc: func(ctx context.Context, token string) (*models.Invite, error) {
+			return invite, nil
+		},
+	}
+
+	rsvpRepo := repositories.NewRSVPRepository(database)
+	answerRepo := repositories.NewAnswerRepository(database)
+
+	service := NewService(database, inviteService, inviteRepo, eventRepo, rsvpRepo, answerRepo, questionRepo)
+
+	req := &SubmitRSVPRequest{
+		Response: "yes",
+		PlusOnes: 0,
+		Answers: []AnswerRequest{
+			{
+				QuestionID:   question.ID,
+				AnswerOption: strPtr("B"),
+			},
+		},
+	}
+
+	rsvp, err := service.SubmitRSVP(ctx, "validtoken", req)
+
+	if err != nil {
+		t.Fatalf("Expected no error for valid multiple choice answer, got %v", err)
+	}
+
+	if rsvp == nil {
+		t.Fatal("Expected RSVP to be returned")
+	}
+
+	invite2 := &models.Invite{
+		EventID:     event.ID,
+		TokenHash:   "1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZ9876543",
+		Email:       strPtr("guest2@example.com"),
+		Name:        strPtr("Test Guest 2"),
+		
+		Status:      models.InviteStatusSent,
+		MaxPlusOnes: 2,
+		ExpiresAt:   future,
+	}
+	if err := inviteRepo.Create(ctx, invite2); err != nil {
+		t.Fatalf("Failed to create second test invite: %v", err)
+	}
+
+	inviteService2 := &mockInviteService{
+		getInviteByTokenFunc: func(ctx context.Context, token string) (*models.Invite, error) {
+			return invite2, nil
+		},
+	}
+
+	service2 := NewService(database, inviteService2, inviteRepo, eventRepo, rsvpRepo, answerRepo, questionRepo)
+
+	req2 := &SubmitRSVPRequest{
+		Response: "yes",
+		PlusOnes: 0,
+		Answers: []AnswerRequest{
+			{
+				QuestionID:   question.ID,
+				AnswerOption: strPtr("Invalid"),
+			},
+		},
+	}
+
+	_, err = service2.SubmitRSVP(ctx, "validtoken2", req2)
+
+	if err == nil {
+		t.Fatal("Expected error for invalid multiple choice option")
+	}
+
+	var validationErr *models.ValidationError
+	if !errors.As(err, &validationErr) {
+		t.Fatalf("Expected ValidationError, got %T", err)
+	}
+}
+
+func TestService_SubmitRSVP_CaseSensitiveOptions(t *testing.T) {
+	database := setupTestDB(t)
+	defer database.Close()
+
+	ctx := context.Background()
+	future := time.Now().Add(48 * time.Hour)
+	rsvpDeadline := time.Now().Add(24 * time.Hour)
+
+	eventRepo := repositories.NewEventRepository(database)
+	event := &models.Event{
+		Title:        "Test Event",
+		Description:  strPtr("Test Description"),
+		StartTime:    future,
+		Timezone:     "UTC",
+		Status:       models.EventStatusPublished,
+		RSVPDeadline: &rsvpDeadline,
+		CreatedBy:    1,
+	}
+	if err := eventRepo.Create(ctx, event); err != nil {
+		t.Fatalf("Failed to create test event: %v", err)
+	}
+
+	questionRepo := repositories.NewQuestionRepository(database)
+	question := &models.PreferenceQuestion{
+		EventID:      event.ID,
+		QuestionText: "Case sensitive question",
+		QuestionType: models.QuestionTypeSingleChoice,
+		Options:      strPtr(`["Red","Blue","Green"]`),
+		Required:     true,
+		DisplayOrder: 1,
+	}
+	if err := questionRepo.Create(ctx, question); err != nil {
+		t.Fatalf("Failed to create test question: %v", err)
+	}
+
+	inviteRepo := repositories.NewInviteRepository(database)
+	invite := &models.Invite{
+		EventID:     event.ID,
+		TokenHash:   hashToken("validtoken"),
+		Email:       strPtr("guest@example.com"),
+		Name:        strPtr("Test Guest"),
+		
+		Status:      models.InviteStatusSent,
+		MaxPlusOnes: 2,
+		ExpiresAt:   future,
+	}
+	if err := inviteRepo.Create(ctx, invite); err != nil {
+		t.Fatalf("Failed to create test invite: %v", err)
+	}
+
+	inviteService := &mockInviteService{
+		getInviteByTokenFunc: func(ctx context.Context, token string) (*models.Invite, error) {
+			return invite, nil
+		},
+	}
+
+	rsvpRepo := repositories.NewRSVPRepository(database)
+	answerRepo := repositories.NewAnswerRepository(database)
+
+	service := NewService(database, inviteService, inviteRepo, eventRepo, rsvpRepo, answerRepo, questionRepo)
+
+	req := &SubmitRSVPRequest{
+		Response: "yes",
+		PlusOnes: 0,
+		Answers: []AnswerRequest{
+			{
+				QuestionID:   question.ID,
+				AnswerOption: strPtr("red"),
+			},
+		},
+	}
+
+	_, err := service.SubmitRSVP(ctx, "validtoken", req)
+
+	if err != nil {
+		t.Logf("Case sensitivity enforced: lowercase 'red' rejected when option is 'Red'")
+		var validationErr *models.ValidationError
+		if !errors.As(err, &validationErr) {
+			t.Fatalf("Expected ValidationError, got %T", err)
+		}
+		if !strings.Contains(validationErr.Message, "invalid option") {
+			t.Errorf("Expected error message about invalid option, got '%s'", validationErr.Message)
+		}
+	} else {
+		t.Fatal("Expected error for case mismatch - options should be case-sensitive")
 	}
 }

@@ -240,6 +240,12 @@ func (s *service) validateAnswer(ansReq AnswerRequest, question *models.Preferen
 				Message: fmt.Sprintf("question %d requires a text answer", question.ID),
 			}
 		}
+		if len(*ansReq.AnswerText) == 0 && question.Required {
+			return &models.ValidationError{
+				Field:   "answers",
+				Message: fmt.Sprintf("question %d requires a non-empty text answer", question.ID),
+			}
+		}
 		if len(*ansReq.AnswerText) > 500 {
 			return &models.ValidationError{
 				Field:   "answers",
