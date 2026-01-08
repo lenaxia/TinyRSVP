@@ -16,6 +16,16 @@ func (s *stubSMTPSender) Send(ctx context.Context, msg *SMTPMessage) error {
 	return nil
 }
 
+func (s *stubSMTPSender) TestConnection(ctx context.Context) error {
+	log.Printf("STUB: Would test SMTP connection")
+	return nil
+}
+
+func (s *stubSMTPSender) Close() error {
+	log.Printf("STUB: Would close SMTP connection")
+	return nil
+}
+
 type stubRateLimiter struct{}
 
 func NewStubRateLimiter() RateLimiter {

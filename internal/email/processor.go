@@ -12,7 +12,7 @@ import (
 
 type SMTPMessage struct {
 	To          string
-	ToName      string
+	ToName      *string
 	Subject     string
 	BodyText    string
 	BodyHTML    string
@@ -27,6 +27,8 @@ type Attachment struct {
 
 type SMTPSender interface {
 	Send(ctx context.Context, msg *SMTPMessage) error
+	TestConnection(ctx context.Context) error
+	Close() error
 }
 
 type RateLimiter interface {
@@ -163,11 +165,6 @@ func (p *queueProcessor) sendEmail(ctx context.Context, email *models.EmailQueue
 		return fmt.Errorf("failed to get attachments: %w", err)
 	}
 
-	toName := ""
-	if email.ToName != nil {
-		toName = *email.ToName
-	}
-
 	bodyHTML := ""
 	if email.BodyHTML != nil {
 		bodyHTML = *email.BodyHTML
@@ -175,7 +172,7 @@ func (p *queueProcessor) sendEmail(ctx context.Context, email *models.EmailQueue
 
 	msg := &SMTPMessage{
 		To:          email.ToEmail,
-		ToName:      toName,
+		ToName:      email.ToName,
 		Subject:     email.Subject,
 		BodyText:    email.BodyText,
 		BodyHTML:    bodyHTML,

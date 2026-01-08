@@ -381,6 +381,15 @@ func main() {
 	logger.Info("Event archiving background job started")
 
 	smtpSender := email.NewStubSMTPSender()
+	
+	testConnCtx, testConnCancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer testConnCancel()
+	if err := smtpSender.TestConnection(testConnCtx); err != nil {
+		logger.Error("SMTP connection test failed", "error", err)
+		os.Exit(1)
+	}
+	logger.Info("SMTP connection test passed")
+	
 	rateLimiter := email.NewStubRateLimiter()
 	emailProcessor := email.NewQueueProcessor(
 		emailQueueRepo,
@@ -433,6 +442,13 @@ func main() {
 			logger.Error("Email processor shutdown failed", "error", err)
 		} else {
 			logger.Info("Email processor stopped gracefully")
+		}
+
+		logger.Info("Closing SMTP sender")
+		if err := smtpSender.Close(); err != nil {
+			logger.Error("SMTP sender close failed", "error", err)
+		} else {
+			logger.Info("SMTP sender closed gracefully")
 		}
 
 		logger.Info("Stopping background jobs")

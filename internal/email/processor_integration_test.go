@@ -324,6 +324,14 @@ func (s *trackingSender) Send(ctx context.Context, msg *SMTPMessage) error {
 	return nil
 }
 
+func (s *trackingSender) TestConnection(ctx context.Context) error {
+	return nil
+}
+
+func (s *trackingSender) Close() error {
+	return nil
+}
+
 func (s *trackingSender) wasSent(email string) bool {
 	s.mu.Lock()
 	defer s.mu.Unlock()
@@ -358,10 +366,26 @@ func (s *failingSender) Send(ctx context.Context, msg *SMTPMessage) error {
 	return nil
 }
 
+func (s *failingSender) TestConnection(ctx context.Context) error {
+	return nil
+}
+
+func (s *failingSender) Close() error {
+	return nil
+}
+
 type alwaysFailingSender struct{}
 
 func (s *alwaysFailingSender) Send(ctx context.Context, msg *SMTPMessage) error {
 	return sql.ErrConnDone
+}
+
+func (s *alwaysFailingSender) TestConnection(ctx context.Context) error {
+	return nil
+}
+
+func (s *alwaysFailingSender) Close() error {
+	return nil
 }
 
 type slowSender struct {
@@ -370,5 +394,13 @@ type slowSender struct {
 
 func (s *slowSender) Send(ctx context.Context, msg *SMTPMessage) error {
 	time.Sleep(s.delay)
+	return nil
+}
+
+func (s *slowSender) TestConnection(ctx context.Context) error {
+	return nil
+}
+
+func (s *slowSender) Close() error {
 	return nil
 }

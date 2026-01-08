@@ -75,6 +75,37 @@ func TestNewSMTPSender_InvalidConfig(t *testing.T) {
 	}
 }
 
+func TestNewSMTPSender_InvalidMaxConnections(t *testing.T) {
+	tests := []struct {
+		name           string
+		maxConnections int
+		wantErr        bool
+	}{
+		{"zero defaults to 10", 0, false},
+		{"valid value 1", 1, false},
+		{"valid value 50", 50, false},
+		{"valid value 100", 100, false},
+		{"invalid too low", -1, true},
+		{"invalid too high", 101, true},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			config := &SMTPConfig{
+				Host:           "smtp.example.com",
+				Port:           587,
+				FromEmail:      "test@example.com",
+				MaxConnections: tt.maxConnections,
+			}
+
+			_, err := NewSMTPSender(config)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("NewSMTPSender() error = %v, wantErr %v", err, tt.wantErr)
+			}
+		})
+	}
+}
+
 func TestNewSMTPSender_DefaultTimeout(t *testing.T) {
 	config := &SMTPConfig{
 		Host:      "smtp.example.com",
@@ -155,9 +186,10 @@ func TestBuildMIMEMessage_WithToName(t *testing.T) {
 
 	smtpSender := sender.(*smtpSender)
 
+	toName := "John Doe"
 	msg := &SMTPMessage{
 		To:       "recipient@example.com",
-		ToName:   "John Doe",
+		ToName:   &toName,
 		Subject:  "Test Subject",
 		BodyText: "This is a test message",
 	}
@@ -351,5 +383,67 @@ func TestGenerateBoundary(t *testing.T) {
 
 	if len(boundary1) < 10 {
 		t.Errorf("generateBoundary() returned short boundary: %s", boundary1)
+	}
+}
+
+func TestSMTPSender_TestConnection_Success(t *testing.T) {
+	config := &SMTPConfig{
+		Host:      "smtp.example.com",
+		Port:      587,
+		FromEmail: "test@example.com",
+		Timeout:   5 * time.Second,
+	}
+
+	sender, err := NewSMTPSender(config)
+	if err != nil {
+		t.Fatalf("NewSMTPSender() error = %v", err)
+	}
+
+	smtpSender := sender.(*smtpSender)
+	if smtpSender == nil {
+		t.Fatal("Expected smtpSender instance")
+	}
+}
+
+func TestSMTPSender_Close(t *testing.T) {
+	config := &SMTPConfig{
+		Host:      "smtp.example.com",
+		Port:      587,
+		FromEmail: "test@example.com",
+		Timeout:   5 * time.Second,
+	}
+
+	sender, err := NewSMTPSender(config)
+	if err != nil {
+		t.Fatalf("NewSMTPSender() error = %v", err)
+	}
+
+	err = sender.Close()
+	if err != nil {
+		t.Errorf("Close() error = %v, want nil", err)
+	}
+}
+
+func TestSMTPSender_Close_MultipleCalls(t *testing.T) {
+	config := &SMTPConfig{
+		Host:      "smtp.example.com",
+		Port:      587,
+		FromEmail: "test@example.com",
+		Timeout:   5 * time.Second,
+	}
+
+	sender, err := NewSMTPSender(config)
+	if err != nil {
+		t.Fatalf("NewSMTPSender() error = %v", err)
+	}
+
+	err = sender.Close()
+	if err != nil {
+		t.Errorf("First Close() error = %v, want nil", err)
+	}
+
+	err = sender.Close()
+	if err != nil {
+		t.Errorf("Second Close() error = %v, want nil", err)
 	}
 }

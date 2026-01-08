@@ -8,9 +8,10 @@ import (
 func TestStubSMTPSender_Send(t *testing.T) {
 	sender := NewStubSMTPSender()
 	
+	toName := "Test User"
 	msg := &SMTPMessage{
 		To:       "test@example.com",
-		ToName:   "Test User",
+		ToName:   &toName,
 		Subject:  "Test Subject",
 		BodyText: "Test body",
 		BodyHTML: "<p>Test body</p>",
@@ -19,6 +20,24 @@ func TestStubSMTPSender_Send(t *testing.T) {
 	err := sender.Send(context.Background(), msg)
 	if err != nil {
 		t.Errorf("Send() error = %v, want nil", err)
+	}
+}
+
+func TestStubSMTPSender_TestConnection(t *testing.T) {
+	sender := NewStubSMTPSender()
+	
+	err := sender.TestConnection(context.Background())
+	if err != nil {
+		t.Errorf("TestConnection() error = %v, want nil", err)
+	}
+}
+
+func TestStubSMTPSender_Close(t *testing.T) {
+	sender := NewStubSMTPSender()
+	
+	err := sender.Close()
+	if err != nil {
+		t.Errorf("Close() error = %v, want nil", err)
 	}
 }
 

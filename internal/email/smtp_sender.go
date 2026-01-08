@@ -13,15 +13,16 @@ import (
 )
 
 type SMTPConfig struct {
-	Host       string
-	Port       int
-	Username   string
-	Password   string
-	FromEmail  string
-	FromName   string
-	UseTLS     bool
-	SkipVerify bool
-	Timeout    time.Duration
+	Host           string
+	Port           int
+	Username       string
+	Password       string
+	FromEmail      string
+	FromName       string
+	UseTLS         bool
+	SkipVerify     bool
+	Timeout        time.Duration
+	MaxConnections int
 }
 
 type smtpSender struct {
@@ -126,8 +127,8 @@ func (s *smtpSender) buildMIMEMessage(msg *SMTPMessage) ([]byte, error) {
 	buf.WriteString(fmt.Sprintf("From: %s <%s>\r\n", s.config.FromName, s.config.FromEmail))
 
 	toHeader := msg.To
-	if msg.ToName != "" {
-		toHeader = fmt.Sprintf("%s <%s>", msg.ToName, msg.To)
+	if msg.ToName != nil && *msg.ToName != "" {
+		toHeader = fmt.Sprintf("%s <%s>", *msg.ToName, msg.To)
 	}
 	buf.WriteString(fmt.Sprintf("To: %s\r\n", toHeader))
 	buf.WriteString(fmt.Sprintf("Subject: %s\r\n", msg.Subject))
@@ -195,6 +196,26 @@ func (s *smtpSender) writeAttachments(buf *strings.Builder, attachments []Attach
 	return nil
 }
 
+func (s *smtpSender) TestConnection(ctx context.Context) error {
+	client, err := s.connect(ctx)
+	if err != nil {
+		return err
+	}
+	defer client.Close()
+
+	if s.auth != nil {
+		if err := client.Auth(s.auth); err != nil {
+			return fmt.Errorf("authentication failed: %w", err)
+		}
+	}
+
+	return client.Quit()
+}
+
+func (s *smtpSender) Close() error {
+	return nil
+}
+
 func validateConfig(config *SMTPConfig) error {
 	if config.Host == "" {
 		return fmt.Errorf("SMTP host is required")
@@ -207,6 +228,12 @@ func validateConfig(config *SMTPConfig) error {
 	}
 	if config.Timeout == 0 {
 		config.Timeout = 30 * time.Second
+	}
+	if config.MaxConnections == 0 {
+		config.MaxConnections = 10
+	}
+	if config.MaxConnections < 1 || config.MaxConnections > 100 {
+		return fmt.Errorf("MaxConnections must be between 1 and 100")
 	}
 	return nil
 }

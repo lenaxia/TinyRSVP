@@ -90,12 +90,28 @@ func (m *MockEmailQueueRepository) GetStats(ctx context.Context) (*repositories.
 }
 
 type MockSMTPSender struct {
-	SendFunc func(ctx context.Context, msg *SMTPMessage) error
+	SendFunc           func(ctx context.Context, msg *SMTPMessage) error
+	TestConnectionFunc func(ctx context.Context) error
+	CloseFunc          func() error
 }
 
 func (m *MockSMTPSender) Send(ctx context.Context, msg *SMTPMessage) error {
 	if m.SendFunc != nil {
 		return m.SendFunc(ctx, msg)
+	}
+	return nil
+}
+
+func (m *MockSMTPSender) TestConnection(ctx context.Context) error {
+	if m.TestConnectionFunc != nil {
+		return m.TestConnectionFunc(ctx)
+	}
+	return nil
+}
+
+func (m *MockSMTPSender) Close() error {
+	if m.CloseFunc != nil {
+		return m.CloseFunc()
 	}
 	return nil
 }
