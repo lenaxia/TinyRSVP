@@ -32,26 +32,26 @@ Implement guest RSVP functionality including response submission (yes/no/maybe),
 ## User Stories
 
 ### Phase 1: RSVP Core
-- [ ] [`04_STORY_00_rsvp_model.md`](04_STORY_rsvp_model.md) - RSVP struct and repository
-- [ ] [`04_STORY_01_rsvp_page.md`](04_STORY_rsvp_page.md) - Guest-facing RSVP page
-- [ ] [`04_STORY_02_rsvp_submission.md`](04_STORY_rsvp_submission.md) - Submit RSVP endpoint
+- [ ] [`04_STORY_00_rsvp_model.md`](04_STORY_00_rsvp_model.md) - RSVP struct and repository
+- [ ] [`04_STORY_01_rsvp_page.md`](04_STORY_01_rsvp_page.md) - Guest-facing RSVP page
+- [ ] [`04_STORY_02_rsvp_submission.md`](04_STORY_02_rsvp_submission.md) - Submit RSVP endpoint
 
 ### Phase 2: Plus Ones
-- [ ] [`04_STORY_03_plus_ones_validation.md`](04_STORY_plus_ones_validation.md) - Plus ones validation logic
-- [ ] [`04_STORY_04_plus_ones_ui.md`](04_STORY_plus_ones_ui.md) - Plus ones input UI
+- [ ] [`04_STORY_03_plus_ones_validation.md`](04_STORY_03_plus_ones_validation.md) - Plus ones validation logic
+- [ ] [`04_STORY_04_plus_ones_ui.md`](04_STORY_04_plus_ones_ui.md) - Plus ones input UI
 
 ### Phase 3: Preference Questions
-- [ ] [`04_STORY_05_question_display.md`](04_STORY_question_display.md) - Display questions on RSVP page
-- [ ] [`04_STORY_06_answer_submission.md`](04_STORY_answer_submission.md) - Submit answers with RSVP
-- [ ] [`04_STORY_07_answer_validation.md`](04_STORY_answer_validation.md) - Validate answers by type
+- [ ] [`04_STORY_05_question_display.md`](04_STORY_05_question_display.md) - Display questions on RSVP page
+- [ ] [`04_STORY_06_answer_submission.md`](04_STORY_06_answer_submission.md) - Submit answers with RSVP
+- [ ] [`04_STORY_07_answer_validation.md`](04_STORY_07_answer_validation.md) - Validate answers by type
 
 ### Phase 4: RSVP Updates
-- [ ] [`04_STORY_08_rsvp_updates.md`](04_STORY_rsvp_updates.md) - Update existing RSVP
-- [ ] [`04_STORY_09_deadline_enforcement.md`](04_STORY_deadline_enforcement.md) - Enforce RSVP deadline
+- [ ] [`04_STORY_08_rsvp_updates.md`](04_STORY_08_rsvp_updates.md) - Update existing RSVP
+- [ ] [`04_STORY_09_deadline_enforcement.md`](04_STORY_09_deadline_enforcement.md) - Enforce RSVP deadline
 
 ### Phase 5: Confirmation
-- [ ] [`04_STORY_10_confirmation_page.md`](04_STORY_confirmation_page.md) - Post-RSVP confirmation
-- [ ] [`04_STORY_11_confirmation_email.md`](04_STORY_confirmation_email.md) - Email confirmation
+- [ ] [`04_STORY_10_confirmation_page.md`](04_STORY_10_confirmation_page.md) - Post-RSVP confirmation
+- [ ] [`04_STORY_11_confirmation_email.md`](04_STORY_11_confirmation_email.md) - Email confirmation
 
 ---
 
