@@ -50,7 +50,7 @@ Implement guest RSVP functionality including response submission (yes/no/maybe),
 - [x] [`04_STORY_09_deadline_enforcement.md`](04_STORY_09_deadline_enforcement.md) - Enforce RSVP deadline
 
 ### Phase 5: Confirmation
-- [ ] [`04_STORY_10_confirmation_page.md`](04_STORY_10_confirmation_page.md) - Post-RSVP confirmation
+- [x] [`04_STORY_10_confirmation_page.md`](04_STORY_10_confirmation_page.md) - Post-RSVP confirmation
 - [ ] [`04_STORY_11_confirmation_email.md`](04_STORY_11_confirmation_email.md) - Email confirmation
 
 ---

@@ -31,6 +31,7 @@ type RSVPHandler struct {
 	eventRepo     repositories.EventRepository
 	rsvpRepo      repositories.RSVPRepository
 	questionRepo  repositories.QuestionRepository
+	answerRepo    repositories.AnswerRepository
 	rsvpService   RSVPService
 	templates     *template.Template
 }
@@ -51,6 +52,10 @@ func NewRSVPHandler(
 
 func (h *RSVPHandler) SetRSVPService(service RSVPService) {
 	h.rsvpService = service
+}
+
+func (h *RSVPHandler) SetAnswerRepository(repo repositories.AnswerRepository) {
+	h.answerRepo = repo
 }
 
 type QuestionWithOptions struct {
@@ -149,7 +154,7 @@ func (h *RSVPHandler) GetRSVPPage(w http.ResponseWriter, r *http.Request) {
 	deadlinePassed := false
 	if event.RSVPDeadline != nil {
 		deadline := event.RSVPDeadline.UTC()
-		if deadline.Before(now) {
+		if !deadline.After(now) {
 			deadlinePassed = true
 		}
 	}
@@ -414,4 +419,173 @@ func (h *RSVPHandler) handleUpdateError(w http.ResponseWriter, err error) {
 	h.respondJSON(w, http.StatusInternalServerError, map[string]string{
 		"error": "failed to update RSVP, please try again",
 	})
+}
+
+type AnswerWithQuestion struct {
+	Answer   *models.RSVPAnswer
+	Question *models.PreferenceQuestion
+}
+
+type ConfirmationPageData struct {
+	Event              *models.Event
+	Invite             *models.Invite
+	RSVP               *models.RSVP
+	AnswersWithQuestions []*AnswerWithQuestion
+	Token              string
+	CanUpdate          bool
+	LocalStartTime     string
+	LocalEndTime       string
+	ErrorMessage       string
+}
+
+func (h *RSVPHandler) GetConfirmationPage(w http.ResponseWriter, r *http.Request) {
+	token := chi.URLParam(r, "token")
+	if token == "" {
+		h.renderConfirmationError(w, http.StatusNotFound, "Invalid invite link")
+		return
+	}
+
+	invite, err := h.inviteService.GetInviteByToken(r.Context(), token)
+	if err != nil {
+		h.handleInviteError(w, err)
+		return
+	}
+
+	event, err := h.eventRepo.GetByID(r.Context(), invite.EventID)
+	if err != nil {
+		var notFoundErr *models.NotFoundError
+		if errors.As(err, &notFoundErr) {
+			h.renderConfirmationError(w, http.StatusNotFound, "Event not found")
+			return
+		}
+		h.renderConfirmationError(w, http.StatusInternalServerError, "Failed to load event")
+		return
+	}
+
+	if event.Status == models.EventStatusCancelled {
+		h.renderConfirmationError(w, http.StatusGone, "This event has been cancelled")
+		return
+	}
+
+	if event.Status == models.EventStatusArchived {
+		h.renderConfirmationError(w, http.StatusGone, "This event is no longer active")
+		return
+	}
+
+	existingRSVP, err := h.rsvpRepo.GetByInviteID(r.Context(), invite.ID)
+	if err != nil {
+		var notFoundErr *models.NotFoundError
+		if errors.As(err, &notFoundErr) {
+			h.renderConfirmationError(w, http.StatusNotFound, "No RSVP found for this invite")
+			return
+		}
+		h.renderConfirmationError(w, http.StatusInternalServerError, "Failed to load RSVP")
+		return
+	}
+
+	questions, err := h.questionRepo.GetByEventID(r.Context(), event.ID)
+	if err != nil {
+		h.renderConfirmationError(w, http.StatusInternalServerError, "Failed to load questions")
+		return
+	}
+
+	questionMap := make(map[int64]*models.PreferenceQuestion)
+	for _, q := range questions {
+		questionMap[q.ID] = q
+	}
+
+	var answers []*models.RSVPAnswer
+	if h.answerRepo != nil {
+		answers, err = h.answerRepo.GetByRSVPID(r.Context(), existingRSVP.ID)
+		if err != nil {
+			h.renderConfirmationError(w, http.StatusInternalServerError, "Failed to load answers")
+			return
+		}
+	}
+
+	answersWithQuestions := make([]*AnswerWithQuestion, 0, len(answers))
+	for _, answer := range answers {
+		if question, ok := questionMap[answer.QuestionID]; ok {
+			answersWithQuestions = append(answersWithQuestions, &AnswerWithQuestion{
+				Answer:   answer,
+				Question: question,
+			})
+		}
+	}
+
+	loc, err := time.LoadLocation(event.Timezone)
+	if err != nil {
+		loc = time.UTC
+	}
+
+	localStartTime := event.StartTime.In(loc).Format("Monday, January 2, 2006 at 3:04 PM MST")
+	localEndTime := ""
+	if event.EndTime != nil {
+		localEndTime = event.EndTime.In(loc).Format("3:04 PM MST")
+	}
+
+	now := time.Now().UTC()
+	deadlinePassed := false
+	if event.RSVPDeadline != nil {
+		deadline := event.RSVPDeadline.UTC()
+		if !deadline.After(now) {
+			deadlinePassed = true
+		}
+	}
+
+	eventPassed := event.StartTime.Before(now)
+	canUpdate := !deadlinePassed && !eventPassed
+
+	data := &ConfirmationPageData{
+		Event:                event,
+		Invite:               invite,
+		RSVP:                 existingRSVP,
+		AnswersWithQuestions: answersWithQuestions,
+		Token:                token,
+		CanUpdate:            canUpdate,
+		LocalStartTime:       localStartTime,
+		LocalEndTime:         localEndTime,
+	}
+
+	h.renderConfirmationPage(w, http.StatusOK, data)
+}
+
+func (h *RSVPHandler) renderConfirmationError(w http.ResponseWriter, status int, message string) {
+	data := &ConfirmationPageData{
+		ErrorMessage: message,
+	}
+	h.renderConfirmationPage(w, status, data)
+}
+
+func (h *RSVPHandler) renderConfirmationPage(w http.ResponseWriter, status int, data *ConfirmationPageData) {
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+	w.WriteHeader(status)
+
+	if h.templates != nil {
+		if err := h.templates.ExecuteTemplate(w, "confirmation_page.html", data); err != nil {
+			http.Error(w, "Failed to render page", http.StatusInternalServerError)
+		}
+		return
+	}
+
+	fmt.Fprintf(w, `<!DOCTYPE html>
+<html lang="en">
+<head>
+	   <meta charset="UTF-8">
+	   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+	   <title>RSVP Confirmation</title>
+</head>
+<body>
+	   <h1>RSVP Confirmation</h1>
+	   %s
+</body>
+</html>`, func() string {
+		if data.ErrorMessage != "" {
+			return fmt.Sprintf("<p>Error: %s</p>", data.ErrorMessage)
+		}
+		if data.Event != nil && data.RSVP != nil {
+			return fmt.Sprintf("<p>Thank you for your RSVP to %s! Your response: %s</p>", data.Event.Title, data.RSVP.Response)
+		}
+		return "<p>Loading...</p>"
+	}())
 }

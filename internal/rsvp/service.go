@@ -82,7 +82,7 @@ func checkDeadline(event *models.Event) error {
 	now := time.Now().UTC()
 	deadline := event.RSVPDeadline.UTC()
 
-	if now.After(deadline) {
+	if !deadline.After(now) {
 		return &models.DeadlinePassedError{
 			Deadline: deadline,
 			Message:  "RSVP deadline has passed",

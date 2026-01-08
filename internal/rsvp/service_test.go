@@ -2102,12 +2102,10 @@ func TestCheckDeadline_DeadlineExactlyNow(t *testing.T) {
 		RSVPDeadline: &now,
 	}
 
-	time.Sleep(1 * time.Millisecond)
-
 	err := checkDeadline(event)
 
 	if err == nil {
-		t.Fatal("Expected error when deadline is exactly now (time has passed)")
+		t.Fatal("Expected error when deadline is exactly now")
 	}
 
 	var deadlineErr *models.DeadlinePassedError

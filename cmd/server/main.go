@@ -284,13 +284,16 @@ func main() {
 	rsvpHandler := handlers.NewRSVPHandler(inviteService, eventRepo, rsvpRepo, questionRepo)
 	rsvpHandler.SetTemplates(rsvpTemplates)
 	rsvpHandler.SetRSVPService(rsvpService)
+	rsvpHandler.SetAnswerRepository(answerRepo)
 	
 	rsvpRouter := chi.NewRouter()
 	rsvpRouter.Get("/{token}", rsvpHandler.GetRSVPPage)
+	rsvpRouter.Get("/{token}/confirmation", rsvpHandler.GetConfirmationPage)
 	rsvpRouter.Post("/{token}", rsvpHandler.SubmitRSVP)
 	rsvpRouter.Put("/{token}", rsvpHandler.UpdateRSVP)
 	mux.Handle("/rsvp/", http.StripPrefix("/rsvp", rsvpRouter))
 	logger.Info("Registered RSVP page endpoint", "path", "/rsvp/{token}", "method", "GET", "protection", "none")
+	logger.Info("Registered RSVP confirmation endpoint", "path", "/rsvp/{token}/confirmation", "method", "GET", "protection", "none")
 	logger.Info("Registered RSVP submission endpoint", "path", "/rsvp/{token}", "method", "POST", "protection", "none")
 	logger.Info("Registered RSVP update endpoint", "path", "/rsvp/{token}", "method", "PUT", "protection", "none")
 

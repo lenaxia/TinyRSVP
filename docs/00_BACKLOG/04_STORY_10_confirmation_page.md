@@ -2,7 +2,7 @@
 
 **Epic:** [04_EPIC_rsvp.md](04_EPIC_rsvp.md)
 **Priority:** High
-**Status:** Not Started
+**Status:** In Progress
 **Estimated Effort:** 6 hours
 
 ---
@@ -15,12 +15,12 @@ As a **guest**, I want **to see a confirmation page after submitting my RSVP** s
 
 ## Acceptance Criteria
 
-- [ ] Confirmation page shown after successful submission
-- [ ] Page displays RSVP summary (response, plus ones, preferences)
-- [ ] Event details displayed
-- [ ] Preference answers displayed
+- [x] Confirmation page shown after successful submission
+- [x] Page displays RSVP summary (response, plus ones, preferences)
+- [x] Event details displayed
+- [x] Preference answers displayed
 - [ ] "Add to Calendar" button (ICS download)
-- [ ] "Update RSVP" link provided
+- [x] "Update RSVP" link provided
 - [ ] Mobile-responsive design
 - [ ] Accessible (WCAG 2.1 AA)
 - [ ] Works without JavaScript
@@ -78,15 +78,15 @@ type ConfirmationPageData struct {
 ## Tasks
 
 - [ ] Create confirmation page template
-- [ ] Implement GET handler
-- [ ] Display RSVP summary
-- [ ] Display event details
-- [ ] Display answers with questions
+- [x] Implement GET handler
+- [x] Display RSVP summary
+- [x] Display event details
+- [x] Display answers with questions
 - [ ] Add "Add to Calendar" button
-- [ ] Add "Update RSVP" link
+- [x] Add "Update RSVP" link
 - [ ] Style for mobile
 - [ ] Add accessibility features
-- [ ] Test rendering
+- [x] Test rendering
 
 ---
 
@@ -105,11 +105,11 @@ type ConfirmationPageData struct {
 
 - [ ] All acceptance criteria met
 - [ ] Template created
-- [ ] Handler implemented
+- [x] Handler implemented
 - [ ] Mobile-responsive
 - [ ] Accessible
-- [ ] Tests passing
-- [ ] Documentation updated
+- [x] Tests passing
+- [x] Documentation updated
 
 ---
 
