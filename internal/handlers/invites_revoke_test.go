@@ -356,7 +356,7 @@ func TestRevokeInviteHandlers_RevokeInvite(t *testing.T) {
 					}, nil
 				},
 				revokeInviteFunc: func(ctx context.Context, req *invites.RevokeInviteRequest) error {
-					return errors.New("cannot transition from responded")
+					return errors.New("cannot transition from responded to revoked")
 				},
 			},
 			mockEventRepo: &mockRevokeEventRepository{
@@ -371,7 +371,46 @@ func TestRevokeInviteHandlers_RevokeInvite(t *testing.T) {
 				},
 			},
 			wantStatus:     http.StatusBadRequest,
-			wantErrMessage: "cannot transition from responded",
+			wantErrMessage: "cannot transition from responded to revoked",
+		},
+		{
+			name:     "cannot revoke already revoked invite",
+			inviteID: "1",
+			requestBody: map[string]interface{}{},
+			user: &models.User{
+				ID:    1,
+				Email: "creator@example.com",
+				Role:  models.RoleEventManager,
+			},
+			mockService: &mockRevokeInviteService{
+				getInviteByIDFunc: func(ctx context.Context, id int64) (*models.Invite, error) {
+					return &models.Invite{
+						ID:          1,
+						EventID:     1,
+						Email:       &email,
+						TokenHash:   strings.Repeat("a", 43),
+						MaxPlusOnes: 2,
+						Status:      models.InviteStatusRevoked,
+						ExpiresAt:   futureTime,
+					}, nil
+				},
+				revokeInviteFunc: func(ctx context.Context, req *invites.RevokeInviteRequest) error {
+					return errors.New("cannot transition from revoked to revoked")
+				},
+			},
+			mockEventRepo: &mockRevokeEventRepository{
+				getByIDFunc: func(ctx context.Context, id int64) (*models.Event, error) {
+					return &models.Event{
+						ID:        1,
+						Title:     "Test Event",
+						CreatedBy: 1,
+						Status:    models.EventStatusPublished,
+						StartTime: futureTime,
+					}, nil
+				},
+			},
+			wantStatus:     http.StatusBadRequest,
+			wantErrMessage: "cannot transition from revoked to revoked",
 		},
 		{
 			name:     "invalid JSON body",
