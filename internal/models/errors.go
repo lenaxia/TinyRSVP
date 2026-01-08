@@ -1,6 +1,9 @@
 package models
 
-import "fmt"
+import (
+	"fmt"
+	"time"
+)
 
 type NotFoundError struct {
 	Resource string
@@ -65,4 +68,13 @@ func (e *PermissionDeniedError) Error() string {
 		return fmt.Sprintf("permission denied: cannot %s %s %v", e.Action, e.Resource, e.ID)
 	}
 	return fmt.Sprintf("permission denied: cannot %s %s", e.Action, e.Resource)
+}
+
+type DeadlinePassedError struct {
+	Deadline time.Time
+	Message  string
+}
+
+func (e *DeadlinePassedError) Error() string {
+	return e.Message
 }

@@ -593,7 +593,10 @@ func TestRSVPHandler_SubmitRSVP_ValidationError(t *testing.T) {
 func TestRSVPHandler_SubmitRSVP_DeadlinePassed(t *testing.T) {
 	mockService := &mockRSVPService{
 		submitRSVPFunc: func(ctx context.Context, token string, req *rsvp.SubmitRSVPRequest) (*models.RSVP, error) {
-			return nil, rsvp.ErrDeadlinePassed
+			return nil, &models.DeadlinePassedError{
+				Deadline: time.Now().Add(-1 * time.Hour),
+				Message:  "RSVP deadline has passed",
+			}
 		},
 	}
 
@@ -755,7 +758,10 @@ func TestRSVPHandler_UpdateRSVP_NoExistingRSVP(t *testing.T) {
 func TestRSVPHandler_UpdateRSVP_DeadlinePassed(t *testing.T) {
 	mockService := &mockRSVPService{
 		updateRSVPFunc: func(ctx context.Context, token string, req *rsvp.SubmitRSVPRequest) (*models.RSVP, error) {
-			return nil, rsvp.ErrDeadlinePassed
+			return nil, &models.DeadlinePassedError{
+				Deadline: time.Now().Add(-1 * time.Hour),
+				Message:  "RSVP deadline has passed",
+			}
 		},
 	}
 

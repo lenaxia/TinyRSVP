@@ -534,8 +534,9 @@ func TestService_SubmitRSVP_DeadlinePassed(t *testing.T) {
 		t.Fatal("Expected error for deadline passed")
 	}
 
-	if !errors.Is(err, ErrDeadlinePassed) {
-		t.Errorf("Expected ErrDeadlinePassed, got %v", err)
+	var deadlineErr *models.DeadlinePassedError
+	if !errors.As(err, &deadlineErr) {
+		t.Errorf("Expected DeadlinePassedError, got %T: %v", err, err)
 	}
 }
 
@@ -1822,8 +1823,9 @@ func TestService_UpdateRSVP_DeadlinePassed(t *testing.T) {
 		t.Fatal("Expected error for deadline passed")
 	}
 
-	if !errors.Is(err, ErrDeadlinePassed) {
-		t.Errorf("Expected ErrDeadlinePassed, got %v", err)
+	var deadlineErr *models.DeadlinePassedError
+	if !errors.As(err, &deadlineErr) {
+		t.Errorf("Expected DeadlinePassedError, got %T: %v", err, err)
 	}
 }
 
@@ -2044,5 +2046,122 @@ func TestService_UpdateRSVP_ChangeToNo(t *testing.T) {
 
 	if rsvp.PlusOnes != 0 {
 		t.Errorf("Expected plus_ones to be auto-corrected to 0, got %d", rsvp.PlusOnes)
+	}
+}
+
+func TestCheckDeadline_NoDeadlineSet(t *testing.T) {
+	event := &models.Event{
+		RSVPDeadline: nil,
+	}
+
+	err := checkDeadline(event)
+
+	if err != nil {
+		t.Errorf("Expected no error when deadline is not set, got %v", err)
+	}
+}
+
+func TestCheckDeadline_DeadlineInFuture(t *testing.T) {
+	future := time.Now().UTC().Add(24 * time.Hour)
+	event := &models.Event{
+		RSVPDeadline: &future,
+	}
+
+	err := checkDeadline(event)
+
+	if err != nil {
+		t.Errorf("Expected no error when deadline is in future, got %v", err)
+	}
+}
+
+func TestCheckDeadline_DeadlineInPast(t *testing.T) {
+	past := time.Now().UTC().Add(-24 * time.Hour)
+	event := &models.Event{
+		RSVPDeadline: &past,
+	}
+
+	err := checkDeadline(event)
+
+	if err == nil {
+		t.Fatal("Expected error when deadline is in past")
+	}
+
+	var deadlineErr *models.DeadlinePassedError
+	if !errors.As(err, &deadlineErr) {
+		t.Errorf("Expected DeadlinePassedError, got %T", err)
+	}
+
+	if deadlineErr != nil && !deadlineErr.Deadline.Equal(past) {
+		t.Errorf("Expected deadline %v, got %v", past, deadlineErr.Deadline)
+	}
+}
+
+func TestCheckDeadline_DeadlineExactlyNow(t *testing.T) {
+	now := time.Now().UTC()
+	event := &models.Event{
+		RSVPDeadline: &now,
+	}
+
+	time.Sleep(1 * time.Millisecond)
+
+	err := checkDeadline(event)
+
+	if err == nil {
+		t.Fatal("Expected error when deadline is exactly now (time has passed)")
+	}
+
+	var deadlineErr *models.DeadlinePassedError
+	if !errors.As(err, &deadlineErr) {
+		t.Errorf("Expected DeadlinePassedError, got %T", err)
+	}
+}
+
+func TestCheckDeadline_TimezoneAware(t *testing.T) {
+	tests := []struct {
+		name     string
+		deadline time.Time
+		wantErr  bool
+	}{
+		{
+			name:     "UTC past deadline",
+			deadline: time.Now().UTC().Add(-1 * time.Hour),
+			wantErr:  true,
+		},
+		{
+			name:     "UTC future deadline",
+			deadline: time.Now().UTC().Add(1 * time.Hour),
+			wantErr:  false,
+		},
+		{
+			name:     "PST past deadline converted to UTC",
+			deadline: time.Date(2026, 1, 1, 10, 0, 0, 0, time.FixedZone("PST", -8*3600)),
+			wantErr:  true,
+		},
+		{
+			name:     "EST future deadline converted to UTC",
+			deadline: time.Now().In(time.FixedZone("EST", -5*3600)).Add(2 * time.Hour),
+			wantErr:  false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			event := &models.Event{
+				RSVPDeadline: &tt.deadline,
+			}
+
+			err := checkDeadline(event)
+
+			if (err != nil) != tt.wantErr {
+				t.Errorf("checkDeadline() error = %v, wantErr %v", err, tt.wantErr)
+			}
+
+			if err != nil {
+				var deadlineErr *models.DeadlinePassedError
+				if !errors.As(err, &deadlineErr) {
+					t.Errorf("Expected DeadlinePassedError, got %T", err)
+				}
+			}
+		})
 	}
 }

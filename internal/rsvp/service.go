@@ -13,8 +13,7 @@ import (
 )
 
 var (
-	ErrDeadlinePassed = errors.New("RSVP deadline has passed")
-	ErrDuplicateRSVP  = errors.New("you have already responded to this invite")
+	ErrDuplicateRSVP = errors.New("you have already responded to this invite")
 )
 
 type InviteService interface {
@@ -75,6 +74,24 @@ type AnswerRequest struct {
 	AnswerBoolean *bool   `json:"answer_boolean,omitempty"`
 }
 
+func checkDeadline(event *models.Event) error {
+	if event.RSVPDeadline == nil {
+		return nil
+	}
+
+	now := time.Now().UTC()
+	deadline := event.RSVPDeadline.UTC()
+
+	if now.After(deadline) {
+		return &models.DeadlinePassedError{
+			Deadline: deadline,
+			Message:  "RSVP deadline has passed",
+		}
+	}
+
+	return nil
+}
+
 func (s *service) SubmitRSVP(ctx context.Context, token string, req *SubmitRSVPRequest) (*models.RSVP, error) {
 	invite, err := s.inviteService.GetInviteByToken(ctx, token)
 	if err != nil {
@@ -98,8 +115,8 @@ func (s *service) SubmitRSVP(ctx context.Context, token string, req *SubmitRSVPR
 		return nil, errors.New("event has been cancelled")
 	}
 
-	if event.RSVPDeadline != nil && event.RSVPDeadline.Before(time.Now()) {
-		return nil, ErrDeadlinePassed
+	if err := checkDeadline(event); err != nil {
+		return nil, err
 	}
 
 	if req.Response == "no" && req.PlusOnes > 0 {
@@ -311,8 +328,8 @@ func (s *service) UpdateRSVP(ctx context.Context, token string, req *SubmitRSVPR
 		return nil, errors.New("event has been cancelled")
 	}
 
-	if event.RSVPDeadline != nil && event.RSVPDeadline.Before(time.Now()) {
-		return nil, ErrDeadlinePassed
+	if err := checkDeadline(event); err != nil {
+		return nil, err
 	}
 
 	if req.Response == "no" && req.PlusOnes > 0 {

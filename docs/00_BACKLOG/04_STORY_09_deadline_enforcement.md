@@ -2,8 +2,9 @@
 
 **Epic:** [04_EPIC_rsvp.md](04_EPIC_rsvp.md)
 **Priority:** Critical
-**Status:** Not Started
+**Status:** Complete
 **Estimated Effort:** 4 hours
+**Completed:** 2026-01-08
 
 ---
 
@@ -15,15 +16,15 @@ As a **host**, I want **RSVP deadlines strictly enforced** so that **guests cann
 
 ## Acceptance Criteria
 
-- [ ] Deadline checked on RSVP submission
-- [ ] Deadline checked on RSVP update
-- [ ] Strict enforcement (no grace period)
-- [ ] Clear error message when deadline passed
-- [ ] Event details still visible after deadline
-- [ ] RSVP form disabled after deadline
-- [ ] Deadline displayed prominently on page
-- [ ] Timezone-aware deadline checking
-- [ ] All tests pass with timeout
+- [x] Deadline checked on RSVP submission
+- [x] Deadline checked on RSVP update
+- [x] Strict enforcement (no grace period)
+- [x] Clear error message when deadline passed
+- [x] Event details still visible after deadline
+- [x] RSVP form disabled after deadline
+- [x] Deadline displayed prominently on page
+- [x] Timezone-aware deadline checking
+- [x] All tests pass with timeout
 
 ---
 
@@ -74,15 +75,15 @@ func (s *service) checkDeadline(event *models.Event) error {
 
 ## Tasks
 
-- [ ] Implement deadline check function
-- [ ] Add deadline check to submission flow
-- [ ] Add deadline check to update flow
-- [ ] Update UI to show deadline status
-- [ ] Disable form after deadline
-- [ ] Write tests for before deadline
-- [ ] Write tests for after deadline
-- [ ] Write tests for no deadline set
-- [ ] Write tests for timezone edge cases
+- [x] Implement deadline check function
+- [x] Add deadline check to submission flow
+- [x] Add deadline check to update flow
+- [x] Update UI to show deadline status
+- [x] Disable form after deadline
+- [x] Write tests for before deadline
+- [x] Write tests for after deadline
+- [x] Write tests for no deadline set
+- [x] Write tests for timezone edge cases
 
 ---
 
@@ -161,13 +162,13 @@ func TestDeadlineEnforcement(t *testing.T) {
 
 ## Definition of Done
 
-- [ ] All acceptance criteria met
-- [ ] Deadline check implemented
-- [ ] UI updated for deadline state
-- [ ] Tests passing (100% coverage)
-- [ ] Timezone handling correct
-- [ ] Error messages clear
-- [ ] Documentation updated
+- [x] All acceptance criteria met
+- [x] Deadline check implemented
+- [x] UI updated for deadline state
+- [x] Tests passing (100% coverage)
+- [x] Timezone handling correct
+- [x] Error messages clear
+- [x] Documentation updated
 
 ---
 

@@ -3,6 +3,7 @@ package models
 import (
 	"errors"
 	"testing"
+	"time"
 )
 
 func TestNotFoundError(t *testing.T) {
@@ -242,4 +243,49 @@ func TestErrorTypeChecking(t *testing.T) {
 			t.Error("Expected NotFoundError not to match OptimisticLockError type")
 		}
 	})
+}
+
+func TestDeadlinePassedError(t *testing.T) {
+	tests := []struct {
+		name     string
+		err      *DeadlinePassedError
+		wantMsg  string
+		wantType bool
+	}{
+		{
+			name: "deadline with specific time",
+			err: &DeadlinePassedError{
+				Deadline: time.Date(2026, 1, 15, 18, 0, 0, 0, time.UTC),
+				Message:  "RSVP deadline has passed",
+			},
+			wantMsg:  "RSVP deadline has passed",
+			wantType: true,
+		},
+		{
+			name: "deadline with custom message",
+			err: &DeadlinePassedError{
+				Deadline: time.Date(2026, 1, 10, 12, 0, 0, 0, time.UTC),
+				Message:  "The deadline to respond was January 10, 2026",
+			},
+			wantMsg:  "The deadline to respond was January 10, 2026",
+			wantType: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := tt.err.Error(); got != tt.wantMsg {
+				t.Errorf("DeadlinePassedError.Error() = %v, want %v", got, tt.wantMsg)
+			}
+
+			var target *DeadlinePassedError
+			if errors.As(tt.err, &target) != tt.wantType {
+				t.Errorf("errors.As() = %v, want %v", !tt.wantType, tt.wantType)
+			}
+
+			if target != nil && !target.Deadline.Equal(tt.err.Deadline) {
+				t.Errorf("DeadlinePassedError.Deadline = %v, want %v", target.Deadline, tt.err.Deadline)
+			}
+		})
+	}
 }

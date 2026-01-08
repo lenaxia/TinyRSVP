@@ -283,9 +283,10 @@ func (h *RSVPHandler) handleSubmitError(w http.ResponseWriter, err error) {
 		return
 	}
 
-	if errors.Is(err, rsvp.ErrDeadlinePassed) {
+	var deadlineErr *models.DeadlinePassedError
+	if errors.As(err, &deadlineErr) {
 		h.respondJSON(w, http.StatusForbidden, map[string]string{
-			"error": "RSVP deadline has passed",
+			"error": deadlineErr.Message,
 		})
 		return
 	}
@@ -377,9 +378,10 @@ func (h *RSVPHandler) handleUpdateError(w http.ResponseWriter, err error) {
 		return
 	}
 
-	if errors.Is(err, rsvp.ErrDeadlinePassed) {
+	var deadlineErr *models.DeadlinePassedError
+	if errors.As(err, &deadlineErr) {
 		h.respondJSON(w, http.StatusForbidden, map[string]string{
-			"error": "RSVP deadline has passed",
+			"error": deadlineErr.Message,
 		})
 		return
 	}
