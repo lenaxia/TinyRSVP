@@ -2,7 +2,8 @@
 
 **Epic:** [05_EPIC_email.md](05_EPIC_email.md)
 **Priority:** High
-**Status:** Not Started
+**Status:** Complete ✅
+**Completed:** 2026-01-08
 **Estimated Effort:** 1.5 days
 
 ---
@@ -15,18 +16,18 @@ As a **system**, I want **an SMTP sender implementation** so that **emails can b
 
 ## Acceptance Criteria
 
-- [ ] SMTP connection management with connection pooling
-- [ ] Support for TLS/STARTTLS encryption
-- [ ] SMTP authentication (PLAIN, LOGIN)
-- [ ] Send emails with HTML and plain text bodies
-- [ ] Support for attachments (ICS files)
-- [ ] Proper MIME multipart message construction
-- [ ] Connection timeout handling
-- [ ] Retry on transient SMTP errors
-- [ ] Classify errors (permanent vs transient)
-- [ ] Test connection validation
-- [ ] All tests pass with timeout
-- [ ] Integration tests with mock SMTP server
+- [x] SMTP connection management with connection pooling
+- [x] Support for TLS/STARTTLS encryption
+- [x] SMTP authentication (PLAIN, LOGIN)
+- [x] Send emails with HTML and plain text bodies
+- [x] Support for attachments (ICS files)
+- [x] Proper MIME multipart message construction
+- [x] Connection timeout handling
+- [x] Retry on transient SMTP errors
+- [x] Classify errors (permanent vs transient)
+- [x] Test connection validation
+- [x] All tests pass with timeout
+- [x] Integration tests with mock SMTP server
 
 ---
 
@@ -436,14 +437,14 @@ func (e *TransientError) Unwrap() error {
 
 ## Definition of Done
 
-- [ ] All acceptance criteria met
-- [ ] Interface defined and documented
-- [ ] Implementation complete
-- [ ] All unit tests passing
-- [ ] Integration tests passing
-- [ ] Error classification working
-- [ ] Code reviewed
-- [ ] Documentation updated
+- [x] All acceptance criteria met
+- [x] Interface defined and documented
+- [x] Implementation complete
+- [x] All unit tests passing
+- [x] Integration tests passing
+- [x] Error classification working
+- [x] Code reviewed
+- [x] Documentation updated
 
 ---
 
