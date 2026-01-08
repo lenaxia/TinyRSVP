@@ -30,6 +30,9 @@ type InviteFilters struct {
 	Status       *models.InviteStatus
 	Unsubscribed *bool
 	EmailInvalid *bool
+	Search       *string
+	SortBy       *string
+	SortOrder    *string
 	Limit        int
 	Offset       int
 }
@@ -364,7 +367,28 @@ func (r *inviteRepository) ListByEventID(ctx context.Context, eventID int64, fil
 		args = append(args, *filters.EmailInvalid)
 	}
 
-	query += " ORDER BY created_at DESC"
+	if filters.Search != nil && *filters.Search != "" {
+		query += " AND (LOWER(email) LIKE LOWER(?) OR LOWER(name) LIKE LOWER(?))"
+		searchPattern := "%" + *filters.Search + "%"
+		args = append(args, searchPattern, searchPattern)
+	}
+
+	sortBy := "created_at"
+	if filters.SortBy != nil && *filters.SortBy != "" {
+		switch *filters.SortBy {
+		case "created_at", "sent_at", "viewed_at", "email", "name", "status":
+			sortBy = *filters.SortBy
+		}
+	}
+
+	sortOrder := "DESC"
+	if filters.SortOrder != nil && *filters.SortOrder != "" {
+		if strings.ToUpper(*filters.SortOrder) == "ASC" {
+			sortOrder = "ASC"
+		}
+	}
+
+	query += fmt.Sprintf(" ORDER BY %s %s", sortBy, sortOrder)
 
 	if filters.Limit > 0 {
 		query += " LIMIT ?"

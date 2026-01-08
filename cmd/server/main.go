@@ -238,6 +238,9 @@ func main() {
 	regenerateInviteHandlers := handlers.NewRegenerateInviteTokenHandlers(inviteService, eventRepo)
 	regenerateInviteHandlers.RegisterRoutes(chiRouter)
 
+	listInviteHandlers := handlers.NewListInviteHandlers(inviteService, eventRepo)
+	listInviteHandlers.RegisterRoutes(chiRouter)
+
 	cleanupHandler := handlers.NewCleanupHandler(inviteService)
 	mux.Handle("/api/invites/cleanup", requireAuth(requireAdmin(cleanupHandler)))
 	logger.Info("Registered invite cleanup endpoint", "path", "/api/invites/cleanup", "method", "POST", "protection", "admin")
@@ -250,6 +253,7 @@ func main() {
 	logger.Info("Registered manual invite endpoints", "path", "/api/events/{eventId}/invites/manual", "protection", "authenticated")
 	logger.Info("Registered revoke invite endpoints", "path", "/api/invites/{inviteId}/revoke", "protection", "authenticated")
 	logger.Info("Registered regenerate invite endpoints", "path", "/api/invites/{inviteId}/regenerate", "protection", "authenticated")
+	logger.Info("Registered list invite endpoints", "path", "/api/events/{eventId}/invites", "method", "GET", "protection", "authenticated")
 
 	addr := fmt.Sprintf("%s:%d", cfg.Server.Host, cfg.Server.Port)
 	server := &http.Server{

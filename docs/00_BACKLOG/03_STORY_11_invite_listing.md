@@ -15,16 +15,16 @@ As an **event manager**, I want **to list and filter invites for my event** so t
 
 ## Acceptance Criteria
 
-- [ ] Event manager can list all invites for their event
-- [ ] List supports pagination (limit, offset)
-- [ ] Filter by status (draft, sent, viewed, responded, revoked)
-- [ ] Filter by unsubscribed status
-- [ ] Filter by email_invalid status
-- [ ] Search by email or name
-- [ ] Sort by created_at, sent_at, viewed_at
-- [ ] Display aggregate statistics
-- [ ] Permission check: only event creator/managers
-- [ ] HTTP API endpoint for listing
+- [x] Event manager can list all invites for their event
+- [x] List supports pagination (limit, offset)
+- [x] Filter by status (draft, sent, viewed, responded, revoked)
+- [x] Filter by unsubscribed status
+- [x] Filter by email_invalid status
+- [x] Search by email or name
+- [x] Sort by created_at, sent_at, viewed_at
+- [x] Display aggregate statistics
+- [x] Permission check: only event creator/managers
+- [x] HTTP API endpoint for listing
 
 ---
 
@@ -98,30 +98,30 @@ Response 200 OK:
 ## Subtasks
 
 ### Implementation
-- [ ] Implement `ListInvites()` in service
-- [ ] Add filtering logic
-- [ ] Add search functionality
-- [ ] Add sorting options
-- [ ] Add pagination
-- [ ] Calculate statistics
-- [ ] Add HTTP handler endpoint
-- [ ] Check permissions
+- [x] Implement `ListInvites()` in service
+- [x] Add filtering logic
+- [x] Add search functionality
+- [x] Add sorting options
+- [x] Add pagination
+- [x] Calculate statistics
+- [x] Add HTTP handler endpoint
+- [x] Check permissions
 
 ### Testing
-- [ ] Test list all invites
-- [ ] Test status filtering
-- [ ] Test search functionality
-- [ ] Test pagination
-- [ ] Test sorting
-- [ ] Test statistics accuracy
-- [ ] Test permission checks
-- [ ] Test empty results
+- [x] Test list all invites
+- [x] Test status filtering
+- [x] Test search functionality
+- [x] Test pagination
+- [x] Test sorting
+- [x] Test statistics accuracy
+- [x] Test permission checks
+- [x] Test empty results
 
 ### Documentation
-- [ ] API documentation
-- [ ] Query parameter reference
-- [ ] Filter examples
-- [ ] Sort options
+- [x] API documentation
+- [x] Query parameter reference
+- [x] Filter examples
+- [x] Sort options
 
 ---
 
@@ -180,11 +180,24 @@ Response 200 OK:
 
 ## Definition of Done
 
-- [ ] All acceptance criteria met
-- [ ] Listing logic implemented
-- [ ] Filtering working
-- [ ] Pagination working
-- [ ] Statistics accurate
-- [ ] Tests passing (>90% coverage)
-- [ ] Documentation complete
-- [ ] Code reviewed
+- [x] All acceptance criteria met
+- [x] Listing logic implemented
+- [x] Filtering working
+- [x] Pagination working
+- [x] Statistics accurate
+- [x] Tests passing (>90% coverage)
+- [x] Documentation complete
+- [x] Code reviewed
+
+---
+
+## Status
+
+**Status:** Complete
+**Completed:** 2026-01-08
+**Implementation Notes:**
+- Enhanced `InviteFilters` struct with `Search`, `SortBy`, and `SortOrder` fields
+- Updated `ListByEventID` repository method to support search and sorting
+- Implemented `ListInvites` service method with validation
+- Created HTTP handler with permission checks
+- All tests passing with comprehensive coverage

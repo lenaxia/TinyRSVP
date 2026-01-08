@@ -120,7 +120,7 @@ type StorageProvider interface {
 ### Image Processing
 - Re-encode to strip EXIF
 - Validate by magic bytes (not extension)
-- No resizing in v0 (simplicity)
+- Enable automatic resizing
 - Max 5MB, 4096x4096 pixels
 
 ### Template Versioning
@@ -128,6 +128,7 @@ type StorageProvider interface {
 - Updates apply immediately
 - Simplifies implementation
 - Versioning in v1+ if needed
+- design in a such a way that verisoning refactoring is possible
 
 ---
 

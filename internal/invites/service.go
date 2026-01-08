@@ -47,6 +47,24 @@ type RegenerateTokenResponse struct {
 	RSVPURL string
 }
 
+type ListInvitesRequest struct {
+	EventID      int64
+	Status       *string
+	Unsubscribed *bool
+	EmailInvalid *bool
+	Search       *string
+	SortBy       *string
+	SortOrder    *string
+	Limit        int
+	Offset       int
+}
+
+type ListInvitesResponse struct {
+	Invites []*models.Invite
+	Total   int
+	Stats   *repositories.InviteStats
+}
+
 type InviteService interface {
 	CreateInvite(ctx context.Context, eventID int64, name *string, email *string, maxPlusOnes int, expiresAt time.Time) (*models.Invite, string, error)
 	CreateManualInvite(ctx context.Context, req *CreateManualInviteRequest, expiresAt time.Time) (*CreateManualInviteResponse, error)
@@ -54,6 +72,7 @@ type InviteService interface {
 	GetInviteByID(ctx context.Context, id int64) (*models.Invite, error)
 	RevokeInvite(ctx context.Context, req *RevokeInviteRequest) error
 	RegenerateToken(ctx context.Context, inviteID int64) (*RegenerateTokenResponse, error)
+	ListInvites(ctx context.Context, req *ListInvitesRequest) (*ListInvitesResponse, error)
 	ListInvitesByEventID(ctx context.Context, eventID int64, filters repositories.InviteFilters) ([]*models.Invite, error)
 	ImportCSV(ctx context.Context, eventID int64, csvData []byte, defaultMaxPlusOnes int, expiresAt time.Time) (*ImportResult, error)
 	CleanupExpiredTokens(ctx context.Context) (int64, error)
@@ -214,6 +233,100 @@ func (s *inviteService) RegenerateToken(ctx context.Context, inviteID int64) (*R
 	return &RegenerateTokenResponse{
 		Token:   plainToken,
 		RSVPURL: rsvpURL,
+	}, nil
+}
+
+func (s *inviteService) ListInvites(ctx context.Context, req *ListInvitesRequest) (*ListInvitesResponse, error) {
+	if req.Limit < 1 || req.Limit > 100 {
+		return nil, &models.ValidationError{
+			Field:   "limit",
+			Message: "limit must be between 1 and 100",
+		}
+	}
+
+	if req.Offset < 0 {
+		return nil, &models.ValidationError{
+			Field:   "offset",
+			Message: "offset must be non-negative",
+		}
+	}
+
+	if req.Status != nil {
+		status := models.InviteStatus(*req.Status)
+		switch status {
+		case models.InviteStatusDraft, models.InviteStatusSent, models.InviteStatusViewed,
+			models.InviteStatusResponded, models.InviteStatusRevoked:
+		default:
+			return nil, &models.ValidationError{
+				Field:   "status",
+				Message: "invalid status value",
+			}
+		}
+	}
+
+	if req.SortBy != nil {
+		validSortFields := map[string]bool{
+			"created_at": true,
+			"sent_at":    true,
+			"viewed_at":  true,
+			"email":      true,
+			"name":       true,
+			"status":     true,
+		}
+		if !validSortFields[*req.SortBy] {
+			return nil, &models.ValidationError{
+				Field:   "sort_by",
+				Message: "invalid sort field",
+			}
+		}
+	}
+
+	if req.SortOrder != nil {
+		order := strings.ToLower(*req.SortOrder)
+		if order != "asc" && order != "desc" {
+			return nil, &models.ValidationError{
+				Field:   "sort_order",
+				Message: "sort_order must be 'asc' or 'desc'",
+			}
+		}
+	}
+
+	var statusFilter *models.InviteStatus
+	if req.Status != nil {
+		status := models.InviteStatus(*req.Status)
+		statusFilter = &status
+	}
+
+	filters := repositories.InviteFilters{
+		Status:       statusFilter,
+		Unsubscribed: req.Unsubscribed,
+		EmailInvalid: req.EmailInvalid,
+		Search:       req.Search,
+		SortBy:       req.SortBy,
+		SortOrder:    req.SortOrder,
+		Limit:        req.Limit,
+		Offset:       req.Offset,
+	}
+
+	invites, err := s.repo.ListByEventID(ctx, req.EventID, filters)
+	if err != nil {
+		return nil, fmt.Errorf("failed to list invites: %w", err)
+	}
+
+	total, err := s.repo.CountByEventID(ctx, req.EventID)
+	if err != nil {
+		return nil, fmt.Errorf("failed to count invites: %w", err)
+	}
+
+	stats, err := s.repo.GetStats(ctx, req.EventID)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get stats: %w", err)
+	}
+
+	return &ListInvitesResponse{
+		Invites: invites,
+		Total:   total,
+		Stats:   stats,
 	}, nil
 }
 

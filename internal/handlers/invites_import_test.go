@@ -82,6 +82,14 @@ func (m *mockImportService) MarkInviteResponded(ctx context.Context, inviteID in
 	return nil
 }
 
+func (m *mockImportService) ListInvites(ctx context.Context, req *invites.ListInvitesRequest) (*invites.ListInvitesResponse, error) {
+	return &invites.ListInvitesResponse{
+		Invites: []*models.Invite{},
+		Total:   0,
+		Stats:   &repositories.InviteStats{},
+	}, nil
+}
+
 func createMultipartRequest(csvContent string, filename string) (*http.Request, error) {
 	body := &bytes.Buffer{}
 	writer := multipart.NewWriter(body)

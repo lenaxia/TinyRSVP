@@ -69,6 +69,14 @@ func (m *mockInviteServiceWithCleanup) MarkInviteResponded(ctx context.Context, 
 	return nil
 }
 
+func (m *mockInviteServiceWithCleanup) ListInvites(ctx context.Context, req *invites.ListInvitesRequest) (*invites.ListInvitesResponse, error) {
+	return &invites.ListInvitesResponse{
+		Invites: []*models.Invite{},
+		Total:   0,
+		Stats:   &repositories.InviteStats{},
+	}, nil
+}
+
 func TestCleanupExpiredTokensHandler_Success(t *testing.T) {
 	mockService := &mockInviteServiceWithCleanup{
 		cleanupExpiredTokensFunc: func(ctx context.Context) (int64, error) {

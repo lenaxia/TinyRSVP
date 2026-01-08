@@ -37,6 +37,10 @@ type mockInviteRepository struct {
 	updateFunc              func(ctx context.Context, invite *models.Invite) error
 	listByEventIDFunc       func(ctx context.Context, eventID int64, filters repositories.InviteFilters) ([]*models.Invite, error)
 	findDuplicateEmailsFunc func(ctx context.Context, eventID int64, emails []string) ([]string, error)
+	getStatsFunc            func(ctx context.Context, eventID int64) (*repositories.InviteStats, error)
+	countByEventIDFunc      func(ctx context.Context, eventID int64) (int, error)
+	invites                 map[int64]*models.Invite
+	stats                   map[int64]*repositories.InviteStats
 }
 
 func (m *mockInviteRepository) Create(ctx context.Context, invite *models.Invite) error {
@@ -83,14 +87,56 @@ func (m *mockInviteRepository) ListByEventID(ctx context.Context, eventID int64,
 	if m.listByEventIDFunc != nil {
 		return m.listByEventIDFunc(ctx, eventID, filters)
 	}
-	return []*models.Invite{}, nil
+	
+	var result []*models.Invite
+	for _, invite := range m.invites {
+		if invite.EventID != eventID {
+			continue
+		}
+		
+		if filters.Status != nil && invite.Status != *filters.Status {
+			continue
+		}
+		
+		if filters.Search != nil && *filters.Search != "" {
+			searchLower := strings.ToLower(*filters.Search)
+			emailMatch := invite.Email != nil && strings.Contains(strings.ToLower(*invite.Email), searchLower)
+			nameMatch := invite.Name != nil && strings.Contains(strings.ToLower(*invite.Name), searchLower)
+			if !emailMatch && !nameMatch {
+				continue
+			}
+		}
+		
+		result = append(result, invite)
+	}
+	
+	if filters.Limit > 0 && len(result) > filters.Limit {
+		result = result[:filters.Limit]
+	}
+	
+	return result, nil
 }
 
 func (m *mockInviteRepository) CountByEventID(ctx context.Context, eventID int64) (int, error) {
-	return 0, nil
+	if m.countByEventIDFunc != nil {
+		return m.countByEventIDFunc(ctx, eventID)
+	}
+	count := 0
+	for _, invite := range m.invites {
+		if invite.EventID == eventID {
+			count++
+		}
+	}
+	return count, nil
 }
 
 func (m *mockInviteRepository) GetStats(ctx context.Context, eventID int64) (*repositories.InviteStats, error) {
+	if m.getStatsFunc != nil {
+		return m.getStatsFunc(ctx, eventID)
+	}
+	if stats, ok := m.stats[eventID]; ok {
+		return stats, nil
+	}
 	return &repositories.InviteStats{}, nil
 }
 

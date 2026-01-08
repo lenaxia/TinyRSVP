@@ -224,6 +224,7 @@ EMAIL_RATE_LIMIT=50
 - Daily digest of failed emails
 - Includes: guest name, email, error
 - Admin can manually resend or update email
+- Event owner should also be notified if email is invalid
 
 ---
 

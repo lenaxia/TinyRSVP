@@ -73,6 +73,14 @@ func (m *mockManualInviteService) MarkInviteResponded(ctx context.Context, invit
 	return errors.New("not implemented")
 }
 
+func (m *mockManualInviteService) ListInvites(ctx context.Context, req *invites.ListInvitesRequest) (*invites.ListInvitesResponse, error) {
+	return &invites.ListInvitesResponse{
+		Invites: []*models.Invite{},
+		Total:   0,
+		Stats:   &repositories.InviteStats{},
+	}, nil
+}
+
 func TestManualInviteHandlers_CreateManualInvite(t *testing.T) {
 	tests := []struct {
 		name           string
