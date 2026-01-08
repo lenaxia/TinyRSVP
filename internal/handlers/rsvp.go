@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"html/template"
@@ -12,6 +13,7 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/lenaxia/tinyrsvp/internal/db/repositories"
 	"github.com/lenaxia/tinyrsvp/internal/models"
+	"github.com/lenaxia/tinyrsvp/internal/rsvp"
 )
 
 type RSVPInviteService interface {
@@ -19,11 +21,16 @@ type RSVPInviteService interface {
 	MarkInviteViewed(ctx context.Context, inviteID int64) error
 }
 
+type RSVPService interface {
+	SubmitRSVP(ctx context.Context, token string, req *rsvp.SubmitRSVPRequest) (*models.RSVP, error)
+}
+
 type RSVPHandler struct {
 	inviteService RSVPInviteService
 	eventRepo     repositories.EventRepository
 	rsvpRepo      repositories.RSVPRepository
 	questionRepo  repositories.QuestionRepository
+	rsvpService   RSVPService
 	templates     *template.Template
 }
 
@@ -39,6 +46,10 @@ func NewRSVPHandler(
 		rsvpRepo:      rsvpRepo,
 		questionRepo:  questionRepo,
 	}
+}
+
+func (h *RSVPHandler) SetRSVPService(service RSVPService) {
+	h.rsvpService = service
 }
 
 type RSVPPageData struct {
@@ -216,4 +227,90 @@ func (h *RSVPHandler) renderPage(w http.ResponseWriter, status int, data *RSVPPa
 
 func (h *RSVPHandler) SetTemplates(tmpl *template.Template) {
 	h.templates = tmpl
+}
+
+func (h *RSVPHandler) SubmitRSVP(w http.ResponseWriter, r *http.Request) {
+	token := chi.URLParam(r, "token")
+	if token == "" {
+		h.respondJSON(w, http.StatusBadRequest, map[string]string{
+			"error": "token is required",
+		})
+		return
+	}
+
+	var req rsvp.SubmitRSVPRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		h.respondJSON(w, http.StatusBadRequest, map[string]string{
+			"error": "invalid request body",
+		})
+		return
+	}
+
+	result, err := h.rsvpService.SubmitRSVP(r.Context(), token, &req)
+	if err != nil {
+		h.handleSubmitError(w, err)
+		return
+	}
+
+	h.respondJSON(w, http.StatusCreated, map[string]interface{}{
+		"rsvp":    result,
+		"message": "RSVP submitted successfully",
+	})
+}
+
+func (h *RSVPHandler) handleSubmitError(w http.ResponseWriter, err error) {
+	var validationErr *models.ValidationError
+	if errors.As(err, &validationErr) {
+		h.respondJSON(w, http.StatusBadRequest, map[string]string{
+			"error": validationErr.Message,
+			"field": validationErr.Field,
+		})
+		return
+	}
+
+	if errors.Is(err, rsvp.ErrDeadlinePassed) {
+		h.respondJSON(w, http.StatusForbidden, map[string]string{
+			"error": "RSVP deadline has passed",
+		})
+		return
+	}
+
+	if errors.Is(err, rsvp.ErrDuplicateRSVP) {
+		h.respondJSON(w, http.StatusConflict, map[string]string{
+			"error": "you have already responded to this invite",
+		})
+		return
+	}
+
+	errMsg := err.Error()
+	if strings.Contains(errMsg, "expired") {
+		h.respondJSON(w, http.StatusForbidden, map[string]string{
+			"error": "this invite has expired",
+		})
+		return
+	}
+
+	if strings.Contains(errMsg, "revoked") {
+		h.respondJSON(w, http.StatusForbidden, map[string]string{
+			"error": "this invite has been revoked",
+		})
+		return
+	}
+
+	if strings.Contains(errMsg, "cancelled") {
+		h.respondJSON(w, http.StatusBadRequest, map[string]string{
+			"error": "this event has been cancelled",
+		})
+		return
+	}
+
+	h.respondJSON(w, http.StatusInternalServerError, map[string]string{
+		"error": "failed to save RSVP, please try again",
+	})
+}
+
+func (h *RSVPHandler) respondJSON(w http.ResponseWriter, status int, data interface{}) {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(status)
+	json.NewEncoder(w).Encode(data)
 }
