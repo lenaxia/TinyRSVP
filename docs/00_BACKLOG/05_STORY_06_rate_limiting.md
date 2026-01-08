@@ -2,8 +2,9 @@
 
 **Epic:** [05_EPIC_email.md](05_EPIC_email.md)
 **Priority:** High
-**Status:** Not Started
+**Status:** Complete
 **Estimated Effort:** 1 day
+**Completed:** 2026-01-08
 
 ---
 
@@ -15,15 +16,15 @@ As a **system**, I want **rate limiting for email sending** so that **SMTP provi
 
 ## Acceptance Criteria
 
-- [ ] Rate limiter tracks sends in rolling time window
-- [ ] Default limit: 50 emails per minute (configurable)
-- [ ] Sliding window algorithm for accurate tracking
-- [ ] Thread-safe for concurrent access
-- [ ] Blocks when limit reached
-- [ ] Returns available slots for batch sizing
-- [ ] Resets automatically as window slides
-- [ ] All tests pass with timeout
-- [ ] Integration tests with queue processor
+- [x] Rate limiter tracks sends in rolling time window
+- [x] Default limit: 50 emails per minute (configurable)
+- [x] Sliding window algorithm for accurate tracking
+- [x] Thread-safe for concurrent access
+- [x] Blocks when limit reached
+- [x] Returns available slots for batch sizing
+- [x] Resets automatically as window slides
+- [x] All tests pass with timeout
+- [x] Integration tests with queue processor
 
 ---
 
@@ -232,44 +233,44 @@ func (t *tokenBucketLimiter) refill() {
 ## Tasks
 
 ### Phase 1: Interface Definition (TDD)
-- [ ] Define RateLimiter interface
-- [ ] Define RateLimiterConfig struct
-- [ ] Write test for interface contract
-- [ ] Document rate limiting behavior
+- [x] Define RateLimiter interface
+- [x] Define RateLimiterConfig struct
+- [x] Write test for interface contract
+- [x] Document rate limiting behavior
 
 ### Phase 2: Sliding Window Implementation (TDD)
-- [ ] Write test for Allow() method
-- [ ] Implement Allow() method
-- [ ] Write test for AvailableSlots()
-- [ ] Implement AvailableSlots()
-- [ ] Write test for WaitTime()
-- [ ] Implement WaitTime()
-- [ ] Write test for Record()
-- [ ] Implement Record()
+- [x] Write test for Allow() method
+- [x] Implement Allow() method
+- [x] Write test for AvailableSlots()
+- [x] Implement AvailableSlots()
+- [x] Write test for WaitTime()
+- [x] Implement WaitTime()
+- [x] Write test for Record()
+- [x] Implement Record()
 
 ### Phase 3: Window Cleanup (TDD)
-- [ ] Write test for timestamp cleanup
-- [ ] Implement cleanup() method
-- [ ] Write test for window sliding
-- [ ] Verify old timestamps removed
-- [ ] Write test for memory efficiency
-- [ ] Optimize timestamp storage
+- [x] Write test for timestamp cleanup
+- [x] Implement cleanup() method
+- [x] Write test for window sliding
+- [x] Verify old timestamps removed
+- [x] Write test for memory efficiency
+- [x] Optimize timestamp storage
 
 ### Phase 4: Concurrency Safety (TDD)
-- [ ] Write test for concurrent Allow()
-- [ ] Verify thread safety
-- [ ] Write test for concurrent Record()
-- [ ] Test race conditions
-- [ ] Write test for high concurrency
-- [ ] Verify no data races
+- [x] Write test for concurrent Allow()
+- [x] Verify thread safety
+- [x] Write test for concurrent Record()
+- [x] Test race conditions
+- [x] Write test for high concurrency
+- [x] Verify no data races
 
 ### Phase 5: Integration Testing
-- [ ] Test with queue processor
-- [ ] Test rate limit enforcement
-- [ ] Test window sliding behavior
-- [ ] Test burst handling
-- [ ] Test long-running scenarios
-- [ ] Verify memory usage
+- [x] Test with queue processor
+- [x] Test rate limit enforcement
+- [x] Test window sliding behavior
+- [x] Test burst handling
+- [x] Test long-running scenarios
+- [x] Verify memory usage
 
 ---
 
@@ -285,15 +286,15 @@ func (t *tokenBucketLimiter) refill() {
 
 ## Definition of Done
 
-- [ ] All acceptance criteria met
-- [ ] Interface defined and documented
-- [ ] Implementation complete
-- [ ] All unit tests passing
-- [ ] Concurrency tests passing
-- [ ] Integration tests passing
-- [ ] No race conditions
-- [ ] Code reviewed
-- [ ] Documentation updated
+- [x] All acceptance criteria met
+- [x] Interface defined and documented
+- [x] Implementation complete
+- [x] All unit tests passing
+- [x] Concurrency tests passing
+- [x] Integration tests passing
+- [x] No race conditions
+- [x] Code reviewed
+- [x] Documentation updated
 
 ---
 
