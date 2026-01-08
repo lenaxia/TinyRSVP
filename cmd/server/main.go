@@ -105,6 +105,7 @@ func main() {
 	sessionRepo := repositories.NewSessionRepository(database)
 	eventRepo := repositories.NewEventRepository(database)
 	inviteRepo := repositories.NewInviteRepository(database)
+	questionRepo := repositories.NewQuestionRepository(database)
 
 	sessionMgr := auth.NewSessionManager(sessionRepo, false)
 	userService := auth.NewUserService(userRepo)
@@ -116,6 +117,11 @@ func main() {
 	eventService := events.NewService(eventRepo, eventValidator, authChecker)
 
 	logger.Info("Initialized event services")
+
+	questionValidator := events.NewQuestionValidator()
+	questionService := events.NewQuestionService(eventRepo, questionRepo, questionValidator, authChecker)
+
+	logger.Info("Initialized question services")
 
 	tokenSecretBytes, err := hex.DecodeString(cfg.Token.Secret)
 	if err != nil {
@@ -223,6 +229,9 @@ func main() {
 	})
 	eventHandlers.RegisterRoutes(chiRouter)
 
+	questionHandlers := handlers.NewQuestionHandlers(questionService)
+	questionHandlers.RegisterRoutes(chiRouter)
+
 	inviteHandlers := handlers.NewInviteHandlers(individualInviteService, cfg.Server.BaseURL)
 	inviteHandlers.RegisterRoutes(chiRouter)
 
@@ -248,6 +257,7 @@ func main() {
 	mux.Handle("/api/events", chiRouter)
 	mux.Handle("/api/events/", chiRouter)
 	logger.Info("Registered event management endpoints", "path", "/api/events", "protection", "authenticated")
+	logger.Info("Registered question management endpoints", "path", "/api/events/{id}/questions", "protection", "authenticated")
 	logger.Info("Registered invite management endpoints", "path", "/api/events/{eventId}/invites", "protection", "authenticated")
 	logger.Info("Registered import invite endpoints", "path", "/api/events/{eventId}/invites/import", "protection", "authenticated")
 	logger.Info("Registered manual invite endpoints", "path", "/api/events/{eventId}/invites/manual", "protection", "authenticated")

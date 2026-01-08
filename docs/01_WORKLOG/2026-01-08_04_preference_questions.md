@@ -1,8 +1,8 @@
 # Worklog: Preference Questions CRUD Implementation
 
-**Date:** 2026-01-08  
-**Story:** Epic 02 Story 05 - Preference Questions CRUD  
-**Status:** ✅ Complete
+**Date:** 2026-01-08
+**Story:** Epic 02 Story 05 - Preference Questions CRUD
+**Status:** ✅ Complete (Including main.go Integration)
 
 ---
 
@@ -278,6 +278,39 @@ All tests passing ✅
 
 ---
 
+## Main.go Integration
+
+### Changes Made (2026-01-08)
+
+Added question management integration to [`cmd/server/main.go`](../../cmd/server/main.go):
+
+1. **Line 108**: Added `questionRepo := repositories.NewQuestionRepository(database)`
+2. **Lines 120-123**: Added question validator and service initialization:
+   ```go
+   questionValidator := events.NewQuestionValidator()
+   questionService := events.NewQuestionService(eventRepo, questionRepo, questionValidator, authChecker)
+   logger.Info("Initialized question services")
+   ```
+3. **Lines 235-236**: Added question handlers registration:
+   ```go
+   questionHandlers := handlers.NewQuestionHandlers(questionService)
+   questionHandlers.RegisterRoutes(chiRouter)
+   ```
+4. **Line 261**: Added logging for question endpoints:
+   ```go
+   logger.Info("Registered question management endpoints", "path", "/api/events/{id}/questions", "protection", "authenticated")
+   ```
+
+### Verification
+
+- ✅ Code compiles successfully
+- ✅ All tests pass (go test -timeout 30s ./...)
+- ✅ Question endpoints now accessible at runtime
+- ✅ Proper initialization order maintained
+- ✅ Authorization middleware applied via chiRouter
+
+---
+
 ## Commits
 
 1. `cd66b77` - feat: add PreferenceQuestion model and validator
@@ -285,9 +318,11 @@ All tests passing ✅
 3. `422fd9b` - feat: add PreferenceQuestion service layer
 4. `a0346a9` - feat: add PreferenceQuestion HTTP handlers
 5. `ea1b8d7` - feat: add PreferenceQuestion integration tests
+6. (pending) - feat: integrate question handlers into main.go
 
 ---
 
-**Status:** ✅ Complete  
-**All Tests:** ✅ Passing  
+**Status:** ✅ Complete (Including main.go Integration)
+**All Tests:** ✅ Passing
+**Integration:** ✅ Complete
 **Ready for:** Next story in Epic 02
