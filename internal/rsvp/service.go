@@ -5,10 +5,12 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"log"
 	"time"
 
 	"github.com/lenaxia/tinyrsvp/internal/db"
 	"github.com/lenaxia/tinyrsvp/internal/db/repositories"
+	"github.com/lenaxia/tinyrsvp/internal/email"
 	"github.com/lenaxia/tinyrsvp/internal/models"
 )
 
@@ -30,14 +32,15 @@ type Service interface {
 }
 
 type service struct {
-	db               db.Database
-	inviteService    InviteService
-	inviteRepo       InviteRepository
-	eventRepo        repositories.EventRepository
-	rsvpRepo         repositories.RSVPRepository
-	answerRepo       repositories.AnswerRepository
-	questionRepo     repositories.QuestionRepository
+	db                db.Database
+	inviteService     InviteService
+	inviteRepo        InviteRepository
+	eventRepo         repositories.EventRepository
+	rsvpRepo          repositories.RSVPRepository
+	answerRepo        repositories.AnswerRepository
+	questionRepo      repositories.QuestionRepository
 	plusOnesValidator PlusOnesValidator
+	emailService      email.Service
 }
 
 func NewService(
@@ -58,6 +61,30 @@ func NewService(
 		answerRepo:        answerRepo,
 		questionRepo:      questionRepo,
 		plusOnesValidator: NewValidator(),
+		emailService:      nil,
+	}
+}
+
+func NewServiceWithEmail(
+	database db.Database,
+	inviteService InviteService,
+	inviteRepo InviteRepository,
+	eventRepo repositories.EventRepository,
+	rsvpRepo repositories.RSVPRepository,
+	answerRepo repositories.AnswerRepository,
+	questionRepo repositories.QuestionRepository,
+	emailService email.Service,
+) Service {
+	return &service{
+		db:                database,
+		inviteService:     inviteService,
+		inviteRepo:        inviteRepo,
+		eventRepo:         eventRepo,
+		rsvpRepo:          rsvpRepo,
+		answerRepo:        answerRepo,
+		questionRepo:      questionRepo,
+		plusOnesValidator: NewValidator(),
+		emailService:      emailService,
 	}
 }
 
@@ -196,6 +223,19 @@ func (s *service) SubmitRSVP(ctx context.Context, token string, req *SubmitRSVPR
 
 	if err != nil {
 		return nil, err
+	}
+
+	if s.emailService != nil && invite.Email != nil {
+		answers, err := s.answerRepo.GetByRSVPID(ctx, rsvp.ID)
+		if err != nil {
+			log.Printf("Failed to get answers for confirmation email: %v", err)
+		} else {
+			go func() {
+				if err := s.emailService.SendConfirmationEmail(context.Background(), rsvp, invite, event, answers); err != nil {
+					log.Printf("Failed to send confirmation email: %v", err)
+				}
+			}()
+		}
 	}
 
 	return rsvp, nil
@@ -387,6 +427,19 @@ func (s *service) UpdateRSVP(ctx context.Context, token string, req *SubmitRSVPR
 
 	if err != nil {
 		return nil, err
+	}
+
+	if s.emailService != nil && invite.Email != nil {
+		answers, err := s.answerRepo.GetByRSVPID(ctx, rsvp.ID)
+		if err != nil {
+			log.Printf("Failed to get answers for confirmation email: %v", err)
+		} else {
+			go func() {
+				if err := s.emailService.SendConfirmationEmail(context.Background(), rsvp, invite, event, answers); err != nil {
+					log.Printf("Failed to send confirmation email: %v", err)
+				}
+			}()
+		}
 	}
 
 	return rsvp, nil
