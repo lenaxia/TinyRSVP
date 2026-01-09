@@ -344,6 +344,10 @@ func main() {
 	imageHandlers.RegisterRoutes(chiRouter)
 	logger.Info("Registered image management endpoints", "path", "/api/events/{event_id}/images", "protection", "authenticated")
 
+	assetHandler := handlers.NewAssetHandler(storageProvider)
+	mux.HandleFunc("/assets/", assetHandler.ServeAsset)
+	logger.Info("Registered asset serving endpoint", "path", "/assets/*", "method", "GET,HEAD", "protection", "none")
+
 	inviteHandlers := handlers.NewInviteHandlers(individualInviteService, cfg.Server.BaseURL)
 	inviteHandlers.RegisterRoutes(chiRouter)
 
