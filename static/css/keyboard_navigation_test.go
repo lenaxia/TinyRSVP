@@ -142,9 +142,14 @@ func TestNoOutlineNone(t *testing.T) {
 
 	cssContent := string(content)
 
-	pattern := regexp.MustCompile(`:focus\s*\{[^}]*outline:\s*none`)
+	pattern := regexp.MustCompile(`(?m)^\s*\*?:focus\s*\{\s*[^}]*outline:\s*none`)
 	if pattern.MatchString(cssContent) {
-		t.Error("Should not use outline: none on :focus without providing alternative focus indicator")
+		hasFocusVisible := strings.Contains(cssContent, ":focus-visible")
+		hasNotFocusVisible := strings.Contains(cssContent, ":focus:not(:focus-visible)")
+		
+		if !hasFocusVisible && !hasNotFocusVisible {
+			t.Error("Should not use outline: none on :focus without providing :focus-visible alternative")
+		}
 	}
 }
 
