@@ -168,6 +168,47 @@ func TestStaticCSSFileServing(t *testing.T) {
 		}
 	})
 
+	t.Run("serves buttons.css with correct status", func(t *testing.T) {
+		req := httptest.NewRequest("GET", "/static/css/buttons.css", nil)
+		w := httptest.NewRecorder()
+
+		handler.ServeHTTP(w, req)
+
+		if w.Code != http.StatusOK {
+			t.Errorf("Expected status 200, got %d", w.Code)
+		}
+	})
+
+	t.Run("serves buttons.css with expected button classes", func(t *testing.T) {
+		req := httptest.NewRequest("GET", "/static/css/buttons.css", nil)
+		w := httptest.NewRecorder()
+
+		handler.ServeHTTP(w, req)
+
+		body := w.Body.String()
+
+		expectedClasses := []string{
+			".btn",
+			".btn-primary",
+			".btn-secondary",
+			".btn-danger",
+			".btn-ghost",
+			".btn-sm",
+			".btn-md",
+			".btn-lg",
+			".btn-loading",
+			".btn-icon",
+			".btn-group",
+			".btn-block",
+		}
+
+		for _, class := range expectedClasses {
+			if !strings.Contains(body, class) {
+				t.Errorf("Response body should contain button class %s", class)
+			}
+		}
+	})
+
 	t.Run("returns 404 for non-existent CSS file", func(t *testing.T) {
 		req := httptest.NewRequest("GET", "/static/css/nonexistent.css", nil)
 		w := httptest.NewRecorder()
