@@ -8,12 +8,12 @@
 
 ## Executive Summary
 
-This document provides a comprehensive breakdown of the TinyRSVP v0 implementation into 9 epics and 115 user stories. The breakdown is based on the [Revised HLD](../02_REVISED_HLD.md) and 8 detailed [LLD documents](../04_LLD_INDEX.md).
+This document provides a comprehensive breakdown of the TinyRSVP v0 implementation into 10 epics and 155 user stories. The breakdown is based on the [Revised HLD](../02_REVISED_HLD.md) and 8 detailed [LLD documents](../04_LLD_INDEX.md).
 
 **Key Metrics:**
-- **9 Epics** organized by domain and dependency
-- **115 User Stories** (estimated, detailed stories created during implementation)
-- **~10 weeks** total estimated effort
+- **10 Epics** organized by domain and dependency
+- **155 User Stories** (estimated, detailed stories created during implementation)
+- **~12 weeks** total estimated effort
 - **4 phases** of implementation
 - **Clear dependency chain** ensuring proper build order
 
@@ -203,8 +203,33 @@ This document provides a comprehensive breakdown of the TinyRSVP v0 implementati
 - Metrics endpoint (Prometheus)
 - Static asset serving
 
-**Depends on:** All other epics (orchestration)  
+**Depends on:** All other epics (orchestration)
 **Blocks:** Epic 07 (frontend needs routes)
+
+---
+
+### Epic 09: Security Review & Penetration Testing
+**Priority:** Critical | **Effort:** 2 weeks | **Stories:** 40
+
+**Purpose:** Comprehensive security assessment and penetration testing to identify and remediate vulnerabilities before production deployment.
+
+**Key Deliverables:**
+- Automated security scanning (OWASP ZAP, Nuclei, gosec, Trivy)
+- Dependency vulnerability scanning
+- Authentication and authorization bypass testing
+- Token security validation (entropy, brute force, timing attacks)
+- Injection attack testing (SQL, XSS, template, command, path traversal)
+- CSRF protection validation
+- Business logic security testing
+- Rate limiting and DoS resistance
+- File upload security testing
+- Data exposure and privacy testing
+- Security headers validation
+- Manual penetration testing
+- Comprehensive security assessment report
+
+**Depends on:** All other epics (00-08) - requires complete implementation
+**Blocks:** Production deployment
 
 ---
 
@@ -221,8 +246,9 @@ This document provides a comprehensive breakdown of the TinyRSVP v0 implementati
 | 06: Templates | 13 | 0.5 day | Security + UX |
 | 07: Frontend | 21 | 0.5 day | UI components |
 | 08: API | 18 | 0.5 day | Integration |
+| 09: Security | 40 | 0.5 day | Pen testing & hardening |
 
-**Total:** 115 stories
+**Total:** 155 stories
 
 ---
 
@@ -231,18 +257,21 @@ This document provides a comprehensive breakdown of the TinyRSVP v0 implementati
 The critical path for v0 completion:
 
 ```
-Epic 00 (1w) → Epic 01 (1w) → Epic 02 (2w) → Epic 03 (1.5w) → 
-Epic 04 (1w) → Epic 06 (1w) → Epic 05 (1.5w) → Epic 08 (1.5w) → 
-Epic 07 (1w)
+Epic 00 (1w) → Epic 01 (1w) → Epic 02 (2w) → Epic 03 (1.5w) →
+Epic 04 (1w) → Epic 06 (1w) → Epic 05 (1.5w) → Epic 08 (1.5w) →
+Epic 07 (1w) → Epic 09 (2w)
 
-Total: 10.5 weeks on critical path
+Total: 12.5 weeks on critical path
 ```
 
 **Parallelization Opportunities:**
 - Epic 06 (Templates) can start after Epic 01
 - Epic 07 (Frontend) can develop in parallel with Epic 08 (API)
+- Epic 09 (Security) requires all other epics complete
 
-**Optimized Timeline:** ~9 weeks with parallel work
+**Optimized Timeline:** ~11 weeks with parallel work
+
+**Note:** Epic 09 (Security Review & Penetration Testing) is critical for production readiness and must be completed before deployment.
 
 ---
 
@@ -266,16 +295,17 @@ Total: 10.5 weeks on critical path
 ## Success Metrics
 
 ### Functional Completeness
-- [ ] All 9 epics complete
-- [ ] All 115 stories complete
+- [ ] All 10 epics complete
+- [ ] All 155 stories complete
 - [ ] All acceptance criteria met
 - [ ] All tests passing
 
 ### Quality Metrics
 - [ ] Test coverage >80%
-- [ ] Zero critical security issues
+- [ ] Zero critical security issues (verified by Epic 09)
 - [ ] Zero high-priority bugs
 - [ ] Performance targets met
+- [ ] Security assessment passed
 
 ### Documentation
 - [ ] All READMEs updated
