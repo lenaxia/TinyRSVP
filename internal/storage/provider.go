@@ -22,6 +22,34 @@ type ObjectInfo struct {
 	LastModified time.Time
 }
 
+type Config struct {
+	Type        string
+	BasePath    string
+	BaseURL     string
+	S3Endpoint  string
+	S3Region    string
+	S3Bucket    string
+	S3AccessKey string
+	S3SecretKey string
+}
+
+func NewProvider(config *Config) (Provider, error) {
+	if config == nil {
+		return nil, fmt.Errorf("config cannot be nil")
+	}
+
+	switch config.Type {
+	case "mock":
+		return NewMockProvider(), nil
+	case "local":
+		return nil, fmt.Errorf("local storage provider not yet implemented")
+	case "s3":
+		return nil, fmt.Errorf("s3 storage provider not yet implemented")
+	default:
+		return nil, fmt.Errorf("unsupported storage type: %s", config.Type)
+	}
+}
+
 type StorageError struct {
 	Op      string
 	Path    string

@@ -15,6 +15,7 @@ import (
 	"time"
 
 	"github.com/go-chi/chi/v5"
+	"github.com/lenaxia/tinyrsvp/internal/assets"
 	"github.com/lenaxia/tinyrsvp/internal/auth"
 	"github.com/lenaxia/tinyrsvp/internal/config"
 	"github.com/lenaxia/tinyrsvp/internal/db"
@@ -27,6 +28,7 @@ import (
 	"github.com/lenaxia/tinyrsvp/internal/middleware"
 	"github.com/lenaxia/tinyrsvp/internal/models"
 	"github.com/lenaxia/tinyrsvp/internal/rsvp"
+	"github.com/lenaxia/tinyrsvp/internal/storage"
 	"github.com/lenaxia/tinyrsvp/internal/templates"
 	"github.com/lenaxia/tinyrsvp/pkg/ics"
 	"github.com/lenaxia/tinyrsvp/pkg/token"
@@ -302,6 +304,20 @@ func main() {
 	templateHandlers := handlers.NewTemplateHandlers(templateService)
 	templateHandlers.RegisterRoutes(chiRouter)
 	logger.Info("Registered template management endpoints", "path", "/api/templates", "protection", "authenticated")
+
+	storageProvider, err := storage.NewProvider(&storage.Config{
+		Type: "mock",
+	})
+	if err != nil {
+		logger.Error("Failed to create storage provider", "error", err)
+		os.Exit(1)
+	}
+	logger.Info("Storage provider initialized", "type", "mock")
+
+	imageService := assets.NewImageService(storageProvider)
+	imageHandlers := handlers.NewImageHandlers(imageService, eventService, authChecker)
+	imageHandlers.RegisterRoutes(chiRouter)
+	logger.Info("Registered image management endpoints", "path", "/api/events/{event_id}/images", "protection", "authenticated")
 
 	inviteHandlers := handlers.NewInviteHandlers(individualInviteService, cfg.Server.BaseURL)
 	inviteHandlers.RegisterRoutes(chiRouter)

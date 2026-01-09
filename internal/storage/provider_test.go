@@ -257,3 +257,99 @@ func TestStorageError_Unwrap(t *testing.T) {
 		t.Errorf("Unwrap() = %v, want %v", err.Unwrap(), innerErr)
 	}
 }
+
+func TestNewProvider_MockType(t *testing.T) {
+	config := &Config{
+		Type: "mock",
+	}
+
+	provider, err := NewProvider(config)
+	if err != nil {
+		t.Fatalf("NewProvider() error = %v", err)
+	}
+
+	if provider == nil {
+		t.Error("NewProvider() returned nil provider")
+	}
+
+	var _ Provider = provider
+}
+
+func TestNewProvider_InvalidType(t *testing.T) {
+	config := &Config{
+		Type: "invalid",
+	}
+
+	provider, err := NewProvider(config)
+	if err == nil {
+		t.Error("NewProvider() expected error for invalid type")
+	}
+
+	if provider != nil {
+		t.Error("NewProvider() should return nil provider on error")
+	}
+
+	if !strings.Contains(err.Error(), "unsupported storage type") {
+		t.Errorf("Error = %v, want error containing 'unsupported storage type'", err)
+	}
+}
+
+func TestNewProvider_LocalType(t *testing.T) {
+	config := &Config{
+		Type:     "local",
+		BasePath: "/tmp/storage",
+		BaseURL:  "http://localhost:8080",
+	}
+
+	provider, err := NewProvider(config)
+	if err == nil {
+		t.Error("NewProvider() expected error for unimplemented local type")
+	}
+
+	if provider != nil {
+		t.Error("NewProvider() should return nil provider on error")
+	}
+
+	if !strings.Contains(err.Error(), "not yet implemented") {
+		t.Errorf("Error = %v, want error containing 'not yet implemented'", err)
+	}
+}
+
+func TestNewProvider_S3Type(t *testing.T) {
+	config := &Config{
+		Type:        "s3",
+		S3Endpoint:  "s3.amazonaws.com",
+		S3Region:    "us-east-1",
+		S3Bucket:    "test-bucket",
+		S3AccessKey: "access",
+		S3SecretKey: "secret",
+	}
+
+	provider, err := NewProvider(config)
+	if err == nil {
+		t.Error("NewProvider() expected error for unimplemented s3 type")
+	}
+
+	if provider != nil {
+		t.Error("NewProvider() should return nil provider on error")
+	}
+
+	if !strings.Contains(err.Error(), "not yet implemented") {
+		t.Errorf("Error = %v, want error containing 'not yet implemented'", err)
+	}
+}
+
+func TestNewProvider_NilConfig(t *testing.T) {
+	provider, err := NewProvider(nil)
+	if err == nil {
+		t.Error("NewProvider() expected error for nil config")
+	}
+
+	if provider != nil {
+		t.Error("NewProvider() should return nil provider on error")
+	}
+
+	if !strings.Contains(err.Error(), "cannot be nil") {
+		t.Errorf("Error = %v, want error containing 'cannot be nil'", err)
+	}
+}
