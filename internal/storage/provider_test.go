@@ -302,16 +302,54 @@ func TestNewProvider_LocalType(t *testing.T) {
 	}
 
 	provider, err := NewProvider(config)
+	if err != nil {
+		t.Fatalf("NewProvider() error = %v", err)
+	}
+
+	if provider == nil {
+		t.Error("NewProvider() returned nil provider")
+	}
+
+	var _ Provider = provider
+}
+
+func TestNewProvider_LocalType_MissingBasePath(t *testing.T) {
+	config := &Config{
+		Type:    "local",
+		BaseURL: "http://localhost:8080",
+	}
+
+	provider, err := NewProvider(config)
 	if err == nil {
-		t.Error("NewProvider() expected error for unimplemented local type")
+		t.Error("NewProvider() expected error for missing BasePath")
 	}
 
 	if provider != nil {
 		t.Error("NewProvider() should return nil provider on error")
 	}
 
-	if !strings.Contains(err.Error(), "not yet implemented") {
-		t.Errorf("Error = %v, want error containing 'not yet implemented'", err)
+	if !strings.Contains(err.Error(), "BasePath is required") {
+		t.Errorf("Error = %v, want error containing 'BasePath is required'", err)
+	}
+}
+
+func TestNewProvider_LocalType_MissingBaseURL(t *testing.T) {
+	config := &Config{
+		Type:     "local",
+		BasePath: "/tmp/storage",
+	}
+
+	provider, err := NewProvider(config)
+	if err == nil {
+		t.Error("NewProvider() expected error for missing BaseURL")
+	}
+
+	if provider != nil {
+		t.Error("NewProvider() should return nil provider on error")
+	}
+
+	if !strings.Contains(err.Error(), "BaseURL is required") {
+		t.Errorf("Error = %v, want error containing 'BaseURL is required'", err)
 	}
 }
 

@@ -305,14 +305,39 @@ func main() {
 	templateHandlers.RegisterRoutes(chiRouter)
 	logger.Info("Registered template management endpoints", "path", "/api/templates", "protection", "authenticated")
 
+	storageType := os.Getenv("STORAGE_TYPE")
+	if storageType == "" {
+		storageType = "local"
+	}
+
+	storagePath := os.Getenv("STORAGE_PATH")
+	if storagePath == "" {
+		storagePath = "/data/uploads"
+	}
+
+	storageBaseURL := os.Getenv("STORAGE_BASE_URL")
+	if storageBaseURL == "" {
+		storageBaseURL = cfg.Server.BaseURL
+	}
+
+	if storageType == "local" {
+		if err := os.MkdirAll(storagePath, 0755); err != nil {
+			logger.Error("Failed to create storage directory", "error", err, "path", storagePath)
+			os.Exit(1)
+		}
+		logger.Info("Storage directory ready", "path", storagePath)
+	}
+
 	storageProvider, err := storage.NewProvider(&storage.Config{
-		Type: "mock",
+		Type:     storageType,
+		BasePath: storagePath,
+		BaseURL:  storageBaseURL,
 	})
 	if err != nil {
 		logger.Error("Failed to create storage provider", "error", err)
 		os.Exit(1)
 	}
-	logger.Info("Storage provider initialized", "type", "mock")
+	logger.Info("Storage provider initialized", "type", storageType, "path", storagePath, "baseURL", storageBaseURL)
 
 	imageService := assets.NewImageService(storageProvider)
 	imageHandlers := handlers.NewImageHandlers(imageService, eventService, authChecker)

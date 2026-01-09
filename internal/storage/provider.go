@@ -42,7 +42,13 @@ func NewProvider(config *Config) (Provider, error) {
 	case "mock":
 		return NewMockProvider(), nil
 	case "local":
-		return nil, fmt.Errorf("local storage provider not yet implemented")
+		if config.BasePath == "" {
+			return nil, fmt.Errorf("BasePath is required for local storage")
+		}
+		if config.BaseURL == "" {
+			return nil, fmt.Errorf("BaseURL is required for local storage")
+		}
+		return NewLocalProvider(config.BasePath, config.BaseURL), nil
 	case "s3":
 		return nil, fmt.Errorf("s3 storage provider not yet implemented")
 	default:
