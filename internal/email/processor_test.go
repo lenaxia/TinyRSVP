@@ -3,6 +3,7 @@ package email
 import (
 	"context"
 	"errors"
+	"log/slog"
 	"testing"
 	"time"
 
@@ -157,12 +158,18 @@ func (m *MockRateLimiter) Reset() {
 	}
 }
 
+func newTestProcessor(repo repositories.EmailQueueRepository, sender SMTPSender, limiter RateLimiter, batchSize int, pollInterval time.Duration) QueueProcessor {
+	metrics := NewNoOpMetrics()
+	logger := NewLogger(slog.Default())
+	return NewQueueProcessor(repo, sender, limiter, batchSize, pollInterval, metrics, logger)
+}
+
 func TestNewQueueProcessor(t *testing.T) {
 	repo := &MockEmailQueueRepository{}
 	sender := &MockSMTPSender{}
 	limiter := &MockRateLimiter{}
 
-	processor := NewQueueProcessor(repo, sender, limiter, 10, time.Minute)
+	processor := newTestProcessor(repo, sender, limiter, 10, time.Minute)
 
 	if processor == nil {
 		t.Fatal("NewQueueProcessor() returned nil")
@@ -180,7 +187,7 @@ func TestQueueProcessor_ProcessBatch_NoEmails(t *testing.T) {
 		AvailableSlotsFunc: func() int { return 10 },
 	}
 
-	processor := NewQueueProcessor(mockRepo, nil, mockLimiter, 10, time.Minute)
+	processor := newTestProcessor(mockRepo, nil, mockLimiter, 10, time.Minute)
 
 	err := processor.ProcessBatch(context.Background())
 	if err != nil {
@@ -240,7 +247,7 @@ func TestQueueProcessor_ProcessBatch_Success(t *testing.T) {
 		AvailableSlotsFunc: func() int { return 10 },
 	}
 
-	processor := NewQueueProcessor(mockRepo, mockSender, mockLimiter, 10, time.Minute)
+	processor := newTestProcessor(mockRepo, mockSender, mockLimiter, 10, time.Minute)
 
 	err := processor.ProcessBatch(context.Background())
 	if err != nil {
@@ -306,7 +313,7 @@ func TestQueueProcessor_ProcessBatch_SendFailure(t *testing.T) {
 		AvailableSlotsFunc: func() int { return 10 },
 	}
 
-	processor := NewQueueProcessor(mockRepo, mockSender, mockLimiter, 10, time.Minute)
+	processor := newTestProcessor(mockRepo, mockSender, mockLimiter, 10, time.Minute)
 
 	err := processor.ProcessBatch(context.Background())
 	if err != nil {
@@ -364,7 +371,7 @@ func TestQueueProcessor_ProcessBatch_MaxAttemptsReached(t *testing.T) {
 		AvailableSlotsFunc: func() int { return 10 },
 	}
 
-	processor := NewQueueProcessor(mockRepo, mockSender, mockLimiter, 10, time.Minute)
+	processor := newTestProcessor(mockRepo, mockSender, mockLimiter, 10, time.Minute)
 
 	err := processor.ProcessBatch(context.Background())
 	if err != nil {
@@ -390,7 +397,7 @@ func TestQueueProcessor_ProcessBatch_RateLimitZeroSlots(t *testing.T) {
 		AvailableSlotsFunc: func() int { return 0 },
 	}
 
-	processor := NewQueueProcessor(mockRepo, nil, mockLimiter, 10, time.Minute)
+	processor := newTestProcessor(mockRepo, nil, mockLimiter, 10, time.Minute)
 
 	err := processor.ProcessBatch(context.Background())
 	if err != nil {
@@ -416,7 +423,7 @@ func TestQueueProcessor_ProcessBatch_BatchSizeLimiting(t *testing.T) {
 		AvailableSlotsFunc: func() int { return 5 },
 	}
 
-	processor := NewQueueProcessor(mockRepo, nil, mockLimiter, 10, time.Minute)
+	processor := newTestProcessor(mockRepo, nil, mockLimiter, 10, time.Minute)
 
 	err := processor.ProcessBatch(context.Background())
 	if err != nil {
@@ -428,7 +435,7 @@ func TestQueueProcessor_GracefulShutdown(t *testing.T) {
 	mockRepo := &MockEmailQueueRepository{}
 	mockLimiter := &MockRateLimiter{}
 
-	processor := NewQueueProcessor(mockRepo, nil, mockLimiter, 10, 100*time.Millisecond)
+	processor := newTestProcessor(mockRepo, nil, mockLimiter, 10, 100*time.Millisecond)
 
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
@@ -456,7 +463,7 @@ func TestQueueProcessor_Stop(t *testing.T) {
 	mockRepo := &MockEmailQueueRepository{}
 	mockLimiter := &MockRateLimiter{}
 
-	processor := NewQueueProcessor(mockRepo, nil, mockLimiter, 10, 100*time.Millisecond)
+	processor := newTestProcessor(mockRepo, nil, mockLimiter, 10, 100*time.Millisecond)
 
 	go func() {
 		_ = processor.Start(context.Background())
@@ -546,7 +553,7 @@ func TestQueueProcessor_ProcessBatch_PermanentError(t *testing.T) {
 		AvailableSlotsFunc: func() int { return 10 },
 	}
 
-	processor := NewQueueProcessor(mockRepo, mockSender, mockLimiter, 10, time.Minute)
+	processor := newTestProcessor(mockRepo, mockSender, mockLimiter, 10, time.Minute)
 
 	err := processor.ProcessBatch(context.Background())
 	if err != nil {
@@ -606,7 +613,7 @@ func TestQueueProcessor_ProcessBatch_TransientError(t *testing.T) {
 		AvailableSlotsFunc: func() int { return 10 },
 	}
 
-	processor := NewQueueProcessor(mockRepo, mockSender, mockLimiter, 10, time.Minute)
+	processor := newTestProcessor(mockRepo, mockSender, mockLimiter, 10, time.Minute)
 
 	err := processor.ProcessBatch(context.Background())
 	if err != nil {

@@ -3,6 +3,7 @@ package email
 import (
 	"context"
 	"database/sql"
+	"log/slog"
 	"sync"
 	"testing"
 	"time"
@@ -12,6 +13,12 @@ import (
 	"github.com/lenaxia/tinyrsvp/internal/models"
 )
 
+func newTestIntegrationProcessor(repo repositories.EmailQueueRepository, sender SMTPSender, limiter RateLimiter, batchSize int, pollInterval time.Duration) QueueProcessor {
+	metrics := NewNoOpMetrics()
+	logger := NewLogger(slog.Default())
+	return NewQueueProcessor(repo, sender, limiter, batchSize, pollInterval, metrics, logger)
+}
+
 func TestProcessorIntegration_FullCycle(t *testing.T) {
 	database := setupTestDatabase(t)
 	defer database.Close()
@@ -20,7 +27,7 @@ func TestProcessorIntegration_FullCycle(t *testing.T) {
 	sender := &trackingSender{sent: make([]string, 0)}
 	limiter := NewStubRateLimiter()
 
-	processor := NewQueueProcessor(repo, sender, limiter, 10, 100*time.Millisecond)
+	processor := newTestIntegrationProcessor(repo, sender, limiter, 10, 100*time.Millisecond)
 
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
@@ -75,7 +82,7 @@ func TestProcessorIntegration_RetryLogic(t *testing.T) {
 	sender := &failingSender{failCount: 2}
 	limiter := NewStubRateLimiter()
 
-	processor := NewQueueProcessor(repo, sender, limiter, 10, 100*time.Millisecond)
+	processor := newTestIntegrationProcessor(repo, sender, limiter, 10, 100*time.Millisecond)
 
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
@@ -134,7 +141,7 @@ func TestProcessorIntegration_MaxAttemptsReached(t *testing.T) {
 	sender := &alwaysFailingSender{}
 	limiter := NewStubRateLimiter()
 
-	processor := NewQueueProcessor(repo, sender, limiter, 10, 50*time.Millisecond)
+	processor := newTestIntegrationProcessor(repo, sender, limiter, 10, 50*time.Millisecond)
 
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
@@ -193,7 +200,7 @@ func TestProcessorIntegration_GracefulShutdown(t *testing.T) {
 	sender := &slowSender{delay: 200 * time.Millisecond}
 	limiter := NewStubRateLimiter()
 
-	processor := NewQueueProcessor(repo, sender, limiter, 10, 100*time.Millisecond)
+	processor := newTestIntegrationProcessor(repo, sender, limiter, 10, 100*time.Millisecond)
 
 	ctx, cancel := context.WithCancel(context.Background())
 
@@ -244,7 +251,7 @@ func TestProcessorIntegration_BatchProcessing(t *testing.T) {
 	sender := &trackingSender{sent: make([]string, 0)}
 	limiter := NewStubRateLimiter()
 
-	processor := NewQueueProcessor(repo, sender, limiter, 5, 100*time.Millisecond)
+	processor := newTestIntegrationProcessor(repo, sender, limiter, 5, 100*time.Millisecond)
 
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
@@ -413,7 +420,7 @@ func TestProcessorIntegration_RateLimiting(t *testing.T) {
 	sender := &trackingSender{sent: make([]string, 0)}
 	limiter := NewRateLimiter(2)
 
-	processor := NewQueueProcessor(repo, sender, limiter, 10, 100*time.Millisecond)
+	processor := newTestIntegrationProcessor(repo, sender, limiter, 10, 100*time.Millisecond)
 
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()

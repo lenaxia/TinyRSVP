@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"log"
 	"math/rand"
 	"time"
 
@@ -55,6 +54,8 @@ type queueProcessor struct {
 	pollInterval time.Duration
 	stopChan     chan struct{}
 	doneChan     chan struct{}
+	metrics      Metrics
+	logger       *Logger
 }
 
 func NewQueueProcessor(
@@ -63,6 +64,8 @@ func NewQueueProcessor(
 	rateLimiter RateLimiter,
 	batchSize int,
 	pollInterval time.Duration,
+	metrics Metrics,
+	logger *Logger,
 ) QueueProcessor {
 	return &queueProcessor{
 		repo:         repo,
@@ -72,6 +75,8 @@ func NewQueueProcessor(
 		pollInterval: pollInterval,
 		stopChan:     make(chan struct{}),
 		doneChan:     make(chan struct{}),
+		metrics:      metrics,
+		logger:       logger,
 	}
 }
 
@@ -79,24 +84,23 @@ func (p *queueProcessor) Start(ctx context.Context) error {
 	ticker := time.NewTicker(p.pollInterval)
 	defer ticker.Stop()
 
-	log.Printf("Email queue processor started (interval: %v, batch: %d)",
-		p.pollInterval, p.batchSize)
+	p.logger.QueueProcessorStarted(p.pollInterval, p.batchSize)
 
 	for {
 		select {
 		case <-ctx.Done():
-			log.Println("Email queue processor stopped (context cancelled)")
+			p.logger.QueueProcessorStopped()
 			close(p.doneChan)
 			return ctx.Err()
 
 		case <-p.stopChan:
-			log.Println("Email queue processor stopped (shutdown requested)")
+			p.logger.QueueProcessorStopped()
 			close(p.doneChan)
 			return nil
 
 		case <-ticker.C:
 			if err := p.ProcessBatch(ctx); err != nil {
-				log.Printf("Error processing email batch: %v", err)
+				p.metrics.RecordProcessingError(err)
 			}
 		}
 	}
@@ -114,8 +118,11 @@ func (p *queueProcessor) Stop(ctx context.Context) error {
 }
 
 func (p *queueProcessor) ProcessBatch(ctx context.Context) error {
+	startTime := time.Now()
+	
 	availableSlots := p.rateLimiter.AvailableSlots()
 	if availableSlots == 0 {
+		p.metrics.RecordRateLimitHit()
 		return nil
 	}
 
@@ -129,23 +136,36 @@ func (p *queueProcessor) ProcessBatch(ctx context.Context) error {
 		return nil
 	}
 
-	log.Printf("Processing %d emails", len(emails))
+	p.metrics.RecordQueueSize(len(emails))
 
 	for _, email := range emails {
 		if err := p.processEmail(ctx, email); err != nil {
-			log.Printf("Failed to process email %d: %v", email.ID, err)
+			p.metrics.RecordProcessingError(err)
 		}
 	}
+
+	duration := time.Since(startTime)
+	p.metrics.RecordBatchProcessed(len(emails), duration)
+	p.logger.BatchProcessed(len(emails), duration)
 
 	return nil
 }
 
 func (p *queueProcessor) processEmail(ctx context.Context, email *models.EmailQueue) error {
+	startTime := time.Now()
+	
 	if err := p.repo.MarkSending(ctx, email.ID); err != nil {
 		return fmt.Errorf("failed to mark as sending: %w", err)
 	}
 
+	p.logger.EmailSending(email.ID, email.ToEmail, email.Attempts+1)
+
 	if !p.rateLimiter.Allow() {
+		waitTime := p.rateLimiter.WaitTime()
+		p.metrics.RecordRateLimitHit()
+		p.metrics.RecordRateLimitWait(waitTime)
+		p.logger.RateLimitHit(p.rateLimiter.AvailableSlots(), waitTime)
+		
 		if err := p.repo.UpdateStatus(ctx, email.ID, models.EmailStatusPending); err != nil {
 			return fmt.Errorf("failed to reset status: %w", err)
 		}
@@ -158,11 +178,15 @@ func (p *queueProcessor) processEmail(ctx context.Context, email *models.EmailQu
 
 	p.rateLimiter.Record()
 
+	duration := time.Since(startTime)
+	p.metrics.RecordEmailSent(duration)
+	p.metrics.RecordEmailDequeued()
+
 	if err := p.repo.MarkSent(ctx, email.ID); err != nil {
-		log.Printf("Warning: email sent but failed to mark as sent: %v", err)
+		p.metrics.RecordProcessingError(err)
 	}
 
-	log.Printf("Email %d sent successfully to %s", email.ID, email.ToEmail)
+	p.logger.EmailSent(email.ID, email.ToEmail, duration)
 	return nil
 }
 
@@ -190,8 +214,12 @@ func (p *queueProcessor) sendEmail(ctx context.Context, email *models.EmailQueue
 }
 
 func (p *queueProcessor) handleSendError(ctx context.Context, email *models.EmailQueue, err error) error {
+	p.metrics.RecordEmailFailed(err.Error())
+	p.logger.EmailFailed(email.ID, email.ToEmail, email.Attempts+1, err)
+	
 	var permErr *PermanentError
 	if errors.As(err, &permErr) {
+		p.logger.EmailPermanentlyFailed(email.ID, email.ToEmail, email.Attempts+1, err)
 		return p.repo.MarkFailed(ctx, email.ID, err.Error())
 	}
 
@@ -199,12 +227,13 @@ func (p *queueProcessor) handleSendError(ctx context.Context, email *models.Emai
 		return fmt.Errorf("failed to increment attempts: %w", err)
 	}
 
+	p.metrics.RecordRetryAttempt(email.Attempts + 1)
+
 	if email.Attempts+1 >= email.MaxAttempts {
+		p.logger.EmailPermanentlyFailed(email.ID, email.ToEmail, email.Attempts+1, err)
 		if err := p.repo.MarkFailed(ctx, email.ID, err.Error()); err != nil {
-			log.Printf("Failed to mark email as failed: %v", err)
+			p.metrics.RecordProcessingError(err)
 		}
-		log.Printf("Email %d permanently failed after %d attempts: %v",
-			email.ID, email.Attempts+1, err)
 		return nil
 	}
 
@@ -219,8 +248,7 @@ func (p *queueProcessor) handleSendError(ctx context.Context, email *models.Emai
 		return fmt.Errorf("failed to reschedule: %w", err)
 	}
 
-	log.Printf("Email %d rescheduled for retry in %v (attempt %d/%d)",
-		email.ID, backoff, email.Attempts+1, email.MaxAttempts)
+	p.logger.EmailRetrying(email.ID, email.ToEmail, email.Attempts+1, backoff)
 
 	return nil
 }

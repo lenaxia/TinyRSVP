@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"encoding/hex"
+	"encoding/json"
 	"fmt"
 	"html/template"
 	"net/http"
@@ -395,23 +396,60 @@ func main() {
 	}()
 	logger.Info("Event archiving background job started")
 
-	smtpSender := email.NewStubSMTPSender()
-	
-	testConnCtx, testConnCancel := context.WithTimeout(context.Background(), 10*time.Second)
-	defer testConnCancel()
-	if err := smtpSender.TestConnection(testConnCtx); err != nil {
-		logger.Error("SMTP connection test failed", "error", err)
+	emailConfig, err := email.LoadConfig()
+	if err != nil {
+		logger.Error("Failed to load email configuration", "error", err)
 		os.Exit(1)
 	}
-	logger.Info("SMTP connection test passed")
+	logger.Info("Email configuration loaded", "config", emailConfig.Sanitized())
+
+	smtpSender, err := email.NewSMTPSender(emailConfig)
+	if err != nil {
+		logger.Error("Failed to create SMTP sender", "error", err)
+		os.Exit(1)
+	}
+
+	if emailConfig.TestOnStartup {
+		testConnCtx, testConnCancel := context.WithTimeout(context.Background(), 10*time.Second)
+		defer testConnCancel()
+		if err := smtpSender.TestConnection(testConnCtx); err != nil {
+			logger.Warn("SMTP connection test failed", "error", err)
+		} else {
+			logger.Info("SMTP connection test passed")
+		}
+	}
+
+	emailHealthChecker := email.NewHealthChecker(emailQueueRepo, smtpSender)
+	mux.Handle("/api/email/health", requireAuth(requireAdmin(
+		http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			status, err := emailHealthChecker.GetStatus(r.Context())
+			if err != nil {
+				http.Error(w, err.Error(), http.StatusInternalServerError)
+				return
+			}
+			statusCode := http.StatusOK
+			if !status.Healthy {
+				statusCode = http.StatusServiceUnavailable
+			}
+			w.Header().Set("Content-Type", "application/json")
+			w.WriteHeader(statusCode)
+			json.NewEncoder(w).Encode(status)
+		}),
+	)))
+	logger.Info("Registered email health endpoint", "path", "/api/email/health", "method", "GET", "protection", "admin")
+
+	rateLimiter := email.NewRateLimiter(emailConfig.RateLimit)
+	emailMetrics := email.NewNoOpMetrics()
+	emailLogger := email.NewLogger(logger)
 	
-	rateLimiter := email.NewRateLimiter(50)
 	emailProcessor := email.NewQueueProcessor(
 		emailQueueRepo,
 		smtpSender,
 		rateLimiter,
-		cfg.Email.ProcessorBatchSize,
-		cfg.Email.ProcessorPollInterval,
+		emailConfig.QueueBatchSize,
+		emailConfig.QueuePollInterval,
+		emailMetrics,
+		emailLogger,
 	)
 
 	processorCtx, processorCancel := context.WithCancel(context.Background())
