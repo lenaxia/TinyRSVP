@@ -1,0 +1,72 @@
+.skip-link {
+    position: absolute;
+    top: -40px;
+    left: 0;
+    background: var(--color-primary-600);
+    color: #fff;
+    padding: var(--spacing-2) var(--spacing-4);
+    text-decoration: none;
+    border-radius: var(--radius-base);
+    z-index: var(--z-index-tooltip);
+    font-weight: var(--font-weight-medium);
+    transition: top var(--transition-fast);
+}
+
+.skip-link:focus {
+    top: 0;
+    outline: 2px solid var(--color-border-focus);
+    outline-offset: 2px;
+}
+
+*:focus {
+    outline: 2px solid var(--color-border-focus);
+    outline-offset: 2px;
+}
+
+*:focus:not(:focus-visible) {
+    outline: none;
+}
+
+*:focus-visible {
+    outline: 2px solid var(--color-border-focus);
+    outline-offset: 2px;
+}
+
+a:focus {
+    outline: 2px solid var(--color-border-focus);
+    outline-offset: 2px;
+    border-radius: var(--radius-sm);
+}
+
+button:focus {
+    outline: 2px solid var(--color-border-focus);
+    outline-offset: 2px;
+}
+
+input:focus,
+textarea:focus,
+select:focus {
+    outline: 2px solid var(--color-border-focus);
+    outline-offset: 0;
+    border-color: var(--color-border-focus);
+}
+
+[tabindex="-1"]:focus {
+    outline: none;
+}
+
+.focusable:focus {
+    outline: 2px solid var(--color-border-focus);
+    outline-offset: 2px;
+}
+
+.focus-within:focus-within {
+    border-color: var(--color-border-focus);
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .skip-link {
+        transition: none;
+    }
+}
