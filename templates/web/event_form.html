@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{if .Event.ID}}Edit{{else}}Create{{end}} Event - TinyRSVP</title>
+    <link rel="stylesheet" href="/static/css/variables.css">
+    <link rel="stylesheet" href="/static/css/typography.css">
+    <link rel="stylesheet" href="/static/css/colors.css">
+    <link rel="stylesheet" href="/static/css/spacing.css">
+    <link rel="stylesheet" href="/static/css/grid.css">
+    <link rel="stylesheet" href="/static/css/buttons.css">
+    <link rel="stylesheet" href="/static/css/navigation.css">
+    <link rel="stylesheet" href="/static/css/forms.css">
+    <link rel="stylesheet" href="/static/css/dashboard.css">
+    <link rel="stylesheet" href="/static/css/event_form.css">
+</head>
+<body>
+    <div class="dashboard">
+        <aside class="dashboard-sidebar">
+            <nav class="nav">
+                <a href="/" class="logo">TinyRSVP</a>
+                <ul class="nav-menu">
+                    <li><a href="/dashboard" class="nav-link">Dashboard</a></li>
+                    <li><a href="/events" class="nav-link active">Events</a></li>
+                    <li><a href="/invites" class="nav-link">Invites</a></li>
+                    <li><a href="/settings" class="nav-link">Settings</a></li>
+                </ul>
+            </nav>
+        </aside>
+
+        <main class="dashboard-main">
+            <header class="dashboard-header">
+                <h1>{{if .Event.ID}}Edit{{else}}Create{{end}} Event</h1>
+            </header>
+
+            {{if .Error}}
+            <div class="alert alert-error">
+                <strong>Error:</strong> {{.Error}}
+            </div>
+            {{end}}
+
+            <form method="POST" action="{{if .Event.ID}}/events/{{.Event.ID}}{{else}}/events{{end}}" class="event-form">
+                {{if .Event.ID}}
+                <input type="hidden" name="_method" value="PUT">
+                {{end}}
+
+                <section class="form-section">
+                    <h2 class="form-section-title">Event Details</h2>
+                    
+                    <div class="form-group">
+                        <label for="title" class="form-label">
+                            Event Title<span class="form-required" aria-label="required">*</span>
+                        </label>
+                        <input 
+                            type="text" 
+                            id="title" 
+                            name="title" 
+                            class="form-input{{if .Errors.Title}} error{{end}}" 
+                            value="{{.Event.Title}}"
+                            required
+                            aria-describedby="title-help{{if .Errors.Title}} title-error{{end}}"
+                            maxlength="200"
+                        >
+                        <span class="form-help-text" id="title-help">Give your event a clear, descriptive name</span>
+                        {{if .Errors.Title}}
+                        <span class="form-error" id="title-error">{{.Errors.Title}}</span>
+                        {{end}}
+                    </div>
+
+                    <div class="form-group">
+                        <label for="description" class="form-label">Description</label>
+                        <textarea 
+                            id="description" 
+                            name="description" 
+                            class="form-textarea{{if .Errors.Description}} error{{end}}"
+                            aria-describedby="description-help{{if .Errors.Description}} description-error{{end}}"
+                            rows="5"
+                        >{{if .Event.Description}}{{.Event.Description}}{{end}}</textarea>
+                        <span class="form-help-text" id="description-help">Provide details about your event</span>
+                        {{if .Errors.Description}}
+                        <span class="form-error" id="description-error">{{.Errors.Description}}</span>
+                        {{end}}
+                    </div>
+
+                    <div class="form-group">
+                        <label for="location" class="form-label">Location</label>
+                        <input 
+                            type="text" 
+                            id="location" 
+                            name="location" 
+                            class="form-input{{if .Errors.Location}} error{{end}}"
+                            value="{{if .Event.Location}}{{.Event.Location}}{{end}}"
+                            aria-describedby="location-help{{if .Errors.Location}} location-error{{end}}"
+                        >
+                        <span class="form-help-text" id="location-help">Physical address or virtual meeting link</span>
+                        {{if .Errors.Location}}
+                        <span class="form-error" id="location-error">{{.Errors.Location}}</span>
+                        {{end}}
+                    </div>
+                </section>
+
+                <section class="form-section">
+                    <h2 class="form-section-title">Date & Time</h2>
+                    
+                    <div class="form-group">
+                        <label for="start_time" class="form-label">
+                            Start Date & Time<span class="form-required" aria-label="required">*</span>
+                        </label>
+                        <input 
+                            type="datetime-local" 
+                            id="start_time" 
+                            name="start_time" 
+                            class="form-input{{if .Errors.StartTime}} error{{end}}" 
+                            value="{{if .Event.StartTime}}{{.Event.StartTime.Format "2006-01-02T15:04"}}{{end}}"
+                            required
+                            aria-describedby="start_time-help{{if .Errors.StartTime}} start_time-error{{end}}"
+                        >
+                        <span class="form-help-text" id="start_time-help">When does your event start?</span>
+                        {{if .Errors.StartTime}}
+                        <span class="form-error" id="start_time-error">{{.Errors.StartTime}}</span>
+                        {{end}}
+                    </div>
+
+                    <div class="form-group">
+                        <label for="end_time" class="form-label">End Date & Time</label>
+                        <input 
+                            type="datetime-local" 
+                            id="end_time" 
+                            name="end_time" 
+                            class="form-input{{if .Errors.EndTime}} error{{end}}"
+                            value="{{if .Event.EndTime}}{{.Event.EndTime.Format "2006-01-02T15:04"}}{{end}}"
+                            aria-describedby="end_time-help{{if .Errors.EndTime}} end_time-error{{end}}"
+                        >
+                        <span class="form-help-text" id="end_time-help">When does your event end?</span>
+                        {{if .Errors.EndTime}}
+                        <span class="form-error" id="end_time-error">{{.Errors.EndTime}}</span>
+                        {{end}}
+                    </div>
+
+                    <div class="form-group">
+                        <label for="timezone" class="form-label">
+                            Timezone<span class="form-required" aria-label="required">*</span>
+                        </label>
+                        <select 
+                            id="timezone" 
+                            name="timezone" 
+                            class="form-select{{if .Errors.Timezone}} error{{end}}" 
+                            required
+                            aria-describedby="timezone-help{{if .Errors.Timezone}} timezone-error{{end}}"
+                        >
+                            <option value="">Select timezone...</option>
+                            {{$currentTZ := .Event.Timezone}}
+                            <option value="America/Los_Angeles"{{if eq $currentTZ "America/Los_Angeles"}} selected{{end}}>Pacific Time (PT)</option>
+                            <option value="America/Denver"{{if eq $currentTZ "America/Denver"}} selected{{end}}>Mountain Time (MT)</option>
+                            <option value="America/Chicago"{{if eq $currentTZ "America/Chicago"}} selected{{end}}>Central Time (CT)</option>
+                            <option value="America/New_York"{{if eq $currentTZ "America/New_York"}} selected{{end}}>Eastern Time (ET)</option>
+                            <option value="UTC"{{if eq $currentTZ "UTC"}} selected{{end}}>UTC</option>
+                            <option value="Europe/London"{{if eq $currentTZ "Europe/London"}} selected{{end}}>London (GMT)</option>
+                            <option value="Europe/Paris"{{if eq $currentTZ "Europe/Paris"}} selected{{end}}>Paris (CET)</option>
+                            <option value="Asia/Tokyo"{{if eq $currentTZ "Asia/Tokyo"}} selected{{end}}>Tokyo (JST)</option>
+                            <option value="Australia/Sydney"{{if eq $currentTZ "Australia/Sydney"}} selected{{end}}>Sydney (AEDT)</option>
+                        </select>
+                        <span class="form-help-text" id="timezone-help">Event timezone</span>
+                        {{if .Errors.Timezone}}
+                        <span class="form-error" id="timezone-error">{{.Errors.Timezone}}</span>
+                        {{end}}
+                    </div>
+                </section>
+
+                <section class="form-section">
+                    <h2 class="form-section-title">RSVP Settings</h2>
+                    
+                    <div class="form-group">
+                        <label for="rsvp_deadline" class="form-label">RSVP Deadline</label>
+                        <input 
+                            type="datetime-local" 
+                            id="rsvp_deadline" 
+                            name="rsvp_deadline" 
+                            class="form-input{{if .Errors.RSVPDeadline}} error{{end}}"
+                            value="{{if .Event.RSVPDeadline}}{{.Event.RSVPDeadline.Format "2006-01-02T15:04"}}{{end}}"
+                            aria-describedby="rsvp_deadline-help{{if .Errors.RSVPDeadline}} rsvp_deadline-error{{end}}"
+                        >
+                        <span class="form-help-text" id="rsvp_deadline-help">Last date guests can respond</span>
+                        {{if .Errors.RSVPDeadline}}
+                        <span class="form-error" id="rsvp_deadline-error">{{.Errors.RSVPDeadline}}</span>
+                        {{end}}
+                    </div>
+
+                    <div class="form-group">
+                        <label for="max_plus_ones" class="form-label">Maximum Plus Ones</label>
+                        <input 
+                            type="number" 
+                            id="max_plus_ones" 
+                            name="max_plus_ones" 
+                            class="form-input{{if .Errors.MaxPlusOnes}} error{{end}}"
+                            min="0"
+                            max="10"
+                            value="{{.Event.MaxPlusOnes}}"
+                            aria-describedby="max_plus_ones-help{{if .Errors.MaxPlusOnes}} max_plus_ones-error{{end}}"
+                        >
+                        <span class="form-help-text" id="max_plus_ones-help">How many guests can each invitee bring?</span>
+                        {{if .Errors.MaxPlusOnes}}
+                        <span class="form-error" id="max_plus_ones-error">{{.Errors.MaxPlusOnes}}</span>
+                        {{end}}
+                    </div>
+                </section>
+
+                <section class="form-section">
+                    <h2 class="form-section-title">Preference Questions</h2>
+                    <p class="form-help-text">Ask guests about dietary restrictions, meal preferences, etc.</p>
+                    
+                    <div id="questions-container">
+                        {{range $index, $question := .Questions}}
+                        <div class="question-item" data-index="{{$index}}">
+                            <div class="form-group">
+                                <label for="question_{{$index}}_text" class="form-label">Question {{add $index 1}}</label>
+                                <input 
+                                    type="text" 
+                                    id="question_{{$index}}_text" 
+                                    name="questions[{{$index}}][text]" 
+                                    class="form-input"
+                                    value="{{$question.Text}}"
+                                    placeholder="e.g., Do you have any dietary restrictions?"
+                                >
+                            </div>
+                            <div class="form-group">
+                                <label for="question_{{$index}}_type" class="form-label">Answer Type</label>
+                                <select 
+                                    id="question_{{$index}}_type" 
+                                    name="questions[{{$index}}][type]" 
+                                    class="form-select"
+                                >
+                                    <option value="text"{{if eq $question.Type "text"}} selected{{end}}>Text</option>
+                                    <option value="choice"{{if eq $question.Type "choice"}} selected{{end}}>Multiple Choice</option>
+                                </select>
+                            </div>
+                            <button type="button" class="btn btn-danger btn-sm remove-question" data-index="{{$index}}">
+                                Remove
+                            </button>
+                        </div>
+                        {{end}}
+                    </div>
+                    
+                    <button type="button" class="btn btn-secondary" id="add-question-btn">
+                        Add Question
+                    </button>
+                </section>
+
+                <div class="form-actions">
+                    <a href="/events" class="btn btn-secondary">Cancel</a>
+                    <button type="submit" name="action" value="draft" class="btn btn-secondary">
+                        Save Draft
+                    </button>
+                    <button type="submit" name="action" value="publish" class="btn btn-primary">
+                        {{if .Event.ID}}Update{{else}}Publish{{end}} Event
+                    </button>
+                </div>
+            </form>
+        </main>
+    </div>
+</body>
+</html>
