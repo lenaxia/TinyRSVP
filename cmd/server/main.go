@@ -348,6 +348,10 @@ func main() {
 	mux.HandleFunc("/assets/", assetHandler.ServeAsset)
 	logger.Info("Registered asset serving endpoint", "path", "/assets/*", "method", "GET,HEAD", "protection", "none")
 
+	staticFS := http.FileServer(http.Dir("static"))
+	mux.Handle("/static/", http.StripPrefix("/static/", staticFS))
+	logger.Info("Registered static file serving endpoint", "path", "/static/*", "method", "GET,HEAD", "protection", "none")
+
 	inviteHandlers := handlers.NewInviteHandlers(individualInviteService, cfg.Server.BaseURL)
 	inviteHandlers.RegisterRoutes(chiRouter)
 

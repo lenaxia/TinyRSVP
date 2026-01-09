@@ -1,0 +1,63 @@
+=== RUN   TestCSSVariablesIntegrationWithExistingRSVPTemplate
+--- PASS: TestCSSVariablesIntegrationWithExistingRSVPTemplate (0.00s)
+=== RUN   TestCSSVariablesCanReplaceInlineStyles
+    variables_existing_integration_test.go:76: Warning: Inline color #ea580c should be replaced with --color-warning
+--- PASS: TestCSSVariablesCanReplaceInlineStyles (0.00s)
+=== RUN   TestCSSVariablesProvideAllRequiredTokens
+--- PASS: TestCSSVariablesProvideAllRequiredTokens (0.00s)
+=== RUN   TestCSSVariablesBreakpointCompatibility
+--- PASS: TestCSSVariablesBreakpointCompatibility (0.00s)
+=== RUN   TestCSSVariablesEmailTemplateCompatibility
+--- PASS: TestCSSVariablesEmailTemplateCompatibility (0.00s)
+=== RUN   TestCSSVariablesIntegrationWithTemplates
+--- PASS: TestCSSVariablesIntegrationWithTemplates (0.00s)
+=== RUN   TestCSSVariablesResponsiveDesign
+--- PASS: TestCSSVariablesResponsiveDesign (0.00s)
+=== RUN   TestCSSVariablesFormStyling
+--- PASS: TestCSSVariablesFormStyling (0.00s)
+=== RUN   TestCSSVariablesAlertComponents
+--- PASS: TestCSSVariablesAlertComponents (0.00s)
+=== RUN   TestCSSVariablesModalComponents
+--- PASS: TestCSSVariablesModalComponents (0.00s)
+=== RUN   TestCSSVariablesNavigationComponents
+--- PASS: TestCSSVariablesNavigationComponents (0.00s)
+=== RUN   TestCSSVariablesCompleteCoverage
+--- PASS: TestCSSVariablesCompleteCoverage (0.00s)
+=== RUN   TestCSSVariablesFileExists
+--- PASS: TestCSSVariablesFileExists (0.00s)
+=== RUN   TestCSSVariablesHasRootSelector
+--- PASS: TestCSSVariablesHasRootSelector (0.00s)
+=== RUN   TestCSSVariablesDefinesPrimaryColors
+--- PASS: TestCSSVariablesDefinesPrimaryColors (0.00s)
+=== RUN   TestCSSVariablesDefinesSemanticColors
+--- PASS: TestCSSVariablesDefinesSemanticColors (0.00s)
+=== RUN   TestCSSVariablesDefinesGrayScale
+--- PASS: TestCSSVariablesDefinesGrayScale (0.00s)
+=== RUN   TestCSSVariablesDefinesFunctionalColors
+--- PASS: TestCSSVariablesDefinesFunctionalColors (0.00s)
+=== RUN   TestCSSVariablesDefinesSpacingScale
+--- PASS: TestCSSVariablesDefinesSpacingScale (0.00s)
+=== RUN   TestCSSVariablesDefinesTypographyScale
+--- PASS: TestCSSVariablesDefinesTypographyScale (0.00s)
+=== RUN   TestCSSVariablesDefinesBorderRadius
+--- PASS: TestCSSVariablesDefinesBorderRadius (0.00s)
+=== RUN   TestCSSVariablesDefinesShadows
+--- PASS: TestCSSVariablesDefinesShadows (0.00s)
+=== RUN   TestCSSVariablesDefinesTransitions
+--- PASS: TestCSSVariablesDefinesTransitions (0.00s)
+=== RUN   TestCSSVariablesDefinesZIndex
+--- PASS: TestCSSVariablesDefinesZIndex (0.00s)
+=== RUN   TestCSSVariablesDefinesBreakpoints
+--- PASS: TestCSSVariablesDefinesBreakpoints (0.00s)
+=== RUN   TestCSSVariablesDefinesContainerWidths
+--- PASS: TestCSSVariablesDefinesContainerWidths (0.00s)
+=== RUN   TestCSSVariablesHasValidSyntax
+--- PASS: TestCSSVariablesHasValidSyntax (0.00s)
+=== RUN   TestCSSVariablesColorContrastWCAA
+--- PASS: TestCSSVariablesColorContrastWCAA (0.00s)
+=== RUN   TestCSSVariablesHasDarkModeSupport
+--- PASS: TestCSSVariablesHasDarkModeSupport (0.00s)
+=== RUN   TestCSSVariablesDarkModeOverrides
+--- PASS: TestCSSVariablesDarkModeOverrides (0.00s)
+PASS
+ok  	github.com/lenaxia/tinyrsvp/static/css	0.012s

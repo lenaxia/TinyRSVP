@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{if .Event}}RSVP - {{.Event.Title}}{{else}}RSVP{{end}}</title>
+    <link rel="stylesheet" href="/static/css/variables.css">
     <style>
         * {
             margin: 0;
@@ -11,26 +12,11 @@
             box-sizing: border-box;
         }
 
-        :root {
-            --primary-color: #2563eb;
-            --primary-hover: #1d4ed8;
-            --success-color: #16a34a;
-            --warning-color: #ea580c;
-            --error-color: #dc2626;
-            --text-primary: #1f2937;
-            --text-secondary: #6b7280;
-            --bg-primary: #ffffff;
-            --bg-secondary: #f9fafb;
-            --border-color: #e5e7eb;
-            --shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
-            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-        }
-
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-            line-height: 1.6;
-            color: var(--text-primary);
-            background-color: var(--bg-secondary);
+            font-family: var(--font-family-sans);
+            line-height: var(--line-height-normal);
+            color: var(--color-text-primary);
+            background-color: var(--color-surface);
             padding: 1rem;
         }
 
@@ -40,8 +26,8 @@
         }
 
         .error-container {
-            background-color: var(--bg-primary);
-            border: 2px solid var(--error-color);
+            background-color: var(--color-background);
+            border: 2px solid var(--color-error);
             border-radius: 8px;
             padding: 2rem;
             margin: 2rem auto;
@@ -57,19 +43,19 @@
         .error-title {
             font-size: 1.5rem;
             font-weight: 600;
-            color: var(--error-color);
+            color: var(--color-error);
             margin-bottom: 0.5rem;
         }
 
         .error-message {
-            color: var(--text-secondary);
+            color: var(--color-text-secondary);
             font-size: 1rem;
         }
 
         .event-card {
-            background-color: var(--bg-primary);
+            background-color: var(--color-background);
             border-radius: 8px;
-            box-shadow: var(--shadow);
+            box-shadow: var(--shadow-base);
             padding: 1.5rem;
             margin-bottom: 1.5rem;
         }
@@ -81,7 +67,7 @@
         .event-title {
             font-size: 1.75rem;
             font-weight: 700;
-            color: var(--text-primary);
+            color: var(--color-text-primary);
             margin-bottom: 0.5rem;
         }
 
@@ -124,18 +110,18 @@
         .info-label {
             font-size: 0.875rem;
             font-weight: 500;
-            color: var(--text-secondary);
+            color: var(--color-text-secondary);
             margin-bottom: 0.25rem;
         }
 
         .info-value {
             font-size: 1rem;
-            color: var(--text-primary);
+            color: var(--color-text-primary);
         }
 
         .deadline-warning {
-            background-color: #fef3c7;
-            border-left: 4px solid var(--warning-color);
+            background-color: var(--color-warning-light);
+            border-left: 4px solid var(--color-warning);
             padding: 1rem;
             margin: 1.5rem 0;
             border-radius: 4px;
@@ -155,7 +141,7 @@
         .description {
             margin-top: 1.5rem;
             padding-top: 1.5rem;
-            border-top: 1px solid var(--border-color);
+            border-top: 1px solid var(--color-border);
         }
 
         .description-title {
@@ -165,13 +151,13 @@
         }
 
         .description-text {
-            color: var(--text-secondary);
+            color: var(--color-text-secondary);
             white-space: pre-wrap;
         }
 
         .existing-rsvp {
-            background-color: #dcfce7;
-            border: 2px solid var(--success-color);
+            background-color: var(--color-success-light);
+            border: 2px solid var(--color-success);
             border-radius: 8px;
             padding: 1.5rem;
             margin-bottom: 1.5rem;
@@ -263,11 +249,11 @@
             font-weight: 600;
             margin-bottom: 0.5rem;
             font-size: 1rem;
-            color: var(--text-primary);
+            color: var(--color-text-primary);
         }
 
         .limit-text {
-            color: var(--text-secondary);
+            color: var(--color-text-secondary);
             font-weight: 400;
             font-size: 0.875rem;
         }
@@ -282,25 +268,25 @@
             display: flex;
             align-items: center;
             padding: 0.75rem;
-            border: 2px solid var(--border-color);
+            border: 2px solid var(--color-border);
             border-radius: 8px;
             cursor: pointer;
             transition: all 0.2s;
-            background-color: var(--bg-primary);
+            background-color: var(--color-background);
         }
 
         .radio-label:hover {
-            border-color: var(--primary-color);
-            background-color: var(--bg-secondary);
+            border-color: var(--color-primary-600);
+            background-color: var(--color-surface);
         }
 
         .radio-label:has(input:checked) {
-            border-color: var(--primary-color);
-            background-color: #eff6ff;
+            border-color: var(--color-primary-600);
+            background-color: var(--color-primary-50);
         }
 
         .radio-label:has(input:focus) {
-            outline: 2px solid var(--primary-color);
+            outline: 2px solid var(--color-primary-600);
             outline-offset: 2px;
         }
 
@@ -314,7 +300,7 @@
 
         .radio-text {
             font-size: 1rem;
-            color: var(--text-primary);
+            color: var(--color-text-primary);
         }
 
         .number-input {
@@ -322,15 +308,15 @@
             min-height: 44px;
             padding: 0.75rem;
             font-size: 1rem;
-            border: 2px solid var(--border-color);
+            border: 2px solid var(--color-border);
             border-radius: 8px;
             transition: border-color 0.2s;
-            background-color: var(--bg-primary);
+            background-color: var(--color-background);
         }
 
         .number-input:focus {
             outline: none;
-            border-color: var(--primary-color);
+            border-color: var(--color-primary-600);
             box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
         }
 
@@ -349,14 +335,14 @@
             display: block;
             margin-top: 0.5rem;
             font-size: 0.875rem;
-            color: var(--text-secondary);
+            color: var(--color-text-secondary);
         }
 
         .plus-ones-group .error-message {
             display: block;
             margin-top: 0.5rem;
             font-size: 0.875rem;
-            color: var(--error-color);
+            color: var(--color-error);
             font-weight: 500;
         }
 
@@ -365,7 +351,7 @@
         }
 
         .number-input.invalid {
-            border-color: var(--error-color);
+            border-color: var(--color-error);
         }
 
         .form-actions {
@@ -389,17 +375,17 @@
         }
 
         .btn-primary {
-            background-color: var(--primary-color);
+            background-color: var(--color-primary-600);
             color: white;
             flex: 1;
         }
 
         .btn-primary:hover {
-            background-color: var(--primary-hover);
+            background-color: var(--color-primary-700);
         }
 
         .btn-primary:focus {
-            outline: 2px solid var(--primary-color);
+            outline: 2px solid var(--color-primary-600);
             outline-offset: 2px;
         }
 
@@ -421,14 +407,14 @@
         .questions-section {
             margin-top: 2rem;
             padding-top: 2rem;
-            border-top: 1px solid var(--border-color);
+            border-top: 1px solid var(--color-border);
         }
 
         .questions-title {
             font-size: 1.25rem;
             font-weight: 600;
             margin-bottom: 1.5rem;
-            color: var(--text-primary);
+            color: var(--color-text-primary);
         }
 
         .question-group {
@@ -440,11 +426,11 @@
             font-weight: 600;
             margin-bottom: 0.5rem;
             font-size: 1rem;
-            color: var(--text-primary);
+            color: var(--color-text-primary);
         }
 
         .required {
-            color: var(--error-color);
+            color: var(--color-error);
             margin-left: 0.25rem;
         }
 
@@ -453,17 +439,17 @@
             min-height: 100px;
             padding: 0.75rem;
             font-size: 1rem;
-            border: 2px solid var(--border-color);
+            border: 2px solid var(--color-border);
             border-radius: 8px;
             transition: border-color 0.2s;
-            background-color: var(--bg-primary);
+            background-color: var(--color-background);
             font-family: inherit;
             resize: vertical;
         }
 
         .question-textarea:focus {
             outline: none;
-            border-color: var(--primary-color);
+            border-color: var(--color-primary-600);
             box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
         }
 
@@ -472,16 +458,16 @@
             min-height: 44px;
             padding: 0.75rem;
             font-size: 1rem;
-            border: 2px solid var(--border-color);
+            border: 2px solid var(--color-border);
             border-radius: 8px;
             transition: border-color 0.2s;
-            background-color: var(--bg-primary);
+            background-color: var(--color-background);
             cursor: pointer;
         }
 
         .question-select:focus {
             outline: none;
-            border-color: var(--primary-color);
+            border-color: var(--color-primary-600);
             box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
         }
 
@@ -495,25 +481,25 @@
             display: flex;
             align-items: center;
             padding: 0.75rem;
-            border: 2px solid var(--border-color);
+            border: 2px solid var(--color-border);
             border-radius: 8px;
             cursor: pointer;
             transition: all 0.2s;
-            background-color: var(--bg-primary);
+            background-color: var(--color-background);
         }
 
         .checkbox-label:hover {
-            border-color: var(--primary-color);
-            background-color: var(--bg-secondary);
+            border-color: var(--color-primary-600);
+            background-color: var(--color-surface);
         }
 
         .checkbox-label:has(input:checked) {
-            border-color: var(--primary-color);
-            background-color: #eff6ff;
+            border-color: var(--color-primary-600);
+            background-color: var(--color-primary-50);
         }
 
         .checkbox-label:has(input:focus) {
-            outline: 2px solid var(--primary-color);
+            outline: 2px solid var(--color-primary-600);
             outline-offset: 2px;
         }
 
@@ -527,14 +513,14 @@
 
         .checkbox-text {
             font-size: 1rem;
-            color: var(--text-primary);
+            color: var(--color-text-primary);
         }
 
         .help-text {
             display: block;
             margin-top: 0.5rem;
             font-size: 0.875rem;
-            color: var(--text-secondary);
+            color: var(--color-text-secondary);
         }
 
         @media (min-width: 768px) {
