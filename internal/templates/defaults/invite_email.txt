@@ -1,0 +1,30 @@
+You're Invited: {{.Event.Title}}
+
+Hi {{.Invite.Name}},
+
+You're invited to {{.Event.Title}}!
+
+{{if .Event.Description}}
+{{.Event.Description}}
+
+{{end}}
+When: {{formatDateTime .Event.StartTime}}
+{{if .Event.EndTime}}Until: {{formatTime .Event.EndTime}}
+{{end}}
+{{if .Event.Location}}
+Where: {{.Event.Location}}
+{{end}}
+{{if .Event.Timezone}}
+Timezone: {{.Event.Timezone}}
+{{end}}
+{{if .Event.RSVPDeadline}}
+Please RSVP by {{formatDate .Event.RSVPDeadline "Monday, January 2, 2006"}}
+{{end}}
+{{if gt .MaxPlusOnes 0}}
+You may bring up to {{.MaxPlusOnes}} guest(s)
+{{end}}
+
+RSVP here: {{.RSVPURL}}
+
+---
+Sent via TinyRSVP

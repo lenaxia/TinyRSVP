@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RSVP - {{.Event.Title}}</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: #f5f5f5;
+            padding: 20px;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        h1 {
+            margin-bottom: 10px;
+            color: #2c3e50;
+            font-size: 28px;
+        }
+        .event-info {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 4px;
+            margin: 20px 0;
+            border-left: 4px solid #007bff;
+        }
+        .event-info p {
+            margin: 8px 0;
+        }
+        .event-info strong {
+            color: #555;
+        }
+        .form-group {
+            margin: 20px 0;
+        }
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #555;
+        }
+        .radio-group {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .radio-group label {
+            display: flex;
+            align-items: center;
+            padding: 10px;
+            border: 2px solid #ddd;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .radio-group label:hover {
+            border-color: #007bff;
+            background: #f8f9fa;
+        }
+        .radio-group input[type="radio"] {
+            margin-right: 10px;
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+        }
+        .radio-group input[type="radio"]:checked + span {
+            font-weight: bold;
+        }
+        input[type="number"],
+        input[type="text"],
+        textarea,
+        select {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 16px;
+            font-family: inherit;
+        }
+        input:focus,
+        textarea:focus,
+        select:focus {
+            outline: none;
+            border-color: #007bff;
+            box-shadow: 0 0 0 3px rgba(0,123,255,0.1);
+        }
+        textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+        button {
+            width: 100%;
+            padding: 14px;
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        button:active {
+            background: #004494;
+        }
+        .required {
+            color: #dc3545;
+        }
+        .help-text {
+            font-size: 14px;
+            color: #666;
+            margin-top: 4px;
+        }
+        @media (max-width: 480px) {
+            body {
+                padding: 10px;
+            }
+            .container {
+                padding: 20px;
+            }
+            h1 {
+                font-size: 24px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>{{.Event.Title}}</h1>
+        
+        <div class="event-info">
+            <p><strong>When:</strong> {{formatDateTime .Event.StartTime}}</p>
+            {{if .Event.EndTime}}
+            <p><strong>Until:</strong> {{formatTime .Event.EndTime}}</p>
+            {{end}}
+            {{if .Event.Location}}
+            <p><strong>Where:</strong> {{.Event.Location}}</p>
+            {{end}}
+            {{if .Event.Timezone}}
+            <p><strong>Timezone:</strong> {{.Event.Timezone}}</p>
+            {{end}}
+            {{if .Event.Description}}
+            <p style="margin-top: 10px;">{{.Event.Description}}</p>
+            {{end}}
+            {{if .Event.RSVPDeadline}}
+            <p style="margin-top: 10px;"><strong>RSVP Deadline:</strong> {{formatDate .Event.RSVPDeadline "Monday, January 2, 2006"}}</p>
+            {{end}}
+        </div>
+        
+        <form method="POST" action="/api/rsvp/{{.Token}}">
+            <div class="form-group">
+                <label>Will you attend? <span class="required">*</span></label>
+                <div class="radio-group">
+                    <label>
+                        <input type="radio" name="response" value="yes" required>
+                        <span>Yes, I'll be there</span>
+                    </label>
+                    <label>
+                        <input type="radio" name="response" value="no">
+                        <span>No, I can't make it</span>
+                    </label>
+                    <label>
+                        <input type="radio" name="response" value="maybe">
+                        <span>Maybe</span>
+                    </label>
+                </div>
+            </div>
+            
+            {{if gt .MaxPlusOnes 0}}
+            <div class="form-group">
+                <label for="plus_ones">Number of guests (max {{.MaxPlusOnes}})</label>
+                <input type="number" id="plus_ones" name="plus_ones" min="0" max="{{.MaxPlusOnes}}" value="0">
+                <p class="help-text">How many additional guests will you bring?</p>
+            </div>
+            {{end}}
+            
+            {{range .Questions}}
+            <div class="form-group">
+                <label for="question_{{.ID}}">
+                    {{.QuestionText}}
+                    {{if .Required}}<span class="required">*</span>{{end}}
+                </label>
+                {{if .HelpText}}
+                <p class="help-text">{{.HelpText}}</p>
+                {{end}}
+                {{if eq .QuestionType "text"}}
+                <input type="text" id="question_{{.ID}}" name="answer_{{.ID}}" {{if .Required}}required{{end}} maxlength="500">
+                {{else if eq .QuestionType "textarea"}}
+                <textarea id="question_{{.ID}}" name="answer_{{.ID}}" {{if .Required}}required{{end}} maxlength="2000"></textarea>
+                {{else if eq .QuestionType "select"}}
+                <select id="question_{{.ID}}" name="answer_{{.ID}}" {{if .Required}}required{{end}}>
+                    <option value="">Select an option</option>
+                    {{range .Options}}
+                    <option value="{{.Value}}">{{.Label}}</option>
+                    {{end}}
+                </select>
+                {{else if eq .QuestionType "boolean"}}
+                <div class="radio-group">
+                    <label>
+                        <input type="radio" name="answer_{{.ID}}" value="true" {{if .Required}}required{{end}}>
+                        <span>Yes</span>
+                    </label>
+                    <label>
+                        <input type="radio" name="answer_{{.ID}}" value="false">
+                        <span>No</span>
+                    </label>
+                </div>
+                {{end}}
+            </div>
+            {{end}}
+            
+            <button type="submit">Submit RSVP</button>
+        </form>
+    </div>
+</body>
+</html>

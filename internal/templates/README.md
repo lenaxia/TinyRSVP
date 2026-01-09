@@ -2,7 +2,7 @@
 
 ## Purpose
 
-Provides a secure template rendering engine with automatic XSS prevention using Go's `html/template` package.
+Provides a secure template rendering engine with automatic XSS prevention using Go's `html/template` package, along with default system templates and seeding functionality.
 
 ## Components
 
@@ -44,6 +44,29 @@ err := validator.ValidateTemplate(template)
 - `ValidateSyntax(content, type)` - Parse and execute check
 - `ValidateVariables(content, allowedVars)` - Variable whitelist check
 - `ValidateSize(content, maxBytes)` - Size limit check
+
+### Seeder (`seeder.go`)
+
+Provides default system templates that are automatically loaded into the database on application startup.
+
+**Key Features:**
+- Embeds default templates in the binary using `go:embed`
+- Idempotent seeding (safe to run multiple times)
+- Creates templates for all three types (invite_email, rsvp_page, confirmation_page)
+- Mobile-responsive designs
+- Email client compatibility
+
+**API:**
+```go
+seeder := NewSeeder(templateRepo, systemUserID)
+err := seeder.SeedDefaults(ctx)
+```
+
+**Default Templates:**
+- `defaults/invite_email.html` - HTML email invitation
+- `defaults/invite_email.txt` - Plain text email invitation
+- `defaults/rsvp_page.html` - RSVP form page
+- `defaults/confirmation_page.html` - RSVP confirmation page
 
 ### Custom Template Functions
 
@@ -110,6 +133,15 @@ Use safety functions only when you have pre-validated and sanitized content:
 - Variable validation (allowed/undefined variables)
 - Complete template validation
 
+**Seeder Tests (`seeder_test.go`):**
+- Template creation for all types
+- Idempotent seeding (no duplicates)
+- Template names and metadata
+- Context cancellation handling
+- Repository error handling
+- Template content validation
+- Variable usage verification
+
 ### Integration Tests
 
 **Engine Integration (`engine_integration_test.go`):**
@@ -125,12 +157,19 @@ Use safety functions only when you have pre-validated and sanitized content:
 - XSS prevention verification
 - Advanced XSS payload testing
 
+**Seeder Integration (`seeder_integration_test.go`):**
+- Database seeding with real repository
+- Idempotent seeding verification
+- Template parseability checks
+- Template renderability with test data
+- Template validation with validator
+
 Run tests:
 ```bash
 go test -timeout 30s ./internal/templates/...
 ```
 
-**Test Coverage:** 78 tests, all passing
+**Test Coverage:** 93 tests, all passing
 
 ## Usage Examples
 

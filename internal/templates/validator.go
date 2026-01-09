@@ -156,15 +156,29 @@ func getAllowedVariables(templateType models.TemplateType) []string {
 		}...)
 	case models.TemplateTypeRSVPPage:
 		return append(common, []string{
+			"Token",
+			"MaxPlusOnes",
 			"RSVP.Response",
 			"RSVP.PlusOnes",
 			"Questions",
+			"ID",
+			"QuestionText",
+			"QuestionType",
+			"Required",
+			"HelpText",
+			"Options",
+			"Value",
+			"Label",
 		}...)
 	case models.TemplateTypeConfirmationPage:
 		return append(common, []string{
+			"Token",
 			"RSVP.Response",
 			"RSVP.PlusOnes",
+			"RSVP.Notes",
 			"Answers",
+			"QuestionText",
+			"AnswerDisplay",
 		}...)
 	default:
 		return common
@@ -320,15 +334,24 @@ func createTestData(templateType models.TemplateType) interface{} {
 	type RSVP struct {
 		Response string
 		PlusOnes int
+		Notes    string
 	}
 
 	type Question struct {
-		Text string
+		ID           int64
+		QuestionText string
+		QuestionType string
+		Required     bool
+		HelpText     string
+		Options      []struct {
+			Value string
+			Label string
+		}
 	}
 
 	type Answer struct {
-		Question string
-		Answer   string
+		QuestionText  string
+		AnswerDisplay string
 	}
 
 	startTime, _ := time.Parse("2006-01-02 15:04", "2026-01-01 10:00")
@@ -363,32 +386,49 @@ func createTestData(templateType models.TemplateType) interface{} {
 		}
 	case models.TemplateTypeRSVPPage:
 		return struct {
-			Event     Event
-			RSVP      RSVP
-			Questions []Question
+			Event       Event
+			Token       string
+			MaxPlusOnes int
+			RSVP        RSVP
+			Questions   []Question
 		}{
 			Event: event,
+			Token: "test-token",
+			MaxPlusOnes: 2,
 			RSVP: RSVP{
 				Response: "yes",
 				PlusOnes: 1,
 			},
 			Questions: []Question{
-				{Text: "Dietary restrictions?"},
+				{
+					ID:           1,
+					QuestionText: "Dietary restrictions?",
+					QuestionType: "text",
+					Required:     false,
+					HelpText:     "Let us know if you have any dietary needs",
+					Options: []struct {
+						Value string
+						Label string
+					}{},
+				},
 			},
 		}
 	case models.TemplateTypeConfirmationPage:
 		return struct {
 			Event   Event
+			Token   string
 			RSVP    RSVP
 			Answers []Answer
 		}{
 			Event: event,
+			Token: "test-token",
 			RSVP: RSVP{
 				Response: "yes",
 				PlusOnes: 1,
+				Notes:    "Looking forward to it!",
 			},
 			Answers: []Answer{
-				{Question: "Dietary restrictions?", Answer: "None"},
+				{QuestionText: "Dietary restrictions?", AnswerDisplay: "None"},
 			},
 		}
 	default:

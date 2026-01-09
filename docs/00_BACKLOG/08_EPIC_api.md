@@ -238,7 +238,7 @@ Content-Security-Policy: default-src 'self'; img-src 'self' data:; style-src 'se
 - Admin: 1000 requests/minute
 
 ### Implementation
-- Sliding window algorithm
+- Leaky Bucket
 - Per IP address tracking
 - Redis-free (in-memory in v0)
 - Configurable limits
