@@ -28,6 +28,7 @@ func (h *TemplateHandlers) RegisterRoutes(r chi.Router) {
 	r.Route("/api/templates", func(r chi.Router) {
 		r.Post("/", h.CreateTemplate)
 		r.Get("/", h.ListTemplates)
+		r.Post("/preview", h.PreviewTemplate)
 
 		r.Route("/{id}", func(r chi.Router) {
 			r.Get("/", h.GetTemplate)
@@ -404,4 +405,26 @@ func handleTemplateServiceError(w http.ResponseWriter, err error) {
 	default:
 		respondError(w, http.StatusInternalServerError, "internal server error")
 	}
+}
+
+func (h *TemplateHandlers) PreviewTemplate(w http.ResponseWriter, r *http.Request) {
+	user, ok := auth.UserFromContext(r.Context())
+	if !ok || user.ID == 0 {
+		respondError(w, http.StatusUnauthorized, "authentication required")
+		return
+	}
+
+	var req templates.PreviewRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		respondError(w, http.StatusBadRequest, "invalid request body")
+		return
+	}
+
+	resp, err := h.service.PreviewTemplate(r.Context(), &req)
+	if err != nil {
+		handleTemplateServiceError(w, err)
+		return
+	}
+
+	respondJSON(w, http.StatusOK, resp)
 }

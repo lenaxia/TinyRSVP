@@ -20,6 +20,7 @@ type Service interface {
 	SetActive(ctx context.Context, id int64, active bool) error
 	SetDefault(ctx context.Context, id int64) error
 	ListTemplates(ctx context.Context, filters *repositories.TemplateFilters) ([]*models.Template, error)
+	PreviewTemplate(ctx context.Context, req *PreviewRequest) (*PreviewResponse, error)
 }
 
 type service struct {
@@ -180,4 +181,117 @@ func (s *service) SetDefault(ctx context.Context, id int64) error {
 
 func (s *service) ListTemplates(ctx context.Context, filters *repositories.TemplateFilters) ([]*models.Template, error) {
 	return s.repo.List(ctx, filters)
+}
+
+func (s *service) PreviewTemplate(ctx context.Context, req *PreviewRequest) (*PreviewResponse, error) {
+	if req == nil {
+		return nil, fmt.Errorf("preview request cannot be nil")
+	}
+
+	if req.HTMLContent == "" {
+		return nil, &models.ValidationError{
+			Field:   "html_content",
+			Message: "HTML content is required",
+		}
+	}
+
+	if !req.Type.IsValid() {
+		return nil, &models.ValidationError{
+			Field:   "type",
+			Message: "Invalid template type",
+		}
+	}
+
+	if err := s.validator.ValidateSize(req.HTMLContent, 100*1024); err != nil {
+		return nil, err
+	}
+
+	if err := s.validator.ValidateSyntax(req.HTMLContent, req.Type); err != nil {
+		validationErr, ok := err.(*models.ValidationError)
+		if ok {
+			validationErr.Field = "html_content"
+		}
+		return nil, err
+	}
+
+	allowedVars := getAllowedVariables(req.Type)
+	if err := s.validator.ValidateVariables(req.HTMLContent, allowedVars); err != nil {
+		validationErr, ok := err.(*models.ValidationError)
+		if ok {
+			validationErr.Field = "html_content"
+		}
+		return nil, err
+	}
+
+	testData := CreateTestData(req.Type)
+	if testData == nil {
+		return nil, &models.ValidationError{
+			Field:   "type",
+			Message: "Invalid template type",
+		}
+	}
+
+	engine := NewEngine()
+
+	htmlTemplate, err := engine.Parse(req.HTMLContent)
+	if err != nil {
+		return nil, &models.ValidationError{
+			Field:   "html_content",
+			Message: fmt.Sprintf("Failed to parse HTML template: %v", err),
+		}
+	}
+
+	htmlPreview, err := engine.ExecuteToString(htmlTemplate, testData)
+	if err != nil {
+		return nil, &models.ValidationError{
+			Field:   "html_content",
+			Message: fmt.Sprintf("Failed to render HTML template: %v", err),
+		}
+	}
+
+	response := &PreviewResponse{
+		HTMLPreview: htmlPreview,
+	}
+
+	if req.TextContent != nil && *req.TextContent != "" {
+		if err := s.validator.ValidateSize(*req.TextContent, 50*1024); err != nil {
+			return nil, err
+		}
+
+		if err := s.validator.ValidateSyntax(*req.TextContent, req.Type); err != nil {
+			validationErr, ok := err.(*models.ValidationError)
+			if ok {
+				validationErr.Field = "text_content"
+			}
+			return nil, err
+		}
+
+		if err := s.validator.ValidateVariables(*req.TextContent, allowedVars); err != nil {
+			validationErr, ok := err.(*models.ValidationError)
+			if ok {
+				validationErr.Field = "text_content"
+			}
+			return nil, err
+		}
+
+		textTemplate, err := engine.Parse(*req.TextContent)
+		if err != nil {
+			return nil, &models.ValidationError{
+				Field:   "text_content",
+				Message: fmt.Sprintf("Failed to parse text template: %v", err),
+			}
+		}
+
+		textPreview, err := engine.ExecuteToString(textTemplate, testData)
+		if err != nil {
+			return nil, &models.ValidationError{
+				Field:   "text_content",
+				Message: fmt.Sprintf("Failed to render text template: %v", err),
+			}
+		}
+
+		response.TextPreview = textPreview
+	}
+
+	return response, nil
 }
