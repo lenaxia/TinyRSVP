@@ -73,6 +73,43 @@ func TestRSVPPageUsesExternalCSSVariables(t *testing.T) {
 		}
 	})
 
+	t.Run("comprehensive: no hardcoded hex colors in style blocks", func(t *testing.T) {
+		lines := strings.Split(html, "\n")
+		inStyleBlock := false
+		
+		for i, line := range lines {
+			if strings.Contains(line, "<style>") {
+				inStyleBlock = true
+				continue
+			}
+			if strings.Contains(line, "</style>") {
+				inStyleBlock = false
+				continue
+			}
+			
+			if inStyleBlock {
+				if strings.Contains(line, "#") {
+					parts := strings.Split(line, "#")
+					for j := 1; j < len(parts); j++ {
+						hexPart := ""
+						for k := 0; k < len(parts[j]) && k < 6; k++ {
+							c := parts[j][k]
+							if (c >= '0' && c <= '9') || (c >= 'a' && c <= 'f') || (c >= 'A' && c <= 'F') {
+								hexPart += string(c)
+							} else {
+								break
+							}
+						}
+						
+						if len(hexPart) == 3 || len(hexPart) == 6 {
+							t.Errorf("Line %d contains hardcoded hex color #%s: %s", i+1, hexPart, strings.TrimSpace(line))
+						}
+					}
+				}
+			}
+		}
+	})
+
 	t.Run("uses centralized typography variables", func(t *testing.T) {
 		tests := []struct {
 			name     string

@@ -59,8 +59,11 @@ func TestCSSVariablesDefinesSemanticColors(t *testing.T) {
 
 	semanticColors := []string{
 		"--color-success",
+		"--color-success-dark",
 		"--color-success-light",
 		"--color-warning",
+		"--color-warning-dark",
+		"--color-warning-darker",
 		"--color-warning-light",
 		"--color-error",
 		"--color-error-light",
@@ -110,8 +113,11 @@ func TestCSSVariablesDefinesFunctionalColors(t *testing.T) {
 	functionalColors := []string{
 		"--color-background",
 		"--color-surface",
+		"--color-surface-disabled",
 		"--color-text-primary",
 		"--color-text-secondary",
+		"--color-text-muted",
+		"--color-text-label",
 		"--color-text-disabled",
 		"--color-border",
 		"--color-border-focus",
