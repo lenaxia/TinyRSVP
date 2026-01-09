@@ -23,6 +23,28 @@ tmpl, err := engine.Parse(templateString)
 result, err := engine.ExecuteToString(tmpl, data)
 ```
 
+### Validator (`validator.go`)
+
+Comprehensive template validation and security checking before templates are saved or used.
+
+**Key Features:**
+- Syntax validation (parse and execute with test data)
+- Variable validation (whitelist enforcement)
+- Size limits (HTML: 100KB, Text: 50KB, CSS: 50KB)
+- Security checks (XSS prevention verification)
+
+**API:**
+```go
+validator := NewValidator(engine)
+err := validator.ValidateTemplate(template)
+```
+
+**Validation Methods:**
+- `ValidateTemplate(tmpl)` - Complete validation
+- `ValidateSyntax(content, type)` - Parse and execute check
+- `ValidateVariables(content, allowedVars)` - Variable whitelist check
+- `ValidateSize(content, maxBytes)` - Size limit check
+
 ### Custom Template Functions
 
 The engine provides the following custom functions:
@@ -73,28 +95,42 @@ Use safety functions only when you have pre-validated and sanitized content:
 
 ## Testing
 
-### Unit Tests (`engine_test.go`)
+### Unit Tests
 
-Comprehensive unit tests covering:
+**Engine Tests (`engine_test.go`):**
 - Template parsing and execution
 - All custom functions
 - XSS prevention with various attack vectors
 - Error handling
 - Thread safety
 
-### Integration Tests (`engine_integration_test.go`)
+**Validator Tests (`validator_test.go`):**
+- Size validation (within/at/exceeding limits)
+- Syntax validation (valid/invalid templates)
+- Variable validation (allowed/undefined variables)
+- Complete template validation
 
-Real-world scenario tests with:
+### Integration Tests
+
+**Engine Integration (`engine_integration_test.go`):**
 - Event templates
 - Email templates
 - RSVP confirmation templates
 - Complex nested data structures
 - XSS prevention in user data
 
+**Validator Integration (`validator_integration_test.go`):**
+- Real-world complete templates
+- Edge cases (exact size limits, complex nesting)
+- XSS prevention verification
+- Advanced XSS payload testing
+
 Run tests:
 ```bash
 go test -timeout 30s ./internal/templates/...
 ```
+
+**Test Coverage:** 78 tests, all passing
 
 ## Usage Examples
 
@@ -177,4 +213,3 @@ Potential additions (not yet implemented):
 - Template caching
 - Template inheritance/layouts
 - Additional custom functions as needed
-- Template validation utilities
