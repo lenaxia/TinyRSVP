@@ -15,14 +15,14 @@ As a **keyboard and screen reader user**, I want **proper focus management** so 
 
 ## Acceptance Criteria
 
-- [ ] Visible focus indicators on all interactive elements
-- [ ] Focus moves logically through page
-- [ ] Focus restored after modal close
-- [ ] Focus moved to new content after navigation
-- [ ] Focus not lost during dynamic updates
-- [ ] Focus indicators meet contrast requirements (3:1)
-- [ ] Custom focus styles consistent
-- [ ] Skip links work correctly
+- [x] Visible focus indicators on all interactive elements
+- [x] Focus moves logically through page
+- [x] Focus restored after modal close
+- [x] Focus moved to new content after navigation
+- [x] Focus not lost during dynamic updates
+- [x] Focus indicators meet contrast requirements (3:1)
+- [x] Custom focus styles consistent
+- [x] Skip links work correctly
 
 ---
 
@@ -104,13 +104,13 @@ const FocusManager = {
 
 ## Tasks
 
-- [ ] Ensure all interactive elements have visible focus
-- [ ] Test focus order on all pages
-- [ ] Implement focus trapping for modals
-- [ ] Implement focus restoration after modal close
-- [ ] Test focus management with keyboard
-- [ ] Test focus indicators meet contrast requirements
-- [ ] Document focus management patterns
+- [x] Ensure all interactive elements have visible focus
+- [x] Test focus order on all pages
+- [x] Implement focus trapping for modals
+- [x] Implement focus restoration after modal close
+- [x] Test focus management with keyboard
+- [x] Test focus indicators meet contrast requirements
+- [x] Document focus management patterns
 
 ---
 
@@ -124,11 +124,11 @@ const FocusManager = {
 
 ## Definition of Done
 
-- [ ] All acceptance criteria met
-- [ ] Focus management working correctly
-- [ ] Focus indicators visible and meet contrast
-- [ ] Tested with keyboard navigation
-- [ ] Changes committed to git
+- [x] All acceptance criteria met
+- [x] Focus management working correctly
+- [x] Focus indicators visible and meet contrast
+- [x] Tested with keyboard navigation
+- [x] Changes committed to git
 
 ---
 

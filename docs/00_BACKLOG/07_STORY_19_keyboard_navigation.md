@@ -15,15 +15,15 @@ As a **keyboard user**, I want **full keyboard navigation support** so that **I 
 
 ## Acceptance Criteria
 
-- [ ] All interactive elements keyboard accessible
-- [ ] Logical tab order
-- [ ] Skip to content link
-- [ ] Visible focus indicators
-- [ ] Escape key closes modals/dropdowns
-- [ ] Enter/Space activates buttons
-- [ ] Arrow keys for navigation (where appropriate)
-- [ ] No keyboard traps
-- [ ] Focus management for dynamic content
+- [x] All interactive elements keyboard accessible
+- [x] Logical tab order
+- [x] Skip to content link
+- [x] Visible focus indicators
+- [x] Escape key closes modals/dropdowns
+- [x] Enter/Space activates buttons
+- [x] Arrow keys for navigation (where appropriate)
+- [x] No keyboard traps
+- [x] Focus management for dynamic content
 
 ---
 
@@ -79,13 +79,13 @@ function trapFocus(element) {
 
 ## Tasks
 
-- [ ] Add skip to content link
-- [ ] Ensure all interactive elements are keyboard accessible
-- [ ] Add visible focus indicators
-- [ ] Implement focus trapping for modals
-- [ ] Test tab order on all pages
-- [ ] Test with keyboard only (no mouse)
-- [ ] Document keyboard shortcuts
+- [x] Add skip to content link
+- [x] Ensure all interactive elements are keyboard accessible
+- [x] Add visible focus indicators
+- [x] Implement focus trapping for modals
+- [x] Test tab order on all pages
+- [x] Test with keyboard only (no mouse)
+- [x] Document keyboard shortcuts
 
 ---
 
@@ -99,10 +99,10 @@ function trapFocus(element) {
 
 ## Definition of Done
 
-- [ ] All acceptance criteria met
-- [ ] Full keyboard navigation working
-- [ ] Tested with keyboard only
-- [ ] Changes committed to git
+- [x] All acceptance criteria met
+- [x] Full keyboard navigation working
+- [x] Tested with keyboard only
+- [x] Changes committed to git
 
 ---
 
