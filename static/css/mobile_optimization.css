@@ -1,0 +1,150 @@
+.mobile-optimized {
+    -webkit-tap-highlight-color: rgba(0, 0, 0, 0.1);
+    -webkit-touch-callout: none;
+    touch-action: manipulation;
+}
+
+.mobile-no-select {
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+
+.mobile-scroll-smooth {
+    -webkit-overflow-scrolling: touch;
+    scroll-behavior: smooth;
+}
+
+.mobile-full-width {
+    width: 100%;
+    max-width: 100%;
+}
+
+.mobile-tap-target {
+    min-height: 44px;
+    min-width: 44px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.mobile-text-readable {
+    font-size: 16px;
+    line-height: 1.5;
+}
+
+input[type="text"],
+input[type="email"],
+input[type="tel"],
+input[type="number"],
+input[type="search"],
+input[type="url"],
+input[type="password"],
+input[type="date"],
+input[type="time"],
+input[type="datetime-local"],
+textarea,
+select {
+    font-size: 16px;
+}
+
+@media (max-width: 767px) {
+    body {
+        font-size: 16px;
+        -webkit-text-size-adjust: 100%;
+        -ms-text-size-adjust: 100%;
+    }
+
+    .mobile-hide {
+        display: none !important;
+    }
+
+    .mobile-show {
+        display: block !important;
+    }
+
+    .mobile-stack {
+        flex-direction: column;
+    }
+
+    .mobile-full-width {
+        width: 100% !important;
+    }
+
+    .mobile-center {
+        text-align: center;
+    }
+
+    .mobile-padding {
+        padding: var(--spacing-4);
+    }
+
+    .mobile-no-padding {
+        padding: 0;
+    }
+
+    .mobile-margin {
+        margin: var(--spacing-4);
+    }
+
+    .mobile-no-margin {
+        margin: 0;
+    }
+}
+
+@media (min-width: 768px) {
+    .desktop-hide {
+        display: none !important;
+    }
+
+    .desktop-show {
+        display: block !important;
+    }
+}
+
+.touch-action-pan-y {
+    touch-action: pan-y;
+}
+
+.touch-action-pan-x {
+    touch-action: pan-x;
+}
+
+.touch-action-none {
+    touch-action: none;
+}
+
+@supports (-webkit-touch-callout: none) {
+    .ios-safe-area-top {
+        padding-top: env(safe-area-inset-top);
+    }
+
+    .ios-safe-area-bottom {
+        padding-bottom: env(safe-area-inset-bottom);
+    }
+
+    .ios-safe-area-left {
+        padding-left: env(safe-area-inset-left);
+    }
+
+    .ios-safe-area-right {
+        padding-right: env(safe-area-inset-right);
+    }
+}
+
+.prevent-zoom {
+    touch-action: manipulation;
+}
+
+@media (hover: none) and (pointer: coarse) {
+    .hover-only {
+        display: none;
+    }
+}
+
+@media (hover: hover) and (pointer: fine) {
+    .touch-only {
+        display: none;
+    }
+}
