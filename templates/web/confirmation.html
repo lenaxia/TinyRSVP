@@ -12,9 +12,14 @@
     <link rel="stylesheet" href="/static/css/buttons.css">
     <link rel="stylesheet" href="/static/css/confirmation.css">
     <link rel="stylesheet" href="/static/css/mobile_optimization.css">
+    <link rel="stylesheet" href="/static/css/loading_states.css">
+    <link rel="stylesheet" href="/static/css/error_display.css">
+    <link rel="stylesheet" href="/static/css/keyboard_navigation.css">
+    <link rel="stylesheet" href="/static/css/focus_management.css">
 </head>
 <body>
-    <main class="confirmation" role="main" aria-label="RSVP confirmation">
+    <a href="#main-content" class="skip-link">Skip to main content</a>
+    <main class="confirmation" role="main" aria-label="Main content" id="main-content">
         <section class="confirmation-success" role="status" aria-live="polite">
             <span class="confirmation-success-icon" aria-hidden="true">✓</span>
             <div>
@@ -103,5 +108,9 @@
             </a>
         </div>
     </main>
+    <script src="/static/js/loading_states.js"></script>
+    <script src="/static/js/keyboard_navigation.js"></script>
+    <script src="/static/js/screen_reader.js"></script>
+    <script src="/static/js/focus_management.js"></script>
 </body>
 </html>

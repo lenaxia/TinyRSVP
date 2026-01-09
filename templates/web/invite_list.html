@@ -14,9 +14,14 @@
     <link rel="stylesheet" href="/static/css/navigation.css">
     <link rel="stylesheet" href="/static/css/invite_list.css">
     <link rel="stylesheet" href="/static/css/mobile_optimization.css">
+    <link rel="stylesheet" href="/static/css/loading_states.css">
+    <link rel="stylesheet" href="/static/css/error_display.css">
+    <link rel="stylesheet" href="/static/css/keyboard_navigation.css">
+    <link rel="stylesheet" href="/static/css/focus_management.css">
 </head>
 <body>
-    <main class="invite-list" role="main" aria-label="Invite list">
+    <a href="#main-content" class="skip-link">Skip to main content</a>
+    <main class="invite-list" role="main" aria-label="Main content" id="main-content">
         <header class="invite-list-header">
             <div class="invite-list-title-section">
                 <h1 class="invite-list-title">Invites for {{.EventTitle}}</h1>
@@ -63,7 +68,7 @@
             </div>
         </section>
         {{else if .Loading}}
-        <section class="invite-list-loading" aria-live="polite" aria-busy="true">
+        <section class="invite-list-loading loading-state" aria-live="polite" aria-busy="true">
             <div class="loading-spinner" role="status"></div>
             <p class="loading-text">Loading invites...</p>
         </section>
@@ -336,5 +341,9 @@
         {{end}}
         {{end}}
     </main>
+    <script src="/static/js/loading_states.js"></script>
+    <script src="/static/js/keyboard_navigation.js"></script>
+    <script src="/static/js/screen_reader.js"></script>
+    <script src="/static/js/focus_management.js"></script>
 </body>
 </html>
