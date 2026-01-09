@@ -10,31 +10,31 @@ import (
 
 func TestRouter_NotFoundHandler(t *testing.T) {
 	tests := []struct {
-		name           string
-		path           string
-		acceptHeader   string
-		wantStatusCode int
+		name             string
+		path             string
+		acceptHeader     string
+		wantStatusCode   int
 		wantBodyContains string
 	}{
 		{
-			name:           "API request returns JSON",
-			path:           "/api/nonexistent",
-			acceptHeader:   "application/json",
-			wantStatusCode: http.StatusNotFound,
+			name:             "API request returns JSON",
+			path:             "/api/nonexistent",
+			acceptHeader:     "application/json",
+			wantStatusCode:   http.StatusNotFound,
 			wantBodyContains: "not found",
 		},
 		{
-			name:           "Web request returns HTML",
-			path:           "/nonexistent",
-			acceptHeader:   "text/html",
-			wantStatusCode: http.StatusNotFound,
+			name:             "Web request returns HTML",
+			path:             "/nonexistent",
+			acceptHeader:     "text/html",
+			wantStatusCode:   http.StatusNotFound,
 			wantBodyContains: "404",
 		},
 		{
-			name:           "No accept header defaults to HTML",
-			path:           "/missing",
-			acceptHeader:   "",
-			wantStatusCode: http.StatusNotFound,
+			name:             "No accept header defaults to HTML",
+			path:             "/missing",
+			acceptHeader:     "",
+			wantStatusCode:   http.StatusNotFound,
 			wantBodyContains: "404",
 		},
 	}
@@ -63,24 +63,24 @@ func TestRouter_NotFoundHandler(t *testing.T) {
 
 func TestRouter_MethodNotAllowedHandler(t *testing.T) {
 	tests := []struct {
-		name           string
-		path           string
-		acceptHeader   string
-		wantStatusCode int
+		name             string
+		path             string
+		acceptHeader     string
+		wantStatusCode   int
 		wantBodyContains string
 	}{
 		{
-			name:           "API request returns JSON",
-			path:           "/api/events",
-			acceptHeader:   "application/json",
-			wantStatusCode: http.StatusMethodNotAllowed,
+			name:             "API request returns JSON",
+			path:             "/api/events",
+			acceptHeader:     "application/json",
+			wantStatusCode:   http.StatusMethodNotAllowed,
 			wantBodyContains: "method not allowed",
 		},
 		{
-			name:           "Web request returns HTML",
-			path:           "/events",
-			acceptHeader:   "text/html",
-			wantStatusCode: http.StatusMethodNotAllowed,
+			name:             "Web request returns HTML",
+			path:             "/events",
+			acceptHeader:     "text/html",
+			wantStatusCode:   http.StatusMethodNotAllowed,
 			wantBodyContains: "405",
 		},
 	}
