@@ -477,7 +477,7 @@ func TestCalculateBackoff(t *testing.T) {
 	tests := []struct {
 		name    string
 		attempt int
-		want    time.Duration
+		base    time.Duration
 	}{
 		{"first attempt", 1, 1 * time.Minute},
 		{"second attempt", 2, 5 * time.Minute},
@@ -489,9 +489,158 @@ func TestCalculateBackoff(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			got := calculateBackoff(tt.attempt)
-			if got != tt.want {
-				t.Errorf("calculateBackoff(%d) = %v, want %v", tt.attempt, got, tt.want)
+			
+			maxJitter := time.Duration(float64(tt.base) * 0.1)
+			minDelay := tt.base - maxJitter
+			maxDelay := tt.base + maxJitter
+
+			if got < minDelay || got > maxDelay {
+				t.Errorf("calculateBackoff(%d) = %v, want range [%v, %v]", tt.attempt, got, minDelay, maxDelay)
 			}
 		})
+	}
+}
+
+func TestQueueProcessor_ProcessBatch_PermanentError(t *testing.T) {
+	email := &models.EmailQueue{
+		ID:          1,
+		ToEmail:     "test@example.com",
+		Subject:     "Test",
+		BodyText:    "Test body",
+		Status:      models.EmailStatusPending,
+		Attempts:    0,
+		MaxAttempts: 4,
+	}
+
+	markFailedCalled := false
+	rescheduleCalled := false
+
+	mockRepo := &MockEmailQueueRepository{
+		GetPendingFunc: func(ctx context.Context, max int) ([]*models.EmailQueue, error) {
+			return []*models.EmailQueue{email}, nil
+		},
+		MarkSendingFunc: func(ctx context.Context, id int64) error {
+			return nil
+		},
+		IncrementAttemptsFunc: func(ctx context.Context, id int64, errorMsg string) error {
+			return nil
+		},
+		MarkFailedFunc: func(ctx context.Context, id int64, errorMsg string) error {
+			markFailedCalled = true
+			return nil
+		},
+		RescheduleFunc: func(ctx context.Context, id int64, scheduledFor time.Time) error {
+			rescheduleCalled = true
+			return nil
+		},
+	}
+
+	mockSender := &MockSMTPSender{
+		SendFunc: func(ctx context.Context, msg *SMTPMessage) error {
+			return &PermanentError{Err: errors.New("mailbox unavailable")}
+		},
+	}
+
+	mockLimiter := &MockRateLimiter{
+		AllowFunc:          func() bool { return true },
+		AvailableSlotsFunc: func() int { return 10 },
+	}
+
+	processor := NewQueueProcessor(mockRepo, mockSender, mockLimiter, 10, time.Minute)
+
+	err := processor.ProcessBatch(context.Background())
+	if err != nil {
+		t.Errorf("ProcessBatch() error = %v, want nil", err)
+	}
+
+	if !markFailedCalled {
+		t.Error("MarkFailed() was not called for permanent error")
+	}
+	if rescheduleCalled {
+		t.Error("Reschedule() should not be called for permanent error")
+	}
+}
+
+func TestQueueProcessor_ProcessBatch_TransientError(t *testing.T) {
+	email := &models.EmailQueue{
+		ID:          1,
+		ToEmail:     "test@example.com",
+		Subject:     "Test",
+		BodyText:    "Test body",
+		Status:      models.EmailStatusPending,
+		Attempts:    0,
+		MaxAttempts: 4,
+	}
+
+	markFailedCalled := false
+	rescheduleCalled := false
+
+	mockRepo := &MockEmailQueueRepository{
+		GetPendingFunc: func(ctx context.Context, max int) ([]*models.EmailQueue, error) {
+			return []*models.EmailQueue{email}, nil
+		},
+		MarkSendingFunc: func(ctx context.Context, id int64) error {
+			return nil
+		},
+		IncrementAttemptsFunc: func(ctx context.Context, id int64, errorMsg string) error {
+			return nil
+		},
+		MarkFailedFunc: func(ctx context.Context, id int64, errorMsg string) error {
+			markFailedCalled = true
+			return nil
+		},
+		RescheduleFunc: func(ctx context.Context, id int64, scheduledFor time.Time) error {
+			rescheduleCalled = true
+			return nil
+		},
+	}
+
+	mockSender := &MockSMTPSender{
+		SendFunc: func(ctx context.Context, msg *SMTPMessage) error {
+			return &TransientError{Err: errors.New("mailbox busy")}
+		},
+	}
+
+	mockLimiter := &MockRateLimiter{
+		AllowFunc:          func() bool { return true },
+		AvailableSlotsFunc: func() int { return 10 },
+	}
+
+	processor := NewQueueProcessor(mockRepo, mockSender, mockLimiter, 10, time.Minute)
+
+	err := processor.ProcessBatch(context.Background())
+	if err != nil {
+		t.Errorf("ProcessBatch() error = %v, want nil", err)
+	}
+
+	if markFailedCalled {
+		t.Error("MarkFailed() should not be called for transient error")
+	}
+	if !rescheduleCalled {
+		t.Error("Reschedule() was not called for transient error")
+	}
+}
+
+func TestCalculateBackoff_Jitter(t *testing.T) {
+	delays := make(map[time.Duration]bool)
+
+	for i := 0; i < 100; i++ {
+		delay := calculateBackoff(1)
+		delays[delay] = true
+	}
+
+	if len(delays) < 10 {
+		t.Errorf("Jitter not working, only %d unique delays in 100 attempts", len(delays))
+	}
+
+	for delay := range delays {
+		expectedBase := 1 * time.Minute
+		maxJitter := time.Duration(float64(expectedBase) * 0.1)
+		minDelay := expectedBase - maxJitter
+		maxDelay := expectedBase + maxJitter
+
+		if delay < minDelay || delay > maxDelay {
+			t.Errorf("Delay %v outside expected range [%v, %v]", delay, minDelay, maxDelay)
+		}
 	}
 }

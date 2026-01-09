@@ -2,8 +2,10 @@ package email
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log"
+	"math/rand"
 	"time"
 
 	"github.com/lenaxia/tinyrsvp/internal/db/repositories"
@@ -188,6 +190,11 @@ func (p *queueProcessor) sendEmail(ctx context.Context, email *models.EmailQueue
 }
 
 func (p *queueProcessor) handleSendError(ctx context.Context, email *models.EmailQueue, err error) error {
+	var permErr *PermanentError
+	if errors.As(err, &permErr) {
+		return p.repo.MarkFailed(ctx, email.ID, err.Error())
+	}
+
 	if err := p.repo.IncrementAttempts(ctx, email.ID, err.Error()); err != nil {
 		return fmt.Errorf("failed to increment attempts: %w", err)
 	}
@@ -219,16 +226,21 @@ func (p *queueProcessor) handleSendError(ctx context.Context, email *models.Emai
 }
 
 func calculateBackoff(attempt int) time.Duration {
+	var delay time.Duration
+	
 	switch attempt {
 	case 1:
-		return 1 * time.Minute
+		delay = 1 * time.Minute
 	case 2:
-		return 5 * time.Minute
+		delay = 5 * time.Minute
 	case 3:
-		return 15 * time.Minute
+		delay = 15 * time.Minute
 	default:
-		return 30 * time.Minute
+		delay = 30 * time.Minute
 	}
+	
+	jitter := time.Duration(float64(delay) * 0.1 * (rand.Float64()*2 - 1))
+	return delay + jitter
 }
 
 func convertAttachments(attachments []models.EmailAttachment) []Attachment {
