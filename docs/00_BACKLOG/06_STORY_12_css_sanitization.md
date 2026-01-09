@@ -2,8 +2,9 @@
 
 **Epic:** [06_EPIC_templates.md](06_EPIC_templates.md)
 **Priority:** High
-**Status:** Not Started
+**Status:** Complete
 **Estimated Effort:** 1 day
+**Completed:** 2026-01-09
 
 ---
 
@@ -17,17 +18,17 @@ are there any standard packages that do this?
 
 ## Acceptance Criteria
 
-- [ ] CSS sanitizer service created
-- [ ] JavaScript URLs in CSS blocked
-- [ ] CSS expression() blocked (IE legacy)
-- [ ] External @import blocked
-- [ ] Behavior property blocked (IE legacy)
-- [ ] Data URLs in CSS sanitized
-- [ ] Whitelist approach for safe properties
-- [ ] CSS validation on template upload
-- [ ] CSS validation on template update
-- [ ] All tests pass with timeout
-- [ ] Security tests verify CSS injection prevented
+- [x] CSS sanitizer service created
+- [x] JavaScript URLs in CSS blocked
+- [x] CSS expression() blocked (IE legacy)
+- [x] External @import blocked
+- [x] Behavior property blocked (IE legacy)
+- [x] Data URLs in CSS sanitized
+- [x] Whitelist approach for safe properties
+- [x] CSS validation on template upload
+- [x] CSS validation on template update
+- [x] All tests pass with timeout
+- [x] Security tests verify CSS injection prevented
 
 ---
 
@@ -507,46 +508,46 @@ func TestCSSSanitizer_Integration(t *testing.T) {
 ## Tasks
 
 ### Phase 1: Sanitizer Implementation (TDD)
-- [ ] Define CSSSanitizer interface
-- [ ] Write test for Validate with safe CSS
-- [ ] Write test for Validate with javascript: URL
-- [ ] Write test for Validate with expression()
-- [ ] Write test for Validate with @import
-- [ ] Write test for Validate with behavior
-- [ ] Write test for Validate with -moz-binding
-- [ ] Write test for Validate with data:text/html
-- [ ] Implement Validate method
-- [ ] Run tests (should pass)
+- [x] Define CSSSanitizer interface
+- [x] Write test for Validate with safe CSS
+- [x] Write test for Validate with javascript: URL
+- [x] Write test for Validate with expression()
+- [x] Write test for Validate with @import
+- [x] Write test for Validate with behavior
+- [x] Write test for Validate with -moz-binding
+- [x] Write test for Validate with data:text/html
+- [x] Implement Validate method
+- [x] Run tests (should pass)
 
 ### Phase 2: Pattern Detection (TDD)
-- [ ] Write test for case insensitivity
-- [ ] Write test for whitespace variations
-- [ ] Write test for each dangerous pattern
-- [ ] Implement pattern matching
-- [ ] Run tests (should pass)
+- [x] Write test for case insensitivity
+- [x] Write test for whitespace variations
+- [x] Write test for each dangerous pattern
+- [x] Implement pattern matching
+- [x] Run tests (should pass)
 
 ### Phase 3: Sanitization (TDD)
-- [ ] Write test for Sanitize removing comments
-- [ ] Write test for Sanitize normalizing whitespace
-- [ ] Write test for Sanitize rejecting dangerous patterns
-- [ ] Implement Sanitize method
-- [ ] Implement removeComments helper
-- [ ] Implement normalizeWhitespace helper
-- [ ] Run tests (should pass)
+- [x] Write test for Sanitize removing comments
+- [x] Write test for Sanitize normalizing whitespace
+- [x] Write test for Sanitize rejecting dangerous patterns
+- [x] Implement Sanitize method
+- [x] Implement removeComments helper
+- [x] Implement normalizeWhitespace helper
+- [x] Run tests (should pass)
 
 ### Phase 4: Integration with Validator (TDD)
-- [ ] Update template validator to use CSS sanitizer
-- [ ] Write test for template validation with CSS
-- [ ] Write test for template validation with malicious CSS
-- [ ] Integrate CSS sanitizer
-- [ ] Run tests (should pass)
+- [x] Update template validator to use CSS sanitizer
+- [x] Write test for template validation with CSS
+- [x] Write test for template validation with malicious CSS
+- [x] Integrate CSS sanitizer
+- [x] Run tests (should pass)
 
 ### Phase 5: Security Testing
-- [ ] Test all dangerous patterns
-- [ ] Test encoding bypass attempts
-- [ ] Test case variations
-- [ ] Test whitespace variations
-- [ ] Document all tested vectors
+- [x] Test all dangerous patterns
+- [x] Test encoding bypass attempts
+- [x] Test case variations
+- [x] Test whitespace variations
+- [x] Document all tested vectors
 
 ---
 
@@ -740,16 +741,16 @@ func TestCSSSanitizer_SafeCSS(t *testing.T) {
 
 ## Definition of Done
 
-- [ ] All acceptance criteria met
-- [ ] CSSSanitizer implemented
-- [ ] All dangerous patterns blocked
-- [ ] All unit tests passing (>90% coverage)
-- [ ] Integration tests passing
-- [ ] Security tests passing
-- [ ] All dangerous patterns documented
-- [ ] Safe CSS examples provided
-- [ ] Documentation updated
-- [ ] Security review completed
+- [x] All acceptance criteria met
+- [x] CSSSanitizer implemented
+- [x] All dangerous patterns blocked
+- [x] All unit tests passing (>90% coverage)
+- [x] Integration tests passing
+- [x] Security tests passing
+- [x] All dangerous patterns documented
+- [x] Safe CSS examples provided
+- [x] Documentation updated
+- [x] Security review completed
 
 ---
 
