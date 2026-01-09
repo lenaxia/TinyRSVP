@@ -1,15 +1,18 @@
-# CSS Variables System
+# CSS Design System
 
-This directory contains the CSS custom properties (variables) system for TinyRSVP.
+This directory contains the CSS design system for TinyRSVP, including custom properties (variables) and typography system.
 
 ## Purpose
 
-Provides a comprehensive design token system using CSS custom properties for consistent theming and easy customization across the application.
+Provides a comprehensive design token system using CSS custom properties for consistent theming, typography, and easy customization across the application.
 
 ## Files
 
 - [`variables.css`](variables.css) - Core CSS custom properties defining the design system
 - [`variables_test.go`](variables_test.go) - Test suite validating CSS variables
+- [`typography.css`](typography.css) - Typography system with heading hierarchy and text utilities
+- [`typography_test.go`](typography_test.go) - Test suite validating typography styles
+- [`typography_integration_test.go`](typography_integration_test.go) - Integration tests for typography system
 
 ## CSS Variables Reference
 
@@ -221,18 +224,62 @@ Tests validate:
 - Dark mode support is present
 - Color contrast meets WCAG AA standards
 
-## Integration
+## Typography System
 
-To use these variables in your HTML templates:
+The typography system provides consistent text styling across the application with a mobile-first, responsive approach.
+
+### Features
+
+- **Heading Hierarchy:** h1-h6 with semantic HTML and utility classes (.h1-.h6)
+- **Responsive Scaling:** Headings scale up on tablet+ screens (768px+)
+- **Optimal Readability:** Paragraphs limited to 65ch for optimal line length
+- **Text Utilities:** Font sizes, weights, colors, and alignment classes
+- **Accessibility:** Font smoothing, focus indicators, and WCAG AA compliance
+- **Link Styles:** Underlined with hover/focus states
+- **Code Styling:** Inline code and code blocks with monospace font
+
+### Typography Utility Classes
+
+```css
+/* Font Sizes */
+.text-large, .text-small, .text-xs
+
+/* Font Weights */
+.text-bold, .text-semibold, .text-medium, .text-normal
+
+/* Text Colors */
+.text-primary, .text-secondary, .text-disabled
+.text-success, .text-error, .text-warning
+
+/* Text Alignment */
+.text-left, .text-center, .text-right
+```
+
+### Usage Example
 
 ```html
 <link rel="stylesheet" href="/static/css/variables.css">
+<link rel="stylesheet" href="/static/css/typography.css">
+
+<h1>Main Heading</h1>
+<p class="text-large text-secondary">Introduction paragraph</p>
+<p>Regular body text with optimal line length.</p>
 ```
 
-Then reference variables in your component CSS files.
+## Integration
+
+To use the design system in your HTML templates:
+
+```html
+<link rel="stylesheet" href="/static/css/variables.css">
+<link rel="stylesheet" href="/static/css/typography.css">
+```
+
+Variables must be loaded before typography for proper variable resolution.
 
 ## Related Stories
 
 - **Epic:** [07_EPIC_frontend.md](../../docs/00_BACKLOG/07_EPIC_frontend.md)
-- **Story:** [07_STORY_00_css_variables.md](../../docs/00_BACKLOG/07_STORY_00_css_variables.md)
-- **Blocks:** All other frontend stories (01-21)
+- **Story 00:** [07_STORY_00_css_variables.md](../../docs/00_BACKLOG/07_STORY_00_css_variables.md)
+- **Story 01:** [07_STORY_01_typography.md](../../docs/00_BACKLOG/07_STORY_01_typography.md)
+- **Blocks:** All other frontend stories (02-21)
