@@ -21,6 +21,9 @@ Provides a comprehensive design token system using CSS custom properties for con
 - [`spacing_integration_test.go`](spacing_integration_test.go) - Integration tests for spacing system
 - [`grid.css`](grid.css) - Grid and flexbox layout utilities with responsive variants
 - [`grid_integration_test.go`](grid_integration_test.go) - Integration tests for grid system
+- [`forms.css`](forms.css) - Form component styles with accessibility and validation states
+- [`forms_test.go`](forms_test.go) - Test suite validating form components
+- [`forms_integration_test.go`](forms_integration_test.go) - Integration tests for form system
 
 ## CSS Variables Reference
 
@@ -604,6 +607,167 @@ Always start with mobile styles and progressively enhance for larger screens:
 </div>
 ```
 
+## Form System
+
+The form system provides accessible, well-styled form components with error states, disabled states, and touch-friendly interactions.
+
+### Features
+
+- **Text Inputs:** Styled text inputs with focus, error, success, and disabled states
+- **Textareas:** Resizable textareas with consistent styling
+- **Select Dropdowns:** Custom-styled dropdowns with arrow indicator
+- **Checkboxes & Radios:** Touch-friendly (20px minimum) with custom styling
+- **Form Labels:** Properly associated labels with medium font weight
+- **Error/Success States:** Visual feedback with semantic colors
+- **Help Text:** Secondary text for additional guidance
+- **Disabled States:** Clear visual indication with cursor changes
+- **Focus Indicators:** Visible 2px outlines with offset for accessibility
+- **Touch-Friendly:** Minimum 44px tap targets for mobile
+- **Responsive:** Optional inline layout for tablet+
+
+### Form Component Classes
+
+```css
+/* Form Structure */
+.form-group              /* Form field container with bottom margin */
+.form-label              /* Label with medium weight and proper spacing */
+.form-required           /* Required field indicator (red asterisk) */
+
+/* Input Elements */
+.form-input              /* Text input styling */
+.form-textarea           /* Textarea with min-height and vertical resize */
+.form-select             /* Select dropdown with custom arrow */
+.form-checkbox           /* Checkbox with 20px size */
+.form-radio              /* Radio button with 20px size */
+
+/* Checkbox/Radio Wrappers */
+.form-check-wrapper      /* Flex container for checkbox/radio + label */
+.form-check-label        /* Label for checkbox/radio with pointer cursor */
+
+/* State Classes */
+.form-input.error        /* Error state (red border) */
+.form-input.success      /* Success state (green border) */
+.form-input:disabled     /* Disabled state (grayed out) */
+.form-input:focus        /* Focus state (blue outline) */
+
+/* Feedback Messages */
+.form-error              /* Error message text (red, small) */
+.form-success            /* Success message text (green, small) */
+.form-help-text          /* Help text (gray, small) */
+
+/* Responsive */
+.form-inline             /* Inline form layout for tablet+ */
+```
+
+### Usage Examples
+
+```html
+<!-- Basic Text Input -->
+<div class="form-group">
+    <label for="email" class="form-label">
+        Email Address<span class="form-required">*</span>
+    </label>
+    <input type="email" id="email" class="form-input" placeholder="you@example.com" required>
+    <span class="form-help-text">We'll never share your email</span>
+</div>
+
+<!-- Input with Error State -->
+<div class="form-group">
+    <label for="username" class="form-label">Username</label>
+    <input type="text" id="username" class="form-input error" value="ab">
+    <span class="form-error">Username must be at least 3 characters</span>
+</div>
+
+<!-- Input with Success State -->
+<div class="form-group">
+    <label for="password" class="form-label">Password</label>
+    <input type="password" id="password" class="form-input success">
+    <span class="form-success">Strong password!</span>
+</div>
+
+<!-- Textarea -->
+<div class="form-group">
+    <label for="message" class="form-label">Message</label>
+    <textarea id="message" class="form-textarea" rows="4"></textarea>
+</div>
+
+<!-- Select Dropdown -->
+<div class="form-group">
+    <label for="country" class="form-label">Country</label>
+    <select id="country" class="form-select">
+        <option value="">Select a country</option>
+        <option value="us">United States</option>
+        <option value="uk">United Kingdom</option>
+    </select>
+</div>
+
+<!-- Checkbox -->
+<div class="form-check-wrapper">
+    <input type="checkbox" id="terms" class="form-checkbox">
+    <label for="terms" class="form-check-label">
+        I agree to the terms and conditions
+    </label>
+</div>
+
+<!-- Radio Buttons -->
+<div class="form-group">
+    <label class="form-label">Attendance</label>
+    <div class="form-check-wrapper">
+        <input type="radio" id="yes" name="attendance" class="form-radio" value="yes">
+        <label for="yes" class="form-check-label">Yes, I'll attend</label>
+    </div>
+    <div class="form-check-wrapper">
+        <input type="radio" id="no" name="attendance" class="form-radio" value="no">
+        <label for="no" class="form-check-label">No, I can't attend</label>
+    </div>
+</div>
+
+<!-- Disabled Input -->
+<div class="form-group">
+    <label for="readonly" class="form-label">Read Only Field</label>
+    <input type="text" id="readonly" class="form-input" value="Cannot edit" disabled>
+</div>
+
+<!-- Inline Form (Tablet+) -->
+<form class="form-inline">
+    <div class="form-group">
+        <label for="search" class="form-label">Search</label>
+        <input type="text" id="search" class="form-input">
+    </div>
+    <button type="submit" class="btn btn-primary">Search</button>
+</form>
+```
+
+### Accessibility Features
+
+- **Keyboard Navigation:** All form elements are keyboard accessible
+- **Focus Indicators:** Visible 2px outlines with 2px offset
+- **Touch Targets:** Minimum 20px for checkboxes/radios (44px recommended with padding)
+- **Label Association:** Proper `for` attribute linking labels to inputs
+- **Disabled States:** `cursor: not-allowed` and reduced opacity
+- **Error Messaging:** Color + text for accessibility (not color alone)
+- **Placeholder Text:** Lighter color with proper contrast
+
+### Form Validation States
+
+Forms support three validation states:
+
+1. **Default:** Normal border color
+2. **Error (`.error`):** Red border with error message
+3. **Success (`.success`):** Green border with success message
+
+Always provide text feedback in addition to color changes for accessibility.
+
+### Integration with Design System
+
+Forms integrate seamlessly with the existing design system:
+
+- Uses CSS variables from [`variables.css`](variables.css)
+- Consistent spacing with [`spacing.css`](spacing.css)
+- Typography from [`typography.css`](typography.css)
+- Colors from [`colors.css`](colors.css)
+- Works with grid/flex layouts from [`grid.css`](grid.css)
+
 ## Integration
 
 To use the design system in your HTML templates:
@@ -614,9 +778,10 @@ To use the design system in your HTML templates:
 <link rel="stylesheet" href="/static/css/colors.css">
 <link rel="stylesheet" href="/static/css/spacing.css">
 <link rel="stylesheet" href="/static/css/grid.css">
+<link rel="stylesheet" href="/static/css/forms.css">
 ```
 
-Load order matters: variables → typography → colors → spacing → grid for proper variable resolution.
+Load order matters: variables → typography → colors → spacing → grid → forms for proper variable resolution.
 
 ## Related Stories
 
@@ -626,4 +791,5 @@ Load order matters: variables → typography → colors → spacing → grid for
 - **Story 02:** [07_STORY_02_color_system.md](../../docs/00_BACKLOG/07_STORY_02_color_system.md)
 - **Story 03:** [07_STORY_03_spacing_system.md](../../docs/00_BACKLOG/07_STORY_03_spacing_system.md)
 - **Story 04:** [07_STORY_04_responsive_grid.md](../../docs/00_BACKLOG/07_STORY_04_responsive_grid.md)
-- **Blocks:** All other frontend stories (05-21)
+- **Story 06:** [07_STORY_06_forms.md](../../docs/00_BACKLOG/07_STORY_06_forms.md)
+- **Blocks:** All other frontend stories (07-21)

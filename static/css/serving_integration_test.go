@@ -129,6 +129,45 @@ func TestStaticCSSFileServing(t *testing.T) {
 		}
 	})
 
+	t.Run("serves forms.css with correct status", func(t *testing.T) {
+		req := httptest.NewRequest("GET", "/static/css/forms.css", nil)
+		w := httptest.NewRecorder()
+
+		handler.ServeHTTP(w, req)
+
+		if w.Code != http.StatusOK {
+			t.Errorf("Expected status 200, got %d", w.Code)
+		}
+	})
+
+	t.Run("serves forms.css with expected form classes", func(t *testing.T) {
+		req := httptest.NewRequest("GET", "/static/css/forms.css", nil)
+		w := httptest.NewRecorder()
+
+		handler.ServeHTTP(w, req)
+
+		body := w.Body.String()
+
+		expectedClasses := []string{
+			".form-group",
+			".form-label",
+			".form-input",
+			".form-textarea",
+			".form-select",
+			".form-checkbox",
+			".form-radio",
+			".form-error",
+			".form-success",
+			".form-help-text",
+		}
+
+		for _, class := range expectedClasses {
+			if !strings.Contains(body, class) {
+				t.Errorf("Response body should contain form class %s", class)
+			}
+		}
+	})
+
 	t.Run("returns 404 for non-existent CSS file", func(t *testing.T) {
 		req := httptest.NewRequest("GET", "/static/css/nonexistent.css", nil)
 		w := httptest.NewRecorder()
