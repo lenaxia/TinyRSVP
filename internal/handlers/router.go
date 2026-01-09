@@ -4,12 +4,15 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"log"
 	"net/http"
+	"os"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/go-chi/chi/v5"
-	"github.com/go-chi/chi/v5/middleware"
+	customMiddleware "github.com/lenaxia/tinyrsvp/internal/middleware"
 )
 
 type RouteInfo struct {
@@ -55,6 +58,8 @@ type RouterHandlers struct {
 	AuthMiddleware AuthMiddlewareInterface
 	
 	StaticFileServer http.Handler
+	
+	Logger *log.Logger
 }
 
 type RouteRegistrar interface {
@@ -131,17 +136,33 @@ type AuthMiddlewareInterface interface {
 func NewRouter(handlers *RouterHandlers) *Router {
 	r := chi.NewRouter()
 
-	r.Use(middleware.RequestID)
-	r.Use(middleware.RealIP)
-	r.Use(middleware.Logger)
-	r.Use(middleware.Recoverer)
-
-	r.NotFound(NotFoundHandler)
-	r.MethodNotAllowed(MethodNotAllowedHandler)
-
 	if handlers == nil {
 		handlers = &RouterHandlers{}
 	}
+
+	logger := handlers.Logger
+	if logger == nil {
+		logger = log.New(os.Stdout, "", log.LstdFlags)
+	}
+
+	r.Use(func(next http.Handler) http.Handler {
+		return customMiddleware.Recovery(next)
+	})
+	r.Use(func(next http.Handler) http.Handler {
+		return customMiddleware.RequestID(next)
+	})
+	r.Use(func(next http.Handler) http.Handler {
+		return customMiddleware.RealIP(next)
+	})
+	r.Use(func(next http.Handler) http.Handler {
+		return customMiddleware.Logging(logger)(next)
+	})
+	r.Use(func(next http.Handler) http.Handler {
+		return customMiddleware.Timeout(30 * time.Second)(next)
+	})
+
+	r.NotFound(NotFoundHandler)
+	r.MethodNotAllowed(MethodNotAllowedHandler)
 
 	if handlers.HealthHandler != nil {
 		r.Handle("/health", handlers.HealthHandler)
