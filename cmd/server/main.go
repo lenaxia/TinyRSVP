@@ -10,11 +10,9 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
-	"strings"
 	"syscall"
 	"time"
 
-	"github.com/go-chi/chi/v5"
 	"github.com/lenaxia/tinyrsvp/internal/assets"
 	"github.com/lenaxia/tinyrsvp/internal/auth"
 	"github.com/lenaxia/tinyrsvp/internal/config"
@@ -235,75 +233,18 @@ func main() {
 	callbackHandler := auth.NewCallbackHandler(authenticator, userService, sessionMgr)
 	logoutHandler := auth.NewLogoutHandler(authenticator)
 
-	mux := http.NewServeMux()
-
-	mux.Handle("/login", loginHandler)
-	logger.Info("Registered auth endpoint", "path", "/login")
-
-	mux.Handle("/auth/callback", callbackHandler)
-	logger.Info("Registered auth endpoint", "path", "/auth/callback")
-
-	mux.Handle("/logout", logoutHandler)
-	logger.Info("Registered auth endpoint", "path", "/logout")
-
 	healthHandler := handlers.NewHealthHandler(appVersion)
-	mux.Handle("/health", healthHandler)
-	logger.Info("Registered health endpoint", "path", "/health")
-
 	readinessHandler := handlers.NewReadinessHandler(appVersion, database, migrator)
-	mux.Handle("/ready", readinessHandler)
-	logger.Info("Registered readiness endpoint", "path", "/ready")
 
 	userHandler := handlers.NewUserHandler(userService, authChecker)
 
 	requireAuth := middleware.RequireAuth(sessionMgr, userService)
 	requireAdmin := middleware.RequireAdmin(authChecker)
-
-	mux.Handle("/api/users", requireAuth(requireAdmin(http.HandlerFunc(userHandler.ListUsers))))
-	logger.Info("Registered user management endpoint", "path", "/api/users", "method", "GET", "protection", "admin")
-
-	mux.HandleFunc("/api/users/", func(w http.ResponseWriter, r *http.Request) {
-		path := strings.TrimPrefix(r.URL.Path, "/api/users/")
-		if path == "" {
-			http.NotFound(w, r)
-			return
-		}
-
-		parts := strings.Split(path, "/")
-		userID := parts[0]
-
-		switch r.Method {
-		case http.MethodGet:
-			requireAuth(requireAdmin(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-				userHandler.GetUser(w, r, userID)
-			}))).ServeHTTP(w, r)
-		case http.MethodPatch:
-			requireAuth(requireAdmin(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-				userHandler.UpdateUserRole(w, r, userID)
-			}))).ServeHTTP(w, r)
-		case http.MethodDelete:
-			requireAuth(requireAdmin(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-				userHandler.DeleteUser(w, r, userID)
-			}))).ServeHTTP(w, r)
-		default:
-			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-		}
-	})
-	logger.Info("Registered user management endpoints", "path", "/api/users/{id}", "methods", "GET,PATCH,DELETE", "protection", "admin")
+	middlewareAdapter := handlers.NewMiddlewareAdapter(requireAuth, requireAdmin)
 
 	eventHandlers := handlers.NewEventHandlers(eventService)
-	chiRouter := chi.NewRouter()
-	chiRouter.Use(func(next http.Handler) http.Handler {
-		return requireAuth(next)
-	})
-	eventHandlers.RegisterRoutes(chiRouter)
-
 	questionHandlers := handlers.NewQuestionHandlers(questionService)
-	questionHandlers.RegisterRoutes(chiRouter)
-
 	templateHandlers := handlers.NewTemplateHandlers(templateService)
-	templateHandlers.RegisterRoutes(chiRouter)
-	logger.Info("Registered template management endpoints", "path", "/api/templates", "protection", "authenticated")
 
 	storageType := os.Getenv("STORAGE_TYPE")
 	if storageType == "" {
@@ -341,49 +282,19 @@ func main() {
 
 	imageService := assets.NewImageService(storageProvider)
 	imageHandlers := handlers.NewImageHandlers(imageService, eventService, authChecker)
-	imageHandlers.RegisterRoutes(chiRouter)
-	logger.Info("Registered image management endpoints", "path", "/api/events/{event_id}/images", "protection", "authenticated")
 
 	assetHandler := handlers.NewAssetHandler(storageProvider)
-	mux.HandleFunc("/assets/", assetHandler.ServeAsset)
-	logger.Info("Registered asset serving endpoint", "path", "/assets/*", "method", "GET,HEAD", "protection", "none")
 
-	staticFS := http.FileServer(http.Dir("static"))
-	mux.Handle("/static/", http.StripPrefix("/static/", staticFS))
-	logger.Info("Registered static file serving endpoint", "path", "/static/*", "method", "GET,HEAD", "protection", "none")
+	staticFS := http.StripPrefix("/static/", http.FileServer(http.Dir("static")))
 
 	inviteHandlers := handlers.NewInviteHandlers(individualInviteService, cfg.Server.BaseURL)
-	inviteHandlers.RegisterRoutes(chiRouter)
-
 	importInviteHandlers := handlers.NewImportInviteHandlers(inviteService, eventRepo, cfg.Server.BaseURL)
-	importInviteHandlers.RegisterRoutes(chiRouter)
-
 	manualInviteHandlers := handlers.NewManualInviteHandlers(inviteService, eventRepo, cfg.Server.BaseURL)
-	manualInviteHandlers.RegisterRoutes(chiRouter)
-
 	revokeInviteHandlers := handlers.NewRevokeInviteHandlers(inviteService, eventRepo)
-	revokeInviteHandlers.RegisterRoutes(chiRouter)
-
 	regenerateInviteHandlers := handlers.NewRegenerateInviteTokenHandlers(inviteService, eventRepo)
-	regenerateInviteHandlers.RegisterRoutes(chiRouter)
-
 	listInviteHandlers := handlers.NewListInviteHandlers(inviteService, eventRepo)
-	listInviteHandlers.RegisterRoutes(chiRouter)
 
 	cleanupHandler := handlers.NewCleanupHandler(inviteService)
-	mux.Handle("/api/invites/cleanup", requireAuth(requireAdmin(cleanupHandler)))
-	logger.Info("Registered invite cleanup endpoint", "path", "/api/invites/cleanup", "method", "POST", "protection", "admin")
-
-	mux.Handle("/api/events", chiRouter)
-	mux.Handle("/api/events/", chiRouter)
-	logger.Info("Registered event management endpoints", "path", "/api/events", "protection", "authenticated")
-	logger.Info("Registered question management endpoints", "path", "/api/events/{id}/questions", "protection", "authenticated")
-	logger.Info("Registered invite management endpoints", "path", "/api/events/{eventId}/invites", "protection", "authenticated")
-	logger.Info("Registered import invite endpoints", "path", "/api/events/{eventId}/invites/import", "protection", "authenticated")
-	logger.Info("Registered manual invite endpoints", "path", "/api/events/{eventId}/invites/manual", "protection", "authenticated")
-	logger.Info("Registered revoke invite endpoints", "path", "/api/invites/{inviteId}/revoke", "protection", "authenticated")
-	logger.Info("Registered regenerate invite endpoints", "path", "/api/invites/{inviteId}/regenerate", "protection", "authenticated")
-	logger.Info("Registered list invite endpoints", "path", "/api/events/{eventId}/invites", "method", "GET", "protection", "authenticated")
 
 	funcMap := template.FuncMap{
 		"sub": func(a, b int) int { return a - b },
@@ -422,27 +333,100 @@ func main() {
 	rsvpHandler.SetTemplates(rsvpTemplates)
 	rsvpHandler.SetRSVPService(rsvpService)
 	rsvpHandler.SetAnswerRepository(answerRepo)
-	
-	rsvpRouter := chi.NewRouter()
-	rsvpRouter.Get("/{token}", rsvpHandler.GetRSVPPage)
-	rsvpRouter.Get("/{token}/confirmation", rsvpHandler.GetConfirmationPage)
-	rsvpRouter.Post("/{token}", rsvpHandler.SubmitRSVP)
-	rsvpRouter.Put("/{token}", rsvpHandler.UpdateRSVP)
-	mux.Handle("/rsvp/", http.StripPrefix("/rsvp", rsvpRouter))
-	logger.Info("Registered RSVP page endpoint", "path", "/rsvp/{token}", "method", "GET", "protection", "none")
-	logger.Info("Registered RSVP confirmation endpoint", "path", "/rsvp/{token}/confirmation", "method", "GET", "protection", "none")
-	logger.Info("Registered RSVP submission endpoint", "path", "/rsvp/{token}", "method", "POST", "protection", "none")
-	logger.Info("Registered RSVP update endpoint", "path", "/rsvp/{token}", "method", "PUT", "protection", "none")
 
 	rsvpSummaryHandler := handlers.NewRSVPSummaryHandler(eventRepo, rsvpRepo, questionRepo, answerRepo)
 	rsvpSummaryHandler.SetTemplates(rsvpSummaryTemplates)
-	chiRouter.Get("/events/{id}/rsvp-summary", rsvpSummaryHandler.GetRSVPSummary)
+
+	emailConfig, err := email.LoadConfig()
+	if err != nil {
+		logger.Error("Failed to load email configuration", "error", err)
+		os.Exit(1)
+	}
+	logger.Info("Email configuration loaded", "config", emailConfig.Sanitized())
+
+	smtpSender, err := email.NewSMTPSender(emailConfig)
+	if err != nil {
+		logger.Error("Failed to create SMTP sender", "error", err)
+		os.Exit(1)
+	}
+
+	if emailConfig.TestOnStartup {
+		testConnCtx, testConnCancel := context.WithTimeout(context.Background(), 10*time.Second)
+		defer testConnCancel()
+		if err := smtpSender.TestConnection(testConnCtx); err != nil {
+			logger.Warn("SMTP connection test failed", "error", err)
+		} else {
+			logger.Info("SMTP connection test passed")
+		}
+	}
+
+	emailHealthChecker := email.NewHealthChecker(emailQueueRepo, smtpSender)
+	emailHealthHandler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		status, err := emailHealthChecker.GetStatus(r.Context())
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		statusCode := http.StatusOK
+		if !status.Healthy {
+			statusCode = http.StatusServiceUnavailable
+		}
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(statusCode)
+		json.NewEncoder(w).Encode(status)
+	})
+
+	router := handlers.NewRouter(&handlers.RouterHandlers{
+		LoginHandler:             loginHandler,
+		CallbackHandler:          callbackHandler,
+		LogoutHandler:            logoutHandler,
+		HealthHandler:            healthHandler,
+		ReadinessHandler:         readinessHandler,
+		EventHandlers:            eventHandlers,
+		QuestionHandlers:         questionHandlers,
+		InviteHandlers:           inviteHandlers,
+		ImportInviteHandlers:     importInviteHandlers,
+		ManualInviteHandlers:     manualInviteHandlers,
+		RevokeInviteHandlers:     revokeInviteHandlers,
+		RegenerateInviteHandlers: regenerateInviteHandlers,
+		ListInviteHandlers:       listInviteHandlers,
+		ImageHandlers:            imageHandlers,
+		RSVPHandler:              rsvpHandler,
+		RSVPSummaryHandler:       rsvpSummaryHandler,
+		UserHandler:              userHandler,
+		TemplateHandlers:         templateHandlers,
+		AssetHandler:             assetHandler,
+		CleanupHandler:           cleanupHandler,
+		EmailHealthHandler:       emailHealthHandler,
+		AuthMiddleware:           middlewareAdapter,
+		StaticFileServer:         staticFS,
+	})
+
+	logger.Info("Router initialized with all handlers")
+	logger.Info("Registered auth endpoints", "paths", "/login, /auth/callback, /logout")
+	logger.Info("Registered health endpoints", "paths", "/health, /ready")
+	logger.Info("Registered event management endpoints", "path", "/api/events", "protection", "authenticated")
+	logger.Info("Registered question management endpoints", "path", "/api/events/{id}/questions", "protection", "authenticated")
+	logger.Info("Registered invite management endpoints", "path", "/api/events/{eventId}/invites", "protection", "authenticated")
+	logger.Info("Registered import invite endpoints", "path", "/api/events/{eventId}/invites/import", "protection", "authenticated")
+	logger.Info("Registered manual invite endpoints", "path", "/api/events/{eventId}/invites/manual", "protection", "authenticated")
+	logger.Info("Registered revoke invite endpoints", "path", "/api/invites/{inviteId}/revoke", "protection", "authenticated")
+	logger.Info("Registered regenerate invite endpoints", "path", "/api/invites/{inviteId}/regenerate", "protection", "authenticated")
+	logger.Info("Registered list invite endpoints", "path", "/api/events/{eventId}/invites", "method", "GET", "protection", "authenticated")
+	logger.Info("Registered image management endpoints", "path", "/api/events/{event_id}/images", "protection", "authenticated")
+	logger.Info("Registered template management endpoints", "path", "/api/templates", "protection", "authenticated")
+	logger.Info("Registered user management endpoints", "path", "/api/users", "protection", "admin")
+	logger.Info("Registered invite cleanup endpoint", "path", "/api/invites/cleanup", "method", "POST", "protection", "admin")
+	logger.Info("Registered email health endpoint", "path", "/api/email/health", "method", "GET", "protection", "admin")
+	logger.Info("Registered RSVP endpoints", "path", "/rsvp/{token}", "methods", "GET,POST,PUT", "protection", "none")
 	logger.Info("Registered RSVP summary endpoint", "path", "/api/events/{id}/rsvp-summary", "method", "GET", "protection", "authenticated")
+	logger.Info("Registered asset serving endpoint", "path", "/assets/*", "method", "GET,HEAD", "protection", "none")
+	logger.Info("Registered static file serving endpoint", "path", "/static/*", "method", "GET,HEAD", "protection", "none")
 
 	addr := fmt.Sprintf("%s:%d", cfg.Server.Host, cfg.Server.Port)
 	server := &http.Server{
 		Addr:         addr,
-		Handler:      mux,
+		Handler:      router,
 		ReadTimeout:  15 * time.Second,
 		WriteTimeout: 15 * time.Second,
 		IdleTimeout:  60 * time.Second,
@@ -519,48 +503,6 @@ func main() {
 		}
 	}()
 	logger.Info("Event archiving background job started")
-
-	emailConfig, err := email.LoadConfig()
-	if err != nil {
-		logger.Error("Failed to load email configuration", "error", err)
-		os.Exit(1)
-	}
-	logger.Info("Email configuration loaded", "config", emailConfig.Sanitized())
-
-	smtpSender, err := email.NewSMTPSender(emailConfig)
-	if err != nil {
-		logger.Error("Failed to create SMTP sender", "error", err)
-		os.Exit(1)
-	}
-
-	if emailConfig.TestOnStartup {
-		testConnCtx, testConnCancel := context.WithTimeout(context.Background(), 10*time.Second)
-		defer testConnCancel()
-		if err := smtpSender.TestConnection(testConnCtx); err != nil {
-			logger.Warn("SMTP connection test failed", "error", err)
-		} else {
-			logger.Info("SMTP connection test passed")
-		}
-	}
-
-	emailHealthChecker := email.NewHealthChecker(emailQueueRepo, smtpSender)
-	mux.Handle("/api/email/health", requireAuth(requireAdmin(
-		http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			status, err := emailHealthChecker.GetStatus(r.Context())
-			if err != nil {
-				http.Error(w, err.Error(), http.StatusInternalServerError)
-				return
-			}
-			statusCode := http.StatusOK
-			if !status.Healthy {
-				statusCode = http.StatusServiceUnavailable
-			}
-			w.Header().Set("Content-Type", "application/json")
-			w.WriteHeader(statusCode)
-			json.NewEncoder(w).Encode(status)
-		}),
-	)))
-	logger.Info("Registered email health endpoint", "path", "/api/email/health", "method", "GET", "protection", "admin")
 
 	rateLimiter := email.NewRateLimiter(emailConfig.RateLimit)
 	emailMetrics := email.NewNoOpMetrics()
