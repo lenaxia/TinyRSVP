@@ -40,7 +40,6 @@ func TestDefaultRSVPPageUsesExternalCSSVariables(t *testing.T) {
 		}{
 			{"primary color", "var(--color-primary-600)"},
 			{"primary hover", "var(--color-primary-700)"},
-			{"text primary", "var(--color-text-primary)"},
 			{"background", "var(--color-background)"},
 			{"surface", "var(--color-surface)"},
 			{"border", "var(--color-border)"},
@@ -72,21 +71,30 @@ func TestDefaultRSVPPageUsesExternalCSSVariables(t *testing.T) {
 		}
 	})
 
-	t.Run("uses centralized typography variables", func(t *testing.T) {
-		tests := []struct {
-			name     string
-			variable string
-		}{
-			{"font family", "var(--font-family-sans)"},
-			{"line height", "var(--line-height-normal)"},
+	t.Run("includes typography stylesheet", func(t *testing.T) {
+		expectedLink := `<link rel="stylesheet" href="/static/css/typography.css">`
+		if !strings.Contains(html, expectedLink) {
+			t.Errorf("Template does not include link to typography.css")
+		}
+	})
+
+	t.Run("uses typography variables in inline styles", func(t *testing.T) {
+		typographyVars := []string{
+			"var(--font-size-",
+			"var(--font-weight-",
+			"var(--spacing-",
 		}
 
-		for _, tt := range tests {
-			t.Run(tt.name, func(t *testing.T) {
-				if !strings.Contains(html, tt.variable) {
-					t.Errorf("Template does not use %s", tt.variable)
-				}
-			})
+		foundAny := false
+		for _, varPrefix := range typographyVars {
+			if strings.Contains(html, varPrefix) {
+				foundAny = true
+				break
+			}
+		}
+
+		if !foundAny {
+			t.Error("Template should use typography variables in inline styles")
 		}
 	})
 

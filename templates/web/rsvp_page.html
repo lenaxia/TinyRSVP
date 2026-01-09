@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{if .Event}}RSVP - {{.Event.Title}}{{else}}RSVP{{end}}</title>
     <link rel="stylesheet" href="/static/css/variables.css">
+    <link rel="stylesheet" href="/static/css/typography.css">
     <style>
         * {
             margin: 0;
@@ -13,9 +14,6 @@
         }
 
         body {
-            font-family: var(--font-family-sans);
-            line-height: var(--line-height-normal);
-            color: var(--color-text-primary);
             background-color: var(--color-surface);
             padding: 1rem;
         }
@@ -65,18 +63,18 @@
         }
 
         .event-title {
-            font-size: 1.75rem;
-            font-weight: 700;
+            font-size: var(--font-size-3xl);
+            font-weight: var(--font-weight-bold);
             color: var(--color-text-primary);
-            margin-bottom: 0.5rem;
+            margin-bottom: var(--spacing-2);
         }
 
         .event-status {
             display: inline-block;
-            padding: 0.25rem 0.75rem;
-            border-radius: 9999px;
-            font-size: 0.875rem;
-            font-weight: 500;
+            padding: var(--spacing-1) var(--spacing-3);
+            border-radius: var(--radius-full);
+            font-size: var(--font-size-sm);
+            font-weight: var(--font-weight-medium);
         }
 
         .status-responded {
@@ -108,14 +106,14 @@
         }
 
         .info-label {
-            font-size: 0.875rem;
-            font-weight: 500;
+            font-size: var(--font-size-sm);
+            font-weight: var(--font-weight-medium);
             color: var(--color-text-secondary);
-            margin-bottom: 0.25rem;
+            margin-bottom: var(--spacing-1);
         }
 
         .info-value {
-            font-size: 1rem;
+            font-size: var(--font-size-base);
             color: var(--color-text-primary);
         }
 
@@ -128,14 +126,14 @@
         }
 
         .deadline-warning-title {
-            font-weight: 600;
+            font-weight: var(--font-weight-semibold);
             color: var(--color-warning-dark);
-            margin-bottom: 0.25rem;
+            margin-bottom: var(--spacing-1);
         }
 
         .deadline-warning-text {
             color: var(--color-warning-darker);
-            font-size: 0.875rem;
+            font-size: var(--font-size-sm);
         }
 
         .description {
@@ -145,9 +143,9 @@
         }
 
         .description-title {
-            font-size: 1.125rem;
-            font-weight: 600;
-            margin-bottom: 0.75rem;
+            font-size: var(--font-size-lg);
+            font-weight: var(--font-weight-semibold);
+            margin-bottom: var(--spacing-3);
         }
 
         .description-text {
@@ -164,10 +162,10 @@
         }
 
         .existing-rsvp-title {
-            font-size: 1.25rem;
-            font-weight: 600;
+            font-size: var(--font-size-xl);
+            font-weight: var(--font-weight-semibold);
             color: var(--color-success-dark);
-            margin-bottom: 0.75rem;
+            margin-bottom: var(--spacing-3);
         }
 
         .existing-rsvp-details {
@@ -183,12 +181,12 @@
         }
 
         .existing-rsvp-label {
-            font-weight: 500;
+            font-weight: var(--font-weight-medium);
             color: var(--color-success-dark);
         }
 
         .existing-rsvp-value {
-            font-weight: 600;
+            font-weight: var(--font-weight-semibold);
             color: var(--color-success-dark);
         }
 
@@ -206,7 +204,7 @@
             }
 
             .event-title {
-                font-size: 2rem;
+                font-size: var(--font-size-4xl);
             }
 
             .info-item {
@@ -220,7 +218,7 @@
             }
 
             .event-title {
-                font-size: 2.25rem;
+                font-size: var(--font-size-5xl);
             }
         }
 
@@ -246,16 +244,16 @@
 
         .form-label {
             display: block;
-            font-weight: 600;
-            margin-bottom: 0.5rem;
-            font-size: 1rem;
+            font-weight: var(--font-weight-semibold);
+            margin-bottom: var(--spacing-2);
+            font-size: var(--font-size-base);
             color: var(--color-text-primary);
         }
 
         .limit-text {
             color: var(--color-text-secondary);
-            font-weight: 400;
-            font-size: 0.875rem;
+            font-weight: var(--font-weight-normal);
+            font-size: var(--font-size-sm);
         }
 
         .radio-group {
@@ -299,18 +297,18 @@
         }
 
         .radio-text {
-            font-size: 1rem;
+            font-size: var(--font-size-base);
             color: var(--color-text-primary);
         }
 
         .number-input {
             width: 100%;
             min-height: 44px;
-            padding: 0.75rem;
-            font-size: 1rem;
+            padding: var(--spacing-3);
+            font-size: var(--font-size-base);
             border: 2px solid var(--color-border);
-            border-radius: 8px;
-            transition: border-color 0.2s;
+            border-radius: var(--radius-lg);
+            transition: border-color var(--transition-base);
             background-color: var(--color-background);
         }
 
@@ -333,17 +331,17 @@
 
         .form-text {
             display: block;
-            margin-top: 0.5rem;
-            font-size: 0.875rem;
+            margin-top: var(--spacing-2);
+            font-size: var(--font-size-sm);
             color: var(--color-text-secondary);
         }
 
         .plus-ones-group .error-message {
             display: block;
-            margin-top: 0.5rem;
-            font-size: 0.875rem;
+            margin-top: var(--spacing-2);
+            font-size: var(--font-size-sm);
             color: var(--color-error);
-            font-weight: 500;
+            font-weight: var(--font-weight-medium);
         }
 
         .plus-ones-group .error-message:empty {
@@ -361,13 +359,13 @@
         }
 
         .btn {
-            padding: 0.75rem 1.5rem;
-            font-size: 1rem;
-            font-weight: 600;
+            padding: var(--spacing-3) var(--spacing-6);
+            font-size: var(--font-size-base);
+            font-weight: var(--font-weight-semibold);
             border: none;
-            border-radius: 8px;
+            border-radius: var(--radius-lg);
             cursor: pointer;
-            transition: all 0.2s;
+            transition: all var(--transition-base);
             min-height: 44px;
             display: inline-flex;
             align-items: center;
@@ -411,9 +409,9 @@
         }
 
         .questions-title {
-            font-size: 1.25rem;
-            font-weight: 600;
-            margin-bottom: 1.5rem;
+            font-size: var(--font-size-xl);
+            font-weight: var(--font-weight-semibold);
+            margin-bottom: var(--spacing-6);
             color: var(--color-text-primary);
         }
 
@@ -423,9 +421,9 @@
 
         .question-label {
             display: block;
-            font-weight: 600;
-            margin-bottom: 0.5rem;
-            font-size: 1rem;
+            font-weight: var(--font-weight-semibold);
+            margin-bottom: var(--spacing-2);
+            font-size: var(--font-size-base);
             color: var(--color-text-primary);
         }
 
@@ -437,11 +435,11 @@
         .question-textarea {
             width: 100%;
             min-height: 100px;
-            padding: 0.75rem;
-            font-size: 1rem;
+            padding: var(--spacing-3);
+            font-size: var(--font-size-base);
             border: 2px solid var(--color-border);
-            border-radius: 8px;
-            transition: border-color 0.2s;
+            border-radius: var(--radius-lg);
+            transition: border-color var(--transition-base);
             background-color: var(--color-background);
             font-family: inherit;
             resize: vertical;
@@ -456,11 +454,11 @@
         .question-select {
             width: 100%;
             min-height: 44px;
-            padding: 0.75rem;
-            font-size: 1rem;
+            padding: var(--spacing-3);
+            font-size: var(--font-size-base);
             border: 2px solid var(--color-border);
-            border-radius: 8px;
-            transition: border-color 0.2s;
+            border-radius: var(--radius-lg);
+            transition: border-color var(--transition-base);
             background-color: var(--color-background);
             cursor: pointer;
         }
@@ -512,14 +510,14 @@
         }
 
         .checkbox-text {
-            font-size: 1rem;
+            font-size: var(--font-size-base);
             color: var(--color-text-primary);
         }
 
         .help-text {
             display: block;
-            margin-top: 0.5rem;
-            font-size: 0.875rem;
+            margin-top: var(--spacing-2);
+            font-size: var(--font-size-sm);
             color: var(--color-text-secondary);
         }
 
@@ -554,7 +552,7 @@
                     </div>
                     {{end}}
                     {{if .CanUpdate}}
-                    <p style="margin-top: 1rem; font-size: 0.875rem; color: var(--color-success-dark);">
+                    <p class="text-small" style="margin-top: var(--spacing-4); color: var(--color-success-dark);">
                         You can update your response below if needed.
                     </p>
                     {{end}}
@@ -583,7 +581,7 @@
                                 {{.LocalStartTime}}{{if .LocalEndTime}} - {{.LocalEndTime}}{{end}}
                             </time>
                             {{if .TimeUntilEvent}}
-                            <div style="font-size: 0.875rem; color: var(--text-secondary); margin-top: 0.25rem;">
+                            <div class="text-small text-secondary" style="margin-top: var(--spacing-1);">
                                 {{.TimeUntilEvent}} from now
                             </div>
                             {{end}}
@@ -627,7 +625,7 @@
                             <div class="info-value">
                                 {{if .Invite.Name}}{{.Invite.Name}}{{end}}
                                 {{if and .Invite.Name .Invite.Email}}<br>{{end}}
-                                {{if .Invite.Email}}<span style="font-size: 0.875rem; color: var(--text-secondary);">{{.Invite.Email}}</span>{{end}}
+                                {{if .Invite.Email}}<span class="text-small text-secondary">{{.Invite.Email}}</span>{{end}}
                             </div>
                         </div>
                     </div>
@@ -661,7 +659,7 @@
             {{if not .DeadlinePassed}}
             {{if not .EventPassed}}
             <form class="event-card rsvp-form" method="POST" action="/rsvp/{{.Token}}" novalidate>
-                <h2 style="font-size: 1.5rem; font-weight: 600; margin-bottom: 1rem;">
+                <h2 class="h2" style="margin-bottom: var(--spacing-4);">
                     {{if .ExistingRSVP}}Update Your RSVP{{else}}Please Respond{{end}}
                 </h2>
                 
