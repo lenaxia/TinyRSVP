@@ -1,10 +1,10 @@
 # CSS Design System
 
-This directory contains the CSS design system for TinyRSVP, including custom properties (variables) and typography system.
+This directory contains the CSS design system for TinyRSVP, including custom properties (variables), typography system, and color utilities.
 
 ## Purpose
 
-Provides a comprehensive design token system using CSS custom properties for consistent theming, typography, and easy customization across the application.
+Provides a comprehensive design token system using CSS custom properties for consistent theming, typography, colors, and easy customization across the application.
 
 ## Files
 
@@ -13,6 +13,9 @@ Provides a comprehensive design token system using CSS custom properties for con
 - [`typography.css`](typography.css) - Typography system with heading hierarchy and text utilities
 - [`typography_test.go`](typography_test.go) - Test suite validating typography styles
 - [`typography_integration_test.go`](typography_integration_test.go) - Integration tests for typography system
+- [`colors.css`](colors.css) - Color utility classes for backgrounds, text, and borders
+- [`colors_test.go`](colors_test.go) - Test suite validating color utilities
+- [`colors_integration_test.go`](colors_integration_test.go) - Integration tests for color system
 
 ## CSS Variables Reference
 
@@ -266,6 +269,57 @@ The typography system provides consistent text styling across the application wi
 <p>Regular body text with optimal line length.</p>
 ```
 
+## Color System
+
+The color system provides comprehensive utility classes for backgrounds, text, and borders with semantic naming and WCAG AA compliance.
+
+### Features
+
+- **Primary Scale:** Full 50-900 color scale for brand colors
+- **Gray Scale:** Complete neutral palette (50-900)
+- **Semantic Colors:** Success, warning, error, info with variants
+- **Hover States:** Interactive feedback for buttons and links
+- **Light/Dark Variants:** Subtle backgrounds and emphasized text
+- **WCAG AA Compliance:** All colors meet 4.5:1 contrast ratio
+
+### Color Utility Classes
+
+```css
+/* Background Colors */
+.bg-primary, .bg-primary-50 through .bg-primary-900
+.bg-gray-50 through .bg-gray-900
+.bg-success, .bg-warning, .bg-error, .bg-info
+.bg-success-light, .bg-warning-light, .bg-error-light, .bg-info-light
+.bg-white, .bg-transparent, .bg-surface, .bg-background
+
+/* Text Colors */
+.text-primary-600, .text-primary-700
+.text-success, .text-warning, .text-error, .text-info
+.text-success-dark, .text-warning-dark, .text-error-dark
+.text-gray-600, .text-gray-700, .text-gray-800, .text-gray-900
+
+/* Border Colors */
+.border-primary, .border-success, .border-warning, .border-error, .border-info
+.border-gray-200, .border-gray-300
+
+/* Hover States */
+.bg-primary:hover, .bg-success:hover, .bg-error:hover
+```
+
+### Usage Example
+
+```html
+<link rel="stylesheet" href="/static/css/variables.css">
+<link rel="stylesheet" href="/static/css/typography.css">
+<link rel="stylesheet" href="/static/css/colors.css">
+
+<div class="bg-success-light border-success">
+    <p class="text-success-dark">Success message</p>
+</div>
+
+<button class="bg-primary text-white">Primary Button</button>
+```
+
 ## Integration
 
 To use the design system in your HTML templates:
@@ -273,13 +327,15 @@ To use the design system in your HTML templates:
 ```html
 <link rel="stylesheet" href="/static/css/variables.css">
 <link rel="stylesheet" href="/static/css/typography.css">
+<link rel="stylesheet" href="/static/css/colors.css">
 ```
 
-Variables must be loaded before typography for proper variable resolution.
+Load order matters: variables → typography → colors for proper variable resolution.
 
 ## Related Stories
 
 - **Epic:** [07_EPIC_frontend.md](../../docs/00_BACKLOG/07_EPIC_frontend.md)
 - **Story 00:** [07_STORY_00_css_variables.md](../../docs/00_BACKLOG/07_STORY_00_css_variables.md)
 - **Story 01:** [07_STORY_01_typography.md](../../docs/00_BACKLOG/07_STORY_01_typography.md)
-- **Blocks:** All other frontend stories (02-21)
+- **Story 02:** [07_STORY_02_color_system.md](../../docs/00_BACKLOG/07_STORY_02_color_system.md)
+- **Blocks:** All other frontend stories (03-21)
