@@ -179,6 +179,10 @@ Make sure you understand the entire architecture and how the changes
 you are about to make fit in within that architecture. Understand the 
 goals of what you are trying to achieve and how to go about it. 
 
+ALWAYS review the HLD and relevant LLD(s).
+- docs/02_REVISED_HLD.md
+- docs/lld/
+
 ---
 
 ## Repository Structure
