@@ -41,7 +41,7 @@
             </div>
             {{end}}
 
-            <form method="POST" action="{{if .Event.ID}}/events/{{.Event.ID}}{{else}}/events{{end}}" class="event-form">
+            <form method="POST" action="{{if .Event.ID}}/events/{{.Event.ID}}{{else}}/events{{end}}" class="event-form" novalidate>
                 {{if .Event.ID}}
                 <input type="hidden" name="_method" value="PUT">
                 {{end}}
@@ -260,5 +260,6 @@
             </form>
         </main>
     </div>
+    <script src="/static/js/form_validation.js"></script>
 </body>
 </html>
