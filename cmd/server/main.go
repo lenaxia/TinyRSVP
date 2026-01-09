@@ -385,12 +385,31 @@ func main() {
 	logger.Info("Registered regenerate invite endpoints", "path", "/api/invites/{inviteId}/regenerate", "protection", "authenticated")
 	logger.Info("Registered list invite endpoints", "path", "/api/events/{eventId}/invites", "method", "GET", "protection", "authenticated")
 
+	funcMap := template.FuncMap{
+		"sub": func(a, b int) int { return a - b },
+		"add": func(a, b int) int { return a + b },
+		"mul": func(a, b int) int { return a * b },
+		"div": func(a, b int) int {
+			if b == 0 {
+				return 0
+			}
+			return a / b
+		},
+	}
+
 	rsvpTemplates, err := template.ParseFiles("templates/web/rsvp_page.html")
 	if err != nil {
 		logger.Error("Failed to load RSVP templates", "error", err)
 		os.Exit(1)
 	}
 	logger.Info("RSVP templates loaded successfully")
+
+	rsvpSummaryTemplates, err := template.New("rsvp_summary.html").Funcs(funcMap).ParseFiles("templates/web/rsvp_summary.html")
+	if err != nil {
+		logger.Error("Failed to load RSVP summary templates", "error", err)
+		os.Exit(1)
+	}
+	logger.Info("RSVP summary templates loaded successfully")
 
 	icsGenerator := ics.NewGenerator()
 	emailService := email.NewConfirmationService(templateRenderer, emailQueueRepo, icsGenerator)
@@ -414,6 +433,11 @@ func main() {
 	logger.Info("Registered RSVP confirmation endpoint", "path", "/rsvp/{token}/confirmation", "method", "GET", "protection", "none")
 	logger.Info("Registered RSVP submission endpoint", "path", "/rsvp/{token}", "method", "POST", "protection", "none")
 	logger.Info("Registered RSVP update endpoint", "path", "/rsvp/{token}", "method", "PUT", "protection", "none")
+
+	rsvpSummaryHandler := handlers.NewRSVPSummaryHandler(eventRepo, rsvpRepo, questionRepo, answerRepo)
+	rsvpSummaryHandler.SetTemplates(rsvpSummaryTemplates)
+	chiRouter.Get("/events/{id}/rsvp-summary", rsvpSummaryHandler.GetRSVPSummary)
+	logger.Info("Registered RSVP summary endpoint", "path", "/api/events/{id}/rsvp-summary", "method", "GET", "protection", "authenticated")
 
 	addr := fmt.Sprintf("%s:%d", cfg.Server.Host, cfg.Server.Port)
 	server := &http.Server{
