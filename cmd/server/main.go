@@ -150,6 +150,12 @@ func main() {
 		os.Exit(1)
 	}
 	logger.Info("Default templates seeded successfully")
+
+	templateEngine := templates.NewEngine()
+	templateValidator := templates.NewValidator(templateEngine)
+	templateService := templates.NewService(templateRepo, templateValidator)
+	logger.Info("Template service initialized")
+
 	sessionRepo := repositories.NewSessionRepository(database)
 	eventRepo := repositories.NewEventRepository(database)
 	inviteRepo := repositories.NewInviteRepository(database)
@@ -292,6 +298,10 @@ func main() {
 
 	questionHandlers := handlers.NewQuestionHandlers(questionService)
 	questionHandlers.RegisterRoutes(chiRouter)
+
+	templateHandlers := handlers.NewTemplateHandlers(templateService)
+	templateHandlers.RegisterRoutes(chiRouter)
+	logger.Info("Registered template management endpoints", "path", "/api/templates", "protection", "authenticated")
 
 	inviteHandlers := handlers.NewInviteHandlers(individualInviteService, cfg.Server.BaseURL)
 	inviteHandlers.RegisterRoutes(chiRouter)

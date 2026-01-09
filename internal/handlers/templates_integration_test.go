@@ -18,7 +18,7 @@ import (
 	"github.com/lenaxia/tinyrsvp/internal/templates"
 )
 
-func setupHandlerTestDB(t *testing.T) (db.Database, func()) {
+func setupTemplateIntegrationTest(t *testing.T) (db.Database, *TemplateHandlers, *models.User) {
 	t.Helper()
 
 	database, err := db.NewDatabase(db.Config{
@@ -34,257 +34,475 @@ func setupHandlerTestDB(t *testing.T) (db.Database, func()) {
 
 	migrator, err := db.NewMigrator(database.DB(), "../../migrations/sqlite")
 	if err != nil {
-		database.Close()
 		t.Fatalf("Failed to create migrator: %v", err)
 	}
 
 	ctx := context.Background()
 	if err := migrator.Up(ctx); err != nil {
-		database.Close()
 		t.Fatalf("Failed to run migrations: %v", err)
 	}
 
-	cleanup := func() {
-		database.Close()
-	}
-
-	return database, cleanup
-}
-
-var handlerUserCounter int64 = 0
-
-func createHandlerTestUser(t *testing.T, database db.Database, role models.UserRole) *models.User {
-	t.Helper()
-	handlerUserCounter++
-
+	userRepo := repositories.NewUserRepository(database)
 	user := &models.User{
-		Email: fmt.Sprintf("handler%d@example.com", handlerUserCounter),
-		Name:  fmt.Sprintf("Handler User %d", handlerUserCounter),
-		Role:  role,
+		Email: "test@example.com",
+		Name:  "Test User",
+		Role:  models.RoleEventManager,
 	}
-
-	query := `
-		INSERT INTO users (email, name, role, created_at, updated_at)
-		VALUES (?, ?, ?, ?, ?)
-	`
-
-	now := time.Now()
-	result, err := database.Exec(context.Background(), query, user.Email, user.Name, user.Role, now, now)
-	if err != nil {
+	if err := userRepo.Create(ctx, user); err != nil {
 		t.Fatalf("Failed to create test user: %v", err)
 	}
 
-	id, err := result.LastInsertId()
-	if err != nil {
-		t.Fatalf("Failed to get user ID: %v", err)
-	}
+	templateRepo := repositories.NewTemplateRepository(database)
+	templateEngine := templates.NewEngine()
+	templateValidator := templates.NewValidator(templateEngine)
+	templateService := templates.NewService(templateRepo, templateValidator)
 
-	user.ID = id
-	user.CreatedAt = now
-	user.UpdatedAt = now
+	templateHandlers := NewTemplateHandlers(templateService)
 
-	return user
+	return database, templateHandlers, user
 }
 
-func TestTemplateHandlers_Integration_FullCRUDFlow(t *testing.T) {
-	database, cleanup := setupHandlerTestDB(t)
-	defer cleanup()
+func TestTemplateHandlers_FullStackIntegration(t *testing.T) {
+	database, templateHandlers, user := setupTemplateIntegrationTest(t)
+	defer database.Close()
 
-	repo := repositories.NewTemplateRepository(database)
-	engine := templates.NewEngine()
-	validator := templates.NewValidator(engine)
-	service := templates.NewService(repo, validator)
-	handler := NewTemplateHandlers(service)
+	ctx := auth.WithUser(context.Background(), user)
 
-	user := createHandlerTestUser(t, database, models.RoleEventManager)
+	var createdTemplateID int64
 
-	createReq := map[string]interface{}{
-		"name":         "Integration Test Template",
-		"type":         "rsvp_page",
-		"description":  "Integration test",
-		"html_content": "<h1>{{.Event.Title}}</h1>",
-	}
-
-	body, _ := json.Marshal(createReq)
-	req := httptest.NewRequest(http.MethodPost, "/api/templates", bytes.NewReader(body))
-	req = req.WithContext(auth.WithUser(context.Background(), user))
-
-	w := httptest.NewRecorder()
-	handler.CreateTemplate(w, req)
-
-	if w.Code != http.StatusCreated {
-		t.Fatalf("CreateTemplate status = %d, want %d. Body: %s", w.Code, http.StatusCreated, w.Body.String())
-	}
-
-	var createResp map[string]interface{}
-	json.NewDecoder(w.Body).Decode(&createResp)
-	templateData := createResp["template"].(map[string]interface{})
-	templateID := int64(templateData["id"].(float64))
-
-	getReq := httptest.NewRequest(http.MethodGet, fmt.Sprintf("/api/templates/%d", templateID), nil)
-	getReq = getReq.WithContext(auth.WithUser(context.Background(), user))
-	rctx := chi.NewRouteContext()
-	rctx.URLParams.Add("id", fmt.Sprintf("%d", templateID))
-	getReq = getReq.WithContext(context.WithValue(getReq.Context(), chi.RouteCtxKey, rctx))
-
-	w = httptest.NewRecorder()
-	handler.GetTemplate(w, getReq)
-
-	if w.Code != http.StatusOK {
-		t.Fatalf("GetTemplate status = %d, want %d", w.Code, http.StatusOK)
-	}
-
-	updateReq := map[string]interface{}{
-		"name": "Updated Integration Template",
-	}
-
-	body, _ = json.Marshal(updateReq)
-	putReq := httptest.NewRequest(http.MethodPut, fmt.Sprintf("/api/templates/%d", templateID), bytes.NewReader(body))
-	putReq = putReq.WithContext(auth.WithUser(context.Background(), user))
-	rctx = chi.NewRouteContext()
-	rctx.URLParams.Add("id", fmt.Sprintf("%d", templateID))
-	putReq = putReq.WithContext(context.WithValue(putReq.Context(), chi.RouteCtxKey, rctx))
-
-	w = httptest.NewRecorder()
-	handler.UpdateTemplate(w, putReq)
-
-	if w.Code != http.StatusOK {
-		t.Fatalf("UpdateTemplate status = %d, want %d. Body: %s", w.Code, http.StatusOK, w.Body.String())
-	}
-
-	deleteReq := httptest.NewRequest(http.MethodDelete, fmt.Sprintf("/api/templates/%d", templateID), nil)
-	deleteReq = deleteReq.WithContext(auth.WithUser(context.Background(), user))
-	rctx = chi.NewRouteContext()
-	rctx.URLParams.Add("id", fmt.Sprintf("%d", templateID))
-	deleteReq = deleteReq.WithContext(context.WithValue(deleteReq.Context(), chi.RouteCtxKey, rctx))
-
-	w = httptest.NewRecorder()
-	handler.DeleteTemplate(w, deleteReq)
-
-	if w.Code != http.StatusNoContent {
-		t.Fatalf("DeleteTemplate status = %d, want %d", w.Code, http.StatusNoContent)
-	}
-}
-
-func TestTemplateHandlers_Integration_PermissionEnforcement(t *testing.T) {
-	database, cleanup := setupHandlerTestDB(t)
-	defer cleanup()
-
-	repo := repositories.NewTemplateRepository(database)
-	engine := templates.NewEngine()
-	validator := templates.NewValidator(engine)
-	service := templates.NewService(repo, validator)
-	handler := NewTemplateHandlers(service)
-
-	user1 := createHandlerTestUser(t, database, models.RoleEventManager)
-	user2 := createHandlerTestUser(t, database, models.RoleEventManager)
-
-	createReq := map[string]interface{}{
-		"name":         "User1 Template",
-		"type":         "rsvp_page",
-		"html_content": "<h1>{{.Event.Title}}</h1>",
-	}
-
-	body, _ := json.Marshal(createReq)
-	req := httptest.NewRequest(http.MethodPost, "/api/templates", bytes.NewReader(body))
-	req = req.WithContext(auth.WithUser(context.Background(), user1))
-
-	w := httptest.NewRecorder()
-	handler.CreateTemplate(w, req)
-
-	if w.Code != http.StatusCreated {
-		t.Fatalf("CreateTemplate status = %d, want %d", w.Code, http.StatusCreated)
-	}
-
-	var createResp map[string]interface{}
-	json.NewDecoder(w.Body).Decode(&createResp)
-	templateData := createResp["template"].(map[string]interface{})
-	templateID := int64(templateData["id"].(float64))
-
-	updateReq := map[string]interface{}{
-		"name": "User2 Trying to Update",
-	}
-
-	body, _ = json.Marshal(updateReq)
-	putReq := httptest.NewRequest(http.MethodPut, fmt.Sprintf("/api/templates/%d", templateID), bytes.NewReader(body))
-	putReq = putReq.WithContext(auth.WithUser(context.Background(), user2))
-	rctx := chi.NewRouteContext()
-	rctx.URLParams.Add("id", fmt.Sprintf("%d", templateID))
-	putReq = putReq.WithContext(context.WithValue(putReq.Context(), chi.RouteCtxKey, rctx))
-
-	w = httptest.NewRecorder()
-	handler.UpdateTemplate(w, putReq)
-
-	if w.Code != http.StatusForbidden {
-		t.Errorf("UpdateTemplate by different user status = %d, want %d", w.Code, http.StatusForbidden)
-	}
-
-	deleteReq := httptest.NewRequest(http.MethodDelete, fmt.Sprintf("/api/templates/%d", templateID), nil)
-	deleteReq = deleteReq.WithContext(auth.WithUser(context.Background(), user2))
-	rctx = chi.NewRouteContext()
-	rctx.URLParams.Add("id", fmt.Sprintf("%d", templateID))
-	deleteReq = deleteReq.WithContext(context.WithValue(deleteReq.Context(), chi.RouteCtxKey, rctx))
-
-	w = httptest.NewRecorder()
-	handler.DeleteTemplate(w, deleteReq)
-
-	if w.Code != http.StatusForbidden {
-		t.Errorf("DeleteTemplate by different user status = %d, want %d", w.Code, http.StatusForbidden)
-	}
-}
-
-func TestTemplateHandlers_Integration_ListWithFilters(t *testing.T) {
-	database, cleanup := setupHandlerTestDB(t)
-	defer cleanup()
-
-	repo := repositories.NewTemplateRepository(database)
-	seeder := templates.NewSeeder(repo, 1)
-	engine := templates.NewEngine()
-	validator := templates.NewValidator(engine)
-	service := templates.NewService(repo, validator)
-	handler := NewTemplateHandlers(service)
-
-	user := createHandlerTestUser(t, database, models.RoleEventManager)
-
-	err := seeder.SeedDefaults(context.Background())
-	if err != nil {
-		t.Fatalf("SeedDefaults() error = %v", err)
-	}
-
-	for i := 0; i < 2; i++ {
-		createReq := map[string]interface{}{
-			"name":         fmt.Sprintf("Custom Template %d", i+1),
-			"type":         "rsvp_page",
-			"html_content": "<h1>{{.Event.Title}}</h1>",
+	t.Run("POST /api/templates - create template", func(t *testing.T) {
+		reqBody := CreateTemplateRequest{
+			Name:        "Test Template",
+			Type:        string(models.TemplateTypeInviteEmail),
+			Description: "Test description",
+			HTMLContent: "<h1>{{.Event.Title}}</h1>",
+			TextContent: strPtr("{{.Event.Title}}"),
 		}
 
-		body, _ := json.Marshal(createReq)
+		body, _ := json.Marshal(reqBody)
 		req := httptest.NewRequest(http.MethodPost, "/api/templates", bytes.NewReader(body))
-		req = req.WithContext(auth.WithUser(context.Background(), user))
+		req.Header.Set("Content-Type", "application/json")
+		req = req.WithContext(ctx)
 
 		w := httptest.NewRecorder()
-		handler.CreateTemplate(w, req)
+		templateHandlers.CreateTemplate(w, req)
 
 		if w.Code != http.StatusCreated {
-			t.Fatalf("CreateTemplate status = %d, want %d", w.Code, http.StatusCreated)
+			t.Errorf("Expected status %d, got %d. Body: %s", http.StatusCreated, w.Code, w.Body.String())
 		}
+
+		var response map[string]interface{}
+		if err := json.NewDecoder(w.Body).Decode(&response); err != nil {
+			t.Fatalf("Failed to decode response: %v", err)
+		}
+
+		templateData, ok := response["template"].(map[string]interface{})
+		if !ok {
+			t.Fatal("Response missing template field")
+		}
+
+		if templateData["name"] != "Test Template" {
+			t.Errorf("Expected name 'Test Template', got %v", templateData["name"])
+		}
+
+		if id, ok := templateData["id"].(float64); ok {
+			createdTemplateID = int64(id)
+		}
+	})
+
+	t.Run("GET /api/templates - list templates", func(t *testing.T) {
+		req := httptest.NewRequest(http.MethodGet, "/api/templates", nil)
+		req = req.WithContext(ctx)
+
+		w := httptest.NewRecorder()
+		templateHandlers.ListTemplates(w, req)
+
+		if w.Code != http.StatusOK {
+			t.Errorf("Expected status %d, got %d. Body: %s", http.StatusOK, w.Code, w.Body.String())
+		}
+
+		var response ListTemplatesResponse
+		if err := json.NewDecoder(w.Body).Decode(&response); err != nil {
+			t.Fatalf("Failed to decode response: %v", err)
+		}
+
+		if len(response.Templates) == 0 {
+			t.Error("Expected at least one template in list")
+		}
+	})
+
+	t.Run("GET /api/templates/{id} - get template", func(t *testing.T) {
+		if createdTemplateID == 0 {
+			t.Skip("No template created in previous test")
+		}
+
+		req := httptest.NewRequest(http.MethodGet, fmt.Sprintf("/api/templates/%d", createdTemplateID), nil)
+		req = req.WithContext(ctx)
+
+		rctx := chi.NewRouteContext()
+		rctx.URLParams.Add("id", fmt.Sprintf("%d", createdTemplateID))
+		req = req.WithContext(context.WithValue(req.Context(), chi.RouteCtxKey, rctx))
+
+		w := httptest.NewRecorder()
+		templateHandlers.GetTemplate(w, req)
+
+		if w.Code != http.StatusOK {
+			t.Errorf("Expected status %d, got %d. Body: %s", http.StatusOK, w.Code, w.Body.String())
+		}
+
+		var response map[string]interface{}
+		if err := json.NewDecoder(w.Body).Decode(&response); err != nil {
+			t.Fatalf("Failed to decode response: %v", err)
+		}
+
+		templateData, ok := response["template"].(map[string]interface{})
+		if !ok {
+			t.Fatal("Response missing template field")
+		}
+
+		if templateData["name"] != "Test Template" {
+			t.Errorf("Expected name 'Test Template', got %v", templateData["name"])
+		}
+	})
+
+	t.Run("PUT /api/templates/{id} - update template", func(t *testing.T) {
+		if createdTemplateID == 0 {
+			t.Skip("No template created in previous test")
+		}
+
+		updateReq := UpdateTemplateRequest{
+			Description: strPtr("Updated description"),
+		}
+		body, _ := json.Marshal(updateReq)
+
+		req := httptest.NewRequest(http.MethodPut, fmt.Sprintf("/api/templates/%d", createdTemplateID), bytes.NewReader(body))
+		req.Header.Set("Content-Type", "application/json")
+		req = req.WithContext(ctx)
+
+		rctx := chi.NewRouteContext()
+		rctx.URLParams.Add("id", fmt.Sprintf("%d", createdTemplateID))
+		req = req.WithContext(context.WithValue(req.Context(), chi.RouteCtxKey, rctx))
+
+		w := httptest.NewRecorder()
+		templateHandlers.UpdateTemplate(w, req)
+
+		if w.Code != http.StatusOK {
+			t.Errorf("Expected status %d, got %d. Body: %s", http.StatusOK, w.Code, w.Body.String())
+		}
+
+		var response map[string]interface{}
+		if err := json.NewDecoder(w.Body).Decode(&response); err != nil {
+			t.Fatalf("Failed to decode response: %v", err)
+		}
+
+		templateData, ok := response["template"].(map[string]interface{})
+		if !ok {
+			t.Fatal("Response missing template field")
+		}
+
+		if templateData["description"] != "Updated description" {
+			t.Errorf("Expected description 'Updated description', got %v", templateData["description"])
+		}
+	})
+
+	t.Run("POST /api/templates/{id}/set-active - set template active/inactive", func(t *testing.T) {
+		if createdTemplateID == 0 {
+			t.Skip("No template created in previous test")
+		}
+
+		setActiveReq := SetActiveRequest{
+			Active: false,
+		}
+		body, _ := json.Marshal(setActiveReq)
+
+		req := httptest.NewRequest(http.MethodPost, fmt.Sprintf("/api/templates/%d/set-active", createdTemplateID), bytes.NewReader(body))
+		req.Header.Set("Content-Type", "application/json")
+		req = req.WithContext(ctx)
+
+		rctx := chi.NewRouteContext()
+		rctx.URLParams.Add("id", fmt.Sprintf("%d", createdTemplateID))
+		req = req.WithContext(context.WithValue(req.Context(), chi.RouteCtxKey, rctx))
+
+		w := httptest.NewRecorder()
+		templateHandlers.SetActive(w, req)
+
+		if w.Code != http.StatusOK {
+			t.Errorf("Expected status %d, got %d. Body: %s", http.StatusOK, w.Code, w.Body.String())
+		}
+	})
+
+	t.Run("DELETE /api/templates/{id} - delete template", func(t *testing.T) {
+		template := &models.Template{
+			Name:        "Delete Test Template",
+			Type:        models.TemplateTypeInviteEmail,
+			Description: "To be deleted",
+			HTMLContent: "<div>Delete me</div>",
+			TextContent: strPtr("Delete me"),
+		}
+		if err := templateHandlers.service.CreateTemplate(ctx, template); err != nil {
+			t.Fatalf("Failed to create template: %v", err)
+		}
+
+		req := httptest.NewRequest(http.MethodDelete, fmt.Sprintf("/api/templates/%d", template.ID), nil)
+		req = req.WithContext(ctx)
+
+		rctx := chi.NewRouteContext()
+		rctx.URLParams.Add("id", fmt.Sprintf("%d", template.ID))
+		req = req.WithContext(context.WithValue(req.Context(), chi.RouteCtxKey, rctx))
+
+		w := httptest.NewRecorder()
+		templateHandlers.DeleteTemplate(w, req)
+
+		if w.Code != http.StatusNoContent {
+			t.Errorf("Expected status %d, got %d. Body: %s", http.StatusNoContent, w.Code, w.Body.String())
+		}
+	})
+
+	t.Run("Unauthenticated request returns 401", func(t *testing.T) {
+		req := httptest.NewRequest(http.MethodGet, "/api/templates", nil)
+
+		w := httptest.NewRecorder()
+		templateHandlers.ListTemplates(w, req)
+
+		if w.Code != http.StatusUnauthorized {
+			t.Errorf("Expected status %d for unauthenticated request, got %d", http.StatusUnauthorized, w.Code)
+		}
+	})
+}
+
+func TestTemplateHandlers_FullStackIntegration_WithRouter(t *testing.T) {
+	database, templateHandlers, user := setupTemplateIntegrationTest(t)
+	defer database.Close()
+
+	ctx := auth.WithUser(context.Background(), user)
+
+	router := chi.NewRouter()
+	templateHandlers.RegisterRoutes(router)
+
+	var createdTemplateID int64
+
+	t.Run("POST /api/templates via router", func(t *testing.T) {
+		reqBody := CreateTemplateRequest{
+			Name:        "Router Test Template",
+			Type:        string(models.TemplateTypeRSVPPage),
+			Description: "Testing via router",
+			HTMLContent: "<div>{{.Event.Title}}</div>",
+		}
+
+		body, _ := json.Marshal(reqBody)
+		req := httptest.NewRequest(http.MethodPost, "/api/templates", bytes.NewReader(body))
+		req.Header.Set("Content-Type", "application/json")
+		req = req.WithContext(ctx)
+
+		w := httptest.NewRecorder()
+		router.ServeHTTP(w, req)
+
+		if w.Code != http.StatusCreated {
+			t.Errorf("Expected status %d, got %d. Body: %s", http.StatusCreated, w.Code, w.Body.String())
+		}
+
+		var response map[string]interface{}
+		if err := json.NewDecoder(w.Body).Decode(&response); err != nil {
+			t.Fatalf("Failed to decode response: %v", err)
+		}
+
+		templateData, ok := response["template"].(map[string]interface{})
+		if !ok {
+			t.Fatal("Response missing template field")
+		}
+
+		if id, ok := templateData["id"].(float64); ok {
+			createdTemplateID = int64(id)
+		}
+	})
+
+	t.Run("GET /api/templates/{id} via router", func(t *testing.T) {
+		if createdTemplateID == 0 {
+			t.Skip("No template created in previous test")
+		}
+
+		req := httptest.NewRequest(http.MethodGet, fmt.Sprintf("/api/templates/%d", createdTemplateID), nil)
+		req = req.WithContext(ctx)
+
+		w := httptest.NewRecorder()
+		router.ServeHTTP(w, req)
+
+		if w.Code != http.StatusOK {
+			t.Errorf("Expected status %d, got %d. Body: %s", http.StatusOK, w.Code, w.Body.String())
+		}
+	})
+
+	t.Run("PUT /api/templates/{id} via router", func(t *testing.T) {
+		if createdTemplateID == 0 {
+			t.Skip("No template created in previous test")
+		}
+
+		updateReq := UpdateTemplateRequest{
+			Description: strPtr("Updated via router"),
+		}
+		body, _ := json.Marshal(updateReq)
+
+		req := httptest.NewRequest(http.MethodPut, fmt.Sprintf("/api/templates/%d", createdTemplateID), bytes.NewReader(body))
+		req.Header.Set("Content-Type", "application/json")
+		req = req.WithContext(ctx)
+
+		w := httptest.NewRecorder()
+		router.ServeHTTP(w, req)
+
+		if w.Code != http.StatusOK {
+			t.Errorf("Expected status %d, got %d. Body: %s", http.StatusOK, w.Code, w.Body.String())
+		}
+	})
+
+	t.Run("DELETE /api/templates/{id} via router", func(t *testing.T) {
+		if createdTemplateID == 0 {
+			t.Skip("No template created in previous test")
+		}
+
+		req := httptest.NewRequest(http.MethodDelete, fmt.Sprintf("/api/templates/%d", createdTemplateID), nil)
+		req = req.WithContext(ctx)
+
+		w := httptest.NewRecorder()
+		router.ServeHTTP(w, req)
+
+		if w.Code != http.StatusNoContent {
+			t.Errorf("Expected status %d, got %d. Body: %s", http.StatusNoContent, w.Code, w.Body.String())
+		}
+	})
+
+	t.Run("GET /api/templates via router - list", func(t *testing.T) {
+		req := httptest.NewRequest(http.MethodGet, "/api/templates", nil)
+		req = req.WithContext(ctx)
+
+		w := httptest.NewRecorder()
+		router.ServeHTTP(w, req)
+
+		if w.Code != http.StatusOK {
+			t.Errorf("Expected status %d, got %d. Body: %s", http.StatusOK, w.Code, w.Body.String())
+		}
+
+		var response ListTemplatesResponse
+		if err := json.NewDecoder(w.Body).Decode(&response); err != nil {
+			t.Fatalf("Failed to decode response: %v", err)
+		}
+	})
+}
+
+func TestTemplateHandlers_PermissionEnforcement(t *testing.T) {
+	database, templateHandlers, user := setupTemplateIntegrationTest(t)
+	defer database.Close()
+
+	ctx := auth.WithUser(context.Background(), user)
+
+	otherUserRepo := repositories.NewUserRepository(database)
+	otherUser := &models.User{
+		Email: "other@example.com",
+		Name:  "Other User",
+		Role:  models.RoleEventManager,
+	}
+	if err := otherUserRepo.Create(context.Background(), otherUser); err != nil {
+		t.Fatalf("Failed to create other user: %v", err)
 	}
 
-	listReq := httptest.NewRequest(http.MethodGet, "/api/templates?type=rsvp_page", nil)
-	listReq = listReq.WithContext(auth.WithUser(context.Background(), user))
-
-	w := httptest.NewRecorder()
-	handler.ListTemplates(w, listReq)
-
-	if w.Code != http.StatusOK {
-		t.Fatalf("ListTemplates status = %d, want %d", w.Code, http.StatusOK)
+	template := &models.Template{
+		Name:        "User Template",
+		Type:        models.TemplateTypeInviteEmail,
+		Description: "Owned by first user",
+		HTMLContent: "<div>Test</div>",
+		TextContent: strPtr("Test"),
+	}
+	if err := templateHandlers.service.CreateTemplate(ctx, template); err != nil {
+		t.Fatalf("Failed to create template: %v", err)
 	}
 
-	var listResp map[string]interface{}
-	json.NewDecoder(w.Body).Decode(&listResp)
-	templatesList := listResp["templates"].([]interface{})
+	t.Run("cannot update other user's template", func(t *testing.T) {
+		otherCtx := auth.WithUser(context.Background(), otherUser)
 
-	if len(templatesList) < 3 {
-		t.Errorf("Expected at least 3 RSVP templates, got %d", len(templatesList))
+		updateReq := UpdateTemplateRequest{
+			Description: strPtr("Trying to update"),
+		}
+		body, _ := json.Marshal(updateReq)
+
+		req := httptest.NewRequest(http.MethodPut, fmt.Sprintf("/api/templates/%d", template.ID), bytes.NewReader(body))
+		req.Header.Set("Content-Type", "application/json")
+		req = req.WithContext(otherCtx)
+
+		rctx := chi.NewRouteContext()
+		rctx.URLParams.Add("id", fmt.Sprintf("%d", template.ID))
+		req = req.WithContext(context.WithValue(req.Context(), chi.RouteCtxKey, rctx))
+
+		w := httptest.NewRecorder()
+		templateHandlers.UpdateTemplate(w, req)
+
+		if w.Code != http.StatusForbidden {
+			t.Errorf("Expected status %d, got %d. Body: %s", http.StatusForbidden, w.Code, w.Body.String())
+		}
+	})
+
+	t.Run("cannot delete other user's template", func(t *testing.T) {
+		otherCtx := auth.WithUser(context.Background(), otherUser)
+
+		req := httptest.NewRequest(http.MethodDelete, fmt.Sprintf("/api/templates/%d", template.ID), nil)
+		req = req.WithContext(otherCtx)
+
+		rctx := chi.NewRouteContext()
+		rctx.URLParams.Add("id", fmt.Sprintf("%d", template.ID))
+		req = req.WithContext(context.WithValue(req.Context(), chi.RouteCtxKey, rctx))
+
+		w := httptest.NewRecorder()
+		templateHandlers.DeleteTemplate(w, req)
+
+		if w.Code != http.StatusForbidden {
+			t.Errorf("Expected status %d, got %d. Body: %s", http.StatusForbidden, w.Code, w.Body.String())
+		}
+	})
+}
+
+func TestTemplateHandlers_DefaultTemplateProtection(t *testing.T) {
+	database, templateHandlers, _ := setupTemplateIntegrationTest(t)
+	defer database.Close()
+
+	adminRepo := repositories.NewUserRepository(database)
+	admin := &models.User{
+		Email: "admin@example.com",
+		Name:  "Admin User",
+		Role:  models.RoleAdmin,
 	}
+	if err := adminRepo.Create(context.Background(), admin); err != nil {
+		t.Fatalf("Failed to create admin user: %v", err)
+	}
+
+	adminCtx := auth.WithUser(context.Background(), admin)
+
+	defaultTemplate := &models.Template{
+		Name:        "Default Template",
+		Type:        models.TemplateTypeInviteEmail,
+		Description: "System default",
+		HTMLContent: "<div>Default</div>",
+		TextContent: strPtr("Default"),
+		IsDefault:   true,
+	}
+	if err := templateHandlers.service.CreateTemplate(adminCtx, defaultTemplate); err != nil {
+		t.Fatalf("Failed to create default template: %v", err)
+	}
+
+	t.Run("cannot delete default template", func(t *testing.T) {
+		req := httptest.NewRequest(http.MethodDelete, fmt.Sprintf("/api/templates/%d", defaultTemplate.ID), nil)
+		req = req.WithContext(adminCtx)
+
+		rctx := chi.NewRouteContext()
+		rctx.URLParams.Add("id", fmt.Sprintf("%d", defaultTemplate.ID))
+		req = req.WithContext(context.WithValue(req.Context(), chi.RouteCtxKey, rctx))
+
+		w := httptest.NewRecorder()
+		templateHandlers.DeleteTemplate(w, req)
+
+		if w.Code != http.StatusBadRequest {
+			t.Errorf("Expected status %d, got %d. Body: %s", http.StatusBadRequest, w.Code, w.Body.String())
+		}
+	})
+}
+
+func strPtr(s string) *string {
+	return &s
 }

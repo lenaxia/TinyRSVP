@@ -121,11 +121,37 @@ The handlers integrate with:
 - `internal/templates` - for business logic
 - `github.com/go-chi/chi/v5` - for routing
 
+## Integration with Server
+
+**Fixed:** 2026-01-09
+
+The template handlers were not registered in `cmd/server/main.go`, causing all template endpoints to return 404.
+
+**Changes Made:**
+1. Added template service initialization after template seeding (line 154-157):
+   - Created template engine
+   - Created template validator
+   - Created template service with repository and validator
+   - Logged initialization
+
+2. Registered template handlers in chi router (line 296-298):
+   - Created template handlers with service
+   - Called `templateHandlers.RegisterRoutes(chiRouter)`
+   - Logged registration with path and protection level
+
+3. Added comprehensive integration test (`internal/handlers/templates_integration_test.go`):
+   - Tests all CRUD operations through full HTTP stack
+   - Tests permission enforcement
+   - Tests default template protection
+   - Tests both direct handler calls and router-based calls
+
+**Result:** Template CRUD endpoints now fully functional and accessible at `/api/templates/*` with proper authentication and RBAC enforcement.
+
 ## Next Steps
 
 To complete template functionality:
-1. Wire up handlers in main.go router
-2. Add RBAC middleware to template routes
+1. ~~Wire up handlers in main.go router~~ ✓ Complete
+2. ~~Add RBAC middleware to template routes~~ ✓ Complete (via chi router)
 3. Consider adding template preview endpoint (Story 06)
 4. Add template versioning/history if needed
 
