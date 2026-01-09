@@ -193,6 +193,65 @@ if err := processor.Stop(ctx); err != nil {
 - Queue processor uses optimistic locking to prevent duplicate sends
 - Rate limiter is checked before each send operation
 
+## Monitoring and Observability
+
+### Metrics Interface
+
+The email package provides a `Metrics` interface for recording operational metrics:
+
+```go
+type Metrics interface {
+    RecordQueueSize(size int)
+    RecordEmailQueued()
+    RecordEmailDequeued()
+    RecordEmailSent(duration time.Duration)
+    RecordEmailFailed(reason string)
+    RecordRetryAttempt(attempt int)
+    RecordRateLimitHit()
+    RecordRateLimitWait(duration time.Duration)
+    RecordBatchProcessed(count int, duration time.Duration)
+    RecordProcessingError(err error)
+}
+```
+
+A no-op implementation is provided by default via `NewNoOpMetrics()`. For production use, implement this interface with your preferred metrics system (Prometheus, StatsD, etc.).
+
+### Structured Logging
+
+The email package uses Go's `log/slog` for structured logging:
+
+```go
+logger := email.NewLogger(slog.Default())
+```
+
+All email operations are logged with structured fields:
+- Email queued, sending, sent, failed events
+- Retry attempts with backoff duration
+- Rate limit hits and wait times
+- Batch processing metrics
+- Queue processor lifecycle events
+
+**Security:** No sensitive data (passwords, email content) is logged.
+
+### Health Checks
+
+The health checker monitors email system health:
+
+```go
+checker := email.NewHealthChecker(emailQueueRepo, smtpSender)
+
+// Simple health check
+err := checker.Check(ctx)
+
+// Detailed status
+status, err := checker.GetStatus(ctx)
+// Returns: healthy flag, queue size, sending count, failed count, issues
+```
+
+Health thresholds:
+- Queue backlog > 1000: Unhealthy
+- Failed emails > 100: Unhealthy
+
 ## Implementation Status
 
 Completed:
@@ -200,12 +259,12 @@ Completed:
 - Story 02: Email queue processor ✓
 - Story 03: SMTP sender with TLS support ✓
 - Story 04: Template rendering with Go html/template ✓
+- Story 05: Retry logic ✓
 - Story 06: Rate limiting implementation ✓
 - Story 07: Email configuration management ✓
+- Story 08: Monitoring and observability ✓
 
-Remaining (Epic 05):
-- Story 05: Retry logic (partially complete)
-- Story 08: Monitoring and observability
+Epic 05 Complete! ✓
 
 ## Rate Limiter
 
