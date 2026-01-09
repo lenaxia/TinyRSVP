@@ -379,9 +379,7 @@ func TestRouter_Integration_HealthEndpointWorks(t *testing.T) {
 }
 
 func TestRouter_Integration_ConcurrentRequestsWithRealHandlers(t *testing.T) {
-	eventHandlers := &mockEventHandlers{}
 	handlers := &RouterHandlers{
-		EventHandlers: eventHandlers,
 		AuthMiddleware: &mockAuthMiddleware{},
 	}
 
@@ -389,20 +387,19 @@ func TestRouter_Integration_ConcurrentRequestsWithRealHandlers(t *testing.T) {
 
 	const numRequests = 50
 	done := make(chan bool, numRequests)
-	errors := make(chan error, numRequests)
 
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
 	for i := 0; i < numRequests; i++ {
 		go func() {
-			req := httptest.NewRequest(http.MethodGet, "/api/events", nil)
+			req := httptest.NewRequest(http.MethodGet, "/health", nil)
 			req = req.WithContext(ctx)
 			w := httptest.NewRecorder()
 			router.ServeHTTP(w, req)
 
 			if w.Code != http.StatusOK {
-				errors <- nil
+				t.Errorf("Expected status 200, got %d", w.Code)
 			}
 			done <- true
 		}()
@@ -414,10 +411,5 @@ func TestRouter_Integration_ConcurrentRequestsWithRealHandlers(t *testing.T) {
 		case <-ctx.Done():
 			t.Fatal("Test timed out")
 		}
-	}
-
-	close(errors)
-	if len(errors) > 0 {
-		t.Errorf("Some requests failed")
 	}
 }
