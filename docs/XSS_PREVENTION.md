@@ -2,7 +2,7 @@
 
 ## Overview
 
-TinyRSVP uses Go's `html/template` package which provides automatic context-aware XSS prevention. All user input is automatically escaped based on the context where it appears in the template.
+TinyRSVP uses Go's `html/template` package which provides automatic context-aware XSS prevention. All user input is automatically escaped based on the context where it appears in the template. Additionally, CSS content in templates is sanitized to prevent CSS-based XSS attacks.
 
 ## Security Model
 
@@ -53,6 +53,50 @@ URL: "javascript:alert('xss')"
 <a href="#ZgotmplZ">RSVP</a>
 ```
 
+## CSS Sanitization
+
+TinyRSVP includes a dedicated CSS sanitizer that blocks dangerous CSS patterns before templates are saved or rendered.
+
+### Blocked CSS Patterns
+
+The following dangerous CSS patterns are automatically detected and blocked:
+
+- **JavaScript URLs**: `javascript:alert('xss')`
+- **CSS Expressions** (IE legacy): `expression(alert('xss'))`
+- **Behavior Property** (IE legacy): `behavior: url(xss.htc)`
+- **External Imports**: `@import url('https://evil.com/xss.css')`
+- **Mozilla Binding**: `-moz-binding: url('http://evil.com/xss.xml')`
+- **Data URLs with HTML**: `data:text/html,<script>alert(1)</script>`
+- **VBScript URLs**: `vbscript:msgbox('xss')`
+- **Script Tags**: `<script>` or `</script>` in CSS
+- **Charset Directives**: `@charset` (can be used for encoding attacks)
+
+### Pattern Detection Features
+
+- **Case-insensitive**: Detects `JavaScript:`, `JAVASCRIPT:`, `JaVaScRiPt:`, etc.
+- **Whitespace-tolerant**: Detects `javascript  :`, `expression  (`, etc.
+- **Comment-aware**: Dangerous patterns in comments are still caught
+
+### Safe CSS Patterns
+
+The following CSS features are allowed and safe:
+
+- All standard CSS properties (color, font-size, margin, padding, etc.)
+- Media queries (`@media`)
+- Pseudo-classes and pseudo-elements
+- CSS variables (custom properties)
+- Calc() function
+- RGB/RGBA/HSL colors
+- Gradients (linear, radial)
+- Safe data URLs (images: `data:image/png;base64,...`)
+
+### CSS Sanitization Process
+
+1. **Validation**: Checks for dangerous patterns
+2. **Comment Removal**: Strips CSS comments
+3. **Whitespace Normalization**: Normalizes whitespace for consistency
+4. **Size Limit**: Enforces 50KB maximum CSS size
+
 ## Removed Dangerous Functions
 
 The following functions have been **removed** from the template engine as they bypass XSS protection:
@@ -79,22 +123,32 @@ XSS prevention is tested with:
    - Mutation XSS
    - Polyglot payloads
 
-2. **Context-Aware Tests**: Verify escaping in:
+2. **CSS Sanitization Tests**: 27+ test cases covering:
+   - All dangerous CSS patterns
+   - Case insensitivity
+   - Whitespace variations
+   - Safe CSS patterns
+   - Edge cases
+
+3. **Context-Aware Tests**: Verify escaping in:
    - HTML context
    - Attribute context
    - URL context
    - JavaScript context
 
-3. **Integration Tests**: End-to-end testing with:
+4. **Integration Tests**: End-to-end testing with:
    - All template types (invite_email, rsvp_page, confirmation_page)
    - Real-world scenarios
    - Service-level rendering
+   - CSS validation in templates
 
 ### Test Files
 
 - `internal/templates/xss_test.go` - Unit tests for XSS prevention
 - `internal/templates/xss_integration_test.go` - Integration tests
 - `internal/templates/engine_test.go` - Engine-level XSS tests
+- `internal/templates/css_sanitizer_test.go` - CSS sanitizer unit tests
+- `internal/templates/css_sanitizer_integration_test.go` - CSS sanitizer integration tests
 
 ## Best Practices
 
@@ -124,6 +178,8 @@ When using TinyRSVP templates correctly:
 4. **JavaScript URLs are sanitized** - replaced with safe placeholder
 5. **Data URLs are sanitized** - replaced with safe placeholder
 6. **No bypass functions exist** - safeHTML/URL/CSS removed
+7. **CSS is sanitized** - dangerous CSS patterns are blocked
+8. **CSS-based XSS is prevented** - expression(), behavior:, -moz-binding blocked
 
 ## Verification
 
@@ -133,6 +189,9 @@ To verify XSS prevention is working:
 # Run XSS-specific tests
 go test -timeout 30s -v ./internal/templates -run TestXSSPrevention
 
+# Run CSS sanitizer tests
+go test -timeout 30s -v ./internal/templates -run TestCSSSanitizer
+
 # Run all template tests
 go test -timeout 30s ./internal/templates/...
 ```
@@ -141,6 +200,7 @@ All tests should pass, confirming that:
 - Dangerous patterns are escaped
 - Context-aware escaping works
 - No bypass functions exist
+- CSS dangerous patterns are blocked
 - Integration scenarios are safe
 
 ## References
