@@ -39,7 +39,7 @@ func TestRecovery_CatchesPanic(t *testing.T) {
 	if rec.Code != http.StatusInternalServerError {
 		t.Errorf("expected status 500, got %d", rec.Code)
 	}
-	
+
 	body := rec.Body.String()
 	if !strings.Contains(body, "Internal Server Error") {
 		t.Errorf("expected error message in body, got %s", body)
