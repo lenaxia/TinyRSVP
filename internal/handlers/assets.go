@@ -28,12 +28,19 @@ func (h *AssetHandler) ServeAsset(w http.ResponseWriter, r *http.Request) {
 
 	path := strings.TrimPrefix(r.URL.Path, "/assets/")
 
-	if path == "" || strings.Contains(path, "..") {
+	if path == "" {
 		http.Error(w, "Invalid path", http.StatusBadRequest)
 		return
 	}
 
-	reader, err := h.provider.GetObject(r.Context(), path)
+	cleanPath := filepath.Clean(path)
+
+	if strings.Contains(cleanPath, "..") || filepath.IsAbs(cleanPath) || strings.HasPrefix(cleanPath, "..") || strings.Contains(path, ":") {
+		http.Error(w, "Invalid path", http.StatusBadRequest)
+		return
+	}
+
+	reader, err := h.provider.GetObject(r.Context(), cleanPath)
 	if err != nil {
 		if errors.Is(err, storage.ErrNotFound) {
 			http.NotFound(w, r)
@@ -44,7 +51,7 @@ func (h *AssetHandler) ServeAsset(w http.ResponseWriter, r *http.Request) {
 	}
 	defer reader.Close()
 
-	contentType := detectContentType(path)
+	contentType := detectContentType(cleanPath)
 	w.Header().Set("Content-Type", contentType)
 	w.Header().Set("Cache-Control", "public, max-age=86400")
 	w.Header().Set("X-Content-Type-Options", "nosniff")

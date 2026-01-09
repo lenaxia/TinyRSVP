@@ -83,6 +83,30 @@ func TestAssetHandler_ServeAsset_PathTraversal(t *testing.T) {
 			name: "encoded double dot",
 			path: "/assets/images%2F..%2F..%2Fetc%2Fpasswd",
 		},
+		{
+			name: "multiple slashes",
+			path: "/assets/images///..//..//etc/passwd",
+		},
+		{
+			name: "relative path components",
+			path: "/assets/./images/../../../etc/passwd",
+		},
+		{
+			name: "absolute path unix",
+			path: "/assets//etc/passwd",
+		},
+		{
+			name: "windows path with drive",
+			path: "/assets/C:/Windows/System32/config/sam",
+		},
+		{
+			name: "mixed case double dot",
+			path: "/assets/images/.././../etc/passwd",
+		},
+		{
+			name: "backslash path traversal",
+			path: "/assets/images\\..\\..\\etc\\passwd",
+		},
 	}
 
 	for _, tt := range tests {
@@ -93,7 +117,7 @@ func TestAssetHandler_ServeAsset_PathTraversal(t *testing.T) {
 			handler.ServeAsset(w, req)
 
 			if w.Code != http.StatusBadRequest {
-				t.Errorf("Status = %d, want %d", w.Code, http.StatusBadRequest)
+				t.Errorf("Status = %d, want %d for path %s", w.Code, http.StatusBadRequest, tt.path)
 			}
 		})
 	}
