@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/hex"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"html/template"
 	"net/http"
@@ -26,6 +27,7 @@ import (
 	"github.com/lenaxia/tinyrsvp/internal/middleware"
 	"github.com/lenaxia/tinyrsvp/internal/models"
 	"github.com/lenaxia/tinyrsvp/internal/rsvp"
+	"github.com/lenaxia/tinyrsvp/internal/templates"
 	"github.com/lenaxia/tinyrsvp/pkg/ics"
 	"github.com/lenaxia/tinyrsvp/pkg/token"
 )
@@ -109,6 +111,45 @@ func main() {
 	)
 
 	userRepo := repositories.NewUserRepository(database)
+
+	logger.Info("Ensuring system user exists")
+	bootstrapCtx, bootstrapCancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer bootstrapCancel()
+
+	systemUser, err := userRepo.GetByEmail(bootstrapCtx, "system@tinyrsvp.local")
+	if err != nil {
+		var notFoundErr *models.NotFoundError
+		if errors.As(err, &notFoundErr) {
+			systemUser = &models.User{
+				Email: "system@tinyrsvp.local",
+				Name:  "System",
+				Role:  models.RoleAdmin,
+			}
+			if err := userRepo.Create(bootstrapCtx, systemUser); err != nil {
+				logger.Error("Failed to create system user", "error", err)
+				os.Exit(1)
+			}
+			logger.Info("System user created", "id", systemUser.ID)
+		} else {
+			logger.Error("Failed to check for system user", "error", err)
+			os.Exit(1)
+		}
+	} else {
+		logger.Info("System user already exists", "id", systemUser.ID)
+	}
+
+	logger.Info("Seeding default templates")
+	templateRepo := repositories.NewTemplateRepository(database)
+	seeder := templates.NewSeeder(templateRepo, systemUser.ID)
+
+	seedCtx, seedCancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer seedCancel()
+
+	if err := seeder.SeedDefaults(seedCtx); err != nil {
+		logger.Error("Failed to seed default templates", "error", err)
+		os.Exit(1)
+	}
+	logger.Info("Default templates seeded successfully")
 	sessionRepo := repositories.NewSessionRepository(database)
 	eventRepo := repositories.NewEventRepository(database)
 	inviteRepo := repositories.NewInviteRepository(database)

@@ -225,12 +225,77 @@ ok  	github.com/lenaxia/tinyrsvp/internal/templates	0.072s
 
 ---
 
+## Integration with Application Startup
+
+### Implementation (2026-01-09)
+
+Successfully integrated template seeding into application startup flow in [`cmd/server/main.go`](../../cmd/server/main.go):
+
+**System User Bootstrap:**
+- Added automatic system user creation on startup
+- Email: `system@tinyrsvp.local`
+- Role: Admin
+- Idempotent: checks if user exists before creating
+- Logs user ID for audit trail
+
+**Template Seeding:**
+- Integrated after database migrations complete
+- Creates TemplateRepository and Seeder
+- Uses system user ID for template ownership
+- 10-second timeout for seeding operation
+- Logs success/failure with appropriate error handling
+- Application exits if seeding fails (fail-fast approach)
+
+**Integration Tests:**
+- Created [`cmd/server/main_test.go`](../../cmd/server/main_test.go)
+- `TestTemplateSeeding_OnStartup`: Verifies full startup flow
+- `TestTemplateSeeding_IdempotentOnStartup`: Verifies idempotent seeding
+- Both tests pass with timeout
+
+**Code Changes:**
+1. Added `errors` import for error type checking
+2. Added `templates` package import
+3. Added system user bootstrap logic (lines 112-134)
+4. Added template seeding logic (lines 136-147)
+5. Proper context management with timeouts
+6. Comprehensive logging at each step
+
+**Startup Flow:**
+```
+1. Database connection
+2. Database migrations
+3. System user bootstrap (create if not exists)
+4. Template seeding (idempotent)
+5. Repository initialization
+6. Service initialization
+7. Server startup
+```
+
+**Error Handling:**
+- System user creation failure → exit
+- Template seeding failure → exit
+- Both operations have dedicated timeouts
+- Clear error messages logged
+
+### Test Results
+
+All tests passing:
+```bash
+$ go test -timeout 30s ./...
+ok  	github.com/lenaxia/tinyrsvp/cmd/server	0.045s
+ok  	github.com/lenaxia/tinyrsvp/internal/templates	0.102s
+# ... all other packages pass
+```
+
+**Total Test Count:** 95 tests (93 existing + 2 new startup tests)
+
 ## Next Steps
 
-### Immediate
-1. Call seeder from application startup in `cmd/server/main.go`
-2. Create system user (ID=1) if not exists during bootstrap
-3. Add seeder call after database initialization
+### Completed
+- [x] Call seeder from application startup in `cmd/server/main.go`
+- [x] Create system user if not exists during bootstrap
+- [x] Add seeder call after database initialization
+- [x] Integration tests for startup seeding
 
 ### Future Enhancements
 1. Template customization UI (Story 04)
