@@ -12,6 +12,11 @@ import (
 	"github.com/go-chi/chi/v5/middleware"
 )
 
+type RouteInfo struct {
+	Method  string
+	Pattern string
+}
+
 var (
 	ErrInvalidParameter = errors.New("invalid parameter")
 	ErrEmptyParameter   = errors.New("parameter cannot be empty")
@@ -371,6 +376,22 @@ func NewRouter(handlers *RouterHandlers) *Router {
 	}
 }
 
+func (router *Router) ListRoutes() []RouteInfo {
+	var routes []RouteInfo
+	
+	walkFunc := func(method string, route string, handler http.Handler, middlewares ...func(http.Handler) http.Handler) error {
+		routes = append(routes, RouteInfo{
+			Method:  method,
+			Pattern: route,
+		})
+		return nil
+	}
+	
+	chi.Walk(router.mux, walkFunc)
+	
+	return routes
+}
+
 func (router *Router) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	router.mux.ServeHTTP(w, r)
 }
@@ -470,17 +491,7 @@ func GetEventIDFromRequest(r *http.Request) (int64, error) {
 	return GetInt64Param(idStr)
 }
 
-func GetInviteIDFromRequest(r *http.Request) (int64, error) {
-	idStr := chi.URLParam(r, "inviteId")
-	return GetInt64Param(idStr)
-}
-
 func GetTokenFromRequest(r *http.Request) (string, error) {
 	token := chi.URLParam(r, "token")
 	return GetStringParam(token)
-}
-
-func GetUserIDFromRequest(r *http.Request) (int64, error) {
-	idStr := chi.URLParam(r, "userId")
-	return GetInt64Param(idStr)
 }

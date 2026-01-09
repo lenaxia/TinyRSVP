@@ -371,3 +371,106 @@ func TestRouter_RouteGroups(t *testing.T) {
 		})
 	}
 }
+
+func TestRouter_ListRoutes(t *testing.T) {
+	tests := []struct {
+		name              string
+		handlers          *RouterHandlers
+		wantRouteContains []string
+		wantMinRoutes     int
+	}{
+		{
+			name:     "basic router lists core routes",
+			handlers: nil,
+			wantRouteContains: []string{
+				"/health",
+				"/login",
+				"/auth/login",
+				"/auth/callback",
+				"/logout",
+				"/auth/logout",
+				"/api/events",
+				"/rsvp/{token}",
+				"/static/*",
+			},
+			wantMinRoutes: 9,
+		},
+		{
+			name: "router with custom handlers lists all routes",
+			handlers: &RouterHandlers{
+				ReadinessHandler: http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {}),
+				CleanupHandler:   http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {}),
+				AuthMiddleware:   &mockAuthMiddleware{},
+			},
+			wantRouteContains: []string{
+				"/health",
+				"/ready",
+				"/api/invites/cleanup",
+			},
+			wantMinRoutes: 3,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			router := NewRouter(tt.handlers)
+			routes := router.ListRoutes()
+
+			if len(routes) < tt.wantMinRoutes {
+				t.Errorf("ListRoutes() returned %d routes, want at least %d", len(routes), tt.wantMinRoutes)
+			}
+
+			for _, wantRoute := range tt.wantRouteContains {
+				found := false
+				for _, route := range routes {
+					if route.Pattern == wantRoute || strings.Contains(route.Pattern, wantRoute) {
+						found = true
+						break
+					}
+				}
+				if !found {
+					t.Logf("Available routes:")
+					for _, route := range routes {
+						t.Logf("  %s %s", route.Method, route.Pattern)
+					}
+					t.Errorf("ListRoutes() missing expected route: %s", wantRoute)
+				}
+			}
+		})
+	}
+}
+
+func TestRouter_ListRoutes_RouteInfo(t *testing.T) {
+	router := NewRouter(nil)
+	routes := router.ListRoutes()
+
+	if len(routes) == 0 {
+		t.Fatal("ListRoutes() returned empty list")
+	}
+
+	for _, route := range routes {
+		if route.Pattern == "" {
+			t.Error("ListRoutes() returned route with empty pattern")
+		}
+		if route.Method == "" {
+			t.Error("ListRoutes() returned route with empty method")
+		}
+	}
+}
+
+func TestRouter_ListRoutes_MethodFiltering(t *testing.T) {
+	router := NewRouter(nil)
+	routes := router.ListRoutes()
+
+	methodCounts := make(map[string]int)
+	for _, route := range routes {
+		methodCounts[route.Method]++
+	}
+
+	if methodCounts["GET"] == 0 {
+		t.Error("ListRoutes() found no GET routes")
+	}
+	if methodCounts["POST"] == 0 {
+		t.Error("ListRoutes() found no POST routes")
+	}
+}
