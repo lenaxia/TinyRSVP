@@ -11,6 +11,8 @@
 
 As a **security-conscious administrator**, I want **CSS sanitization in templates** so that **malicious CSS cannot execute JavaScript or compromise security**.
 
+are there any standard packages that do this? 
+
 ---
 
 ## Acceptance Criteria

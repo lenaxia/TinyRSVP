@@ -66,9 +66,6 @@ func createFuncMap() template.FuncMap {
 		"formatDateTime": formatDateTime,
 		"truncate":       truncate,
 		"default":        defaultValue,
-		"safeHTML":       safeHTML,
-		"safeURL":        safeURL,
-		"safeCSS":        safeCSS,
 	}
 }
 
@@ -96,16 +93,4 @@ func defaultValue(value, defaultVal string) string {
 		return defaultVal
 	}
 	return value
-}
-
-func safeHTML(s string) template.HTML {
-	return template.HTML(s)
-}
-
-func safeURL(s string) template.URL {
-	return template.URL(s)
-}
-
-func safeCSS(s string) template.CSS {
-	return template.CSS(s)
 }

@@ -374,39 +374,37 @@ func TestEngine_Integration_TruncateAndDefault(t *testing.T) {
 	}
 }
 
-func TestEngine_Integration_SafeHTMLInTemplate(t *testing.T) {
+func TestEngine_Integration_NoUnsafeFunctions(t *testing.T) {
 	engine := NewEngine()
 	
-	data := struct {
-		SafeContent string
-		UnsafeContent string
+	dangerousFunctions := []struct {
+		name     string
+		template string
 	}{
-		SafeContent:   "<strong>Bold text</strong>",
-		UnsafeContent: "<script>alert('xss')</script>",
+		{
+			name:     "safeHTML",
+			template: "<div>{{safeHTML .Content}}</div>",
+		},
+		{
+			name:     "safeURL",
+			template: "<a href='{{safeURL .URL}}'>Link</a>",
+		},
+		{
+			name:     "safeCSS",
+			template: "<style>{{safeCSS .CSS}}</style>",
+		},
 	}
 	
-	tmplStr := `
-<div>
-	<div>Safe (unescaped): {{safeHTML .SafeContent}}</div>
-	<div>Unsafe (escaped): {{.UnsafeContent}}</div>
-</div>
-`
-	
-	tmpl, err := engine.Parse(tmplStr)
-	if err != nil {
-		t.Fatalf("Parse() error = %v", err)
-	}
-	
-	result, err := engine.ExecuteToString(tmpl, data)
-	if err != nil {
-		t.Fatalf("ExecuteToString() error = %v", err)
-	}
-	
-	if !strings.Contains(result, "<strong>Bold text</strong>") {
-		t.Error("Expected unescaped safe HTML")
-	}
-	if strings.Contains(result, "<script>alert") && !strings.Contains(result, "&lt;script&gt;") {
-		t.Error("Expected escaped unsafe content")
+	for _, tt := range dangerousFunctions {
+		t.Run(tt.name, func(t *testing.T) {
+			_, err := engine.Parse(tt.template)
+			if err == nil {
+				t.Errorf("Expected error when using dangerous function %s, but parsing succeeded", tt.name)
+			}
+			if err != nil && !strings.Contains(err.Error(), "not defined") {
+				t.Errorf("Expected 'not defined' error for %s, got: %v", tt.name, err)
+			}
+		})
 	}
 }
 

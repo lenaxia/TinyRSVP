@@ -400,65 +400,6 @@ func TestEngine_CustomFunctions_Default(t *testing.T) {
 	}
 }
 
-func TestEngine_CustomFunctions_SafeHTML(t *testing.T) {
-	engine := NewEngine()
-	
-	tmpl, err := engine.Parse("{{safeHTML .HTML}}")
-	if err != nil {
-		t.Fatalf("Parse() error = %v", err)
-	}
-	
-	data := struct{ HTML string }{HTML: "<b>Bold</b>"}
-	got, err := engine.ExecuteToString(tmpl, data)
-	if err != nil {
-		t.Fatalf("ExecuteToString() error = %v", err)
-	}
-	
-	want := "<b>Bold</b>"
-	if got != want {
-		t.Errorf("safeHTML function = %q, want %q", got, want)
-	}
-}
-
-func TestEngine_CustomFunctions_SafeURL(t *testing.T) {
-	engine := NewEngine()
-	
-	tmpl, err := engine.Parse("<a href=\"{{safeURL .URL}}\">Link</a>")
-	if err != nil {
-		t.Fatalf("Parse() error = %v", err)
-	}
-	
-	data := struct{ URL string }{URL: "https://example.com/path?query=value"}
-	got, err := engine.ExecuteToString(tmpl, data)
-	if err != nil {
-		t.Fatalf("ExecuteToString() error = %v", err)
-	}
-	
-	if !strings.Contains(got, "https://example.com/path?query=value") {
-		t.Errorf("safeURL function did not preserve URL: %q", got)
-	}
-}
-
-func TestEngine_CustomFunctions_SafeCSS(t *testing.T) {
-	engine := NewEngine()
-	
-	tmpl, err := engine.Parse("<style>{{safeCSS .CSS}}</style>")
-	if err != nil {
-		t.Fatalf("Parse() error = %v", err)
-	}
-	
-	data := struct{ CSS string }{CSS: "color: red; font-size: 14px;"}
-	got, err := engine.ExecuteToString(tmpl, data)
-	if err != nil {
-		t.Fatalf("ExecuteToString() error = %v", err)
-	}
-	
-	want := "<style>color: red; font-size: 14px;</style>"
-	if got != want {
-		t.Errorf("safeCSS function = %q, want %q", got, want)
-	}
-}
-
 func TestEngine_XSSPrevention(t *testing.T) {
 	engine := NewEngine()
 	
