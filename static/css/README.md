@@ -19,6 +19,8 @@ Provides a comprehensive design token system using CSS custom properties for con
 - [`spacing.css`](spacing.css) - Spacing utility classes for margins, padding, and gaps
 - [`spacing_test.go`](spacing_test.go) - Test suite validating spacing utilities
 - [`spacing_integration_test.go`](spacing_integration_test.go) - Integration tests for spacing system
+- [`grid.css`](grid.css) - Grid and flexbox layout utilities with responsive variants
+- [`grid_integration_test.go`](grid_integration_test.go) - Integration tests for grid system
 
 ## CSS Variables Reference
 
@@ -424,6 +426,184 @@ The spacing scale follows an 8-point grid system for visual consistency:
 
 Use multiples of 8 (0, 8, 16, 24) for major layout spacing and intermediate values (1-6, 10, 12) for fine-tuning.
 
+## Grid System
+
+The grid system provides flexible, responsive layout utilities using CSS Grid and Flexbox for creating modern, mobile-first layouts.
+
+### Features
+
+- **CSS Grid Container:** 12-column grid system with responsive variants
+- **Column Spanning:** Control how many columns elements span (1-12)
+- **Auto-fit/Auto-fill:** Responsive grid patterns that adapt to content
+- **Flexbox Utilities:** Direction, alignment, and justification classes
+- **Container Classes:** Centered containers with responsive max-widths
+- **Responsive Variants:** Tablet (md:) and desktop (lg:) breakpoints
+- **Gap Integration:** Works seamlessly with spacing system gap utilities
+
+### Grid Utility Classes
+
+```css
+/* Grid Container */
+.grid                    /* display: grid */
+.grid-cols-1 to .grid-cols-12  /* 1-12 column layouts */
+.grid-auto-fit          /* auto-fit pattern with 250px min */
+.grid-auto-fill         /* auto-fill pattern with 250px min */
+
+/* Column Spanning */
+.col-span-1 to .col-span-12    /* span 1-12 columns */
+.col-span-full          /* span all columns (1 / -1) */
+
+/* Flexbox Container */
+.flex                   /* display: flex */
+.flex-row              /* flex-direction: row */
+.flex-col              /* flex-direction: column */
+.flex-wrap             /* flex-wrap: wrap */
+.flex-nowrap           /* flex-wrap: nowrap */
+
+/* Flex Item Sizing */
+.flex-1                /* flex: 1 1 0% (grow and shrink equally) */
+.flex-auto             /* flex: 1 1 auto (grow and shrink based on content) */
+.flex-none             /* flex: none (don't grow or shrink) */
+
+/* Alignment (Flexbox/Grid) */
+.items-start           /* align-items: flex-start */
+.items-center          /* align-items: center */
+.items-end             /* align-items: flex-end */
+.items-stretch         /* align-items: stretch */
+.items-baseline        /* align-items: baseline */
+
+/* Justification (Flexbox/Grid) */
+.justify-start         /* justify-content: flex-start */
+.justify-center        /* justify-content: center */
+.justify-end           /* justify-content: flex-end */
+.justify-between       /* justify-content: space-between */
+.justify-around        /* justify-content: space-around */
+.justify-evenly        /* justify-content: space-evenly */
+
+/* Container */
+.container             /* Centered container with responsive max-widths */
+
+/* Responsive Variants (768px+) */
+.md\:grid-cols-1 to .md\:grid-cols-12
+.md\:col-span-1, .md\:col-span-2, .md\:col-span-3, .md\:col-span-4, .md\:col-span-6, .md\:col-span-12
+.md\:flex-row, .md\:flex-col
+
+/* Responsive Variants (1024px+) */
+.lg\:grid-cols-1 to .lg\:grid-cols-12
+.lg\:col-span-1, .lg\:col-span-2, .lg\:col-span-3, .lg\:col-span-4, .lg\:col-span-6, .lg\:col-span-12
+.lg\:flex-row, .lg\:flex-col
+```
+
+### Usage Examples
+
+```html
+<!-- Basic Grid Layout -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+    <div>Item 1</div>
+    <div>Item 2</div>
+    <div>Item 3</div>
+</div>
+
+<!-- Column Spanning -->
+<div class="grid grid-cols-12 gap-4">
+    <div class="col-span-12 md:col-span-8">Main content (8 cols on tablet+)</div>
+    <div class="col-span-12 md:col-span-4">Sidebar (4 cols on tablet+)</div>
+</div>
+
+<!-- Auto-fit Grid (responsive without media queries) -->
+<div class="grid grid-auto-fit gap-4">
+    <div>Card 1</div>
+    <div>Card 2</div>
+    <div>Card 3</div>
+</div>
+
+<!-- Flexbox Layout -->
+<div class="flex flex-col md:flex-row items-center justify-between gap-4">
+    <div>Left content</div>
+    <div>Right content</div>
+</div>
+
+<!-- Centered Container -->
+<div class="container p-6">
+    <h1>Centered content with responsive max-width</h1>
+</div>
+
+<!-- Card Grid with Responsive Columns -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+    <div class="p-4">Card 1</div>
+    <div class="p-4">Card 2</div>
+    <div class="p-4">Card 3</div>
+    <div class="p-4">Card 4</div>
+</div>
+
+<!-- Flex Item Sizing -->
+<div class="flex gap-4">
+    <div class="flex-none">Fixed width</div>
+    <div class="flex-1">Grows to fill space</div>
+    <div class="flex-auto">Grows based on content</div>
+</div>
+```
+
+### Responsive Breakpoints
+
+The grid system uses the same breakpoints as the spacing system:
+
+- **Mobile:** Base styles (320px-767px)
+- **Tablet (md:):** 768px and up
+- **Desktop (lg:):** 1024px and up
+
+### Container Max-Widths
+
+The `.container` class automatically adjusts its max-width at different breakpoints:
+
+- **Mobile:** 100% width with padding
+- **Tablet (768px+):** max-width: 768px (--container-md)
+- **Desktop (1024px+):** max-width: 1024px (--container-lg)
+
+### Auto-fit vs Auto-fill
+
+Both create responsive grids without media queries, but with different behaviors:
+
+- **`.grid-auto-fit`:** Columns expand to fill available space (fewer, wider columns)
+- **`.grid-auto-fill`:** Creates as many columns as fit, even if empty (more, narrower columns)
+
+Both use `minmax(250px, 1fr)` for column sizing.
+
+### Integration with Spacing System
+
+The grid system works seamlessly with spacing utilities:
+
+```html
+<!-- Grid with gap spacing -->
+<div class="grid grid-cols-3 gap-4 md:gap-6 lg:gap-8">
+    <div class="p-4">Item with padding</div>
+    <div class="p-4">Item with padding</div>
+    <div class="p-4">Item with padding</div>
+</div>
+
+<!-- Flex with gap spacing -->
+<div class="flex gap-3 items-center">
+    <button class="px-4 py-2">Button 1</button>
+    <button class="px-4 py-2">Button 2</button>
+</div>
+```
+
+### Mobile-First Approach
+
+Always start with mobile styles and progressively enhance for larger screens:
+
+```html
+<!-- Mobile: single column, Tablet: 2 columns, Desktop: 3 columns -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+    <div>Content</div>
+</div>
+
+<!-- Mobile: column layout, Tablet+: row layout -->
+<div class="flex flex-col md:flex-row gap-4">
+    <div>Content</div>
+</div>
+```
+
 ## Integration
 
 To use the design system in your HTML templates:
@@ -433,9 +613,10 @@ To use the design system in your HTML templates:
 <link rel="stylesheet" href="/static/css/typography.css">
 <link rel="stylesheet" href="/static/css/colors.css">
 <link rel="stylesheet" href="/static/css/spacing.css">
+<link rel="stylesheet" href="/static/css/grid.css">
 ```
 
-Load order matters: variables → typography → colors → spacing for proper variable resolution.
+Load order matters: variables → typography → colors → spacing → grid for proper variable resolution.
 
 ## Related Stories
 
@@ -444,4 +625,5 @@ Load order matters: variables → typography → colors → spacing for proper v
 - **Story 01:** [07_STORY_01_typography.md](../../docs/00_BACKLOG/07_STORY_01_typography.md)
 - **Story 02:** [07_STORY_02_color_system.md](../../docs/00_BACKLOG/07_STORY_02_color_system.md)
 - **Story 03:** [07_STORY_03_spacing_system.md](../../docs/00_BACKLOG/07_STORY_03_spacing_system.md)
-- **Blocks:** All other frontend stories (04-21)
+- **Story 04:** [07_STORY_04_responsive_grid.md](../../docs/00_BACKLOG/07_STORY_04_responsive_grid.md)
+- **Blocks:** All other frontend stories (05-21)
