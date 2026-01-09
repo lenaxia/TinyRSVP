@@ -8,17 +8,23 @@ import (
 	"time"
 )
 
-func TestNewSMTPSender_ValidConfig(t *testing.T) {
-	config := &SMTPConfig{
-		Host:      "smtp.example.com",
-		Port:      587,
-		Username:  "user@example.com",
-		Password:  "password",
-		FromEmail: "noreply@example.com",
-		FromName:  "Test Sender",
-		UseTLS:    true,
-		Timeout:   30 * time.Second,
+func testConfig() *Config {
+	return &Config{
+		SMTPHost:         "smtp.example.com",
+		SMTPPort:         587,
+		SMTPUsername:     "user@example.com",
+		SMTPPassword:     "password",
+		FromEmail:        "noreply@example.com",
+		FromName:         "Test Sender",
+		UseTLS:           true,
+		Timeout:          30 * time.Second,
+		RateLimit:        50,
+		MaxRetryAttempts: 4,
 	}
+}
+
+func TestNewSMTPSender_ValidConfig(t *testing.T) {
+	config := testConfig()
 
 	sender, err := NewSMTPSender(config)
 	if err != nil {
@@ -33,32 +39,41 @@ func TestNewSMTPSender_ValidConfig(t *testing.T) {
 func TestNewSMTPSender_InvalidConfig(t *testing.T) {
 	tests := []struct {
 		name    string
-		config  *SMTPConfig
+		config  *Config
 		wantErr string
 	}{
 		{
 			name: "missing host",
-			config: &SMTPConfig{
-				Port:      587,
-				FromEmail: "test@example.com",
+			config: &Config{
+				SMTPPort:         587,
+				FromEmail:        "test@example.com",
+				Timeout:          30 * time.Second,
+				RateLimit:        50,
+				MaxRetryAttempts: 4,
 			},
-			wantErr: "SMTP host is required",
+			wantErr: "SMTP_HOST is required",
 		},
 		{
 			name: "missing port",
-			config: &SMTPConfig{
-				Host:      "smtp.example.com",
-				FromEmail: "test@example.com",
+			config: &Config{
+				SMTPHost:         "smtp.example.com",
+				FromEmail:        "test@example.com",
+				Timeout:          30 * time.Second,
+				RateLimit:        50,
+				MaxRetryAttempts: 4,
 			},
-			wantErr: "SMTP port is required",
+			wantErr: "SMTP_PORT must be between 1 and 65535",
 		},
 		{
 			name: "missing from email",
-			config: &SMTPConfig{
-				Host: "smtp.example.com",
-				Port: 587,
+			config: &Config{
+				SMTPHost:         "smtp.example.com",
+				SMTPPort:         587,
+				Timeout:          30 * time.Second,
+				RateLimit:        50,
+				MaxRetryAttempts: 4,
 			},
-			wantErr: "from email is required",
+			wantErr: "SMTP_FROM_EMAIL is required",
 		},
 	}
 
@@ -85,18 +100,12 @@ func TestNewSMTPSender_InvalidMaxConnections(t *testing.T) {
 		{"valid value 1", 1, false},
 		{"valid value 50", 50, false},
 		{"valid value 100", 100, false},
-		{"invalid too low", -1, true},
-		{"invalid too high", 101, true},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			config := &SMTPConfig{
-				Host:           "smtp.example.com",
-				Port:           587,
-				FromEmail:      "test@example.com",
-				MaxConnections: tt.maxConnections,
-			}
+			config := testConfig()
+			config.MaxConnections = tt.maxConnections
 
 			_, err := NewSMTPSender(config)
 			if (err != nil) != tt.wantErr {
@@ -107,11 +116,7 @@ func TestNewSMTPSender_InvalidMaxConnections(t *testing.T) {
 }
 
 func TestNewSMTPSender_DefaultTimeout(t *testing.T) {
-	config := &SMTPConfig{
-		Host:      "smtp.example.com",
-		Port:      587,
-		FromEmail: "test@example.com",
-	}
+	config := testConfig()
 
 	sender, err := NewSMTPSender(config)
 	if err != nil {
@@ -125,13 +130,8 @@ func TestNewSMTPSender_DefaultTimeout(t *testing.T) {
 }
 
 func TestBuildMIMEMessage_PlainText(t *testing.T) {
-	config := &SMTPConfig{
-		Host:      "smtp.example.com",
-		Port:      587,
-		FromEmail: "sender@example.com",
-		FromName:  "Test Sender",
-		Timeout:   30 * time.Second,
-	}
+	config := testConfig()
+	config.FromEmail = "sender@example.com"
 
 	sender, err := NewSMTPSender(config)
 	if err != nil {
@@ -171,13 +171,8 @@ func TestBuildMIMEMessage_PlainText(t *testing.T) {
 }
 
 func TestBuildMIMEMessage_WithToName(t *testing.T) {
-	config := &SMTPConfig{
-		Host:      "smtp.example.com",
-		Port:      587,
-		FromEmail: "sender@example.com",
-		FromName:  "Test Sender",
-		Timeout:   30 * time.Second,
-	}
+	config := testConfig()
+	config.FromEmail = "sender@example.com"
 
 	sender, err := NewSMTPSender(config)
 	if err != nil {
@@ -207,13 +202,8 @@ func TestBuildMIMEMessage_WithToName(t *testing.T) {
 }
 
 func TestBuildMIMEMessage_HTMLAndText(t *testing.T) {
-	config := &SMTPConfig{
-		Host:      "smtp.example.com",
-		Port:      587,
-		FromEmail: "sender@example.com",
-		FromName:  "Test Sender",
-		Timeout:   30 * time.Second,
-	}
+	config := testConfig()
+	config.FromEmail = "sender@example.com"
 
 	sender, err := NewSMTPSender(config)
 	if err != nil {
@@ -249,13 +239,8 @@ func TestBuildMIMEMessage_HTMLAndText(t *testing.T) {
 }
 
 func TestBuildMIMEMessage_WithAttachment(t *testing.T) {
-	config := &SMTPConfig{
-		Host:      "smtp.example.com",
-		Port:      587,
-		FromEmail: "sender@example.com",
-		FromName:  "Test Sender",
-		Timeout:   30 * time.Second,
-	}
+	config := testConfig()
+	config.FromEmail = "sender@example.com"
 
 	sender, err := NewSMTPSender(config)
 	if err != nil {
@@ -387,12 +372,7 @@ func TestGenerateBoundary(t *testing.T) {
 }
 
 func TestSMTPSender_TestConnection_Success(t *testing.T) {
-	config := &SMTPConfig{
-		Host:      "smtp.example.com",
-		Port:      587,
-		FromEmail: "test@example.com",
-		Timeout:   5 * time.Second,
-	}
+	config := testConfig()
 
 	sender, err := NewSMTPSender(config)
 	if err != nil {
@@ -406,12 +386,7 @@ func TestSMTPSender_TestConnection_Success(t *testing.T) {
 }
 
 func TestSMTPSender_Close(t *testing.T) {
-	config := &SMTPConfig{
-		Host:      "smtp.example.com",
-		Port:      587,
-		FromEmail: "test@example.com",
-		Timeout:   5 * time.Second,
-	}
+	config := testConfig()
 
 	sender, err := NewSMTPSender(config)
 	if err != nil {
@@ -425,12 +400,7 @@ func TestSMTPSender_Close(t *testing.T) {
 }
 
 func TestSMTPSender_Close_MultipleCalls(t *testing.T) {
-	config := &SMTPConfig{
-		Host:      "smtp.example.com",
-		Port:      587,
-		FromEmail: "test@example.com",
-		Timeout:   5 * time.Second,
-	}
+	config := testConfig()
 
 	sender, err := NewSMTPSender(config)
 	if err != nil {

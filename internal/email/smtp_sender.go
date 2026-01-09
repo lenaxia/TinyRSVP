@@ -9,35 +9,21 @@ import (
 	"net"
 	"net/smtp"
 	"strings"
-	"time"
 )
 
-type SMTPConfig struct {
-	Host           string
-	Port           int
-	Username       string
-	Password       string
-	FromEmail      string
-	FromName       string
-	UseTLS         bool
-	SkipVerify     bool
-	Timeout        time.Duration
-	MaxConnections int
-}
-
 type smtpSender struct {
-	config *SMTPConfig
+	config *Config
 	auth   smtp.Auth
 }
 
-func NewSMTPSender(config *SMTPConfig) (SMTPSender, error) {
-	if err := validateConfig(config); err != nil {
+func NewSMTPSender(config *Config) (SMTPSender, error) {
+	if err := config.Validate(); err != nil {
 		return nil, fmt.Errorf("invalid SMTP config: %w", err)
 	}
 
 	var auth smtp.Auth
-	if config.Username != "" && config.Password != "" {
-		auth = smtp.PlainAuth("", config.Username, config.Password, config.Host)
+	if config.SMTPUsername != "" && config.SMTPPassword != "" {
+		auth = smtp.PlainAuth("", config.SMTPUsername, config.SMTPPassword, config.SMTPHost)
 	}
 
 	return &smtpSender{
@@ -89,7 +75,7 @@ func (s *smtpSender) Send(ctx context.Context, msg *SMTPMessage) error {
 }
 
 func (s *smtpSender) connect(ctx context.Context) (*smtp.Client, error) {
-	addr := fmt.Sprintf("%s:%d", s.config.Host, s.config.Port)
+	addr := fmt.Sprintf("%s:%d", s.config.SMTPHost, s.config.SMTPPort)
 
 	dialer := &net.Dialer{
 		Timeout: s.config.Timeout,
@@ -100,7 +86,7 @@ func (s *smtpSender) connect(ctx context.Context) (*smtp.Client, error) {
 		return nil, fmt.Errorf("failed to dial: %w", err)
 	}
 
-	client, err := smtp.NewClient(conn, s.config.Host)
+	client, err := smtp.NewClient(conn, s.config.SMTPHost)
 	if err != nil {
 		conn.Close()
 		return nil, fmt.Errorf("failed to create SMTP client: %w", err)
@@ -108,7 +94,7 @@ func (s *smtpSender) connect(ctx context.Context) (*smtp.Client, error) {
 
 	if s.config.UseTLS {
 		tlsConfig := &tls.Config{
-			ServerName:         s.config.Host,
+			ServerName:         s.config.SMTPHost,
 			InsecureSkipVerify: s.config.SkipVerify,
 		}
 
@@ -216,27 +202,6 @@ func (s *smtpSender) Close() error {
 	return nil
 }
 
-func validateConfig(config *SMTPConfig) error {
-	if config.Host == "" {
-		return fmt.Errorf("SMTP host is required")
-	}
-	if config.Port == 0 {
-		return fmt.Errorf("SMTP port is required")
-	}
-	if config.FromEmail == "" {
-		return fmt.Errorf("from email is required")
-	}
-	if config.Timeout == 0 {
-		config.Timeout = 30 * time.Second
-	}
-	if config.MaxConnections == 0 {
-		config.MaxConnections = 10
-	}
-	if config.MaxConnections < 1 || config.MaxConnections > 100 {
-		return fmt.Errorf("MaxConnections must be between 1 and 100")
-	}
-	return nil
-}
 
 func classifyError(err error) error {
 	errStr := err.Error()

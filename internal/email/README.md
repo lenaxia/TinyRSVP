@@ -6,9 +6,69 @@ Provides email service interface for sending confirmation emails after RSVP subm
 
 ## Structure
 
+- `config.go` - Email configuration management with environment variable loading
+- `config_test.go` - Configuration tests
 - `service.go` - Email service interface and mock implementation
 - `processor.go` - Background queue processor for email delivery
 - `processor_test.go` - Queue processor tests
+- `smtp_sender.go` - SMTP email sender implementation
+- `smtp_sender_test.go` - SMTP sender tests
+- `rate_limiter.go` - Rate limiting for email sending
+- `rate_limiter_test.go` - Rate limiter tests
+- `renderer.go` - Email template rendering
+- `renderer_test.go` - Renderer tests
+- `stubs.go` - Test stubs for email components
+
+## Configuration
+
+The email package uses a centralized configuration system that loads settings from environment variables.
+
+### Loading Configuration
+
+```go
+import "github.com/lenaxia/tinyrsvp/internal/email"
+
+config, err := email.LoadConfig()
+if err != nil {
+    log.Fatalf("Failed to load email config: %v", err)
+}
+
+sender, err := email.NewSMTPSender(config)
+if err != nil {
+    log.Fatalf("Failed to create SMTP sender: %v", err)
+}
+```
+
+### Required Environment Variables
+
+- `SMTP_HOST` - SMTP server hostname (e.g., smtp.gmail.com)
+- `SMTP_FROM_EMAIL` - From email address (must be valid email format)
+
+### Optional Environment Variables (with defaults)
+
+- `SMTP_PORT` - SMTP port (default: 587)
+- `SMTP_USERNAME` - SMTP authentication username
+- `SMTP_PASSWORD` - SMTP authentication password
+- `SMTP_FROM_NAME` - From name for emails
+- `SMTP_TLS` - Use TLS encryption (default: true)
+- `SMTP_SKIP_VERIFY` - Skip certificate verification (default: false)
+- `SMTP_TIMEOUT` - Connection timeout (default: 30s)
+- `EMAIL_RATE_LIMIT` - Emails per minute (default: 50)
+- `EMAIL_TEST_ON_STARTUP` - Test connection on startup (default: true)
+- `MAX_RETRY_ATTEMPTS` - Max retry attempts (default: 4, range: 1-10)
+- `QUEUE_POLL_INTERVAL` - Queue polling interval (default: 60s)
+- `QUEUE_BATCH_SIZE` - Batch size for processing (default: 50)
+
+### Security Features
+
+- Password sanitization via `Config.Sanitized()` method
+- Passwords are never logged
+- TLS encryption enabled by default
+- Certificate verification enabled by default
+
+### Provider Examples
+
+See [`docs/00_BACKLOG/05_STORY_07_email_configuration.md`](../../docs/00_BACKLOG/05_STORY_07_email_configuration.md) for configuration examples for Gmail, SendGrid, AWS SES, and Mailgun.
 
 ## Interfaces
 
@@ -141,10 +201,10 @@ Completed:
 - Story 03: SMTP sender with TLS support ✓
 - Story 04: Template rendering with Go html/template ✓
 - Story 06: Rate limiting implementation ✓
+- Story 07: Email configuration management ✓
 
 Remaining (Epic 05):
 - Story 05: Retry logic (partially complete)
-- Story 07: Email configuration management
 - Story 08: Monitoring and observability
 
 ## Rate Limiter
