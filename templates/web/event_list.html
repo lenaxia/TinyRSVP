@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Events - TinyRSVP</title>
+    <link rel="stylesheet" href="/static/css/variables.css">
+    <link rel="stylesheet" href="/static/css/typography.css">
+    <link rel="stylesheet" href="/static/css/colors.css">
+    <link rel="stylesheet" href="/static/css/spacing.css">
+    <link rel="stylesheet" href="/static/css/grid.css">
+    <link rel="stylesheet" href="/static/css/buttons.css">
+    <link rel="stylesheet" href="/static/css/forms.css">
+    <link rel="stylesheet" href="/static/css/navigation.css">
+    <link rel="stylesheet" href="/static/css/event_list.css">
+</head>
+<body>
+    <main class="event-list" role="main" aria-label="Event list">
+        <header class="event-list-header">
+            <h1 class="event-list-title">Events</h1>
+        </header>
+
+        {{if .Error}}
+        <section class="event-empty" role="alert">
+            <div class="event-empty-icon">⚠️</div>
+            <h2 class="event-empty-title">Error Loading Events</h2>
+            <p class="event-empty-description">{{.Error}}</p>
+            <div class="event-empty-action">
+                <button class="btn btn-primary" onclick="window.location.reload()">Retry</button>
+            </div>
+        </section>
+        {{else if .Loading}}
+        <section class="event-list-loading" aria-live="polite" aria-busy="true">
+            <div class="loading-spinner" role="status"></div>
+            <p class="loading-text">Loading events...</p>
+        </section>
+        {{else if eq (len .Events) 0}}
+        <section class="event-empty">
+            <div class="event-empty-icon">📅</div>
+            <h2 class="event-empty-title">No Events Found</h2>
+            <p class="event-empty-description">
+                {{if .Filter}}
+                No events match your current filter. Try adjusting your search criteria.
+                {{else}}
+                Get started by creating your first event.
+                {{end}}
+            </p>
+            <div class="event-empty-action">
+                <a href="/events/new" class="btn btn-primary">Create Event</a>
+            </div>
+        </section>
+        {{else}}
+        <section class="event-filters">
+            <div class="filter-group">
+                <label for="status-filter" class="filter-label">Status</label>
+                <select id="status-filter" class="filter-select" name="status" aria-label="Filter by status">
+                    <option value="all" {{if eq .Filter "all"}}selected{{end}}>All Events</option>
+                    <option value="draft" {{if eq .Filter "draft"}}selected{{end}}>Draft</option>
+                    <option value="published" {{if eq .Filter "published"}}selected{{end}}>Published</option>
+                    <option value="archived" {{if eq .Filter "archived"}}selected{{end}}>Archived</option>
+                </select>
+            </div>
+
+            <div class="event-search">
+                <span class="search-icon" aria-hidden="true">🔍</span>
+                <input 
+                    type="search" 
+                    class="search-input" 
+                    placeholder="Search events..." 
+                    aria-label="Search events"
+                    name="search"
+                >
+            </div>
+
+            <div class="event-sort">
+                <label for="sort-select" class="filter-label">Sort by</label>
+                <select id="sort-select" class="sort-select" name="sort" aria-label="Sort events">
+                    <option value="date" {{if eq .Sort "date"}}selected{{end}}>Date</option>
+                    <option value="name" {{if eq .Sort "name"}}selected{{end}}>Name</option>
+                    <option value="rsvp" {{if eq .Sort "rsvp"}}selected{{end}}>RSVP Count</option>
+                </select>
+            </div>
+        </section>
+
+        <section class="event-cards" aria-label="Event list">
+            {{range .Events}}
+            <article class="event-card" tabindex="0" role="article">
+                <header class="event-card-header">
+                    <h2 class="event-card-title">{{.Title}}</h2>
+                    <span class="event-card-status {{.Status}}" aria-label="Status: {{.Status}}">
+                        {{.Status}}
+                    </span>
+                </header>
+
+                <div class="event-card-body">
+                    <p class="event-card-description">{{.Description}}</p>
+                    
+                    <div class="event-card-meta">
+                        <div class="event-card-meta-item">
+                            <span class="event-card-meta-icon" aria-hidden="true">📍</span>
+                            <span>{{.Location}}</span>
+                        </div>
+                        <div class="event-card-meta-item">
+                            <span class="event-card-meta-icon" aria-hidden="true">📅</span>
+                            <time datetime="{{.StartTime.Format "2006-01-02T15:04:05Z07:00"}}">
+                                {{.StartTime.Format "Jan 2, 2006 at 3:04 PM"}}
+                            </time>
+                        </div>
+                    </div>
+                </div>
+
+                <footer class="event-card-footer">
+                    <div class="event-card-stats">
+                        <div class="event-card-stat">
+                            <span class="event-card-stat-value">{{.InviteCount}}</span>
+                            <span>Invites</span>
+                        </div>
+                        <div class="event-card-stat">
+                            <span class="event-card-stat-value">{{.RSVPCount}}</span>
+                            <span>RSVPs</span>
+                        </div>
+                        <div class="event-card-stat">
+                            <span class="event-card-stat-value">{{.AcceptCount}}</span>
+                            <span>Accepted</span>
+                        </div>
+                    </div>
+
+                    <div class="event-actions">
+                        <a href="/events/{{.ID}}" class="event-action-btn" aria-label="View event details">View</a>
+                        <a href="/events/{{.ID}}/edit" class="event-action-btn" aria-label="Edit event">Edit</a>
+                        <a href="/events/{{.ID}}/invites" class="event-action-btn" aria-label="View invites">Invites</a>
+                    </div>
+                </footer>
+            </article>
+            {{end}}
+        </section>
+
+        {{if gt .Total 10}}
+        <nav class="event-pagination" aria-label="Pagination">
+            <ul class="pagination">
+                {{if gt .Page 1}}
+                <li>
+                    <a href="?page={{sub .Page 1}}" class="pagination-item pagination-prev" aria-label="Previous page">
+                        Previous
+                    </a>
+                </li>
+                {{else}}
+                <li>
+                    <span class="pagination-item pagination-prev disabled" aria-disabled="true">Previous</span>
+                </li>
+                {{end}}
+
+                {{$currentPage := .Page}}
+                {{$totalPages := div (add .Total 9) 10}}
+                
+                {{range $i := until $totalPages}}
+                {{$pageNum := add $i 1}}
+                {{if eq $pageNum $currentPage}}
+                <li>
+                    <span class="pagination-item active" aria-current="page" aria-label="Page {{$pageNum}}">
+                        {{$pageNum}}
+                    </span>
+                </li>
+                {{else}}
+                <li>
+                    <a href="?page={{$pageNum}}" class="pagination-item" aria-label="Go to page {{$pageNum}}">
+                        {{$pageNum}}
+                    </a>
+                </li>
+                {{end}}
+                {{end}}
+
+                {{if lt .Page $totalPages}}
+                <li>
+                    <a href="?page={{add .Page 1}}" class="pagination-item pagination-next" aria-label="Next page">
+                        Next
+                    </a>
+                </li>
+                {{else}}
+                <li>
+                    <span class="pagination-item pagination-next disabled" aria-disabled="true">Next</span>
+                </li>
+                {{end}}
+            </ul>
+        </nav>
+        {{end}}
+        {{end}}
+    </main>
+</body>
+</html>
