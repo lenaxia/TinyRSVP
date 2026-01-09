@@ -89,6 +89,46 @@ func TestStaticCSSFileServing(t *testing.T) {
 		}
 	})
 
+	t.Run("serves spacing.css with correct status", func(t *testing.T) {
+		req := httptest.NewRequest("GET", "/static/css/spacing.css", nil)
+		w := httptest.NewRecorder()
+
+		handler.ServeHTTP(w, req)
+
+		if w.Code != http.StatusOK {
+			t.Errorf("Expected status 200, got %d", w.Code)
+		}
+	})
+
+	t.Run("serves spacing.css with expected utilities", func(t *testing.T) {
+		req := httptest.NewRequest("GET", "/static/css/spacing.css", nil)
+		w := httptest.NewRecorder()
+
+		handler.ServeHTTP(w, req)
+
+		body := w.Body.String()
+
+		expectedUtilities := []string{
+			".m-4",
+			".p-4",
+			".gap-4",
+			".mt-4",
+			".mb-4",
+			".px-4",
+			".py-4",
+			".gap-x-4",
+			".gap-y-4",
+			".-m-4",
+			".mx-auto",
+		}
+
+		for _, utility := range expectedUtilities {
+			if !strings.Contains(body, utility) {
+				t.Errorf("Response body should contain spacing utility %s", utility)
+			}
+		}
+	})
+
 	t.Run("returns 404 for non-existent CSS file", func(t *testing.T) {
 		req := httptest.NewRequest("GET", "/static/css/nonexistent.css", nil)
 		w := httptest.NewRecorder()

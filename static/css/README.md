@@ -16,6 +16,9 @@ Provides a comprehensive design token system using CSS custom properties for con
 - [`colors.css`](colors.css) - Color utility classes for backgrounds, text, and borders
 - [`colors_test.go`](colors_test.go) - Test suite validating color utilities
 - [`colors_integration_test.go`](colors_integration_test.go) - Integration tests for color system
+- [`spacing.css`](spacing.css) - Spacing utility classes for margins, padding, and gaps
+- [`spacing_test.go`](spacing_test.go) - Test suite validating spacing utilities
+- [`spacing_integration_test.go`](spacing_integration_test.go) - Integration tests for spacing system
 
 ## CSS Variables Reference
 
@@ -320,6 +323,107 @@ The color system provides comprehensive utility classes for backgrounds, text, a
 <button class="bg-primary text-white">Primary Button</button>
 ```
 
+## Spacing System
+
+The spacing system provides consistent margin, padding, and gap utilities based on an 8px scale for visual rhythm and layout consistency.
+
+### Features
+
+- **8px Base Scale:** Consistent spacing increments (0, 4px, 8px, 12px, 16px, 20px, 24px, 32px, 40px, 48px, 64px, 80px, 96px)
+- **Margin Utilities:** All directions (m, mt, mr, mb, ml, mx, my)
+- **Padding Utilities:** All directions (p, pt, pr, pb, pl, px, py)
+- **Gap Utilities:** For flexbox/grid layouts (gap, gap-x, gap-y)
+- **Negative Margins:** For overlapping layouts (-m-1 through -m-12)
+- **Auto Margins:** For centering (m-auto, mx-auto, my-auto, etc.)
+- **Responsive Variants:** Tablet (md:) and desktop (lg:) breakpoints
+
+### Spacing Utility Classes
+
+```css
+/* Margin - All Sides */
+.m-0, .m-1, .m-2, .m-3, .m-4, .m-5, .m-6, .m-8, .m-10, .m-12, .m-16, .m-20, .m-24
+
+/* Margin - Directional */
+.mt-4  /* margin-top */
+.mr-4  /* margin-right */
+.mb-4  /* margin-bottom */
+.ml-4  /* margin-left */
+.mx-4  /* margin-left + margin-right */
+.my-4  /* margin-top + margin-bottom */
+
+/* Padding - All Sides */
+.p-0, .p-1, .p-2, .p-3, .p-4, .p-5, .p-6, .p-8, .p-10, .p-12, .p-16, .p-20, .p-24
+
+/* Padding - Directional */
+.pt-4  /* padding-top */
+.pr-4  /* padding-right */
+.pb-4  /* padding-bottom */
+.pl-4  /* padding-left */
+.px-4  /* padding-left + padding-right */
+.py-4  /* padding-top + padding-bottom */
+
+/* Gap - Flexbox/Grid */
+.gap-4    /* gap (both axes) */
+.gap-x-4  /* column-gap */
+.gap-y-4  /* row-gap */
+
+/* Negative Margins */
+.-m-1, .-m-2, .-m-3, .-m-4, .-m-5, .-m-6, .-m-8, .-m-10, .-m-12
+
+/* Auto Margins */
+.m-auto, .mx-auto, .my-auto, .mt-auto, .mr-auto, .mb-auto, .ml-auto
+
+/* Responsive Variants */
+.md\:m-4   /* margin at tablet+ */
+.md\:p-4   /* padding at tablet+ */
+.md\:gap-4 /* gap at tablet+ */
+.lg\:m-6   /* margin at desktop+ */
+.lg\:p-6   /* padding at desktop+ */
+.lg\:gap-6 /* gap at desktop+ */
+```
+
+### Usage Examples
+
+```html
+<!-- Card with consistent spacing -->
+<div class="p-6 mb-4">
+    <h2 class="mb-3">Card Title</h2>
+    <p class="mb-0">Card content</p>
+</div>
+
+<!-- Centered container -->
+<div class="mx-auto" style="max-width: 1200px;">
+    Content
+</div>
+
+<!-- Flexbox layout with gap -->
+<div class="flex gap-4">
+    <div>Item 1</div>
+    <div>Item 2</div>
+    <div>Item 3</div>
+</div>
+
+<!-- Responsive spacing -->
+<div class="p-4 md:p-6 lg:p-8">
+    Content with responsive padding
+</div>
+
+<!-- Negative margin for overlap -->
+<div class="-mt-4">
+    Overlapping element
+</div>
+```
+
+### 8-Point Grid System
+
+The spacing scale follows an 8-point grid system for visual consistency:
+
+- **0-6:** Fine-grained spacing (0, 4px, 8px, 12px, 16px, 20px, 24px)
+- **8-12:** Medium spacing (32px, 40px, 48px)
+- **16-24:** Large spacing (64px, 80px, 96px)
+
+Use multiples of 8 (0, 8, 16, 24) for major layout spacing and intermediate values (1-6, 10, 12) for fine-tuning.
+
 ## Integration
 
 To use the design system in your HTML templates:
@@ -328,9 +432,10 @@ To use the design system in your HTML templates:
 <link rel="stylesheet" href="/static/css/variables.css">
 <link rel="stylesheet" href="/static/css/typography.css">
 <link rel="stylesheet" href="/static/css/colors.css">
+<link rel="stylesheet" href="/static/css/spacing.css">
 ```
 
-Load order matters: variables → typography → colors for proper variable resolution.
+Load order matters: variables → typography → colors → spacing for proper variable resolution.
 
 ## Related Stories
 
@@ -338,4 +443,5 @@ Load order matters: variables → typography → colors for proper variable reso
 - **Story 00:** [07_STORY_00_css_variables.md](../../docs/00_BACKLOG/07_STORY_00_css_variables.md)
 - **Story 01:** [07_STORY_01_typography.md](../../docs/00_BACKLOG/07_STORY_01_typography.md)
 - **Story 02:** [07_STORY_02_color_system.md](../../docs/00_BACKLOG/07_STORY_02_color_system.md)
-- **Blocks:** All other frontend stories (03-21)
+- **Story 03:** [07_STORY_03_spacing_system.md](../../docs/00_BACKLOG/07_STORY_03_spacing_system.md)
+- **Blocks:** All other frontend stories (04-21)
