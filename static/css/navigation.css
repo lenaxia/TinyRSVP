@@ -1,0 +1,204 @@
+.header {
+    background: var(--color-background);
+    border-bottom: 1px solid var(--color-border);
+    padding: var(--spacing-4) 0;
+    position: relative;
+}
+
+.header.sticky {
+    position: sticky;
+    top: 0;
+    z-index: var(--z-index-sticky);
+    box-shadow: var(--shadow-sm);
+}
+
+.nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.logo {
+    font-size: var(--font-size-xl);
+    font-weight: var(--font-weight-bold);
+    color: var(--color-text-primary);
+    text-decoration: none;
+    transition: color var(--transition-fast);
+}
+
+.logo:hover,
+.logo:focus {
+    color: var(--color-primary-600);
+    outline: none;
+}
+
+.logo:focus-visible {
+    outline: 2px solid var(--color-border-focus);
+    outline-offset: 2px;
+    border-radius: var(--radius-base);
+}
+
+.nav-toggle {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    width: 44px;
+    height: 44px;
+    padding: var(--spacing-2);
+    background: transparent;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-base);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    position: relative;
+}
+
+.nav-toggle:hover {
+    background: var(--color-surface);
+    border-color: var(--color-primary-600);
+}
+
+.nav-toggle:focus {
+    outline: 2px solid var(--color-border-focus);
+    outline-offset: 2px;
+}
+
+.nav-toggle span,
+.nav-toggle::before,
+.nav-toggle::after {
+    content: '';
+    display: block;
+    width: 24px;
+    height: 2px;
+    background: var(--color-text-primary);
+    transition: all var(--transition-fast);
+    border-radius: var(--radius-sm);
+}
+
+.nav-toggle span {
+    margin: 3px 0;
+}
+
+.nav-toggle::before {
+    position: absolute;
+    top: 12px;
+}
+
+.nav-toggle::after {
+    position: absolute;
+    bottom: 12px;
+}
+
+.nav-toggle.active span {
+    opacity: 0;
+}
+
+.nav-toggle.active::before {
+    transform: rotate(45deg);
+    top: 50%;
+    margin-top: -1px;
+}
+
+.nav-toggle.active::after {
+    transform: rotate(-45deg);
+    bottom: 50%;
+    margin-bottom: -1px;
+}
+
+.nav-menu {
+    display: none;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: var(--color-background);
+    border-bottom: 1px solid var(--color-border);
+    box-shadow: var(--shadow-md);
+    z-index: var(--z-index-dropdown);
+    padding: var(--spacing-4);
+    list-style: none;
+    margin: 0;
+}
+
+.nav-menu.open {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-2);
+}
+
+.nav-menu li {
+    margin: 0;
+}
+
+.nav-link {
+    display: block;
+    padding: var(--spacing-3) var(--spacing-4);
+    color: var(--color-text-primary);
+    text-decoration: none;
+    font-size: var(--font-size-base);
+    font-weight: var(--font-weight-medium);
+    border-radius: var(--radius-base);
+    transition: all var(--transition-fast);
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+}
+
+.nav-link:hover {
+    background: var(--color-surface);
+    color: var(--color-primary-600);
+}
+
+.nav-link:focus {
+    outline: 2px solid var(--color-border-focus);
+    outline-offset: 2px;
+}
+
+.nav-link.active {
+    background: var(--color-primary-50);
+    color: var(--color-primary-700);
+    font-weight: var(--font-weight-semibold);
+}
+
+@media (min-width: 768px) {
+    .nav-toggle {
+        display: none;
+    }
+
+    .nav-menu {
+        display: flex;
+        flex-direction: row;
+        position: static;
+        background: transparent;
+        border: none;
+        box-shadow: none;
+        padding: 0;
+        gap: var(--spacing-6);
+    }
+
+    .nav-menu.open {
+        flex-direction: row;
+    }
+
+    .nav-link {
+        padding: var(--spacing-2) var(--spacing-3);
+        min-height: auto;
+    }
+
+    .nav-link.active {
+        background: transparent;
+        border-bottom: 2px solid var(--color-primary-600);
+        border-radius: 0;
+    }
+}
+
+@media (min-width: 1024px) {
+    .nav-menu {
+        gap: var(--spacing-8);
+    }
+
+    .nav-link {
+        font-size: var(--font-size-lg);
+    }
+}
