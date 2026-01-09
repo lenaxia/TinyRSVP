@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Invites - {{.EventTitle}} - TinyRSVP</title>
+    <link rel="stylesheet" href="/static/css/variables.css">
+    <link rel="stylesheet" href="/static/css/typography.css">
+    <link rel="stylesheet" href="/static/css/colors.css">
+    <link rel="stylesheet" href="/static/css/spacing.css">
+    <link rel="stylesheet" href="/static/css/grid.css">
+    <link rel="stylesheet" href="/static/css/buttons.css">
+    <link rel="stylesheet" href="/static/css/forms.css">
+    <link rel="stylesheet" href="/static/css/navigation.css">
+    <link rel="stylesheet" href="/static/css/invite_list.css">
+</head>
+<body>
+    <main class="invite-list" role="main" aria-label="Invite list">
+        <header class="invite-list-header">
+            <div class="invite-list-title-section">
+                <h1 class="invite-list-title">Invites for {{.EventTitle}}</h1>
+                <a href="/events/{{.EventID}}" class="btn btn-secondary">Back to Event</a>
+            </div>
+            
+            {{if .Stats}}
+            <section class="invite-stats" aria-label="Invite statistics">
+                <div class="invite-stat">
+                    <span class="invite-stat-value">{{.Stats.Total}}</span>
+                    <span class="invite-stat-label">Total</span>
+                </div>
+                <div class="invite-stat">
+                    <span class="invite-stat-value">{{.Stats.Draft}}</span>
+                    <span class="invite-stat-label">Draft</span>
+                </div>
+                <div class="invite-stat">
+                    <span class="invite-stat-value">{{.Stats.Sent}}</span>
+                    <span class="invite-stat-label">Sent</span>
+                </div>
+                <div class="invite-stat">
+                    <span class="invite-stat-value">{{.Stats.Viewed}}</span>
+                    <span class="invite-stat-label">Viewed</span>
+                </div>
+                <div class="invite-stat">
+                    <span class="invite-stat-value">{{.Stats.Responded}}</span>
+                    <span class="invite-stat-label">Responded</span>
+                </div>
+                <div class="invite-stat">
+                    <span class="invite-stat-value">{{.Stats.Revoked}}</span>
+                    <span class="invite-stat-label">Revoked</span>
+                </div>
+            </section>
+            {{end}}
+        </header>
+
+        {{if .Error}}
+        <section class="invite-empty" role="alert">
+            <div class="invite-empty-icon">⚠️</div>
+            <h2 class="invite-empty-title">Error Loading Invites</h2>
+            <p class="invite-empty-description">{{.Error}}</p>
+            <div class="invite-empty-action">
+                <button class="btn btn-primary" onclick="window.location.reload()">Retry</button>
+            </div>
+        </section>
+        {{else if .Loading}}
+        <section class="invite-list-loading" aria-live="polite" aria-busy="true">
+            <div class="loading-spinner" role="status"></div>
+            <p class="loading-text">Loading invites...</p>
+        </section>
+        {{else}}
+        <section class="invite-controls">
+            <div class="invite-filters">
+                <div class="filter-group">
+                    <label for="status-filter" class="filter-label">Status</label>
+                    <select id="status-filter" class="filter-select" name="status" aria-label="Filter by status">
+                        <option value="all" {{if eq .Filter "all"}}selected{{end}}>All Invites</option>
+                        <option value="draft" {{if eq .Filter "draft"}}selected{{end}}>Draft</option>
+                        <option value="sent" {{if eq .Filter "sent"}}selected{{end}}>Sent</option>
+                        <option value="viewed" {{if eq .Filter "viewed"}}selected{{end}}>Viewed</option>
+                        <option value="responded" {{if eq .Filter "responded"}}selected{{end}}>Responded</option>
+                        <option value="revoked" {{if eq .Filter "revoked"}}selected{{end}}>Revoked</option>
+                    </select>
+                </div>
+
+                <div class="invite-search">
+                    <span class="search-icon" aria-hidden="true">🔍</span>
+                    <input 
+                        type="search" 
+                        class="search-input" 
+                        placeholder="Search invites..." 
+                        aria-label="Search invites by name or email"
+                        name="search"
+                        value="{{.Search}}"
+                    >
+                </div>
+            </div>
+
+            <div class="invite-actions-bar">
+                <div class="bulk-actions">
+                    <input 
+                        type="checkbox" 
+                        id="select-all" 
+                        class="bulk-checkbox" 
+                        aria-label="Select all invites"
+                    >
+                    <label for="select-all">Select All</label>
+                    <button class="btn btn-secondary btn-sm" id="bulk-send" disabled>Send Selected</button>
+                    <button class="btn btn-secondary btn-sm" id="bulk-revoke" disabled>Revoke Selected</button>
+                </div>
+                <div class="invite-actions-right">
+                    <button class="btn btn-secondary export-btn" aria-label="Export invites">Export</button>
+                    <a href="/events/{{.EventID}}/invites/new" class="btn btn-primary">Create Invite</a>
+                </div>
+            </div>
+        </section>
+
+        {{if eq (len .Invites) 0}}
+        <section class="invite-empty">
+            <div class="invite-empty-icon">✉️</div>
+            <h2 class="invite-empty-title">No Invites Found</h2>
+            <p class="invite-empty-description">
+                {{if .Filter}}
+                No invites match your current filter. Try adjusting your search criteria.
+                {{else}}
+                Get started by creating your first invite.
+                {{end}}
+            </p>
+            <div class="invite-empty-action">
+                <a href="/events/{{.EventID}}/invites/new" class="btn btn-primary">Create Invite</a>
+            </div>
+        </section>
+        {{else}}
+        <section class="invite-table-container" aria-label="Invite list">
+            <table class="invite-table" role="table">
+                <thead>
+                    <tr>
+                        <th scope="col" class="invite-table-checkbox">
+                            <span class="sr-only">Select</span>
+                        </th>
+                        <th scope="col">Name</th>
+                        <th scope="col">Email</th>
+                        <th scope="col">Status</th>
+                        <th scope="col">Plus Ones</th>
+                        <th scope="col">RSVP</th>
+                        <th scope="col">Sent</th>
+                        <th scope="col" class="invite-table-actions">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {{range .Invites}}
+                    <tr class="invite-table-row" data-invite-id="{{.ID}}">
+                        <td class="invite-table-checkbox">
+                            <input 
+                                type="checkbox" 
+                                class="invite-checkbox" 
+                                value="{{.ID}}"
+                                aria-label="Select invite for {{if .Name}}{{.Name}}{{else if .Email}}{{.Email}}{{else}}guest{{end}}"
+                            >
+                        </td>
+                        <td class="invite-table-name">
+                            {{if .Name}}
+                                {{.Name}}
+                            {{else}}
+                                <span class="invite-table-empty">—</span>
+                            {{end}}
+                        </td>
+                        <td class="invite-table-email">
+                            {{if .Email}}
+                                {{.Email}}
+                            {{else}}
+                                <span class="invite-table-empty">—</span>
+                            {{end}}
+                        </td>
+                        <td class="invite-table-status">
+                            <span class="invite-status-badge invite-status-{{.Status}}">
+                                {{.Status}}
+                            </span>
+                        </td>
+                        <td class="invite-table-plus-ones">{{.MaxPlusOnes}}</td>
+                        <td class="invite-table-rsvp">
+                            {{if eq .Status "responded"}}
+                                <span class="invite-rsvp-yes">✓ Yes</span>
+                            {{else}}
+                                <span class="invite-table-empty">—</span>
+                            {{end}}
+                        </td>
+                        <td class="invite-table-sent">
+                            {{if .SentAt}}
+                                <time datetime="{{.SentAt.Format "2006-01-02T15:04:05Z07:00"}}">
+                                    {{.SentAt.Format "Jan 2, 3:04 PM"}}
+                                </time>
+                            {{else}}
+                                <span class="invite-table-empty">—</span>
+                            {{end}}
+                        </td>
+                        <td class="invite-table-actions invite-actions">
+                            <button 
+                                class="invite-action-btn" 
+                                data-action="regenerate" 
+                                data-invite-id="{{.ID}}"
+                                aria-label="Regenerate token for {{if .Name}}{{.Name}}{{else if .Email}}{{.Email}}{{else}}guest{{end}}"
+                            >
+                                Regenerate
+                            </button>
+                            <button 
+                                class="invite-action-btn invite-action-revoke" 
+                                data-action="revoke" 
+                                data-invite-id="{{.ID}}"
+                                aria-label="Revoke invite for {{if .Name}}{{.Name}}{{else if .Email}}{{.Email}}{{else}}guest{{end}}"
+                            >
+                                Revoke
+                            </button>
+                        </td>
+                    </tr>
+                    {{end}}
+                </tbody>
+            </table>
+
+            <div class="invite-cards" aria-label="Invite cards">
+                {{range .Invites}}
+                <article class="invite-card" data-invite-id="{{.ID}}">
+                    <div class="invite-card-header">
+                        <input 
+                            type="checkbox" 
+                            class="invite-checkbox" 
+                            value="{{.ID}}"
+                            aria-label="Select invite"
+                        >
+                        <span class="invite-status-badge invite-status-{{.Status}}">
+                            {{.Status}}
+                        </span>
+                    </div>
+                    
+                    <div class="invite-card-body">
+                        <div class="invite-card-name">
+                            {{if .Name}}
+                                <strong>{{.Name}}</strong>
+                            {{else}}
+                                <span class="invite-card-empty">No name</span>
+                            {{end}}
+                        </div>
+                        <div class="invite-card-email">
+                            {{if .Email}}
+                                {{.Email}}
+                            {{else}}
+                                <span class="invite-card-empty">No email</span>
+                            {{end}}
+                        </div>
+                        
+                        <div class="invite-card-meta">
+                            <div class="invite-card-meta-item">
+                                <span class="invite-card-meta-label">Plus Ones:</span>
+                                <span>{{.MaxPlusOnes}}</span>
+                            </div>
+                            {{if .SentAt}}
+                            <div class="invite-card-meta-item">
+                                <span class="invite-card-meta-label">Sent:</span>
+                                <time datetime="{{.SentAt.Format "2006-01-02T15:04:05Z07:00"}}">
+                                    {{.SentAt.Format "Jan 2, 3:04 PM"}}
+                                </time>
+                            </div>
+                            {{end}}
+                        </div>
+                    </div>
+                    
+                    <div class="invite-card-footer invite-actions">
+                        <button 
+                            class="invite-action-btn" 
+                            data-action="regenerate" 
+                            data-invite-id="{{.ID}}"
+                        >
+                            Regenerate
+                        </button>
+                        <button 
+                            class="invite-action-btn invite-action-revoke" 
+                            data-action="revoke" 
+                            data-invite-id="{{.ID}}"
+                        >
+                            Revoke
+                        </button>
+                    </div>
+                </article>
+                {{end}}
+            </div>
+        </section>
+
+        {{if gt .Total 50}}
+        <nav class="invite-pagination" aria-label="Pagination">
+            <ul class="pagination">
+                {{if gt .Page 1}}
+                <li>
+                    <a href="?page={{sub .Page 1}}" class="pagination-item pagination-prev" aria-label="Previous page">
+                        Previous
+                    </a>
+                </li>
+                {{else}}
+                <li>
+                    <span class="pagination-item pagination-prev disabled" aria-disabled="true">Previous</span>
+                </li>
+                {{end}}
+
+                {{$currentPage := .Page}}
+                {{$totalPages := div (add .Total 49) 50}}
+                
+                {{range $i := until $totalPages}}
+                {{$pageNum := add $i 1}}
+                {{if eq $pageNum $currentPage}}
+                <li>
+                    <span class="pagination-item active" aria-current="page" aria-label="Page {{$pageNum}}">
+                        {{$pageNum}}
+                    </span>
+                </li>
+                {{else}}
+                <li>
+                    <a href="?page={{$pageNum}}" class="pagination-item" aria-label="Go to page {{$pageNum}}">
+                        {{$pageNum}}
+                    </a>
+                </li>
+                {{end}}
+                {{end}}
+
+                {{if lt .Page $totalPages}}
+                <li>
+                    <a href="?page={{add .Page 1}}" class="pagination-item pagination-next" aria-label="Next page">
+                        Next
+                    </a>
+                </li>
+                {{else}}
+                <li>
+                    <span class="pagination-item pagination-next disabled" aria-disabled="true">Next</span>
+                </li>
+                {{end}}
+            </ul>
+        </nav>
+        {{end}}
+        {{end}}
+        {{end}}
+    </main>
+</body>
+</html>
