@@ -24,6 +24,9 @@ Provides a comprehensive design token system using CSS custom properties for con
 - [`forms.css`](forms.css) - Form component styles with accessibility and validation states
 - [`forms_test.go`](forms_test.go) - Test suite validating form components
 - [`forms_integration_test.go`](forms_integration_test.go) - Integration tests for form system
+- [`buttons.css`](buttons.css) - Button component styles with variants, sizes, and states
+- [`buttons_test.go`](buttons_test.go) - Test suite validating button components
+- [`buttons_integration_test.go`](buttons_integration_test.go) - Integration tests for button system
 
 ## CSS Variables Reference
 
@@ -768,6 +771,158 @@ Forms integrate seamlessly with the existing design system:
 - Colors from [`colors.css`](colors.css)
 - Works with grid/flex layouts from [`grid.css`](grid.css)
 
+## Button System
+
+The button system provides consistent, accessible button components with multiple variants, sizes, and states for all interactive actions.
+
+### Features
+
+- **Button Variants:** Primary, secondary, danger, ghost (4 semantic styles)
+- **Button Sizes:** Small (36px), medium (44px), large (52px)
+- **Interactive States:** Hover, active, focus, disabled, loading
+- **Special Types:** Icon buttons, full-width buttons, button groups
+- **Touch-Friendly:** 44px minimum height on mobile (40px on desktop)
+- **Accessibility:** Visible focus indicators, keyboard navigation, semantic cursors
+- **Loading State:** Animated CSS spinner (no JavaScript required)
+- **Responsive:** Mobile-first with tablet breakpoint adjustments
+
+### Button Component Classes
+
+```css
+/* Base Button */
+.btn                     /* Base button with flexbox, padding, transitions */
+
+/* Variants */
+.btn-primary            /* Blue background, white text (high emphasis) */
+.btn-secondary          /* Gray background, dark text (medium emphasis) */
+.btn-danger             /* Red background, white text (destructive actions) */
+.btn-ghost              /* Transparent background, blue text (low emphasis) */
+
+/* Sizes */
+.btn-sm                 /* Small: 36px min-height, smaller padding */
+.btn-md                 /* Medium: 44px min-height (default) */
+.btn-lg                 /* Large: 52px min-height, larger padding */
+
+/* States */
+.btn:hover              /* Hover state (darker background) */
+.btn:active             /* Active/pressed state */
+.btn:focus              /* Focus state (2px outline with offset) */
+.btn:disabled           /* Disabled state (50% opacity, not-allowed cursor) */
+.btn-loading            /* Loading state (spinner animation) */
+
+/* Special Types */
+.btn-icon               /* Square icon button (equal padding) */
+.btn-block              /* Full-width button (100% width) */
+.btn-group              /* Horizontal button group with gap */
+.btn-group-vertical     /* Vertical button group with gap */
+```
+
+### Usage Examples
+
+```html
+<!-- Basic Buttons -->
+<button class="btn btn-primary">Save Changes</button>
+<button class="btn btn-secondary">Cancel</button>
+<button class="btn btn-danger">Delete</button>
+<button class="btn btn-ghost">Learn More</button>
+
+<!-- Button Sizes -->
+<button class="btn btn-primary btn-sm">Small Button</button>
+<button class="btn btn-primary btn-md">Medium Button</button>
+<button class="btn btn-primary btn-lg">Large Button</button>
+
+<!-- Button States -->
+<button class="btn btn-primary" disabled>Disabled</button>
+<button class="btn btn-primary btn-loading">Processing...</button>
+
+<!-- Icon Button -->
+<button class="btn btn-primary btn-icon" aria-label="Delete">
+    <svg width="16" height="16">...</svg>
+</button>
+
+<!-- Full Width Button (Mobile) -->
+<button class="btn btn-primary btn-block">Continue</button>
+
+<!-- Button Group -->
+<div class="btn-group">
+    <button class="btn btn-secondary">Left</button>
+    <button class="btn btn-secondary">Center</button>
+    <button class="btn btn-secondary">Right</button>
+</div>
+
+<!-- Vertical Button Group -->
+<div class="btn-group-vertical">
+    <button class="btn btn-secondary">Option 1</button>
+    <button class="btn btn-secondary">Option 2</button>
+    <button class="btn btn-secondary">Option 3</button>
+</div>
+
+<!-- Button as Link -->
+<a href="/events" class="btn btn-primary">View Events</a>
+```
+
+### Button Variant Guidelines
+
+**Primary (`.btn-primary`):**
+- Use for main call-to-action
+- One primary button per section
+- Examples: "Save", "Submit", "Continue", "Create Event"
+
+**Secondary (`.btn-secondary`):**
+- Use for secondary actions
+- Can have multiple per section
+- Examples: "Cancel", "Back", "View Details"
+
+**Danger (`.btn-danger`):**
+- Use for destructive actions
+- Requires confirmation for critical actions
+- Examples: "Delete", "Remove", "Revoke"
+
+**Ghost (`.btn-ghost`):**
+- Use for tertiary/low-emphasis actions
+- Minimal visual weight
+- Examples: "Learn More", "Skip", "Maybe Later"
+
+### Accessibility Features
+
+- **Keyboard Navigation:** All buttons are keyboard accessible (Tab, Enter, Space)
+- **Focus Indicators:** 2px solid outline with 2px offset using `--color-border-focus`
+- **Touch Targets:** 44px minimum height on mobile (WCAG 2.1 Level AAA)
+- **Disabled State:** `pointer-events: none` prevents interaction, `cursor: not-allowed` provides feedback
+- **Loading State:** `cursor: wait` indicates processing, text becomes transparent
+- **Semantic HTML:** Works with `<button>` and `<a>` elements
+
+### Loading State Implementation
+
+The loading state uses CSS-only animation (no JavaScript required):
+
+```html
+<button class="btn btn-primary btn-loading">
+    Saving...
+</button>
+```
+
+The spinner is created with a `::after` pseudo-element and CSS keyframe animation. The button text becomes transparent during loading, and the spinner appears centered.
+
+### Integration with Design System
+
+Buttons integrate seamlessly with the existing design system:
+
+- Uses CSS variables from [`variables.css`](variables.css)
+- Typography from [`typography.css`](typography.css) (font sizes, weights, line heights)
+- Colors from [`colors.css`](colors.css) (primary, error, gray palettes)
+- Spacing from [`spacing.css`](spacing.css) (padding, gaps)
+- Works with grid/flex layouts from [`grid.css`](grid.css)
+- Complements form components from [`forms.css`](forms.css)
+
+### Responsive Behavior
+
+Buttons use a mobile-first approach:
+
+- **Mobile (base):** 44px minimum height for touch-friendly targets
+- **Tablet+ (768px):** 40px minimum height for desktop precision
+- Button groups stack vertically on mobile, horizontal on tablet+
+
 ## Integration
 
 To use the design system in your HTML templates:
@@ -779,9 +934,10 @@ To use the design system in your HTML templates:
 <link rel="stylesheet" href="/static/css/spacing.css">
 <link rel="stylesheet" href="/static/css/grid.css">
 <link rel="stylesheet" href="/static/css/forms.css">
+<link rel="stylesheet" href="/static/css/buttons.css">
 ```
 
-Load order matters: variables → typography → colors → spacing → grid → forms for proper variable resolution.
+Load order matters: variables → typography → colors → spacing → grid → forms → buttons for proper variable resolution.
 
 ## Related Stories
 
@@ -792,4 +948,5 @@ Load order matters: variables → typography → colors → spacing → grid →
 - **Story 03:** [07_STORY_03_spacing_system.md](../../docs/00_BACKLOG/07_STORY_03_spacing_system.md)
 - **Story 04:** [07_STORY_04_responsive_grid.md](../../docs/00_BACKLOG/07_STORY_04_responsive_grid.md)
 - **Story 06:** [07_STORY_06_forms.md](../../docs/00_BACKLOG/07_STORY_06_forms.md)
+- **Story 07:** [07_STORY_07_buttons.md](../../docs/00_BACKLOG/07_STORY_07_buttons.md)
 - **Blocks:** All other frontend stories (07-21)
