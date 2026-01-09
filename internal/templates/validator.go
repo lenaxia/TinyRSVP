@@ -18,12 +18,14 @@ type Validator interface {
 }
 
 type validator struct {
-	engine *Engine
+	engine        *Engine
+	cssSanitizer  CSSSanitizer
 }
 
 func NewValidator(engine *Engine) Validator {
 	return &validator{
-		engine: engine,
+		engine:       engine,
+		cssSanitizer: NewCSSSanitizer(),
 	}
 }
 
@@ -61,6 +63,10 @@ func (v *validator) ValidateTemplate(tmpl *models.Template) error {
 
 	if tmpl.CSSContent != nil {
 		if err := v.ValidateSize(*tmpl.CSSContent, 50*1024); err != nil {
+			return err
+		}
+
+		if err := v.cssSanitizer.Validate(*tmpl.CSSContent); err != nil {
 			return err
 		}
 	}
