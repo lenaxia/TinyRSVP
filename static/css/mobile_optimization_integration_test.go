@@ -209,6 +209,12 @@ func TestMobileOptimizationTemplateIntegration(t *testing.T) {
 					t.Error("Template should load CSS files from /static/css/")
 				}
 			})
+
+			t.Run("loads mobile_optimization.css specifically", func(t *testing.T) {
+				if !strings.Contains(html, `href="/static/css/mobile_optimization.css"`) {
+					t.Error("Template should specifically load mobile_optimization.css for mobile optimizations")
+				}
+			})
 		})
 	}
 }
