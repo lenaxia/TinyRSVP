@@ -34,10 +34,10 @@ Implement mobile-first, responsive frontend using plain CSS and vanilla JavaScri
 - [x] [`07_STORY_00_css_variables.md`](07_STORY_00_css_variables.md) - CSS custom properties for theming
 - [x] [`07_STORY_01_typography.md`](07_STORY_01_typography.md) - Font system and hierarchy
 - [x] [`07_STORY_02_color_system.md`](07_STORY_02_color_system.md) - Color palette and contrast
-- [ ] [`07_STORY_03_spacing_system.md`](07_STORY_03_spacing_system.md) - Consistent spacing scale
+- [x] [`07_STORY_03_spacing_system.md`](07_STORY_03_spacing_system.md) - Consistent spacing scale
 
 ### Phase 2: Layout Components
-- [ ] [`07_STORY_04_responsive_grid.md`](07_STORY_responsive_grid.md) - CSS Grid layout system
+- [x] [`07_STORY_04_responsive_grid.md`](07_STORY_04_responsive_grid.md) - CSS Grid layout system
 - [ ] [`07_STORY_05_navigation.md`](07_STORY_navigation.md) - Header and navigation
 - [ ] [`07_STORY_06_forms.md`](07_STORY_forms.md) - Form components and validation
 - [ ] [`07_STORY_07_buttons.md`](07_STORY_buttons.md) - Button styles and states
