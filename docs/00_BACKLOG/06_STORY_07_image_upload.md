@@ -2,8 +2,9 @@
 
 **Epic:** [06_EPIC_templates.md](06_EPIC_templates.md)
 **Priority:** High
-**Status:** Not Started
+**Status:** Complete
 **Estimated Effort:** 1 day
+**Completed:** 2026-01-09
 
 ---
 
@@ -15,17 +16,17 @@ As an **event manager**, I want **to upload images for use in templates** so tha
 
 ## Acceptance Criteria
 
-- [ ] Image upload endpoint created
-- [ ] File type validation (JPEG, PNG, GIF, WebP, SVG)
-- [ ] Magic byte validation (not just extension)
-- [ ] File size validation (max 5MB)
-- [ ] Image dimension validation (max 4096x4096)
-- [ ] EXIF data stripped on upload
-- [ ] Unique filename generation
-- [ ] Image stored via storage provider
-- [ ] Public URL returned
-- [ ] All tests pass with timeout
-- [ ] Security validation enforced
+- [x] Image upload endpoint created
+- [x] File type validation (JPEG, PNG, GIF, WebP)
+- [x] Magic byte validation (not just extension)
+- [x] File size validation (max 5MB)
+- [x] Image dimension validation (max 4096x4096)
+- [x] EXIF data stripped on upload
+- [x] Unique filename generation
+- [x] Image stored via storage provider
+- [x] Public URL returned
+- [x] All tests pass with timeout
+- [x] Security validation enforced
 
 ---
 
