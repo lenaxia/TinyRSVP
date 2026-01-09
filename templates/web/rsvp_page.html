@@ -6,801 +6,286 @@
     <title>{{if .Event}}RSVP - {{.Event.Title}}{{else}}RSVP{{end}}</title>
     <link rel="stylesheet" href="/static/css/variables.css">
     <link rel="stylesheet" href="/static/css/typography.css">
+    <link rel="stylesheet" href="/static/css/colors.css">
     <link rel="stylesheet" href="/static/css/spacing.css">
-    <link rel="stylesheet" href="/static/css/grid.css">
+    <link rel="stylesheet" href="/static/css/buttons.css">
+    <link rel="stylesheet" href="/static/css/forms.css">
+    <link rel="stylesheet" href="/static/css/rsvp_page.css">
+</head>
+<body style="background-color: var(--color-background); padding: var(--spacing-4);">
+    <div class="rsvp-page">
+        <div class="rsvp-container">
+            {{if .ErrorMessage}}
+                <div class="alert alert-error" role="alert" style="background-color: var(--color-error); color: var(--color-text-primary); padding: var(--spacing-8);">
+                    <strong>Unable to Load RSVP</strong>
+                    <p>{{.ErrorMessage}}</p>
+                </div>
+            {{else if .Event}}
+                {{if .ExistingRSVP}}
+                <div class="existing-rsvp-notice" role="status" style="background-color: var(--color-success);">
+                    <div class="existing-rsvp-notice-title">✓ You've Already Responded</div>
+                    <div class="existing-rsvp-notice-text">
+                        <p><strong>Response:</strong> {{.ExistingRSVP.Response}}</p>
+                        {{if eq .ExistingRSVP.Response "yes"}}
+                        <p><strong>Plus Ones:</strong> {{.ExistingRSVP.PlusOnes}}</p>
+                        {{end}}
+                        {{if .CanUpdate}}
+                        <p style="margin-top: var(--spacing-2);">You can update your response below if needed.</p>
+                        {{end}}
+                    </div>
+                </div>
+                {{end}}
+
+                <article class="event-details" role="main" style="background-color: var(--color-surface); padding: var(--spacing-6); box-shadow: var(--shadow-base); border: 1px solid var(--color-border);">
+                    <header>
+                        <h1 class="event-title">{{.Event.Title}}</h1>
+                    </header>
+
+                    <section class="event-info">
+                        <div class="event-info-item">
+                            <svg class="event-info-icon" aria-hidden="true" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                            </svg>
+                            <div class="event-info-content">
+                                <div class="event-info-label">Date & Time</div>
+                                <time datetime="{{.Event.StartTime.Format "2006-01-02T15:04:05Z07:00"}}">
+                                    {{.LocalStartTime}}{{if .LocalEndTime}} - {{.LocalEndTime}}{{end}}
+                                </time>
+                                {{if .TimeUntilEvent}}
+                                <div class="event-countdown">
+                                    {{.TimeUntilEvent}} from now
+                                </div>
+                                {{end}}
+                            </div>
+                        </div>
+
+                        {{if .Event.Location}}
+                        <div class="event-info-item">
+                            <svg class="event-info-icon" aria-hidden="true" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
+                            </svg>
+                            <div class="event-info-content">
+                                <div class="event-info-label">Location</div>
+                                <address style="font-style: normal;">{{.Event.Location}}</address>
+                            </div>
+                        </div>
+                        {{end}}
+
+                        {{if .Event.RSVPDeadline}}
+                        <div class="event-info-item">
+                            <svg class="event-info-icon" aria-hidden="true" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                            </svg>
+                            <div class="event-info-content">
+                                <div class="event-info-label">RSVP Deadline</div>
+                                <time datetime="{{.Event.RSVPDeadline.Format "2006-01-02T15:04:05Z07:00"}}">
+                                    {{.Event.RSVPDeadline.Format "Monday, January 2, 2006 at 3:04 PM MST"}}
+                                </time>
+                            </div>
+                        </div>
+                        {{end}}
+
+                        {{if .Invite}}
+                        <div class="event-info-item">
+                            <svg class="event-info-icon" aria-hidden="true" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+                            </svg>
+                            <div class="event-info-content">
+                                <div class="event-info-label">Invited Guest</div>
+                                <div>
+                                    {{if .Invite.Name}}{{.Invite.Name}}{{end}}
+                                    {{if and .Invite.Name .Invite.Email}}<br>{{end}}
+                                    {{if .Invite.Email}}<span style="font-size: var(--font-size-sm); color: var(--color-text-secondary);">{{.Invite.Email}}</span>{{end}}
+                                </div>
+                            </div>
+                        </div>
+                        {{end}}
+                    </section>
+
+                    {{if .DeadlinePassed}}
+                    <div class="deadline-warning" role="alert" aria-live="polite">
+                        <strong>⏰ RSVP Deadline Passed</strong>
+                        <p>The deadline to respond to this invitation has passed. Please contact the event organizer if you need to make changes.</p>
+                    </div>
+                    {{else if .EventPassed}}
+                    <div class="deadline-warning" role="alert" aria-live="polite">
+                        <strong>📅 Event Has Passed</strong>
+                        <p>This event has already occurred. RSVPs are no longer being accepted.</p>
+                    </div>
+                    {{end}}
+
+                    {{if .Event.Description}}
+                    <section class="event-description">
+                        <h2>About This Event</h2>
+                        <p>{{.Event.Description}}</p>
+                    </section>
+                    {{end}}
+                </article>
+
+                {{if not .DeadlinePassed}}
+                {{if not .EventPassed}}
+                <form class="rsvp-form" method="POST" action="/rsvp/{{.Token}}" novalidate style="background-color: var(--color-surface); padding: var(--spacing-6);">
+                    <h2 class="rsvp-form-title">
+                        {{if .ExistingRSVP}}Update Your RSVP{{else}}Please Respond{{end}}
+                    </h2>
+                    
+                    <div class="form-group">
+                        <fieldset>
+                            <legend class="form-label">Will you attend?</legend>
+                            <div class="response-options">
+                                <div class="response-option">
+                                    <input type="radio" name="response" value="yes" id="response_yes" {{if .ExistingRSVP}}{{if eq .ExistingRSVP.Response "yes"}}checked{{end}}{{end}} required>
+                                    <label for="response_yes">Yes, I'll be there</label>
+                                </div>
+                                <div class="response-option">
+                                    <input type="radio" name="response" value="maybe" id="response_maybe" {{if .ExistingRSVP}}{{if eq .ExistingRSVP.Response "maybe"}}checked{{end}}{{end}}>
+                                    <label for="response_maybe">Maybe</label>
+                                </div>
+                                <div class="response-option">
+                                    <input type="radio" name="response" value="no" id="response_no" {{if .ExistingRSVP}}{{if eq .ExistingRSVP.Response "no"}}checked{{end}}{{end}}>
+                                    <label for="response_no">No, I can't make it</label>
+                                </div>
+                            </div>
+                        </fieldset>
+                    </div>
+
+                    {{if .Invite}}
+                    {{if gt .Invite.MaxPlusOnes 0}}
+                    <div class="plus-ones-selector" data-max-plus-ones="{{.Invite.MaxPlusOnes}}">
+                        <label for="plus_ones" class="form-label" style="color: var(--color-text-primary);">
+                            Additional Guests
+                            <span style="color: var(--color-text-secondary); font-weight: var(--font-weight-normal); font-size: var(--font-size-sm);">(up to {{.Invite.MaxPlusOnes}})</span>
+                        </label>
+                        
+                        <div class="plus-ones-controls">
+                            <button type="button" class="plus-ones-btn" id="plus_ones_decrease" aria-label="Decrease plus ones">−</button>
+                            <div class="plus-ones-value" id="plus_ones_display">{{if .ExistingRSVP}}{{.ExistingRSVP.PlusOnes}}{{else}}0{{end}}</div>
+                            <button type="button" class="plus-ones-btn" id="plus_ones_increase" aria-label="Increase plus ones">+</button>
+                        </div>
+                        
+                        <input
+                            type="hidden"
+                            id="plus_ones"
+                            name="plus_ones"
+                            value="{{if .ExistingRSVP}}{{.ExistingRSVP.PlusOnes}}{{else}}0{{end}}"
+                        />
+                        
+                        <small class="form-help-text">
+                            How many additional guests will you bring?
+                        </small>
+                    </div>
+                    {{end}}
+                    {{end}}
+
+                    {{if .Questions}}
+                    <div class="preference-questions" style="margin-top: var(--spacing-8); padding-top: var(--spacing-8); border-top: 1px solid var(--color-border);">
+                        <h3 class="preference-questions-title">Additional Information</h3>
+                        {{range .Questions}}
+                        <div class="question-item" data-question-id="{{.ID}}" data-type="{{.QuestionType}}">
+                            <label for="question_{{.ID}}" class="form-label">
+                                {{.QuestionText}}
+                                {{if .Required}}<span class="form-required" aria-label="required">*</span>{{end}}
+                            </label>
+                            
+                            {{if eq .QuestionType "text"}}
+                                <textarea
+                                    id="question_{{.ID}}"
+                                    name="answers[{{.ID}}][text]"
+                                    class="form-textarea"
+                                    maxlength="500"
+                                    {{if .Required}}required aria-required="true"{{end}}
+                                    {{if .HelpText}}aria-describedby="help_{{.ID}}"{{end}}
+                                ></textarea>
+                            {{else if eq .QuestionType "single_choice"}}
+                                <select
+                                    id="question_{{.ID}}"
+                                    name="answers[{{.ID}}][option]"
+                                    class="form-select"
+                                    {{if .Required}}required aria-required="true"{{end}}
+                                    {{if .HelpText}}aria-describedby="help_{{.ID}}"{{end}}
+                                >
+                                    <option value="">-- Select an option --</option>
+                                    {{range .ParsedOptions}}
+                                    <option value="{{.}}">{{.}}</option>
+                                    {{end}}
+                                </select>
+                            {{else if eq .QuestionType "multiple_choice"}}
+                                <div class="question-options" {{if .HelpText}}aria-describedby="help_{{.ID}}"{{end}}>
+                                    {{$questionID := .ID}}
+                                    {{range $idx, $opt := .ParsedOptions}}
+                                    <div class="question-option">
+                                        <input
+                                            type="checkbox"
+                                            name="answers[{{$questionID}}][options][]"
+                                            value="{{$opt}}"
+                                            id="question_{{$questionID}}_{{$idx}}"
+                                            class="form-checkbox"
+                                        />
+                                        <label for="question_{{$questionID}}_{{$idx}}">{{$opt}}</label>
+                                    </div>
+                                    {{end}}
+                                </div>
+                            {{end}}
+                            
+                            {{if .HelpText}}
+                            <small id="help_{{.ID}}" class="form-help-text">{{.HelpText}}</small>
+                            {{end}}
+                        </div>
+                        {{end}}
+                    </div>
+                    {{end}}
+
+                    <div class="rsvp-actions" style="margin-top: var(--spacing-8); gap: var(--spacing-3);">
+                        <button type="submit" class="btn btn-primary" style="background-color: var(--color-primary-600);" onmouseover="this.style.backgroundColor='var(--color-primary-700)'" onmouseout="this.style.backgroundColor='var(--color-primary-600)'">
+                            {{if .ExistingRSVP}}Update RSVP{{else}}Submit RSVP{{end}}
+                        </button>
+                    </div>
+                </form>
+                {{end}}
+                {{end}}
+            {{end}}
+        </div>
+    </div>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            background-color: var(--color-surface);
-            padding: var(--spacing-4);
-        }
-
-        .container {
-            max-width: 100%;
-            margin: 0 auto;
-        }
-
-        .error-container {
-            background-color: var(--color-background);
-            border: 2px solid var(--color-error);
-            border-radius: 8px;
-            padding: var(--spacing-8);
-            margin: var(--spacing-8) auto;
-            max-width: 600px;
-            text-align: center;
-        }
-
-        .error-icon {
-            font-size: 3rem;
-            margin-bottom: var(--spacing-4);
-        }
-
-        .error-title {
-            font-size: 1.5rem;
-            font-weight: 600;
-            color: var(--color-error);
-            margin-bottom: 0.5rem;
-        }
-
-        .error-message {
-            color: var(--color-text-secondary);
-            font-size: 1rem;
-        }
-
-        .event-card {
-            background-color: var(--color-background);
-            border-radius: 8px;
-            box-shadow: var(--shadow-base);
-            padding: var(--spacing-6);
-            margin-bottom: var(--spacing-6);
-        }
-
-        .event-header {
-            margin-bottom: var(--spacing-6);
-        }
-
-        .event-title {
-            font-size: var(--font-size-3xl);
-            font-weight: var(--font-weight-bold);
-            color: var(--color-text-primary);
-            margin-bottom: var(--spacing-2);
-        }
-
-        .event-status {
-            display: inline-block;
-            padding: var(--spacing-1) var(--spacing-3);
-            border-radius: var(--radius-full);
-            font-size: var(--font-size-sm);
-            font-weight: var(--font-weight-medium);
-        }
-
-        .status-responded {
-            background-color: var(--color-success-light);
-            color: var(--color-success-dark);
-        }
-
-        .event-info {
-            display: flex;
-            flex-direction: column;
-            gap: var(--spacing-4);
-        }
-
-        .info-item {
-            display: flex;
-            align-items: flex-start;
-            gap: var(--spacing-3);
-        }
-
-        .info-icon {
-            flex-shrink: 0;
-            width: 1.25rem;
-            height: 1.25rem;
-            margin-top: 0.125rem;
-        }
-
-        .info-content {
-            flex: 1;
-        }
-
-        .info-label {
-            font-size: var(--font-size-sm);
-            font-weight: var(--font-weight-medium);
-            color: var(--color-text-secondary);
-            margin-bottom: var(--spacing-1);
-        }
-
-        .info-value {
-            font-size: var(--font-size-base);
-            color: var(--color-text-primary);
-        }
-
-        .deadline-warning {
-            background-color: var(--color-warning-light);
-            border-left: 4px solid var(--color-warning);
-            padding: var(--spacing-4);
-            margin: var(--spacing-6) 0;
-            border-radius: 4px;
-        }
-
-        .deadline-warning-title {
-            font-weight: var(--font-weight-semibold);
-            color: var(--color-warning-dark);
-            margin-bottom: var(--spacing-1);
-        }
-
-        .deadline-warning-text {
-            color: var(--color-warning-darker);
-            font-size: var(--font-size-sm);
-        }
-
-        .description {
-            margin-top: var(--spacing-6);
-            padding-top: var(--spacing-6);
-            border-top: 1px solid var(--color-border);
-        }
-
-        .description-title {
-            font-size: var(--font-size-lg);
-            font-weight: var(--font-weight-semibold);
-            margin-bottom: var(--spacing-3);
-        }
-
-        .description-text {
-            color: var(--color-text-secondary);
-            white-space: pre-wrap;
-        }
-
-        .existing-rsvp {
-            background-color: var(--color-success-light);
-            border: 2px solid var(--color-success);
-            border-radius: 8px;
-            padding: var(--spacing-6);
-            margin-bottom: var(--spacing-6);
-        }
-
-        .existing-rsvp-title {
-            font-size: var(--font-size-xl);
-            font-weight: var(--font-weight-semibold);
-            color: var(--color-success-dark);
-            margin-bottom: var(--spacing-3);
-        }
-
-        .existing-rsvp-details {
-            display: flex;
-            flex-direction: column;
-            gap: var(--spacing-2);
-        }
-
-        .existing-rsvp-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .existing-rsvp-label {
-            font-weight: var(--font-weight-medium);
-            color: var(--color-success-dark);
-        }
-
-        .existing-rsvp-value {
-            font-weight: var(--font-weight-semibold);
-            color: var(--color-success-dark);
-        }
-
         @media (min-width: 768px) {
             body {
                 padding: var(--spacing-8);
             }
-
-            .container {
-                max-width: 768px;
-            }
-
-            .event-card {
-                padding: var(--spacing-8);
-            }
-
-            .event-title {
-                font-size: var(--font-size-4xl);
-            }
-
-            .info-item {
-                gap: var(--spacing-4);
-            }
-        }
-
-        @media (min-width: 1024px) {
-            .container {
-                max-width: 1024px;
-            }
-
-            .event-title {
-                font-size: var(--font-size-5xl);
-            }
-        }
-
-        .sr-only {
-            position: absolute;
-            width: 1px;
-            height: 1px;
-            padding: 0;
-            margin: -1px;
-            overflow: hidden;
-            clip: rect(0, 0, 0, 0);
-            white-space: nowrap;
-            border-width: 0;
-        }
-
-        .rsvp-form {
-            margin-top: var(--spacing-6);
-        }
-
-        .form-group {
-            margin-bottom: var(--spacing-6);
-        }
-
-        .form-label {
-            display: block;
-            font-weight: var(--font-weight-semibold);
-            margin-bottom: var(--spacing-2);
-            font-size: var(--font-size-base);
-            color: var(--color-text-primary);
-        }
-
-        .limit-text {
-            color: var(--color-text-secondary);
-            font-weight: var(--font-weight-normal);
-            font-size: var(--font-size-sm);
-        }
-
-        .radio-group {
-            display: flex;
-            flex-direction: column;
-            gap: var(--spacing-3);
-        }
-
-        .radio-label {
-            display: flex;
-            align-items: center;
-            padding: var(--spacing-3);
-            border: 2px solid var(--color-border);
-            border-radius: 8px;
-            cursor: pointer;
-            transition: all 0.2s;
-            background-color: var(--color-background);
-        }
-
-        .radio-label:hover {
-            border-color: var(--color-primary-600);
-            background-color: var(--color-surface);
-        }
-
-        .radio-label:has(input:checked) {
-            border-color: var(--color-primary-600);
-            background-color: var(--color-primary-50);
-        }
-
-        .radio-label:has(input:focus) {
-            outline: 2px solid var(--color-primary-600);
-            outline-offset: 2px;
-        }
-
-        .radio-label input[type="radio"] {
-            width: 1.25rem;
-            height: 1.25rem;
-            margin-right: var(--spacing-3);
-            cursor: pointer;
-            flex-shrink: 0;
-        }
-
-        .radio-text {
-            font-size: var(--font-size-base);
-            color: var(--color-text-primary);
-        }
-
-        .number-input {
-            width: 100%;
-            min-height: 44px;
-            padding: var(--spacing-3);
-            font-size: var(--font-size-base);
-            border: 2px solid var(--color-border);
-            border-radius: var(--radius-lg);
-            transition: border-color var(--transition-base);
-            background-color: var(--color-background);
-        }
-
-        .number-input:focus {
-            outline: none;
-            border-color: var(--color-primary-600);
-            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
-        }
-
-        .number-input:disabled {
-            background-color: var(--color-surface-disabled);
-            color: var(--color-text-disabled);
-            cursor: not-allowed;
-            opacity: 0.6;
-        }
-
-        .plus-ones-group.disabled {
-            opacity: 0.6;
-        }
-
-        .form-text {
-            display: block;
-            margin-top: var(--spacing-2);
-            font-size: var(--font-size-sm);
-            color: var(--color-text-secondary);
-        }
-
-        .plus-ones-group .error-message {
-            display: block;
-            margin-top: var(--spacing-2);
-            font-size: var(--font-size-sm);
-            color: var(--color-error);
-            font-weight: var(--font-weight-medium);
-        }
-
-        .plus-ones-group .error-message:empty {
-            display: none;
-        }
-
-        .number-input.invalid {
-            border-color: var(--color-error);
-        }
-
-        .form-actions {
-            margin-top: var(--spacing-8);
-            display: flex;
-            gap: var(--spacing-4);
-        }
-
-        .btn {
-            padding: var(--spacing-3) var(--spacing-6);
-            font-size: var(--font-size-base);
-            font-weight: var(--font-weight-semibold);
-            border: none;
-            border-radius: var(--radius-lg);
-            cursor: pointer;
-            transition: all var(--transition-base);
-            min-height: 44px;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .btn-primary {
-            background-color: var(--color-primary-600);
-            color: white;
-            flex: 1;
-        }
-
-        .btn-primary:hover {
-            background-color: var(--color-primary-700);
-        }
-
-        .btn-primary:focus {
-            outline: 2px solid var(--color-primary-600);
-            outline-offset: 2px;
-        }
-
-        .btn-primary:active {
-            transform: scale(0.98);
-        }
-
-        @media (min-width: 768px) {
-            .number-input {
-                max-width: 200px;
-            }
-
-            .btn {
-                flex: 0 0 auto;
-                min-width: 200px;
-            }
-        }
-
-        .questions-section {
-            margin-top: var(--spacing-8);
-            padding-top: var(--spacing-8);
-            border-top: 1px solid var(--color-border);
-        }
-
-        .questions-title {
-            font-size: var(--font-size-xl);
-            font-weight: var(--font-weight-semibold);
-            margin-bottom: var(--spacing-6);
-            color: var(--color-text-primary);
-        }
-
-        .question-group {
-            margin-bottom: var(--spacing-6);
-        }
-
-        .question-label {
-            display: block;
-            font-weight: var(--font-weight-semibold);
-            margin-bottom: var(--spacing-2);
-            font-size: var(--font-size-base);
-            color: var(--color-text-primary);
-        }
-
-        .required {
-            color: var(--color-error);
-            margin-left: 0.25rem;
-        }
-
-        .question-textarea {
-            width: 100%;
-            min-height: 100px;
-            padding: var(--spacing-3);
-            font-size: var(--font-size-base);
-            border: 2px solid var(--color-border);
-            border-radius: var(--radius-lg);
-            transition: border-color var(--transition-base);
-            background-color: var(--color-background);
-            font-family: inherit;
-            resize: vertical;
-        }
-
-        .question-textarea:focus {
-            outline: none;
-            border-color: var(--color-primary-600);
-            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
-        }
-
-        .question-select {
-            width: 100%;
-            min-height: 44px;
-            padding: var(--spacing-3);
-            font-size: var(--font-size-base);
-            border: 2px solid var(--color-border);
-            border-radius: var(--radius-lg);
-            transition: border-color var(--transition-base);
-            background-color: var(--color-background);
-            cursor: pointer;
-        }
-
-        .question-select:focus {
-            outline: none;
-            border-color: var(--color-primary-600);
-            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
-        }
-
-        .checkbox-group {
-            display: flex;
-            flex-direction: column;
-            gap: var(--spacing-3);
-        }
-
-        .checkbox-label {
-            display: flex;
-            align-items: center;
-            padding: var(--spacing-3);
-            border: 2px solid var(--color-border);
-            border-radius: 8px;
-            cursor: pointer;
-            transition: all 0.2s;
-            background-color: var(--color-background);
-        }
-
-        .checkbox-label:hover {
-            border-color: var(--color-primary-600);
-            background-color: var(--color-surface);
-        }
-
-        .checkbox-label:has(input:checked) {
-            border-color: var(--color-primary-600);
-            background-color: var(--color-primary-50);
-        }
-
-        .checkbox-label:has(input:focus) {
-            outline: 2px solid var(--color-primary-600);
-            outline-offset: 2px;
-        }
-
-        .checkbox-label input[type="checkbox"] {
-            width: 1.25rem;
-            height: 1.25rem;
-            margin-right: var(--spacing-3);
-            cursor: pointer;
-            flex-shrink: 0;
-        }
-
-        .checkbox-text {
-            font-size: var(--font-size-base);
-            color: var(--color-text-primary);
-        }
-
-        .help-text {
-            display: block;
-            margin-top: var(--spacing-2);
-            font-size: var(--font-size-sm);
-            color: var(--color-text-secondary);
-        }
-
-        @media (min-width: 768px) {
-            .question-select {
-                max-width: 400px;
-            }
         }
     </style>
-</head>
-<body>
-    <div class="container">
-        {{if .ErrorMessage}}
-            <div class="error-container" role="alert">
-                <div class="error-icon" aria-hidden="true">⚠️</div>
-                <h1 class="error-title">Unable to Load RSVP</h1>
-                <p class="error-message">{{.ErrorMessage}}</p>
-            </div>
-        {{else if .Event}}
-            {{if .ExistingRSVP}}
-            <div class="existing-rsvp" role="status">
-                <h2 class="existing-rsvp-title">✓ You've Already Responded</h2>
-                <div class="existing-rsvp-details">
-                    <div class="existing-rsvp-item">
-                        <span class="existing-rsvp-label">Response:</span>
-                        <span class="existing-rsvp-value">{{.ExistingRSVP.Response}}</span>
-                    </div>
-                    {{if eq .ExistingRSVP.Response "yes"}}
-                    <div class="existing-rsvp-item">
-                        <span class="existing-rsvp-label">Plus Ones:</span>
-                        <span class="existing-rsvp-value">{{.ExistingRSVP.PlusOnes}}</span>
-                    </div>
-                    {{end}}
-                    {{if .CanUpdate}}
-                    <p class="text-small" style="margin-top: var(--spacing-4); color: var(--color-success-dark);">
-                        You can update your response below if needed.
-                    </p>
-                    {{end}}
-                </div>
-            </div>
-            {{end}}
-
-            <article class="event-card" role="main">
-                <header class="event-header">
-                    <h1 class="event-title">{{.Event.Title}}</h1>
-                    {{if .ExistingRSVP}}
-                    <span class="event-status status-responded">Responded</span>
-                    {{end}}
-                </header>
-
-                <section class="event-info">
-                    <h2 class="sr-only">Event Information</h2>
-                    
-                    <div class="info-item">
-                        <svg class="info-icon" aria-hidden="true" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
-                        </svg>
-                        <div class="info-content">
-                            <div class="info-label">Date & Time</div>
-                            <time class="info-value" datetime="{{.Event.StartTime.Format "2006-01-02T15:04:05Z07:00"}}">
-                                {{.LocalStartTime}}{{if .LocalEndTime}} - {{.LocalEndTime}}{{end}}
-                            </time>
-                            {{if .TimeUntilEvent}}
-                            <div class="text-small text-secondary" style="margin-top: var(--spacing-1);">
-                                {{.TimeUntilEvent}} from now
-                            </div>
-                            {{end}}
-                        </div>
-                    </div>
-
-                    {{if .Event.Location}}
-                    <div class="info-item">
-                        <svg class="info-icon" aria-hidden="true" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
-                        </svg>
-                        <div class="info-content">
-                            <div class="info-label">Location</div>
-                            <address class="info-value" style="font-style: normal;">{{.Event.Location}}</address>
-                        </div>
-                    </div>
-                    {{end}}
-
-                    {{if .Event.RSVPDeadline}}
-                    <div class="info-item">
-                        <svg class="info-icon" aria-hidden="true" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                        </svg>
-                        <div class="info-content">
-                            <div class="info-label">RSVP Deadline</div>
-                            <time class="info-value" datetime="{{.Event.RSVPDeadline.Format "2006-01-02T15:04:05Z07:00"}}">
-                                {{.Event.RSVPDeadline.Format "Monday, January 2, 2006 at 3:04 PM MST"}}
-                            </time>
-                        </div>
-                    </div>
-                    {{end}}
-
-                    {{if .Invite}}
-                    <div class="info-item">
-                        <svg class="info-icon" aria-hidden="true" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
-                        </svg>
-                        <div class="info-content">
-                            <div class="info-label">Invited Guest</div>
-                            <div class="info-value">
-                                {{if .Invite.Name}}{{.Invite.Name}}{{end}}
-                                {{if and .Invite.Name .Invite.Email}}<br>{{end}}
-                                {{if .Invite.Email}}<span class="text-small text-secondary">{{.Invite.Email}}</span>{{end}}
-                            </div>
-                        </div>
-                    </div>
-                    {{end}}
-                </section>
-
-                {{if .DeadlinePassed}}
-                <div class="deadline-warning" role="alert">
-                    <div class="deadline-warning-title">⏰ RSVP Deadline Passed</div>
-                    <p class="deadline-warning-text">
-                        The deadline to respond to this invitation has passed. Please contact the event organizer if you need to make changes.
-                    </p>
-                </div>
-                {{else if .EventPassed}}
-                <div class="deadline-warning" role="alert">
-                    <div class="deadline-warning-title">📅 Event Has Passed</div>
-                    <p class="deadline-warning-text">
-                        This event has already occurred. RSVPs are no longer being accepted.
-                    </p>
-                </div>
-                {{end}}
-
-                {{if .Event.Description}}
-                <section class="description">
-                    <h2 class="description-title">About This Event</h2>
-                    <p class="description-text">{{.Event.Description}}</p>
-                </section>
-                {{end}}
-            </article>
-
-            {{if not .DeadlinePassed}}
-            {{if not .EventPassed}}
-            <form class="event-card rsvp-form" method="POST" action="/rsvp/{{.Token}}" novalidate>
-                <h2 class="h2" style="margin-bottom: var(--spacing-4);">
-                    {{if .ExistingRSVP}}Update Your RSVP{{else}}Please Respond{{end}}
-                </h2>
-                
-                <div class="form-group">
-                    <fieldset>
-                        <legend class="form-label">Will you attend?</legend>
-                        <div class="radio-group">
-                            <label class="radio-label">
-                                <input type="radio" name="response" value="yes" {{if .ExistingRSVP}}{{if eq .ExistingRSVP.Response "yes"}}checked{{end}}{{end}} required>
-                                <span class="radio-text">Yes, I'll be there</span>
-                            </label>
-                            <label class="radio-label">
-                                <input type="radio" name="response" value="maybe" {{if .ExistingRSVP}}{{if eq .ExistingRSVP.Response "maybe"}}checked{{end}}{{end}}>
-                                <span class="radio-text">Maybe</span>
-                            </label>
-                            <label class="radio-label">
-                                <input type="radio" name="response" value="no" {{if .ExistingRSVP}}{{if eq .ExistingRSVP.Response "no"}}checked{{end}}{{end}}>
-                                <span class="radio-text">No, I can't make it</span>
-                            </label>
-                        </div>
-                    </fieldset>
-                </div>
-
-                {{if .Invite}}
-                {{if gt .Invite.MaxPlusOnes 0}}
-                <div class="form-group plus-ones-group" data-max-plus-ones="{{.Invite.MaxPlusOnes}}">
-                    <label for="plus_ones" class="form-label">
-                        Additional Guests
-                        <span class="limit-text">(up to {{.Invite.MaxPlusOnes}})</span>
-                    </label>
-                    
-                    <input
-                        type="number"
-                        id="plus_ones"
-                        name="plus_ones"
-                        min="0"
-                        max="{{.Invite.MaxPlusOnes}}"
-                        value="{{if .ExistingRSVP}}{{.ExistingRSVP.PlusOnes}}{{else}}0{{end}}"
-                        aria-describedby="plus_ones_help"
-                        class="number-input"
-                    />
-                    
-                    <small id="plus_ones_help" class="form-text">
-                        How many additional guests will you bring?
-                    </small>
-                    
-                    <div class="error-message" role="alert" aria-live="polite"></div>
-                </div>
-                {{end}}
-                {{end}}
-
-                {{if .Questions}}
-                <div class="questions-section">
-                    <h3 class="questions-title">Additional Information</h3>
-                    {{range .Questions}}
-                    <div class="question-group" data-question-id="{{.ID}}" data-type="{{.QuestionType}}">
-                        <label for="question_{{.ID}}" class="question-label">
-                            {{.QuestionText}}
-                            {{if .Required}}<span class="required" aria-label="required">*</span>{{end}}
-                        </label>
-                        
-                        {{if eq .QuestionType "text"}}
-                            <textarea
-                                id="question_{{.ID}}"
-                                name="answers[{{.ID}}][text]"
-                                maxlength="500"
-                                {{if .Required}}required aria-required="true"{{end}}
-                                {{if .HelpText}}aria-describedby="help_{{.ID}}"{{end}}
-                                class="question-textarea"
-                            ></textarea>
-                        {{else if eq .QuestionType "single_choice"}}
-                            <select
-                                id="question_{{.ID}}"
-                                name="answers[{{.ID}}][option]"
-                                {{if .Required}}required aria-required="true"{{end}}
-                                {{if .HelpText}}aria-describedby="help_{{.ID}}"{{end}}
-                                class="question-select"
-                            >
-                                <option value="">-- Select an option --</option>
-                                {{range .ParsedOptions}}
-                                <option value="{{.}}">{{.}}</option>
-                                {{end}}
-                            </select>
-                        {{else if eq .QuestionType "multiple_choice"}}
-                            <fieldset class="checkbox-group" {{if .HelpText}}aria-describedby="help_{{.ID}}"{{end}}>
-                                <legend class="sr-only">{{.QuestionText}}</legend>
-                                {{range $idx, $opt := .ParsedOptions}}
-                                <label class="checkbox-label">
-                                    <input
-                                        type="checkbox"
-                                        name="answers[{{$.ID}}][options][]"
-                                        value="{{$opt}}"
-                                        id="question_{{$.ID}}_{{$idx}}"
-                                    />
-                                    <span class="checkbox-text">{{$opt}}</span>
-                                </label>
-                                {{end}}
-                            </fieldset>
-                        {{end}}
-                        
-                        {{if .HelpText}}
-                        <small id="help_{{.ID}}" class="help-text">{{.HelpText}}</small>
-                        {{end}}
-                    </div>
-                    {{end}}
-                </div>
-                {{end}}
-
-                <div class="form-actions">
-                    <button type="submit" class="btn btn-primary">
-                        {{if .ExistingRSVP}}Update RSVP{{else}}Submit RSVP{{end}}
-                    </button>
-                </div>
-            </form>
-            {{end}}
-            {{end}}
-        {{end}}
-    </div>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             const responseInputs = document.querySelectorAll('input[name="response"]');
             const plusOnesInput = document.getElementById('plus_ones');
-            const plusOnesGroup = document.querySelector('.plus-ones-group');
+            const plusOnesDisplay = document.getElementById('plus_ones_display');
+            const plusOnesSelector = document.querySelector('.plus-ones-selector');
+            const decreaseBtn = document.getElementById('plus_ones_decrease');
+            const increaseBtn = document.getElementById('plus_ones_increase');
             
             if (!responseInputs.length || !plusOnesInput) return;
             
+            const maxPlusOnes = parseInt(plusOnesSelector.dataset.maxPlusOnes) || 0;
+            
             function updatePlusOnesState() {
                 const selectedResponse = document.querySelector('input[name="response"]:checked');
+                const currentValue = parseInt(plusOnesInput.value) || 0;
                 
                 if (selectedResponse && selectedResponse.value === 'no') {
                     plusOnesInput.value = '0';
-                    plusOnesInput.disabled = true;
-                    if (plusOnesGroup) {
-                        plusOnesGroup.classList.add('disabled');
+                    plusOnesDisplay.textContent = '0';
+                    if (decreaseBtn) decreaseBtn.disabled = true;
+                    if (increaseBtn) increaseBtn.disabled = true;
+                    if (plusOnesSelector) {
+                        plusOnesSelector.style.backgroundColor = 'var(--color-surface-disabled)';
+                        plusOnesSelector.style.opacity = '0.6';
                     }
                 } else {
-                    plusOnesInput.disabled = false;
-                    if (plusOnesGroup) {
-                        plusOnesGroup.classList.remove('disabled');
+                    if (decreaseBtn) decreaseBtn.disabled = currentValue <= 0;
+                    if (increaseBtn) increaseBtn.disabled = currentValue >= maxPlusOnes;
+                    if (plusOnesSelector) {
+                        plusOnesSelector.style.backgroundColor = 'var(--color-surface)';
+                        plusOnesSelector.style.opacity = '1';
                     }
                 }
             }
@@ -809,27 +294,29 @@
                 input.addEventListener('change', updatePlusOnesState);
             });
             
-            plusOnesInput.addEventListener('input', function() {
-                const value = parseInt(this.value);
-                const max = parseInt(this.max);
-                const errorDiv = plusOnesGroup ? plusOnesGroup.querySelector('.error-message') : null;
-                
-                if (!errorDiv) return;
-                
-                if (isNaN(value) || value < 0) {
-                    errorDiv.textContent = 'Cannot be negative';
-                    this.setCustomValidity('Cannot be negative');
-                    this.classList.add('invalid');
-                } else if (value > max) {
-                    errorDiv.textContent = 'You can bring up to ' + max + ' guest(s)';
-                    this.setCustomValidity('Maximum ' + max + ' guests');
-                    this.classList.add('invalid');
-                } else {
-                    errorDiv.textContent = '';
-                    this.setCustomValidity('');
-                    this.classList.remove('invalid');
-                }
-            });
+            if (decreaseBtn) {
+                decreaseBtn.addEventListener('click', function() {
+                    const currentValue = parseInt(plusOnesInput.value) || 0;
+                    if (currentValue > 0) {
+                        const newValue = currentValue - 1;
+                        plusOnesInput.value = newValue;
+                        plusOnesDisplay.textContent = newValue;
+                        updatePlusOnesState();
+                    }
+                });
+            }
+            
+            if (increaseBtn) {
+                increaseBtn.addEventListener('click', function() {
+                    const currentValue = parseInt(plusOnesInput.value) || 0;
+                    if (currentValue < maxPlusOnes) {
+                        const newValue = currentValue + 1;
+                        plusOnesInput.value = newValue;
+                        plusOnesDisplay.textContent = newValue;
+                        updatePlusOnesState();
+                    }
+                });
+            }
             
             updatePlusOnesState();
         });
