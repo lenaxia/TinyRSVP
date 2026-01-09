@@ -54,10 +54,6 @@ type UpdateRoleRequest struct {
 	Role string `json:"role"`
 }
 
-type ErrorResponse struct {
-	Error string `json:"error"`
-}
-
 func (h *UserHandler) ListUsers(w http.ResponseWriter, r *http.Request) {
 	user, _ := auth.UserFromContext(r.Context())
 	if !h.authChecker.CanManageUsers(r.Context(), user) {
@@ -285,5 +281,7 @@ func respondJSON(w http.ResponseWriter, status int, data interface{}) {
 }
 
 func respondError(w http.ResponseWriter, status int, message string) {
-	respondJSON(w, status, ErrorResponse{Error: message})
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(status)
+	json.NewEncoder(w).Encode(ErrorResponse{Error: message})
 }
