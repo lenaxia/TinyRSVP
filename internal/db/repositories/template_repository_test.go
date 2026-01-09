@@ -540,3 +540,179 @@ func TestTemplateRepository_SetActive(t *testing.T) {
 		t.Error("Expected error when setting active on non-existent template")
 	}
 }
+
+func TestTemplateRepository_IsTemplateInUse(t *testing.T) {
+	db := setupTestDB(t)
+	defer db.Close()
+
+	repo := NewTemplateRepository(db)
+	userRepo := NewUserRepository(db)
+	eventRepo := NewEventRepository(db)
+	user := createTestUser(t, userRepo)
+
+	template := &models.Template{
+		Name:        "Test Template",
+		Type:        models.TemplateTypeRSVPPage,
+		HTMLContent: "<html>Test</html>",
+		IsDefault:   false,
+		IsActive:    true,
+		CreatedBy:   user.ID,
+	}
+
+	err := repo.Create(context.Background(), template)
+	if err != nil {
+		t.Fatalf("Failed to create template: %v", err)
+	}
+
+	tests := []struct {
+		name       string
+		templateID int64
+		setupEvent bool
+		wantInUse  bool
+		wantErr    bool
+	}{
+		{
+			name:       "template not in use",
+			templateID: template.ID,
+			setupEvent: false,
+			wantInUse:  false,
+			wantErr:    false,
+		},
+		{
+			name:       "template in use by event",
+			templateID: template.ID,
+			setupEvent: true,
+			wantInUse:  true,
+			wantErr:    false,
+		},
+		{
+			name:       "non-existent template",
+			templateID: 99999,
+			setupEvent: false,
+			wantInUse:  false,
+			wantErr:    false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if tt.setupEvent {
+				endTime := time.Now().Add(26 * time.Hour)
+				event := &models.Event{
+					Title:     "Test Event",
+					StartTime: time.Now().Add(24 * time.Hour),
+					EndTime:   &endTime,
+					Timezone:  "America/Los_Angeles",
+					Status:    models.EventStatusDraft,
+					CreatedBy: user.ID,
+				}
+				err := eventRepo.Create(context.Background(), event)
+				if err != nil {
+					t.Fatalf("Failed to create event: %v", err)
+				}
+
+				updateQuery := `UPDATE events SET template_id = ? WHERE id = ?`
+				_, err = db.Exec(context.Background(), updateQuery, template.ID, event.ID)
+				if err != nil {
+					t.Fatalf("Failed to update event template: %v", err)
+				}
+
+				defer eventRepo.Delete(context.Background(), event.ID)
+			}
+
+			inUse, err := repo.IsTemplateInUse(context.Background(), tt.templateID)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("IsTemplateInUse() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+
+			if inUse != tt.wantInUse {
+				t.Errorf("IsTemplateInUse() = %v, want %v", inUse, tt.wantInUse)
+			}
+		})
+	}
+}
+
+func TestTemplateRepository_SetDefault(t *testing.T) {
+	db := setupTestDB(t)
+	defer db.Close()
+
+	repo := NewTemplateRepository(db)
+	userRepo := NewUserRepository(db)
+	user := createTestUser(t, userRepo)
+
+	template1 := &models.Template{
+		Name:        "Template 1",
+		Type:        models.TemplateTypeRSVPPage,
+		HTMLContent: "<html>1</html>",
+		IsDefault:   true,
+		IsActive:    true,
+		CreatedBy:   user.ID,
+	}
+
+	template2 := &models.Template{
+		Name:        "Template 2",
+		Type:        models.TemplateTypeRSVPPage,
+		HTMLContent: "<html>2</html>",
+		IsDefault:   false,
+		IsActive:    true,
+		CreatedBy:   user.ID,
+	}
+
+	err := repo.Create(context.Background(), template1)
+	if err != nil {
+		t.Fatalf("Failed to create template1: %v", err)
+	}
+
+	err = repo.Create(context.Background(), template2)
+	if err != nil {
+		t.Fatalf("Failed to create template2: %v", err)
+	}
+
+	tests := []struct {
+		name    string
+		id      int64
+		wantErr bool
+	}{
+		{
+			name:    "set new default",
+			id:      template2.ID,
+			wantErr: false,
+		},
+		{
+			name:    "non-existent template",
+			id:      99999,
+			wantErr: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			err := repo.SetDefault(context.Background(), tt.id)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("SetDefault() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+
+			if !tt.wantErr {
+				retrieved, err := repo.GetByID(context.Background(), tt.id)
+				if err != nil {
+					t.Fatalf("Failed to retrieve template: %v", err)
+				}
+
+				if !retrieved.IsDefault {
+					t.Error("Expected template to be default")
+				}
+
+				oldDefault, err := repo.GetByID(context.Background(), template1.ID)
+				if err != nil {
+					t.Fatalf("Failed to retrieve old default: %v", err)
+				}
+
+				if oldDefault.IsDefault && oldDefault.Type == retrieved.Type {
+					t.Error("Expected old default to be unset")
+				}
+			}
+		})
+	}
+}

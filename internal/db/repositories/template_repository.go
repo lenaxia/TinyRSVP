@@ -20,6 +20,8 @@ type TemplateRepository interface {
 	Update(ctx context.Context, template *models.Template) error
 	Delete(ctx context.Context, id int64) error
 	SetActive(ctx context.Context, id int64, active bool) error
+	IsTemplateInUse(ctx context.Context, id int64) (bool, error)
+	SetDefault(ctx context.Context, id int64) error
 }
 
 type TemplateFilters struct {
@@ -402,6 +404,74 @@ func (r *templateRepository) SetActive(ctx context.Context, id int64, active boo
 			Resource: "Template",
 			ID:       id,
 		}
+	}
+
+	return nil
+}
+
+func (r *templateRepository) IsTemplateInUse(ctx context.Context, id int64) (bool, error) {
+	query := `
+		SELECT COUNT(*) FROM events
+		WHERE template_id = ?
+	`
+
+	var count int
+	err := r.db.QueryRow(ctx, query, id).Scan(&count)
+	if err != nil {
+		return false, fmt.Errorf("failed to check if template is in use: %w", err)
+	}
+
+	return count > 0, nil
+}
+
+func (r *templateRepository) SetDefault(ctx context.Context, id int64) error {
+	template, err := r.GetByID(ctx, id)
+	if err != nil {
+		return err
+	}
+
+	now := time.Now()
+	
+	err = r.db.WithTransaction(ctx, func(tx *sql.Tx) error {
+		unsetQuery := `
+			UPDATE templates
+			SET is_default = 0, updated_at = ?
+			WHERE type = ? AND is_default = 1
+		`
+
+		_, err := tx.ExecContext(ctx, unsetQuery, now, template.Type)
+		if err != nil {
+			return fmt.Errorf("failed to unset previous default: %w", err)
+		}
+
+		setQuery := `
+			UPDATE templates
+			SET is_default = 1, updated_at = ?
+			WHERE id = ?
+		`
+
+		result, err := tx.ExecContext(ctx, setQuery, now, id)
+		if err != nil {
+			return fmt.Errorf("failed to set new default: %w", err)
+		}
+
+		rowsAffected, err := result.RowsAffected()
+		if err != nil {
+			return fmt.Errorf("failed to get rows affected: %w", err)
+		}
+
+		if rowsAffected == 0 {
+			return &models.NotFoundError{
+				Resource: "Template",
+				ID:       id,
+			}
+		}
+
+		return nil
+	})
+
+	if err != nil {
+		return err
 	}
 
 	return nil

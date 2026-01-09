@@ -2,9 +2,33 @@
 
 ## Purpose
 
-Provides a secure template rendering engine with automatic XSS prevention using Go's `html/template` package, along with default system templates and seeding functionality.
+Provides a secure template rendering engine with automatic XSS prevention using Go's `html/template` package, along with default system templates, seeding functionality, and complete CRUD operations for template management.
 
 ## Components
+
+### Service (`service.go`)
+
+The template service provides complete CRUD operations for managing templates with RBAC enforcement.
+
+**Key Features:**
+- Create, read, update, delete templates
+- Permission-based access control (admin/event_manager roles)
+- Template validation on all create/update operations
+- Prevent deletion of default templates
+- Prevent deletion of templates in use by events
+- Set templates as active/inactive
+- Set templates as default for their type
+- List templates with flexible filtering
+
+**API:**
+```go
+service := templates.NewService(repo, validator)
+err := service.CreateTemplate(ctx, template)
+template, err := service.GetTemplate(ctx, id)
+err := service.UpdateTemplate(ctx, template)
+err := service.DeleteTemplate(ctx, id)
+templates, err := service.ListTemplates(ctx, filters)
+```
 
 ### Engine (`engine.go`)
 

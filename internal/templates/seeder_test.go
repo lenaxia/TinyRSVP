@@ -64,6 +64,14 @@ func (m *mockTemplateRepository) SetActive(ctx context.Context, id int64, active
 	return nil
 }
 
+func (m *mockTemplateRepository) IsTemplateInUse(ctx context.Context, id int64) (bool, error) {
+	return false, nil
+}
+
+func (m *mockTemplateRepository) SetDefault(ctx context.Context, id int64) error {
+	return nil
+}
+
 func TestNewSeeder(t *testing.T) {
 	repo := newMockTemplateRepository()
 	seeder := NewSeeder(repo, 1)

@@ -1,0 +1,183 @@
+package templates
+
+import (
+	"context"
+	"fmt"
+	"time"
+
+	"github.com/lenaxia/tinyrsvp/internal/auth"
+	"github.com/lenaxia/tinyrsvp/internal/db/repositories"
+	"github.com/lenaxia/tinyrsvp/internal/models"
+)
+
+type Service interface {
+	CreateTemplate(ctx context.Context, template *models.Template) error
+	GetTemplate(ctx context.Context, id int64) (*models.Template, error)
+	GetTemplateForEvent(ctx context.Context, eventID int64, templateType models.TemplateType) (*models.Template, error)
+	GetDefaultTemplate(ctx context.Context, templateType models.TemplateType) (*models.Template, error)
+	UpdateTemplate(ctx context.Context, template *models.Template) error
+	DeleteTemplate(ctx context.Context, id int64) error
+	SetActive(ctx context.Context, id int64, active bool) error
+	SetDefault(ctx context.Context, id int64) error
+	ListTemplates(ctx context.Context, filters *repositories.TemplateFilters) ([]*models.Template, error)
+}
+
+type service struct {
+	repo      repositories.TemplateRepository
+	validator Validator
+}
+
+func NewService(repo repositories.TemplateRepository, validator Validator) Service {
+	return &service{
+		repo:      repo,
+		validator: validator,
+	}
+}
+
+func (s *service) CreateTemplate(ctx context.Context, template *models.Template) error {
+	user, ok := auth.UserFromContext(ctx)
+	if !ok || user.ID == 0 {
+		return &models.UnauthorizedError{Message: "Authentication required"}
+	}
+
+	template.CreatedBy = user.ID
+	template.CreatedAt = time.Now()
+	template.UpdatedAt = time.Now()
+	template.Version = 1
+	template.IsActive = true
+
+	if err := s.validator.ValidateTemplate(template); err != nil {
+		return err
+	}
+
+	if err := s.repo.Create(ctx, template); err != nil {
+		return fmt.Errorf("failed to create template: %w", err)
+	}
+
+	return nil
+}
+
+func (s *service) GetTemplate(ctx context.Context, id int64) (*models.Template, error) {
+	return s.repo.GetByID(ctx, id)
+}
+
+func (s *service) GetTemplateForEvent(ctx context.Context, eventID int64, templateType models.TemplateType) (*models.Template, error) {
+	template, err := s.repo.GetByEventAndType(ctx, eventID, templateType)
+	if err == nil && template.IsActive {
+		return template, nil
+	}
+
+	return s.repo.GetDefaultByType(ctx, templateType)
+}
+
+func (s *service) GetDefaultTemplate(ctx context.Context, templateType models.TemplateType) (*models.Template, error) {
+	return s.repo.GetDefaultByType(ctx, templateType)
+}
+
+func (s *service) UpdateTemplate(ctx context.Context, template *models.Template) error {
+	existing, err := s.repo.GetByID(ctx, template.ID)
+	if err != nil {
+		return err
+	}
+
+	user, ok := auth.UserFromContext(ctx)
+	if !ok || user.ID == 0 {
+		return &models.UnauthorizedError{Message: "Authentication required"}
+	}
+
+	if user.Role != models.RoleAdmin && existing.CreatedBy != user.ID {
+		return &models.ForbiddenError{Message: "You can only edit your own templates"}
+	}
+
+	if existing.IsDefault && user.Role != models.RoleAdmin {
+		return &models.ForbiddenError{Message: "Only admins can edit default templates"}
+	}
+
+	if err := s.validator.ValidateTemplate(template); err != nil {
+		return err
+	}
+
+	template.UpdatedAt = time.Now()
+
+	if err := s.repo.Update(ctx, template); err != nil {
+		return fmt.Errorf("failed to update template: %w", err)
+	}
+
+	return nil
+}
+
+func (s *service) DeleteTemplate(ctx context.Context, id int64) error {
+	template, err := s.repo.GetByID(ctx, id)
+	if err != nil {
+		return err
+	}
+
+	user, ok := auth.UserFromContext(ctx)
+	if !ok || user.ID == 0 {
+		return &models.UnauthorizedError{Message: "Authentication required"}
+	}
+
+	if user.Role != models.RoleAdmin && template.CreatedBy != user.ID {
+		return &models.ForbiddenError{Message: "You can only delete your own templates"}
+	}
+
+	if template.IsDefault {
+		return &models.ValidationError{
+			Field:   "template",
+			Message: "Cannot delete default system templates",
+		}
+	}
+
+	inUse, err := s.repo.IsTemplateInUse(ctx, id)
+	if err != nil {
+		return err
+	}
+
+	if inUse {
+		return &models.ValidationError{
+			Field:   "template",
+			Message: "Cannot delete template that is in use by events",
+		}
+	}
+
+	if err := s.repo.Delete(ctx, id); err != nil {
+		return fmt.Errorf("failed to delete template: %w", err)
+	}
+
+	return nil
+}
+
+func (s *service) SetActive(ctx context.Context, id int64, active bool) error {
+	user, ok := auth.UserFromContext(ctx)
+	if !ok || user.ID == 0 {
+		return &models.UnauthorizedError{Message: "Authentication required"}
+	}
+
+	template, err := s.repo.GetByID(ctx, id)
+	if err != nil {
+		return err
+	}
+
+	if user.Role != models.RoleAdmin && template.CreatedBy != user.ID {
+		return &models.ForbiddenError{Message: "You can only modify your own templates"}
+	}
+
+	return s.repo.SetActive(ctx, id, active)
+}
+
+func (s *service) SetDefault(ctx context.Context, id int64) error {
+	user, ok := auth.UserFromContext(ctx)
+	if !ok || user.ID == 0 {
+		return &models.UnauthorizedError{Message: "Authentication required"}
+	}
+
+	if user.Role != models.RoleAdmin {
+		return &models.ForbiddenError{Message: "Only admins can set default templates"}
+	}
+
+	return s.repo.SetDefault(ctx, id)
+}
+
+func (s *service) ListTemplates(ctx context.Context, filters *repositories.TemplateFilters) ([]*models.Template, error) {
+	return s.repo.List(ctx, filters)
+}

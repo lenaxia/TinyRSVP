@@ -78,3 +78,25 @@ type DeadlinePassedError struct {
 func (e *DeadlinePassedError) Error() string {
 	return e.Message
 }
+
+type UnauthorizedError struct {
+	Message string
+}
+
+func (e *UnauthorizedError) Error() string {
+	if e.Message != "" {
+		return e.Message
+	}
+	return "unauthorized"
+}
+
+type ForbiddenError struct {
+	Message string
+}
+
+func (e *ForbiddenError) Error() string {
+	if e.Message != "" {
+		return e.Message
+	}
+	return "forbidden"
+}

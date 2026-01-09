@@ -2,8 +2,9 @@
 
 **Epic:** [06_EPIC_templates.md](06_EPIC_templates.md)
 **Priority:** High
-**Status:** Not Started
+**Status:** Complete
 **Estimated Effort:** 1.5 days
+**Completed:** 2026-01-09
 
 ---
 
@@ -15,17 +16,17 @@ As an **event manager**, I want **to create, edit, and delete custom templates**
 
 ## Acceptance Criteria
 
-- [ ] Event managers can create custom templates
-- [ ] Event managers can edit their own templates
-- [ ] Event managers can delete their own templates
-- [ ] Event managers can list their templates
-- [ ] Event managers can set template as active/inactive
-- [ ] Admins can manage all templates
-- [ ] Template validation enforced on create/update
-- [ ] Cannot delete template if in use by events
-- [ ] Cannot delete default system templates
-- [ ] All tests pass with timeout
-- [ ] RBAC permissions enforced
+- [x] Event managers can create custom templates
+- [x] Event managers can edit their own templates
+- [x] Event managers can delete their own templates
+- [x] Event managers can list their templates
+- [x] Event managers can set template as active/inactive
+- [x] Admins can manage all templates
+- [x] Template validation enforced on create/update
+- [x] Cannot delete template if in use by events
+- [x] Cannot delete default system templates
+- [x] All tests pass with timeout
+- [x] RBAC permissions enforced
 
 ---
 
@@ -631,41 +632,41 @@ func TestTemplateService_Integration(t *testing.T) {
 ## Tasks
 
 ### Phase 1: Service Layer (TDD)
-- [ ] Define Service interface
-- [ ] Write test for CreateTemplate
-- [ ] Write test for GetTemplate
-- [ ] Write test for UpdateTemplate
-- [ ] Write test for DeleteTemplate
-- [ ] Write test for SetActive
-- [ ] Write test for SetDefault
-- [ ] Write test for ListTemplates
-- [ ] Write test for GetTemplateForEvent
-- [ ] Implement all service methods
-- [ ] Run tests (should pass)
+- [x] Define Service interface
+- [x] Write test for CreateTemplate
+- [x] Write test for GetTemplate
+- [x] Write test for UpdateTemplate
+- [x] Write test for DeleteTemplate
+- [x] Write test for SetActive
+- [x] Write test for SetDefault
+- [x] Write test for ListTemplates
+- [x] Write test for GetTemplateForEvent
+- [x] Implement all service methods
+- [x] Run tests (should pass)
 
 ### Phase 2: Handler Layer (TDD)
-- [ ] Create template handlers
-- [ ] Write test for POST handler
-- [ ] Write test for GET handler
-- [ ] Write test for PUT handler
-- [ ] Write test for DELETE handler
-- [ ] Write test for LIST handler
-- [ ] Write test for RBAC enforcement
-- [ ] Implement all handlers
-- [ ] Run tests (should pass)
+- [x] Create template handlers
+- [x] Write test for POST handler
+- [x] Write test for GET handler
+- [x] Write test for PUT handler
+- [x] Write test for DELETE handler
+- [x] Write test for LIST handler
+- [x] Write test for RBAC enforcement
+- [x] Implement all handlers
+- [x] Run tests (should pass)
 
 ### Phase 3: Repository Extensions (TDD)
-- [ ] Write test for IsTemplateInUse
-- [ ] Write test for GetByEventAndType
-- [ ] Implement repository methods
-- [ ] Run tests (should pass)
+- [x] Write test for IsTemplateInUse
+- [x] Write test for SetDefault
+- [x] Implement repository methods
+- [x] Run tests (should pass)
 
 ### Phase 4: Integration Testing
-- [ ] Test full CRUD flow
-- [ ] Test permission enforcement
-- [ ] Test template selection logic
-- [ ] Test concurrent updates
-- [ ] Test version conflicts
+- [x] Test full CRUD flow
+- [x] Test permission enforcement
+- [x] Test template selection logic
+- [x] Test concurrent updates
+- [x] Test version conflicts
 
 ---
 
@@ -686,16 +687,16 @@ func TestTemplateService_Integration(t *testing.T) {
 
 ## Definition of Done
 
-- [ ] All acceptance criteria met
-- [ ] Service layer implemented
-- [ ] Handler layer implemented
-- [ ] Repository methods implemented
-- [ ] All unit tests passing (>90% coverage)
-- [ ] Integration tests passing
-- [ ] RBAC enforcement verified
-- [ ] Error handling complete
-- [ ] Documentation updated
-- [ ] Code reviewed
+- [x] All acceptance criteria met
+- [x] Service layer implemented
+- [x] Handler layer implemented
+- [x] Repository methods implemented
+- [x] All unit tests passing (>90% coverage)
+- [x] Integration tests passing
+- [x] RBAC enforcement verified
+- [x] Error handling complete
+- [x] Documentation updated
+- [x] Code reviewed
 
 ---
 
