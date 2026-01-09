@@ -171,3 +171,105 @@ func TestRSVPPageNoInlineVariableDefinitions(t *testing.T) {
 		}
 	}
 }
+
+func TestRSVPPageSpacingIntegration(t *testing.T) {
+	content, err := os.ReadFile("rsvp_page.html")
+	if err != nil {
+		t.Fatalf("Failed to read rsvp_page.html: %v", err)
+	}
+
+	html := string(content)
+
+	t.Run("includes spacing.css stylesheet link", func(t *testing.T) {
+		expectedLink := `<link rel="stylesheet" href="/static/css/spacing.css">`
+		if !strings.Contains(html, expectedLink) {
+			t.Errorf("Template does not include link to spacing.css")
+		}
+	})
+
+	t.Run("uses spacing variables in inline styles", func(t *testing.T) {
+		spacingVars := []string{
+			"var(--spacing-2)",
+			"var(--spacing-3)",
+			"var(--spacing-4)",
+			"var(--spacing-6)",
+			"var(--spacing-8)",
+		}
+
+		for _, spacingVar := range spacingVars {
+			if !strings.Contains(html, spacingVar) {
+				t.Errorf("Template does not use %s", spacingVar)
+			}
+		}
+	})
+
+	t.Run("does not contain hardcoded spacing values", func(t *testing.T) {
+		hardcodedSpacing := []struct {
+			value string
+			desc  string
+		}{
+			{"padding: 1rem", "1rem padding"},
+			{"padding: 1.5rem", "1.5rem padding"},
+			{"padding: 2rem", "2rem padding"},
+			{"padding: 0.75rem", "0.75rem padding"},
+			{"margin: 1rem", "1rem margin"},
+			{"margin: 1.5rem", "1.5rem margin"},
+			{"margin: 2rem", "2rem margin"},
+			{"margin-bottom: 1rem", "1rem margin-bottom"},
+			{"margin-bottom: 1.5rem", "1.5rem margin-bottom"},
+			{"margin-top: 1.5rem", "1.5rem margin-top"},
+			{"margin-top: 2rem", "2rem margin-top"},
+			{"margin-right: 0.75rem", "0.75rem margin-right"},
+			{"gap: 1rem", "1rem gap"},
+			{"gap: 0.75rem", "0.75rem gap"},
+		}
+
+		for _, hc := range hardcodedSpacing {
+			if strings.Contains(html, hc.value) {
+				t.Errorf("Template contains hardcoded spacing %s instead of using CSS variables", hc.desc)
+			}
+		}
+	})
+
+	t.Run("spacing variables used in correct contexts", func(t *testing.T) {
+		contexts := []struct {
+			selector string
+			variable string
+		}{
+			{"body", "var(--spacing-4)"},
+			{".event-card", "var(--spacing-6)"},
+			{".error-container", "var(--spacing-8)"},
+			{".form-actions", "var(--spacing-8)"},
+			{".questions-section", "var(--spacing-8)"},
+		}
+
+		for _, ctx := range contexts {
+			if !strings.Contains(html, ctx.variable) {
+				t.Errorf("Expected %s to use %s", ctx.selector, ctx.variable)
+			}
+		}
+	})
+
+	t.Run("responsive spacing uses variables", func(t *testing.T) {
+		lines := strings.Split(html, "\n")
+		inMediaQuery := false
+		foundResponsiveSpacing := false
+
+		for _, line := range lines {
+			if strings.Contains(line, "@media (min-width: 768px)") {
+				inMediaQuery = true
+			}
+			if inMediaQuery && strings.Contains(line, "var(--spacing-") {
+				foundResponsiveSpacing = true
+				break
+			}
+			if inMediaQuery && strings.Contains(line, "}") && strings.TrimSpace(line) == "}" {
+				inMediaQuery = false
+			}
+		}
+
+		if !foundResponsiveSpacing {
+			t.Error("Responsive media queries should use spacing variables")
+		}
+	})
+}
