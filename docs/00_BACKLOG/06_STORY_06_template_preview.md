@@ -2,8 +2,9 @@
 
 **Epic:** [06_EPIC_templates.md](06_EPIC_templates.md)
 **Priority:** Medium
-**Status:** Not Started
+**Status:** Complete
 **Estimated Effort:** 0.5 days
+**Completed:** 2026-01-09
 
 ---
 
@@ -15,16 +16,16 @@ As an **event manager**, I want **to preview templates before saving** so that *
 
 ## Acceptance Criteria
 
-- [ ] Preview endpoint created
-- [ ] Preview uses sample test data
-- [ ] Preview renders HTML templates
-- [ ] Preview renders text templates
-- [ ] Preview shows validation errors
-- [ ] Preview does not save template
-- [ ] Preview works for all template types
-- [ ] Preview accessible from template editor
-- [ ] All tests pass with timeout
-- [ ] Error handling for invalid templates
+- [x] Preview endpoint created
+- [x] Preview uses sample test data
+- [x] Preview renders HTML templates
+- [x] Preview renders text templates
+- [x] Preview shows validation errors
+- [x] Preview does not save template
+- [x] Preview works for all template types
+- [x] Preview accessible from template editor
+- [x] All tests pass with timeout
+- [x] Error handling for invalid templates
 
 ---
 
@@ -227,37 +228,37 @@ Response 400 Bad Request (validation error):
 ## Tasks
 
 ### Phase 1: Preview Service (TDD)
-- [ ] Define PreviewRequest struct
-- [ ] Define PreviewResponse struct
-- [ ] Write test for PreviewTemplate with valid template
-- [ ] Write test for PreviewTemplate with invalid syntax
-- [ ] Write test for PreviewTemplate with undefined variable
-- [ ] Write test for PreviewTemplate for each type
-- [ ] Implement PreviewTemplate
-- [ ] Run tests (should pass)
+- [x] Define PreviewRequest struct
+- [x] Define PreviewResponse struct
+- [x] Write test for PreviewTemplate with valid template
+- [x] Write test for PreviewTemplate with invalid syntax
+- [x] Write test for PreviewTemplate with undefined variable
+- [x] Write test for PreviewTemplate for each type
+- [x] Implement PreviewTemplate
+- [x] Run tests (should pass)
 
 ### Phase 2: Test Data Generation (TDD)
-- [ ] Write test for createTestData for invite email
-- [ ] Write test for createTestData for RSVP page
-- [ ] Write test for createTestData for confirmation page
-- [ ] Implement createTestData
-- [ ] Run tests (should pass)
+- [x] Write test for createTestData for invite email
+- [x] Write test for createTestData for RSVP page
+- [x] Write test for createTestData for confirmation page
+- [x] Implement createTestData
+- [x] Run tests (should pass)
 
 ### Phase 3: Handler Layer (TDD)
-- [ ] Create preview handler
-- [ ] Write test for POST /api/templates/preview
-- [ ] Write test for invalid JSON
-- [ ] Write test for validation errors
-- [ ] Write test for unauthorized access
-- [ ] Implement preview handler
-- [ ] Run tests (should pass)
+- [x] Create preview handler
+- [x] Write test for POST /api/templates/preview
+- [x] Write test for invalid JSON
+- [x] Write test for validation errors
+- [x] Write test for unauthorized access
+- [x] Implement preview handler
+- [x] Run tests (should pass)
 
 ### Phase 4: Integration Testing
-- [ ] Test preview with default templates
-- [ ] Test preview with custom templates
-- [ ] Test preview with all variable types
-- [ ] Test preview with all functions
-- [ ] Test error handling
+- [x] Test preview with default templates
+- [x] Test preview with custom templates
+- [x] Test preview with all variable types
+- [x] Test preview with all functions
+- [x] Test error handling
 
 ---
 
@@ -401,15 +402,15 @@ func TestCreateTestData(t *testing.T) {
 
 ## Definition of Done
 
-- [ ] All acceptance criteria met
-- [ ] PreviewTemplate implemented
-- [ ] Test data generation implemented
-- [ ] Preview handler implemented
-- [ ] All unit tests passing (>90% coverage)
-- [ ] Integration tests passing
-- [ ] Error handling complete
-- [ ] Documentation updated
-- [ ] Code reviewed
+- [x] All acceptance criteria met
+- [x] PreviewTemplate implemented
+- [x] Test data generation implemented
+- [x] Preview handler implemented
+- [x] All unit tests passing (>90% coverage)
+- [x] Integration tests passing
+- [x] Error handling complete
+- [x] Documentation updated
+- [x] Code reviewed
 
 ---
 
