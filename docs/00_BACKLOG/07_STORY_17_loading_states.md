@@ -86,7 +86,7 @@ As a **user**, I want **visual feedback during loading** so that **I know the sy
 - [x] All acceptance criteria met
 - [x] Loading states implemented
 - [x] Accessible
-- [ ] Changes committed to git
+- [x] Changes committed to git
 
 ---
 
