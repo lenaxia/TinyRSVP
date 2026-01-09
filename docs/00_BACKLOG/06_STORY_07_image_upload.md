@@ -16,7 +16,7 @@ As an **event manager**, I want **to upload images for use in templates** so tha
 ## Acceptance Criteria
 
 - [ ] Image upload endpoint created
-- [ ] File type validation (JPEG, PNG, GIF, WebP)
+- [ ] File type validation (JPEG, PNG, GIF, WebP, SVG)
 - [ ] Magic byte validation (not just extension)
 - [ ] File size validation (max 5MB)
 - [ ] Image dimension validation (max 4096x4096)
