@@ -19,6 +19,12 @@
     gap: var(--spacing-3);
 }
 
+.invite-header-actions {
+    display: flex;
+    gap: var(--spacing-2);
+    flex-wrap: wrap;
+}
+
 .invite-list-title {
     font-size: var(--font-size-2xl);
     font-weight: var(--font-weight-bold);
@@ -173,7 +179,7 @@
 .bulk-actions label {
     font-size: var(--font-size-sm);
     font-weight: var(--font-weight-medium);
-    color: var(--color-text-secondary);
+    color: var(--color-text-primary);
 }
 
 .invite-actions-right {
@@ -296,7 +302,7 @@
     border: 1px solid var(--color-border);
     border-radius: var(--radius-md);
     background-color: var(--color-background);
-    color: var(--color-text-secondary);
+    color: var(--color-text-primary);
     font-size: var(--font-size-xs);
     cursor: pointer;
     transition: all 0.2s ease;
@@ -305,7 +311,7 @@
 
 .invite-action-btn:hover {
     border-color: var(--color-primary-600);
-    color: var(--color-text-primary);
+    color: var(--color-primary-600);
     background-color: var(--color-surface);
 }
 

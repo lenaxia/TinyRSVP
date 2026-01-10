@@ -25,7 +25,9 @@
         <header class="invite-list-header">
             <div class="invite-list-title-section">
                 <h1 class="invite-list-title">Invites for {{.EventTitle}}</h1>
-                <a href="/events/{{.EventID}}" class="btn btn-secondary">Back to Event</a>
+                <div class="invite-header-actions">
+                    <a href="/events/{{.EventID}}" class="btn btn-secondary">Back to Event</a>
+                </div>
             </div>
             
             {{if .Stats}}
@@ -114,6 +116,7 @@
                 </div>
                 <div class="invite-actions-right">
                     <button class="btn btn-secondary export-btn" aria-label="Export invites">Export</button>
+                    <button class="btn btn-primary import-btn" aria-label="Import invites">Import Invites</button>
                 </div>
             </div>
         </section>
