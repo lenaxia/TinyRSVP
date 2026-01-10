@@ -2,10 +2,11 @@
 
 **Epic:** [08_EPIC_api.md](08_EPIC_api.md)
 **Priority:** High
-**Status:** Mostly Complete (92%) - Missing Unsubscribe Route
+**Status:** Complete (100%)
 **Estimated Effort:** 1.5 days
 **Validation Date:** 2026-01-10
 **Validation Document:** [2026-01-10_44_story_13_validation.md](../01_WORKLOG/2026-01-10_44_story_13_validation.md)
+**Completion Date:** 2026-01-10
 
 ---
 
@@ -20,7 +21,7 @@ As a **guest**, I want **to submit my RSVP via a unique token link** so that **I
 - [x] GET /rsvp/{token} - RSVP page (no auth required)
 - [x] POST /rsvp/{token} - Submit RSVP (no auth required)
 - [x] GET /rsvp/{token}/confirm - Confirmation page
-- [ ] GET /unsubscribe/{token} - Unsubscribe from reminders **MISSING**
+- [x] GET /unsubscribe/{token} - Unsubscribe from reminders
 - [x] Token validation
 - [x] Event details displayed
 - [x] Response options (attending/not attending/maybe)
@@ -30,7 +31,7 @@ As a **guest**, I want **to submit my RSVP via a unique token link** so that **I
 - [x] Update existing RSVP
 - [x] Rate limiting
 
-**Status: 11/12 criteria met (92%)**
+**Status: 12/12 criteria met (100%)**
 
 ---
 
@@ -56,7 +57,7 @@ r.Get("/unsubscribe/{token}", handlers.Unsubscribe)
 - [x] Implement RSVP page handler (internal/handlers/rsvp.go:83-199)
 - [x] Implement RSVP submission handler (internal/handlers/rsvp.go:258-285)
 - [x] Implement confirmation page handler (internal/handlers/rsvp.go:445-596)
-- [ ] Implement unsubscribe handler **MISSING**
+- [x] Implement unsubscribe handler (internal/handlers/rsvp.go:599-731)
 - [x] Add token validation
 - [x] Add deadline checking
 - [x] Add plus ones validation
@@ -64,7 +65,7 @@ r.Get("/unsubscribe/{token}", handlers.Unsubscribe)
 - [x] Test token expiration
 - [x] Test deadline enforcement
 
-**Status: 9/10 tasks complete (90%)**
+**Status: 10/10 tasks complete (100%)**
 
 ---
 
@@ -176,12 +177,12 @@ func TestUnsubscribe(t *testing.T)
 
 ## Definition of Done
 
-- [ ] All acceptance criteria met (11/12 - missing unsubscribe)
-- [ ] All routes implemented (4/5 - missing unsubscribe)
+- [x] All acceptance criteria met (12/12)
+- [x] All routes implemented (5/5)
 - [x] Token validation working
 - [x] Deadline enforcement working
-- [x] Tests passing (all RSVP tests pass)
-- [x] Documentation complete (validation doc created)
+- [x] Tests passing (all RSVP and unsubscribe tests pass)
+- [x] Documentation complete (validation doc created, story updated)
 
 ---
 
@@ -192,30 +193,66 @@ func TestUnsubscribe(t *testing.T)
 - RSVP submission with comprehensive error handling
 - RSVP updates for existing responses
 - Confirmation page with answer display
+- Unsubscribe route and handler with full error handling
 - CSRF protection integration
 - Rate limiting via middleware
-- Extensive test coverage (integration and unit tests)
-- Template rendering support
-
-### Missing ❌
-- Unsubscribe route and handler
-- Unsubscribe tests
-- Unsubscribe template
+- Extensive test coverage (unit, integration, and end-to-end tests)
+- Template rendering support for all pages
 
 ### Files
 - **Handler:** internal/handlers/rsvp.go
 - **Tests:** internal/handlers/rsvp_*_test.go
-- **Router:** internal/handlers/router.go (lines 490-512)
+- **Service:** internal/invites/service.go (UnsubscribeFromReminders method)
+- **Service Tests:** internal/invites/service_unsubscribe_test.go
+- **Router:** internal/handlers/router.go (lines 490-515)
+- **Template:** templates/web/unsubscribe.html
 - **Validation:** docs/01_WORKLOG/2026-01-10_44_story_13_validation.md
 
 ---
 
-## Next Steps
+## Completion Summary
 
-To complete this story:
-1. Add `Unsubscribe(w http.ResponseWriter, r *http.Request)` to RSVPHandlerInterface
-2. Implement unsubscribe handler in rsvp.go
-3. Add route `r.Get("/unsubscribe/{token}", handlers.RSVPHandler.Unsubscribe)` to router.go
-4. Create unsubscribe template
-5. Write tests for unsubscribe functionality
-6. Update story status to Complete
+**Completed:** 2026-01-10
+
+### Implementation Details
+
+1. **Service Layer** (internal/invites/service.go)
+   - Added `UnsubscribeFromReminders(ctx context.Context, token string) error` to InviteService interface
+   - Implemented method with token validation, expiry checking, revocation checking
+   - Idempotent: returns success if already unsubscribed
+   - Comprehensive unit tests (7 test cases)
+
+2. **Handler Layer** (internal/handlers/rsvp.go)
+   - Added `Unsubscribe(w http.ResponseWriter, r *http.Request)` to RSVPHandlerInterface
+   - Implemented in RSVPHandler with full error handling
+   - Handles: invalid token, expired token, revoked invite, event not found
+   - Unit tests (9 test cases) and integration tests (6 test cases)
+
+3. **Router** (internal/handlers/router.go)
+   - Added route: `GET /unsubscribe/{token}`
+   - No authentication required (token-based access)
+   - Subject to rate limiting
+
+4. **Template** (templates/web/unsubscribe.html)
+   - Mobile-first responsive design
+   - Success and error states
+   - Accessible with ARIA labels
+   - Consistent with other RSVP templates
+
+5. **Testing**
+   - Service layer: 7 unit tests
+   - Handler layer: 9 unit tests
+   - Integration: 6 end-to-end tests
+   - All tests passing
+   - Coverage: success paths, error paths, edge cases
+
+### Test Coverage
+- ✅ Valid token unsubscribe
+- ✅ Invalid token handling
+- ✅ Expired token handling
+- ✅ Revoked invite handling
+- ✅ Already unsubscribed (idempotent)
+- ✅ Database errors
+- ✅ Event not found
+- ✅ Hash errors
+- ✅ Update errors
