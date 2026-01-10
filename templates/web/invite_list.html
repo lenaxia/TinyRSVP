@@ -13,6 +13,7 @@
     <link rel="stylesheet" href="/static/css/forms.css">
     <link rel="stylesheet" href="/static/css/app_navigation.css">
     <link rel="stylesheet" href="/static/css/invite_list.css">
+    <link rel="stylesheet" href="/static/css/modal.css">
     <link rel="stylesheet" href="/static/css/mobile_optimization.css">
     <link rel="stylesheet" href="/static/css/loading_states.css">
     <link rel="stylesheet" href="/static/css/error_display.css">
@@ -116,7 +117,8 @@
                 </div>
                 <div class="invite-actions-right">
                     <button class="btn btn-secondary export-btn" aria-label="Export invites">Export</button>
-                    <button class="btn btn-primary import-btn" aria-label="Import invites">Import Invites</button>
+                    <button class="btn btn-primary create-btn" data-modal-trigger="create-modal" aria-label="Create invite">Create Invite</button>
+                    <button class="btn btn-primary import-btn" data-modal-trigger="import-modal" aria-label="Import invites">Import Invites</button>
                 </div>
             </div>
         </section>
@@ -340,13 +342,45 @@
         {{end}}
         {{end}}
     </main>
+
+    {{template "modal_center" dict "ID" "import-modal" "Title" "Import Invites" "Size" "md" "Content" `
+        <form id="import-form" enctype="multipart/form-data">
+            <div class="form-group">
+                <label for="import-file" class="form-label">CSV File</label>
+                <input type="file" id="import-file" name="file" accept=".csv" required class="form-input">
+                <p class="form-help">Upload a CSV file with columns: name, email, max_plus_ones</p>
+            </div>
+            <div class="form-actions">
+                <button type="button" class="btn btn-secondary" data-modal-close>Cancel</button>
+                <button type="submit" class="btn btn-primary">Import</button>
+            </div>
+        </form>
+    `}}
+
+    {{template "modal_center" dict "ID" "create-modal" "Title" "Create Invite" "Size" "md" "Content" `
+        <form id="create-form">
+            <div class="form-group">
+                <label for="guest-name" class="form-label">Guest Name (Optional)</label>
+                <input type="text" id="guest-name" name="name" placeholder="John Doe" class="form-input">
+            </div>
+            <div class="form-group">
+                <label for="max-plus-ones" class="form-label">Max Plus Ones</label>
+                <input type="number" id="max-plus-ones" name="max_plus_ones" min="0" max="10" value="0" required class="form-input">
+                <p class="form-help">Number of additional guests allowed (0-10)</p>
+            </div>
+            <div class="form-actions">
+                <button type="button" class="btn btn-secondary" data-modal-close>Cancel</button>
+                <button type="submit" class="btn btn-primary">Create</button>
+            </div>
+        </form>
+    `}}
+
     <script src="/static/js/navigation_toggle.js"></script>
     <script src="/static/js/loading_states.js"></script>
-    <script src="/static/js/navigation_toggle.js"></script>
     <script src="/static/js/keyboard_navigation.js"></script>
-    <script src="/static/js/navigation_toggle.js"></script>
     <script src="/static/js/screen_reader.js"></script>
-    <script src="/static/js/navigation_toggle.js"></script>
     <script src="/static/js/focus_management.js"></script>
+    <script src="/static/js/modal.js"></script>
+    <script src="/static/js/invite_management.js"></script>
 </body>
 </html>
