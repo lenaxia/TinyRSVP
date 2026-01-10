@@ -865,6 +865,15 @@ go test -timeout 30s -cover ./...
 - [ ] Edge cases covered?
 - [ ] All tests passing?
 
+### Error Handling Checklist
+
+- [ ] Using `HandleError(w, r, err)` for all error responses?
+- [ ] NOT using legacy helper functions that bypass HandleError?
+- [ ] Error types properly defined (NotFoundError, ValidationError, etc.)?
+- [ ] Tests set `Accept: application/json` header when expecting JSON?
+- [ ] Content negotiation tested (JSON vs HTML)?
+- [ ] Request ID propagation verified?
+
 ### Documentation Checklist
 
 - [ ] README.md updated in affected folders?
@@ -891,20 +900,29 @@ go test -timeout 30s -cover ./...
 
 ### Common Questions
 
-**Q: Should I use a map here?**  
+**Q: Should I use a map here?**
 A: No, unless parsing external data. Define a struct.
 
-**Q: Should I add concurrency?**  
+**Q: Should I add concurrency?**
 A: Only if there's clear benefit. Prefer simplicity.
 
-**Q: Should I add a comment?**  
+**Q: Should I add a comment?**
 A: No, unless ABSOLUTELY necessary. Make code self-documenting.
 
-**Q: Should I maintain backwards compatibility?**  
+**Q: Should I maintain backwards compatibility?**
 A: No, implement the full final solution. No technical debt.
 
-**Q: Tests are failing, should I hack around it?**  
+**Q: Tests are failing, should I hack around it?**
 A: No, fix the code or tests properly. Ask user if uncertain.
+
+**Q: Should I create a wrapper function for error handling?**
+A: No, use `HandleError(w, r, err)` directly. Wrapper functions that bypass centralized error handling create technical debt and inconsistency.
+
+**Q: How do I handle errors in HTTP handlers?**
+A: Always use `HandleError(w, r, err)` which provides content negotiation, request ID logging, and proper error type mapping. Never create custom error response functions.
+
+**Q: My tests are getting HTML instead of JSON responses?**
+A: Set the `Accept: application/json` header in your test requests. Content negotiation is working correctly.
 
 ---
 

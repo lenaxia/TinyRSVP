@@ -4,6 +4,7 @@
 **Priority:** High
 **Status:** Complete
 **Estimated Effort:** 1 day
+**Completed:** 2026-01-10
 
 ---
 
@@ -326,3 +327,47 @@ func validateEventRequest(req *CreateEventRequest) error {
 - [x] Documentation complete
 - [x] Code reviewed
 - [x] No linter warnings
+- [x] **Legacy respondError() removed** (2026-01-10)
+- [x] **All 108+ call sites migrated to HandleError()** (2026-01-10)
+- [x] **Content negotiation verified working** (2026-01-10)
+- [x] **Request ID logging verified working** (2026-01-10)
+
+## Implementation Notes (2026-01-10)
+
+### Critical Gap Resolved
+
+The `respondError()` wrapper function was completely removed as it bypassed the centralized error handling system. All 108+ call sites across multiple handlers now flow through `HandleError()`, which provides:
+
+1. **Request Context**: Errors logged with request IDs for traceability
+2. **Content Negotiation**: Returns JSON or HTML based on Accept header
+3. **Error Wrapping**: Preserves underlying errors for debugging
+4. **Centralized System**: All handlers get consistent error handling
+
+### Files Modified
+
+- `internal/handlers/errors.go` - Removed respondError(), enhanced toAPIError()
+- `internal/handlers/events.go` - All calls migrated to HandleError()
+- `internal/handlers/invites.go` - All calls migrated to HandleError()
+- `internal/handlers/invites_list.go` - All calls migrated to HandleError()
+- `internal/handlers/invites_manual.go` - All calls migrated to HandleError()
+- `internal/handlers/invites_regenerate.go` - All calls migrated to HandleError()
+- `internal/handlers/invites_revoke.go` - All calls migrated to HandleError()
+- `internal/handlers/templates.go` - All calls migrated to HandleError()
+- `internal/handlers/questions.go` - All calls migrated to HandleError()
+- `internal/handlers/images.go` - All calls migrated to HandleError()
+- All related test files updated with Accept headers
+
+### Error Type Enhancements
+
+Added support for additional error types in `toAPIError()`:
+- `VersionConflictError` → 409 Conflict
+- `OptimisticLockError` → 409 Conflict
+- `assets.ValidationError` → 400 Bad Request
+- Invalid state transitions → 400 Bad Request
+
+### Test Updates
+
+- Added `Accept: application/json` headers to all tests expecting JSON responses
+- Updated test expectations to match centralized error messages
+- Fixed helper functions to properly set Accept headers
+- All 900+ tests passing
