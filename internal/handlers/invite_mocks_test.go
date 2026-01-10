@@ -26,6 +26,7 @@ type FullMockInviteService struct {
 	MarkInviteSentFunc         func(ctx context.Context, inviteID int64) error
 	MarkInviteViewedFunc       func(ctx context.Context, inviteID int64) error
 	MarkInviteRespondedFunc    func(ctx context.Context, inviteID int64) error
+	UnsubscribeFromRemindersFunc func(ctx context.Context, token string) error
 }
 
 func (m *FullMockInviteService) CreateInvite(ctx context.Context, eventID int64, name *string, email *string, maxPlusOnes int, expiresAt time.Time) (*models.Invite, string, error) {
@@ -140,6 +141,13 @@ func (m *FullMockInviteService) MarkInviteViewed(ctx context.Context, inviteID i
 func (m *FullMockInviteService) MarkInviteResponded(ctx context.Context, inviteID int64) error {
 	if m.MarkInviteRespondedFunc != nil {
 		return m.MarkInviteRespondedFunc(ctx, inviteID)
+	}
+	return nil
+}
+
+func (m *FullMockInviteService) UnsubscribeFromReminders(ctx context.Context, token string) error {
+	if m.UnsubscribeFromRemindersFunc != nil {
+		return m.UnsubscribeFromRemindersFunc(ctx, token)
 	}
 	return nil
 }

@@ -73,6 +73,10 @@ func (m *mockManualInviteService) MarkInviteResponded(ctx context.Context, invit
 	return errors.New("not implemented")
 }
 
+func (m *mockManualInviteService) UnsubscribeFromReminders(ctx context.Context, token string) error {
+	return nil
+}
+
 func (m *mockManualInviteService) UpdateInvite(ctx context.Context, req *invites.UpdateInviteRequest) error {
 	return nil
 }

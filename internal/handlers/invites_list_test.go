@@ -79,6 +79,10 @@ func (m *mockListInviteService) MarkInviteResponded(ctx context.Context, inviteI
 	return nil
 }
 
+func (m *mockListInviteService) UnsubscribeFromReminders(ctx context.Context, token string) error {
+	return nil
+}
+
 func (m *mockListInviteService) UpdateInvite(ctx context.Context, req *invites.UpdateInviteRequest) error {
 	return nil
 }

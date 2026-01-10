@@ -82,6 +82,10 @@ func (m *mockImportService) MarkInviteResponded(ctx context.Context, inviteID in
 	return nil
 }
 
+func (m *mockImportService) UnsubscribeFromReminders(ctx context.Context, token string) error {
+	return nil
+}
+
 func (m *mockImportService) ListInvites(ctx context.Context, req *invites.ListInvitesRequest) (*invites.ListInvitesResponse, error) {
 	return &invites.ListInvitesResponse{
 		Invites: []*models.Invite{},

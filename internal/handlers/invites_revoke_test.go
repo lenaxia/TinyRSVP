@@ -93,6 +93,10 @@ func (m *mockRevokeInviteService) MarkInviteResponded(ctx context.Context, invit
 	return nil
 }
 
+func (m *mockRevokeInviteService) UnsubscribeFromReminders(ctx context.Context, token string) error {
+	return nil
+}
+
 func (m *mockRevokeInviteService) SendInvite(ctx context.Context, req *invites.SendInviteRequest, emailRepo repositories.EmailQueueRepository) error {
 	return nil
 }

@@ -76,6 +76,10 @@ func (m *mockRegenerateInviteService) MarkInviteResponded(ctx context.Context, i
 	return nil
 }
 
+func (m *mockRegenerateInviteService) UnsubscribeFromReminders(ctx context.Context, token string) error {
+	return nil
+}
+
 func (m *mockRegenerateInviteService) ListInvites(ctx context.Context, req *invites.ListInvitesRequest) (*invites.ListInvitesResponse, error) {
 	return &invites.ListInvitesResponse{
 		Invites: []*models.Invite{},
