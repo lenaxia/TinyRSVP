@@ -1,0 +1,29 @@
+http:
+  middlewares:
+    basic-auth:
+      basicAuth:
+        users:
+          - "admin:$apr1$ojrLB8kc$NGSVUaecNdicnJyY/ekVQ."
+        headerField: "X-WebAuth-User"
+    
+    forward-auth-headers:
+      headers:
+        customRequestHeaders:
+          X-Forwarded-User: "admin"
+          X-Forwarded-Email: "admin@tinyrsvp.test"
+
+  routers:
+    tinyrsvp:
+      rule: "PathPrefix(`/`)"
+      service: tinyrsvp
+      middlewares:
+        - basic-auth
+        - forward-auth-headers
+      entryPoints:
+        - web
+
+  services:
+    tinyrsvp:
+      loadBalancer:
+        servers:
+          - url: "http://tinyrsvp:8080"
