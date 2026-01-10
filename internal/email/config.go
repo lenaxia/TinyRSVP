@@ -67,11 +67,11 @@ func LoadConfig() (*Config, error) {
 		config.SMTPPassword = password
 	}
 
-	if from := os.Getenv("SMTP_FROM_EMAIL"); from != "" {
+	if from := os.Getenv("EMAIL_FROM"); from != "" {
 		config.FromEmail = from
 	}
 
-	if name := os.Getenv("SMTP_FROM_NAME"); name != "" {
+	if name := os.Getenv("EMAIL_FROM_NAME"); name != "" {
 		config.FromName = name
 	}
 
@@ -144,11 +144,11 @@ func (c *Config) Validate() error {
 	}
 
 	if c.FromEmail == "" {
-		return fmt.Errorf("SMTP_FROM_EMAIL is required")
+		return fmt.Errorf("EMAIL_FROM is required")
 	}
 
 	if !isValidEmail(c.FromEmail) {
-		return fmt.Errorf("SMTP_FROM_EMAIL is not a valid email address")
+		return fmt.Errorf("EMAIL_FROM is not a valid email address")
 	}
 
 	if c.Timeout <= 0 {

@@ -29,8 +29,6 @@ services:
       - SMTP_PORT=1025
       - SMTP_USERNAME=
       - SMTP_PASSWORD=
-      - SMTP_FROM_EMAIL=noreply@tinyrsvp.test
-      - SMTP_FROM_NAME=TinyRSVP Test
       - EMAIL_FROM=noreply@tinyrsvp.test
       - EMAIL_FROM_NAME=TinyRSVP Test
       

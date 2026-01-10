@@ -21,8 +21,8 @@ func TestConfig_LoadConfig(t *testing.T) {
 				"SMTP_PORT":            "587",
 				"SMTP_USERNAME":        "user@gmail.com",
 				"SMTP_PASSWORD":        "secret123",
-				"SMTP_FROM_EMAIL":      "noreply@example.com",
-				"SMTP_FROM_NAME":       "TinyRSVP",
+				"EMAIL_FROM":      "noreply@example.com",
+				"EMAIL_FROM_NAME":       "TinyRSVP",
 				"SMTP_TLS":             "true",
 				"SMTP_SKIP_VERIFY":     "false",
 				"SMTP_TIMEOUT":         "45s",
@@ -55,7 +55,7 @@ func TestConfig_LoadConfig(t *testing.T) {
 			name: "minimal valid configuration with defaults",
 			envVars: map[string]string{
 				"SMTP_HOST":       "smtp.example.com",
-				"SMTP_FROM_EMAIL": "test@example.com",
+				"EMAIL_FROM": "test@example.com",
 			},
 			want: &Config{
 				SMTPHost:          "smtp.example.com",
@@ -76,7 +76,7 @@ func TestConfig_LoadConfig(t *testing.T) {
 		{
 			name: "missing required host",
 			envVars: map[string]string{
-				"SMTP_FROM_EMAIL": "test@example.com",
+				"EMAIL_FROM": "test@example.com",
 			},
 			wantErr: true,
 		},
@@ -92,7 +92,7 @@ func TestConfig_LoadConfig(t *testing.T) {
 			envVars: map[string]string{
 				"SMTP_HOST":       "smtp.example.com",
 				"SMTP_PORT":       "invalid",
-				"SMTP_FROM_EMAIL": "test@example.com",
+				"EMAIL_FROM": "test@example.com",
 			},
 			wantErr: true,
 		},
@@ -100,7 +100,7 @@ func TestConfig_LoadConfig(t *testing.T) {
 			name: "invalid timeout",
 			envVars: map[string]string{
 				"SMTP_HOST":       "smtp.example.com",
-				"SMTP_FROM_EMAIL": "test@example.com",
+				"EMAIL_FROM": "test@example.com",
 				"SMTP_TIMEOUT":    "invalid",
 			},
 			wantErr: true,
@@ -109,7 +109,7 @@ func TestConfig_LoadConfig(t *testing.T) {
 			name: "invalid rate limit",
 			envVars: map[string]string{
 				"SMTP_HOST":        "smtp.example.com",
-				"SMTP_FROM_EMAIL":  "test@example.com",
+				"EMAIL_FROM":  "test@example.com",
 				"EMAIL_RATE_LIMIT": "invalid",
 			},
 			wantErr: true,
@@ -202,7 +202,7 @@ func TestConfig_Validate(t *testing.T) {
 				SMTPHost: "smtp.example.com",
 				SMTPPort: 587,
 			},
-			wantErr: "SMTP_FROM_EMAIL is required",
+			wantErr: "EMAIL_FROM is required",
 		},
 		{
 			name: "invalid email format",
@@ -211,7 +211,7 @@ func TestConfig_Validate(t *testing.T) {
 				SMTPPort:  587,
 				FromEmail: "not-an-email",
 			},
-			wantErr: "SMTP_FROM_EMAIL is not a valid email address",
+			wantErr: "EMAIL_FROM is not a valid email address",
 		},
 		{
 			name: "negative timeout",
@@ -355,8 +355,8 @@ func clearEmailEnv() {
 		"SMTP_PORT",
 		"SMTP_USERNAME",
 		"SMTP_PASSWORD",
-		"SMTP_FROM_EMAIL",
-		"SMTP_FROM_NAME",
+		"EMAIL_FROM",
+		"EMAIL_FROM_NAME",
 		"SMTP_TLS",
 		"SMTP_SKIP_VERIFY",
 		"SMTP_TIMEOUT",

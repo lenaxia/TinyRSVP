@@ -73,7 +73,7 @@ func TestNewSMTPSender_InvalidConfig(t *testing.T) {
 				RateLimit:        50,
 				MaxRetryAttempts: 4,
 			},
-			wantErr: "SMTP_FROM_EMAIL is required",
+			wantErr: "EMAIL_FROM is required",
 		},
 	}
 
