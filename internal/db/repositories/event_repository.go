@@ -22,6 +22,7 @@ type EventRepository interface {
 	List(ctx context.Context, filters ListFilters) ([]*models.Event, error)
 	GetByStatus(ctx context.Context, status models.EventStatus) ([]*models.Event, error)
 	GetEventsToArchive(ctx context.Context, daysAfterEvent int) ([]*models.Event, error)
+	GetByCreatorID(ctx context.Context, creatorID int64) ([]*models.Event, error)
 }
 
 type ListFilters struct {
@@ -413,6 +414,55 @@ func (r *eventRepository) GetEventsToArchive(ctx context.Context, daysAfterEvent
 	rows, err := r.db.Query(ctx, query, models.EventStatusPublished, models.EventStatusCancelled, daysAfterEvent)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get events to archive: %w", err)
+	}
+	defer rows.Close()
+
+	var events []*models.Event
+	for rows.Next() {
+		event := &models.Event{}
+		err := rows.Scan(
+			&event.ID,
+			&event.Title,
+			&event.Description,
+			&event.StartTime,
+			&event.EndTime,
+			&event.Timezone,
+			&event.Location,
+			&event.Status,
+			&event.CreatedBy,
+			&event.Version,
+			&event.ICSSequence,
+			&event.MaxPlusOnes,
+			&event.RSVPDeadline,
+			&event.CreatedAt,
+			&event.UpdatedAt,
+		)
+		if err != nil {
+			return nil, fmt.Errorf("failed to scan event: %w", err)
+		}
+		events = append(events, event)
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("error iterating events: %w", err)
+	}
+
+	return events, nil
+}
+
+func (r *eventRepository) GetByCreatorID(ctx context.Context, creatorID int64) ([]*models.Event, error) {
+	query := `
+		SELECT id, title, description, start_time, end_time, timezone, location,
+			status, created_by, version, ics_sequence, max_plus_ones, rsvp_deadline,
+			created_at, updated_at
+		FROM events
+		WHERE created_by = ?
+		ORDER BY created_at DESC
+	`
+
+	rows, err := r.db.Query(ctx, query, creatorID)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get events by creator: %w", err)
 	}
 	defer rows.Close()
 

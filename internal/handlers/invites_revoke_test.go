@@ -72,7 +72,7 @@ func (m *mockRevokeEventRepository) List(ctx context.Context, filters repositori
 	return []*models.Event{}, nil
 }
 
-func (m *mockRevokeEventRepository) GetByCreator(ctx context.Context, creatorID int64) ([]*models.Event, error) {
+func (m *mockRevokeEventRepository) GetByCreatorID(ctx context.Context, creatorID int64) ([]*models.Event, error) {
 	return []*models.Event{}, nil
 }
 

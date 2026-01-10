@@ -9,7 +9,7 @@ Route Organization
 
 PUBLIC ROUTES (No Authentication Required):
 - GET  /health                          - Health check endpoint
-- GET  /ready                           - Readiness check endpoint  
+- GET  /ready                           - Readiness check endpoint
 - GET  /login                           - OIDC login initiation
 - GET  /auth/login                      - Alternative login path
 - GET  /auth/callback                   - OIDC callback handler
@@ -23,6 +23,8 @@ PUBLIC ROUTES (No Authentication Required):
 - GET  /assets/*                        - Dynamic asset serving (event images)
 
 AUTHENTICATED ROUTES (Requires Auth Middleware):
+- GET  /                                - Dashboard (event statistics and recent activity)
+
 All routes under /api/* require authentication via AuthMiddleware.RequireAuth
 
 Event Management:

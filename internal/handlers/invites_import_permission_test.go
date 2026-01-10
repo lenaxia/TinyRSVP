@@ -61,6 +61,10 @@ func (m *mockEventRepository) GetEventsToArchive(ctx context.Context, daysAfterE
 	return nil, nil
 }
 
+func (m *mockEventRepository) GetByCreatorID(ctx context.Context, creatorID int64) ([]*models.Event, error) {
+	return nil, nil
+}
+
 func TestImportInvitesHandler_PermissionDenied_NotAdmin_NotCreator(t *testing.T) {
 	csvContent := `email,name
 john@example.com,John Doe`

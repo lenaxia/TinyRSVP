@@ -122,6 +122,10 @@ func (m *mockListEventRepository) GetEventsToArchive(ctx context.Context, daysAf
 	return []*models.Event{}, nil
 }
 
+func (m *mockListEventRepository) GetByCreatorID(ctx context.Context, creatorID int64) ([]*models.Event, error) {
+	return []*models.Event{}, nil
+}
+
 func TestListInvitesHandler_Success(t *testing.T) {
 	mockService := &mockListInviteService{
 		listInvitesFunc: func(ctx context.Context, req *invites.ListInvitesRequest) (*invites.ListInvitesResponse, error) {

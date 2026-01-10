@@ -21,6 +21,7 @@ type mockEventRepository struct {
 	ListFunc               func(ctx context.Context, filters repositories.ListFilters) ([]*models.Event, error)
 	GetByStatusFunc        func(ctx context.Context, status models.EventStatus) ([]*models.Event, error)
 	GetEventsToArchiveFunc func(ctx context.Context, daysAfterEvent int) ([]*models.Event, error)
+	GetByCreatorIDFunc     func(ctx context.Context, creatorID int64) ([]*models.Event, error)
 }
 
 func (m *mockEventRepository) Create(ctx context.Context, event *models.Event) error {
@@ -82,6 +83,13 @@ func (m *mockEventRepository) GetByStatus(ctx context.Context, status models.Eve
 func (m *mockEventRepository) GetEventsToArchive(ctx context.Context, daysAfterEvent int) ([]*models.Event, error) {
 	if m.GetEventsToArchiveFunc != nil {
 		return m.GetEventsToArchiveFunc(ctx, daysAfterEvent)
+	}
+	return nil, nil
+}
+
+func (m *mockEventRepository) GetByCreatorID(ctx context.Context, creatorID int64) ([]*models.Event, error) {
+	if m.GetByCreatorIDFunc != nil {
+		return m.GetByCreatorIDFunc(ctx, creatorID)
 	}
 	return nil, nil
 }

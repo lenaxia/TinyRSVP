@@ -640,6 +640,12 @@ docker-compose up -d
 - User Stories: Specific functionality
 - Tasks: Defined within user story files using checklists `[ ]`
 
+**Epic 10 - Technical Debt & Improvements:**
+- Epic 10 is reserved for issues, improvements, and technical debt that don't fit into other epics
+- When validation identifies gaps or improvements needed in existing functionality, add them to Epic 10
+- Examples: Return URL preservation in auth, performance optimizations, refactoring opportunities
+- Format: `10_STORY_XX_description.md` following the same user story template
+
 **Format:**
 ```markdown
 # Epic: Feature Name
@@ -661,6 +667,13 @@ docker-compose up -d
 - Started: YYYY-MM-DD
 - Completed: YYYY-MM-DD
 ```
+
+**When to Add to Epic 10:**
+- Validation identifies gaps in completed stories that aren't critical blockers
+- Refactoring opportunities discovered during implementation
+- Performance improvements identified
+- Technical debt that should be addressed but doesn't block current work
+- Cross-cutting concerns that span multiple epics
 
 ### README Files
 

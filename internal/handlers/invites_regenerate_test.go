@@ -99,7 +99,7 @@ func (m *mockRegenerateEventRepository) List(ctx context.Context, filters reposi
 	return []*models.Event{}, nil
 }
 
-func (m *mockRegenerateEventRepository) GetByCreator(ctx context.Context, creatorID int64) ([]*models.Event, error) {
+func (m *mockRegenerateEventRepository) GetByCreatorID(ctx context.Context, creatorID int64) ([]*models.Event, error) {
 	return []*models.Event{}, nil
 }
 

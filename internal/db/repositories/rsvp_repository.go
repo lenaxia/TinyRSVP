@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"strings"
 
 	"github.com/lenaxia/tinyrsvp/internal/db"
 	"github.com/lenaxia/tinyrsvp/internal/models"
@@ -16,6 +17,7 @@ type RSVPRepository interface {
 	GetByEventID(ctx context.Context, eventID int64) ([]*models.RSVP, error)
 	Update(ctx context.Context, rsvp *models.RSVP) error
 	GetStats(ctx context.Context, eventID int64) (*RSVPStats, error)
+	GetByInviteIDs(ctx context.Context, inviteIDs []int64) ([]*models.RSVP, error)
 }
 
 type RSVPStats struct {
@@ -201,7 +203,7 @@ func (r *rsvpRepository) Update(ctx context.Context, rsvp *models.RSVP) error {
 
 func (r *rsvpRepository) GetStats(ctx context.Context, eventID int64) (*RSVPStats, error) {
 	query := `
-		SELECT 
+		SELECT
 			COUNT(DISTINCT i.id) as total_invites,
 			COUNT(CASE WHEN r.response = 'yes' THEN 1 END) as yes_count,
 			COUNT(CASE WHEN r.response = 'no' THEN 1 END) as no_count,
@@ -228,4 +230,53 @@ func (r *rsvpRepository) GetStats(ctx context.Context, eventID int64) (*RSVPStat
 	stats.NoResponse = stats.TotalInvites - stats.YesCount - stats.NoCount - stats.MaybeCount
 
 	return &stats, nil
+}
+
+func (r *rsvpRepository) GetByInviteIDs(ctx context.Context, inviteIDs []int64) ([]*models.RSVP, error) {
+	if len(inviteIDs) == 0 {
+		return []*models.RSVP{}, nil
+	}
+
+	placeholders := make([]string, len(inviteIDs))
+	args := make([]interface{}, len(inviteIDs))
+	for i, id := range inviteIDs {
+		placeholders[i] = "?"
+		args[i] = id
+	}
+
+	query := fmt.Sprintf(`
+		SELECT id, invite_id, response, plus_ones, created_at, updated_at
+		FROM rsvps
+		WHERE invite_id IN (%s)
+		ORDER BY created_at DESC
+	`, strings.Join(placeholders, ","))
+
+	rows, err := r.db.Query(ctx, query, args...)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get RSVPs by invite IDs: %w", err)
+	}
+	defer rows.Close()
+
+	var rsvps []*models.RSVP
+	for rows.Next() {
+		rsvp := &models.RSVP{}
+		err := rows.Scan(
+			&rsvp.ID,
+			&rsvp.InviteID,
+			&rsvp.Response,
+			&rsvp.PlusOnes,
+			&rsvp.CreatedAt,
+			&rsvp.UpdatedAt,
+		)
+		if err != nil {
+			return nil, fmt.Errorf("failed to scan RSVP: %w", err)
+		}
+		rsvps = append(rsvps, rsvp)
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("error iterating RSVPs: %w", err)
+	}
+
+	return rsvps, nil
 }

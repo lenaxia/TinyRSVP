@@ -38,6 +38,7 @@ type RouterHandlers struct {
 	HealthHandler   http.Handler
 	ReadinessHandler http.Handler
 	
+	DashboardHandler DashboardHandlerInterface
 	EventHandlers    EventHandlerInterface
 	QuestionHandlers QuestionHandlerInterface
 	InviteHandlers   InviteHandlerInterface
@@ -61,6 +62,10 @@ type RouterHandlers struct {
 	StaticFileServer http.Handler
 	
 	Logger *log.Logger
+}
+
+type DashboardHandlerInterface interface {
+	Dashboard(w http.ResponseWriter, r *http.Request)
 }
 
 type RouteRegistrar interface {
@@ -242,6 +247,16 @@ func NewRouter(handlers *RouterHandlers) *Router {
 			w.WriteHeader(http.StatusOK)
 		})
 		r.Post("/auth/logout", func(w http.ResponseWriter, r *http.Request) {
+			w.WriteHeader(http.StatusOK)
+		})
+	}
+
+	if handlers.DashboardHandler != nil && handlers.AuthMiddleware != nil {
+		r.Handle("/", handlers.AuthMiddleware.RequireAuth(
+			http.HandlerFunc(handlers.DashboardHandler.Dashboard),
+		))
+	} else {
+		r.Get("/", func(w http.ResponseWriter, r *http.Request) {
 			w.WriteHeader(http.StatusOK)
 		})
 	}

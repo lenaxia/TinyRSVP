@@ -72,6 +72,10 @@ func (m *mockInviteRepo) DeleteExpired(ctx context.Context, before time.Time) (i
 	return 0, nil
 }
 
+func (m *mockInviteRepo) GetByEventIDs(ctx context.Context, eventIDs []int64) ([]*models.Invite, error) {
+	return []*models.Invite{}, nil
+}
+
 func TestImportCSV_Success(t *testing.T) {
 	csvData := `email,name,max_plus_ones
 john@example.com,John Doe,2

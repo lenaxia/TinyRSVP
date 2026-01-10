@@ -184,6 +184,19 @@ func (m *mockInviteRepository) DeleteExpired(ctx context.Context, before time.Ti
 	return 0, nil
 }
 
+func (m *mockInviteRepository) GetByEventIDs(ctx context.Context, eventIDs []int64) ([]*models.Invite, error) {
+	var result []*models.Invite
+	for _, invite := range m.invites {
+		for _, eventID := range eventIDs {
+			if invite.EventID == eventID {
+				result = append(result, invite)
+				break
+			}
+		}
+	}
+	return result, nil
+}
+
 type mockInviteRepositoryWithDeleteExpired struct {
 	mockInviteRepository
 	deleteExpiredFunc func(ctx context.Context, before time.Time) (int64, error)

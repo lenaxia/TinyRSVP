@@ -78,6 +78,10 @@ func (m *mockRSVPEventRepository) GetEventsToArchive(ctx context.Context, daysAf
 	return nil, nil
 }
 
+func (m *mockRSVPEventRepository) GetByCreatorID(ctx context.Context, creatorID int64) ([]*models.Event, error) {
+	return nil, nil
+}
+
 type mockRSVPRSVPRepository struct {
 	getByInviteIDFunc func(ctx context.Context, inviteID int64) (*models.RSVP, error)
 }
@@ -107,6 +111,10 @@ func (m *mockRSVPRSVPRepository) Update(ctx context.Context, rsvp *models.RSVP) 
 
 func (m *mockRSVPRSVPRepository) GetStats(ctx context.Context, eventID int64) (*repositories.RSVPStats, error) {
 	return nil, nil
+}
+
+func (m *mockRSVPRSVPRepository) GetByInviteIDs(ctx context.Context, inviteIDs []int64) ([]*models.RSVP, error) {
+	return []*models.RSVP{}, nil
 }
 
 type mockRSVPQuestionRepository struct {

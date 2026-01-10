@@ -25,6 +25,7 @@ type InviteRepository interface {
 	GetStats(ctx context.Context, eventID int64) (*InviteStats, error)
 	FindDuplicateEmails(ctx context.Context, eventID int64, emails []string) ([]string, error)
 	DeleteExpired(ctx context.Context, before time.Time) (int64, error)
+	GetByEventIDs(ctx context.Context, eventIDs []int64) ([]*models.Invite, error)
 }
 
 type InviteFilters struct {
@@ -569,4 +570,63 @@ func (r *inviteRepository) DeleteExpired(ctx context.Context, before time.Time) 
 	}
 
 	return rowsAffected, nil
+}
+
+func (r *inviteRepository) GetByEventIDs(ctx context.Context, eventIDs []int64) ([]*models.Invite, error) {
+	if len(eventIDs) == 0 {
+		return []*models.Invite{}, nil
+	}
+
+	placeholders := make([]string, len(eventIDs))
+	args := make([]interface{}, len(eventIDs))
+	for i, id := range eventIDs {
+		placeholders[i] = "?"
+		args[i] = id
+	}
+
+	query := fmt.Sprintf(`
+		SELECT id, event_id, name, email, token_hash, max_plus_ones, status,
+			sent_at, viewed_at, unsubscribed, email_invalid,
+			created_at, updated_at, expires_at
+		FROM invites
+		WHERE event_id IN (%s)
+		ORDER BY created_at DESC
+	`, strings.Join(placeholders, ","))
+
+	rows, err := r.db.Query(ctx, query, args...)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get invites by event IDs: %w", err)
+	}
+	defer rows.Close()
+
+	var invites []*models.Invite
+	for rows.Next() {
+		invite := &models.Invite{}
+		err := rows.Scan(
+			&invite.ID,
+			&invite.EventID,
+			&invite.Name,
+			&invite.Email,
+			&invite.TokenHash,
+			&invite.MaxPlusOnes,
+			&invite.Status,
+			&invite.SentAt,
+			&invite.ViewedAt,
+			&invite.Unsubscribed,
+			&invite.EmailInvalid,
+			&invite.CreatedAt,
+			&invite.UpdatedAt,
+			&invite.ExpiresAt,
+		)
+		if err != nil {
+			return nil, fmt.Errorf("failed to scan invite: %w", err)
+		}
+		invites = append(invites, invite)
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("error iterating invites: %w", err)
+	}
+
+	return invites, nil
 }
