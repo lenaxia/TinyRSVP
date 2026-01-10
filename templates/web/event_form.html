@@ -19,8 +19,119 @@
     <link rel="stylesheet" href="/static/css/error_display.css">
     <link rel="stylesheet" href="/static/css/keyboard_navigation.css">
     <link rel="stylesheet" href="/static/css/focus_management.css">
+    <link rel="stylesheet" href="/static/css/datetime_picker.css">
 </head>
 <body>
+    <div class="datetime-picker-overlay"></div>
+    <div class="datetime-picker-panel">
+        <div class="datetime-picker-header">
+            <h2 class="datetime-picker-title">Select Date & Time</h2>
+            <button class="datetime-picker-close" aria-label="Close date picker">×</button>
+        </div>
+        <div class="datetime-picker-body">
+            <div class="datetime-toggle-group">
+                <button type="button" class="datetime-toggle-btn active" data-mode="start">Start Time</button>
+                <button type="button" class="datetime-toggle-btn" data-mode="end">End Time (Optional)</button>
+            </div>
+
+            <div class="datetime-picker-content active" data-content="start">
+                <div class="calendar-container">
+                    <div class="calendar-header">
+                        <button type="button" class="calendar-nav-btn" data-nav="prev" aria-label="Previous month">&lsaquo;</button>
+                        <span class="calendar-month-year"></span>
+                        <button type="button" class="calendar-nav-btn" data-nav="next" aria-label="Next month">&rsaquo;</button>
+                    </div>
+                    <div class="calendar-grid"></div>
+                </div>
+                <div class="time-picker-container">
+                    <label class="time-picker-label">Time</label>
+                    <div class="time-picker-scroll"></div>
+                </div>
+                <div class="timezone-display">
+                    <div>
+                        <div class="timezone-label">Timezone</div>
+                        <div class="timezone-value"></div>
+                    </div>
+                    <button type="button" class="timezone-change-btn">Change</button>
+                </div>
+            </div>
+
+            <div class="datetime-picker-content" data-content="end">
+                <div class="calendar-container">
+                    <div class="calendar-header">
+                        <button type="button" class="calendar-nav-btn" data-nav="prev" aria-label="Previous month">&lsaquo;</button>
+                        <span class="calendar-month-year"></span>
+                        <button type="button" class="calendar-nav-btn" data-nav="next" aria-label="Next month">&rsaquo;</button>
+                    </div>
+                    <div class="calendar-grid"></div>
+                </div>
+                <div class="time-picker-container">
+                    <label class="time-picker-label">Time</label>
+                    <div class="time-picker-scroll"></div>
+                </div>
+                <div class="timezone-display">
+                    <div>
+                        <div class="timezone-label">Timezone</div>
+                        <div class="timezone-value"></div>
+                    </div>
+                    <button type="button" class="timezone-change-btn">Change</button>
+                </div>
+            </div>
+        </div>
+        <div class="datetime-picker-footer">
+            <button type="button" class="btn btn-secondary datetime-picker-cancel">Cancel</button>
+            <button type="button" class="btn btn-primary datetime-picker-save">Save</button>
+        </div>
+    </div>
+
+    <div class="timezone-picker-overlay"></div>
+    <div class="timezone-picker-panel datetime-picker-panel" style="z-index: 1000;">
+        <div class="datetime-picker-header">
+            <h2 class="datetime-picker-title">Select Timezone</h2>
+            <button class="timezone-picker-close datetime-picker-close" aria-label="Close timezone picker">×</button>
+        </div>
+        <div class="datetime-picker-body">
+            <div class="timezone-list">
+                <div class="timezone-option" data-timezone="America/Los_Angeles">
+                    <div class="timezone-option-name">Pacific Time (PT)</div>
+                    <div class="timezone-option-offset">UTC-8</div>
+                </div>
+                <div class="timezone-option" data-timezone="America/Denver">
+                    <div class="timezone-option-name">Mountain Time (MT)</div>
+                    <div class="timezone-option-offset">UTC-7</div>
+                </div>
+                <div class="timezone-option" data-timezone="America/Chicago">
+                    <div class="timezone-option-name">Central Time (CT)</div>
+                    <div class="timezone-option-offset">UTC-6</div>
+                </div>
+                <div class="timezone-option" data-timezone="America/New_York">
+                    <div class="timezone-option-name">Eastern Time (ET)</div>
+                    <div class="timezone-option-offset">UTC-5</div>
+                </div>
+                <div class="timezone-option" data-timezone="UTC">
+                    <div class="timezone-option-name">UTC</div>
+                    <div class="timezone-option-offset">UTC+0</div>
+                </div>
+                <div class="timezone-option" data-timezone="Europe/London">
+                    <div class="timezone-option-name">London (GMT)</div>
+                    <div class="timezone-option-offset">UTC+0</div>
+                </div>
+                <div class="timezone-option" data-timezone="Europe/Paris">
+                    <div class="timezone-option-name">Paris (CET)</div>
+                    <div class="timezone-option-offset">UTC+1</div>
+                </div>
+                <div class="timezone-option" data-timezone="Asia/Tokyo">
+                    <div class="timezone-option-name">Tokyo (JST)</div>
+                    <div class="timezone-option-offset">UTC+9</div>
+                </div>
+                <div class="timezone-option" data-timezone="Australia/Sydney">
+                    <div class="timezone-option-name">Sydney (AEDT)</div>
+                    <div class="timezone-option-offset">UTC+11</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     {{template "navigation" .}}
 
     <main class="dashboard-main" role="main" aria-label="Main content" id="main-content">
@@ -261,5 +372,6 @@
     <script src="/static/js/keyboard_navigation.js"></script>
     <script src="/static/js/screen_reader.js"></script>
     <script src="/static/js/focus_management.js"></script>
+    <script src="/static/js/datetime_picker.js"></script>
 </body>
 </html>

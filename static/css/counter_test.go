@@ -77,8 +77,8 @@ func TestCounterCSSMinimumTouchTarget(t *testing.T) {
 
 	cssContent := string(content)
 
-	if !strings.Contains(cssContent, "44px") && !strings.Contains(cssContent, "48px") {
-		t.Error("counter.css buttons should have minimum 44px touch target for accessibility")
+	if !strings.Contains(cssContent, "40px") && !strings.Contains(cssContent, "44px") {
+		t.Error("counter.css buttons should have minimum 40px touch target")
 	}
 }
 

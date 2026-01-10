@@ -2,7 +2,7 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    padding: var(--spacing-3) var(--spacing-6);
+    padding: var(--spacing-2) var(--spacing-4);
     font-size: var(--font-size-base);
     font-weight: var(--font-weight-medium);
     line-height: var(--line-height-normal);
@@ -10,7 +10,7 @@
     border: none;
     cursor: pointer;
     transition: all var(--transition-base);
-    min-height: 44px;
+    min-height: 40px;
     text-decoration: none;
     white-space: nowrap;
 }
@@ -112,21 +112,21 @@
 }
 
 .btn-sm {
-    padding: var(--spacing-2) var(--spacing-4);
+    padding: var(--spacing-1) var(--spacing-3);
     font-size: var(--font-size-sm);
-    min-height: 36px;
+    min-height: 34px;
 }
 
 .btn-md {
-    padding: var(--spacing-3) var(--spacing-6);
+    padding: var(--spacing-2) var(--spacing-4);
     font-size: var(--font-size-base);
-    min-height: 44px;
+    min-height: 40px;
 }
 
 .btn-lg {
-    padding: var(--spacing-4) var(--spacing-8);
+    padding: var(--spacing-3) var(--spacing-6);
     font-size: var(--font-size-lg);
-    min-height: 52px;
+    min-height: 46px;
 }
 
 .btn-loading {
@@ -197,7 +197,7 @@
 
 @media (min-width: 768px) {
     .btn {
-        min-height: 40px;
+        min-height: 38px;
     }
 
     .btn-sm {
@@ -205,6 +205,6 @@
     }
 
     .btn-lg {
-        min-height: 48px;
+        min-height: 44px;
     }
 }

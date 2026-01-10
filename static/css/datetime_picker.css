@@ -1,0 +1,350 @@
+/* DateTime Picker - Slide-out panel for date and time selection */
+
+.datetime-picker-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 998;
+    opacity: 0;
+    transition: opacity var(--transition-base);
+}
+
+.datetime-picker-overlay.open {
+    display: block;
+    opacity: 1;
+}
+
+.datetime-picker-panel {
+    position: fixed;
+    top: 0;
+    right: -450px;
+    bottom: 0;
+    width: 450px;
+    max-width: 90vw;
+    background: var(--color-background);
+    box-shadow: var(--shadow-lg);
+    z-index: 999;
+    transition: right var(--transition-base);
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+}
+
+.datetime-picker-panel.open {
+    right: 0;
+}
+
+.datetime-picker-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: var(--spacing-4);
+    border-bottom: 1px solid var(--color-border);
+    flex-shrink: 0;
+}
+
+.datetime-picker-title {
+    font-size: var(--font-size-xl);
+    font-weight: var(--font-weight-bold);
+    color: var(--color-text-primary);
+}
+
+.datetime-picker-close {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    padding: 0;
+    background: transparent;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-base);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    font-size: var(--font-size-xl);
+    color: var(--color-text-primary);
+}
+
+.datetime-picker-close:hover {
+    background: var(--color-surface);
+    border-color: var(--color-primary-600);
+}
+
+.datetime-picker-body {
+    flex: 1;
+    padding: var(--spacing-4);
+    overflow-y: auto;
+}
+
+.datetime-picker-footer {
+    padding: var(--spacing-4);
+    border-top: 1px solid var(--color-border);
+    display: flex;
+    gap: var(--spacing-3);
+    flex-shrink: 0;
+}
+
+.datetime-toggle-group {
+    display: flex;
+    gap: var(--spacing-2);
+    margin-bottom: var(--spacing-4);
+    border-bottom: 1px solid var(--color-border);
+}
+
+.datetime-toggle-btn {
+    flex: 1;
+    padding: var(--spacing-3) var(--spacing-4);
+    background: transparent;
+    border: none;
+    border-bottom: 2px solid transparent;
+    color: var(--color-text-secondary);
+    font-size: var(--font-size-base);
+    font-weight: var(--font-weight-medium);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+}
+
+.datetime-toggle-btn:hover {
+    color: var(--color-text-primary);
+    background: var(--color-surface);
+}
+
+.datetime-toggle-btn.active {
+    color: var(--color-primary);
+    border-bottom-color: var(--color-primary);
+    font-weight: var(--font-weight-semibold);
+}
+
+.datetime-picker-content {
+    display: none;
+}
+
+.datetime-picker-content.active {
+    display: block;
+}
+
+.datetime-picker-layout {
+    display: grid;
+    grid-template-columns: 1fr 140px;
+    gap: var(--spacing-3);
+    margin-bottom: var(--spacing-4);
+}
+
+.calendar-container {
+    padding: var(--spacing-2);
+}
+
+.calendar-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--spacing-3);
+}
+
+.calendar-month-year {
+    font-size: var(--font-size-base);
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-text-primary);
+}
+
+.calendar-nav-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    padding: 0;
+    background: transparent;
+    border: none;
+    border-radius: var(--radius-base);
+    color: var(--color-text-primary);
+    font-size: var(--font-size-lg);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+}
+
+.calendar-nav-btn:hover:not(:disabled) {
+    background: var(--color-surface);
+}
+
+.calendar-nav-btn:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+}
+
+.calendar-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 2px;
+}
+
+.calendar-day-header {
+    text-align: center;
+    font-size: var(--font-size-xs);
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-text-secondary);
+    padding: var(--spacing-1);
+}
+
+.calendar-day {
+    aspect-ratio: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--radius-base);
+    font-size: var(--font-size-xs);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    border: 2px solid transparent;
+}
+
+.calendar-day:hover:not(.disabled):not(.other-month) {
+    background: var(--color-surface);
+}
+
+.calendar-day.other-month {
+    color: var(--color-text-tertiary);
+    opacity: 0.4;
+}
+
+.calendar-day.disabled {
+    color: var(--color-text-tertiary);
+    cursor: not-allowed;
+    text-decoration: line-through;
+}
+
+.calendar-day.today {
+    border-color: var(--color-primary);
+}
+
+.calendar-day.selected {
+    background: var(--color-primary);
+    color: white;
+    font-weight: var(--font-weight-semibold);
+}
+
+.time-picker-container {
+    padding: 0;
+}
+
+.time-picker-label {
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-medium);
+    color: var(--color-text-secondary);
+    margin-bottom: var(--spacing-2);
+    display: block;
+}
+
+.time-picker-scroll {
+    max-height: 250px;
+    overflow-y: auto;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-base);
+    background: var(--color-background);
+}
+
+.time-option {
+    padding: var(--spacing-2) var(--spacing-2);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    font-size: var(--font-size-xs);
+    text-align: center;
+}
+
+.time-option:hover {
+    background: var(--color-surface);
+}
+
+.time-option.selected {
+    background: var(--color-primary);
+    color: white;
+    font-weight: var(--font-weight-medium);
+}
+
+.timezone-display {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: var(--spacing-3) var(--spacing-4);
+    background: var(--color-surface);
+    border-radius: var(--radius-base);
+}
+
+.timezone-label {
+    font-size: var(--font-size-sm);
+    color: var(--color-text-secondary);
+}
+
+.timezone-value {
+    font-size: var(--font-size-base);
+    font-weight: var(--font-weight-medium);
+    color: var(--color-text-primary);
+}
+
+.timezone-change-btn {
+    padding: var(--spacing-1) var(--spacing-3);
+    background: transparent;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-base);
+    color: var(--color-primary);
+    font-size: var(--font-size-sm);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+}
+
+.timezone-change-btn:hover {
+    background: var(--color-primary);
+    color: white;
+    border-color: var(--color-primary);
+}
+
+.timezone-list {
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.timezone-option {
+    padding: var(--spacing-3) var(--spacing-4);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    border-bottom: 1px solid var(--color-border);
+}
+
+.timezone-option:last-child {
+    border-bottom: none;
+}
+
+.timezone-option:hover {
+    background: var(--color-surface);
+}
+
+.timezone-option.selected {
+    background: var(--color-primary-light);
+    color: var(--color-primary);
+    font-weight: var(--font-weight-medium);
+}
+
+.timezone-option-name {
+    font-size: var(--font-size-base);
+    font-weight: var(--font-weight-medium);
+    margin-bottom: var(--spacing-1);
+}
+
+.timezone-option-offset {
+    font-size: var(--font-size-sm);
+    color: var(--color-text-secondary);
+}
+
+@media (max-width: 767px) {
+    .datetime-picker-layout {
+        grid-template-columns: 1fr;
+    }
+    
+    .time-picker-scroll {
+        max-height: 200px;
+    }
+}

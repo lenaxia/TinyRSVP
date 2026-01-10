@@ -46,8 +46,8 @@ func TestFormsCSS(t *testing.T) {
 		if !strings.Contains(css, "width: 100%") {
 			t.Error(".form-input should have width: 100%")
 		}
-		if !strings.Contains(css, "padding: var(--spacing-3)") {
-			t.Error(".form-input should use --spacing-3 for padding")
+		if !strings.Contains(css, "padding: var(--spacing-2)") {
+			t.Error(".form-input should use --spacing-2 for padding")
 		}
 		if !strings.Contains(css, "border: 1px solid var(--color-border)") {
 			t.Error(".form-input should use --color-border")

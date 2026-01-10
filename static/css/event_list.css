@@ -51,9 +51,9 @@
     color: var(--color-text-secondary);
 }
 
+
 .filter-select,
 .sort-select {
-    padding: var(--spacing-2) var(--spacing-3);
 }
 
 /* Search Input */

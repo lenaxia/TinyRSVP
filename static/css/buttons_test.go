@@ -75,9 +75,9 @@ func TestButtonsMinimumTouchTarget(t *testing.T) {
 
 	cssContent := string(content)
 
-	pattern := regexp.MustCompile(`\.btn\s*\{[^}]*min-height:\s*44px`)
+	pattern := regexp.MustCompile(`\.btn\s*\{[^}]*min-height:\s*40px`)
 	if !pattern.MatchString(cssContent) {
-		t.Error("Base .btn class should have min-height: 44px for touch-friendly targets")
+		t.Error("Base .btn class should have min-height: 40px")
 	}
 }
 

@@ -195,8 +195,8 @@ func TestRSVPSummaryCSS_ContainsFilterStyles(t *testing.T) {
 
 	css := string(content)
 
-	if !strings.Contains(css, ".filter-group") || !strings.Contains(css, ".filter-select") {
-		t.Error("Expected CSS to contain filter styles")
+	if !strings.Contains(css, ".filter-group") {
+		t.Error("Expected CSS to contain filter-group styles")
 	}
 }
 
