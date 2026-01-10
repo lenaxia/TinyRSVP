@@ -7,10 +7,14 @@ import (
 	"net/http/httptest"
 	"strings"
 	"testing"
+
+	"github.com/lenaxia/tinyrsvp/internal/middleware"
 )
 
 func TestRouter_CSPReportEndpoint(t *testing.T) {
 	router := NewRouter(nil)
+
+	csrfToken, csrfCookie := getCSRFTokenFromRouter(router)
 
 	report := map[string]interface{}{
 		"csp-report": map[string]interface{}{
@@ -27,6 +31,8 @@ func TestRouter_CSPReportEndpoint(t *testing.T) {
 
 	req := httptest.NewRequest(http.MethodPost, "/api/csp-report", bytes.NewReader(body))
 	req.Header.Set("Content-Type", "application/csp-report")
+	req.Header.Set(middleware.CSRFHeaderName, csrfToken)
+	req.AddCookie(csrfCookie)
 	rec := httptest.NewRecorder()
 
 	router.ServeHTTP(rec, req)

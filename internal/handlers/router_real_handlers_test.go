@@ -10,8 +10,23 @@ import (
 	"time"
 
 	"github.com/lenaxia/tinyrsvp/internal/auth"
+	"github.com/lenaxia/tinyrsvp/internal/middleware"
 	"github.com/lenaxia/tinyrsvp/internal/models"
 )
+
+func getCSRFTokenFromRouter(router http.Handler) (string, *http.Cookie) {
+	req := httptest.NewRequest(http.MethodGet, "/health", nil)
+	rec := httptest.NewRecorder()
+	router.ServeHTTP(rec, req)
+
+	cookies := rec.Result().Cookies()
+	for _, c := range cookies {
+		if c.Name == middleware.CSRFCookieName {
+			return c.Value, c
+		}
+	}
+	return "", nil
+}
 
 type mockAuthHandler struct{}
 
@@ -166,6 +181,8 @@ func TestRouter_Integration_RealHandlersCalled(t *testing.T) {
 
 	router := NewRouter(handlers)
 
+	csrfToken, csrfCookie := getCSRFTokenFromRouter(router)
+
 	tests := []struct {
 		name           string
 		method         string
@@ -173,6 +190,7 @@ func TestRouter_Integration_RealHandlersCalled(t *testing.T) {
 		body           string
 		wantStatusCode int
 		checkCalled    func(*testing.T)
+		needsCSRF      bool
 	}{
 		{
 			name:           "login handler called",
@@ -195,6 +213,7 @@ func TestRouter_Integration_RealHandlersCalled(t *testing.T) {
 			method:         http.MethodPost,
 			path:           "/logout",
 			wantStatusCode: http.StatusOK,
+			needsCSRF:      true,
 			checkCalled: func(t *testing.T) {
 			},
 		},
@@ -215,6 +234,7 @@ func TestRouter_Integration_RealHandlersCalled(t *testing.T) {
 			path:           "/api/events",
 			body:           `{"title":"Test Event"}`,
 			wantStatusCode: http.StatusCreated,
+			needsCSRF:      true,
 			checkCalled: func(t *testing.T) {
 				if !eventHandlers.createCalled {
 					t.Error("Expected CreateEvent to be called")
@@ -248,6 +268,7 @@ func TestRouter_Integration_RealHandlersCalled(t *testing.T) {
 			method:         http.MethodPost,
 			path:           "/rsvp/test-token-123",
 			body:           `{"status":"accepted"}`,
+			needsCSRF:      true,
 			wantStatusCode: http.StatusOK,
 			checkCalled: func(t *testing.T) {
 				if !rsvpHandler.submitCalled {
@@ -302,7 +323,11 @@ func TestRouter_Integration_RealHandlersCalled(t *testing.T) {
 			req := httptest.NewRequest(tt.method, tt.path, body)
 			if tt.body != "" {
 				req.Header.Set("Content-Type", "application/json")
-			req.Header.Set("Accept", "application/json")
+				req.Header.Set("Accept", "application/json")
+			}
+			if tt.needsCSRF {
+				req.Header.Set(middleware.CSRFHeaderName, csrfToken)
+				req.AddCookie(csrfCookie)
 			}
 			w := httptest.NewRecorder()
 

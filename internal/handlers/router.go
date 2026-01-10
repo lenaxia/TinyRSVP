@@ -163,6 +163,9 @@ func NewRouter(handlers *RouterHandlers) *Router {
 	r.Use(func(next http.Handler) http.Handler {
 		return customMiddleware.SecurityHeaders(nil)(next)
 	})
+	r.Use(func(next http.Handler) http.Handler {
+		return customMiddleware.CSRF(32)(next)
+	})
 
 	r.NotFound(NotFoundHandler)
 	r.MethodNotAllowed(MethodNotAllowedHandler)

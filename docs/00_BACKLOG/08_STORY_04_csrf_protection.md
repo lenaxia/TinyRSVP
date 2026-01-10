@@ -15,16 +15,16 @@ As a **security engineer**, I want **CSRF protection on all state-changing opera
 
 ## Acceptance Criteria
 
-- [ ] CSRF tokens generated per session
-- [ ] Tokens validated on POST/PUT/DELETE requests
-- [ ] Tokens embedded in forms
-- [ ] Tokens validated from headers for AJAX
-- [ ] SameSite cookie attribute set
-- [ ] Token rotation on use
-- [ ] Failed validation returns 403
-- [ ] Tokens expire with session
-- [ ] Double-submit cookie pattern
-- [ ] Configurable token length
+- [x] CSRF tokens generated per session
+- [x] Tokens validated on POST/PUT/DELETE requests
+- [x] Tokens embedded in forms
+- [x] Tokens validated from headers for AJAX
+- [x] SameSite cookie attribute set
+- [x] Token rotation on use
+- [x] Failed validation returns 403
+- [x] Tokens expire with session
+- [x] Double-submit cookie pattern
+- [x] Configurable token length
 
 ---
 
@@ -61,13 +61,13 @@ func CSRF(secret string) Middleware {
 
 ## Tasks
 
-- [ ] Implement CSRF token generation
-- [ ] Implement token validation
-- [ ] Add form token injection
-- [ ] Add header token validation
-- [ ] Configure SameSite cookies
-- [ ] Test CSRF protection
-- [ ] Document CSRF usage
+- [x] Implement CSRF token generation
+- [x] Implement token validation
+- [x] Add form token injection
+- [x] Add header token validation
+- [x] Configure SameSite cookies
+- [x] Test CSRF protection
+- [x] Document CSRF usage
 
 ---
 
@@ -99,8 +99,23 @@ func TestCSRF_InvalidToken(t *testing.T)
 
 ## Definition of Done
 
-- [ ] All acceptance criteria met
-- [ ] CSRF protection implemented
-- [ ] Tokens validated
-- [ ] Tests passing
-- [ ] Documentation complete
+- [x] All acceptance criteria met
+- [x] CSRF protection implemented
+- [x] Tokens validated
+- [x] Tests passing
+- [x] Documentation complete
+
+---
+
+## Status
+
+**Status:** Complete
+**Completed:** 2026-01-10
+**Implementation Notes:**
+- CSRF middleware implemented with double-submit cookie pattern
+- Token rotation on every state-changing request
+- Constant-time comparison for timing attack resistance
+- Configurable token length (default 32 bytes)
+- Comprehensive test coverage (unit, integration, benchmark)
+- Integrated into router middleware chain
+- Documentation updated in middleware README

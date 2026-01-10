@@ -340,7 +340,7 @@ func TestRouter_RouteGroups(t *testing.T) {
 			name:       "invites route group exists",
 			path:       "/api/invites/cleanup",
 			method:     http.MethodPost,
-			wantStatus: http.StatusUnauthorized,
+			wantStatus: http.StatusForbidden,
 		},
 		{
 			name:       "rsvp route group exists",

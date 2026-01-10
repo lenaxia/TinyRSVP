@@ -219,8 +219,8 @@ func TestMain_RouterIntegration(t *testing.T) {
 			name:           "logout endpoint",
 			method:         http.MethodPost,
 			path:           "/logout",
-			wantStatusCode: http.StatusFound,
-			description:    "Logout handler is called (redirects as expected)",
+			wantStatusCode: http.StatusForbidden,
+			description:    "Logout requires CSRF token (403 without token)",
 		},
 		{
 			name:           "events list requires auth",
