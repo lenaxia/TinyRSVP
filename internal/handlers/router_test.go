@@ -325,8 +325,20 @@ func TestRouter_RouteGroups(t *testing.T) {
 		wantStatus int
 	}{
 		{
-			name:       "auth route group exists",
+			name:       "login route exists",
+			path:       "/login",
+			method:     http.MethodGet,
+			wantStatus: http.StatusOK,
+		},
+		{
+			name:       "auth login fallback route exists",
 			path:       "/auth/login",
+			method:     http.MethodGet,
+			wantStatus: http.StatusOK,
+		},
+		{
+			name:       "auth callback fallback route exists",
+			path:       "/auth/callback",
 			method:     http.MethodGet,
 			wantStatus: http.StatusOK,
 		},

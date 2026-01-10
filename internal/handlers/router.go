@@ -31,6 +31,7 @@ type Router struct {
 }
 
 type RouterHandlers struct {
+	AuthHandlers     *AuthHandlers
 	LoginHandler    http.Handler
 	CallbackHandler http.Handler
 	LogoutHandler   http.Handler
@@ -198,8 +199,35 @@ func NewRouter(handlers *RouterHandlers) *Router {
 		r.Handle("/ready", handlers.ReadinessHandler)
 	}
 
-	if handlers.LoginHandler != nil {
+	if handlers.AuthHandlers != nil {
+		r.Get("/login", handlers.AuthHandlers.ShowLogin)
+		r.Get("/auth/oidc/login", handlers.AuthHandlers.OIDCLogin)
+		r.Get("/auth/oidc/callback", handlers.AuthHandlers.OIDCCallback)
+		r.Post("/logout", handlers.AuthHandlers.Logout)
+	} else if handlers.LoginHandler != nil {
 		r.Handle("/login", handlers.LoginHandler)
+		r.Get("/auth/login", func(w http.ResponseWriter, r *http.Request) {
+			w.WriteHeader(http.StatusOK)
+		})
+		
+		if handlers.CallbackHandler != nil {
+			r.Handle("/auth/callback", handlers.CallbackHandler)
+		} else {
+			r.Get("/auth/callback", func(w http.ResponseWriter, r *http.Request) {
+				w.WriteHeader(http.StatusOK)
+			})
+		}
+		
+		if handlers.LogoutHandler != nil {
+			r.Handle("/logout", handlers.LogoutHandler)
+		} else {
+			r.Post("/logout", func(w http.ResponseWriter, r *http.Request) {
+				w.WriteHeader(http.StatusOK)
+			})
+			r.Post("/auth/logout", func(w http.ResponseWriter, r *http.Request) {
+				w.WriteHeader(http.StatusOK)
+			})
+		}
 	} else {
 		r.Get("/login", func(w http.ResponseWriter, r *http.Request) {
 			w.WriteHeader(http.StatusOK)
@@ -207,19 +235,9 @@ func NewRouter(handlers *RouterHandlers) *Router {
 		r.Get("/auth/login", func(w http.ResponseWriter, r *http.Request) {
 			w.WriteHeader(http.StatusOK)
 		})
-	}
-
-	if handlers.CallbackHandler != nil {
-		r.Handle("/auth/callback", handlers.CallbackHandler)
-	} else {
 		r.Get("/auth/callback", func(w http.ResponseWriter, r *http.Request) {
 			w.WriteHeader(http.StatusOK)
 		})
-	}
-
-	if handlers.LogoutHandler != nil {
-		r.Handle("/logout", handlers.LogoutHandler)
-	} else {
 		r.Post("/logout", func(w http.ResponseWriter, r *http.Request) {
 			w.WriteHeader(http.StatusOK)
 		})

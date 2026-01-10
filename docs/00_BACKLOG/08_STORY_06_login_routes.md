@@ -1,9 +1,10 @@
 # User Story: Authentication Routes
 
-**Epic:** [08_EPIC_api.md](08_EPIC_api.md)  
-**Priority:** High  
-**Status:** Not Started  
+**Epic:** [08_EPIC_api.md](08_EPIC_api.md)
+**Priority:** High
+**Status:** Complete
 **Estimated Effort:** 1 day
+**Completed:** 2026-01-10
 
 ---
 
@@ -15,16 +16,16 @@ As an **event manager**, I want **to log in and out of the application** so that
 
 ## Acceptance Criteria
 
-- [ ] GET /login - Display login page
-- [ ] GET /auth/oidc/login - Redirect to OIDC provider
-- [ ] GET /auth/oidc/callback - Handle OIDC callback
-- [ ] POST /logout - Logout and clear session
-- [ ] Session cookie set on login
-- [ ] Session cleared on logout
-- [ ] Redirect to original URL after login
-- [ ] Error handling for failed login
-- [ ] CSRF protection on logout
-- [ ] Rate limiting on login attempts
+- [x] GET /login - Display login page
+- [x] GET /auth/oidc/login - Redirect to OIDC provider
+- [x] GET /auth/oidc/callback - Handle OIDC callback
+- [x] POST /logout - Logout and clear session
+- [x] Session cookie set on login
+- [x] Session cleared on logout
+- [x] Redirect to original URL after login
+- [x] Error handling for failed login
+- [x] CSRF protection on logout
+- [x] Rate limiting on login attempts (via router middleware)
 
 ---
 
@@ -51,14 +52,14 @@ r.Post("/logout", handlers.Logout)
 
 ## Tasks
 
-- [ ] Implement login page handler
-- [ ] Implement OIDC login redirect
-- [ ] Implement OIDC callback handler
-- [ ] Implement logout handler
-- [ ] Add session management
-- [ ] Add redirect handling
-- [ ] Test authentication flow
-- [ ] Test error cases
+- [x] Implement login page handler
+- [x] Implement OIDC login redirect
+- [x] Implement OIDC callback handler
+- [x] Implement logout handler
+- [x] Add session management
+- [x] Add redirect handling
+- [x] Test authentication flow
+- [x] Test error cases
 
 ---
 
@@ -187,9 +188,9 @@ func (h *Handlers) Logout(w http.ResponseWriter, r *http.Request) {
 
 ## Definition of Done
 
-- [ ] All acceptance criteria met
-- [ ] All routes implemented
-- [ ] Authentication flow working
-- [ ] Session management functional
-- [ ] Tests passing
-- [ ] Documentation complete
+- [x] All acceptance criteria met
+- [x] All routes implemented
+- [x] Authentication flow working
+- [x] Session management functional
+- [x] Tests passing
+- [x] Documentation complete
