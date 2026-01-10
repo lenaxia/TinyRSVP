@@ -90,6 +90,18 @@ func (m *mockImportService) ListInvites(ctx context.Context, req *invites.ListIn
 	}, nil
 }
 
+func (m *mockImportService) UpdateInvite(ctx context.Context, req *invites.UpdateInviteRequest) error {
+	return nil
+}
+
+func (m *mockImportService) DeleteInvite(ctx context.Context, inviteID int64) error {
+	return nil
+}
+
+func (m *mockImportService) SendInvite(ctx context.Context, req *invites.SendInviteRequest, emailRepo repositories.EmailQueueRepository) error {
+	return nil
+}
+
 func createMultipartRequest(csvContent string, filename string) (*http.Request, error) {
 	body := &bytes.Buffer{}
 	writer := multipart.NewWriter(body)

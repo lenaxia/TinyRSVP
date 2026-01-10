@@ -77,6 +77,18 @@ func (m *mockInviteServiceWithCleanup) ListInvites(ctx context.Context, req *inv
 	}, nil
 }
 
+func (m *mockInviteServiceWithCleanup) UpdateInvite(ctx context.Context, req *invites.UpdateInviteRequest) error {
+	return nil
+}
+
+func (m *mockInviteServiceWithCleanup) DeleteInvite(ctx context.Context, inviteID int64) error {
+	return nil
+}
+
+func (m *mockInviteServiceWithCleanup) SendInvite(ctx context.Context, req *invites.SendInviteRequest, emailRepo repositories.EmailQueueRepository) error {
+	return nil
+}
+
 func TestCleanupExpiredTokensHandler_Success(t *testing.T) {
 	mockService := &mockInviteServiceWithCleanup{
 		cleanupExpiredTokensFunc: func(ctx context.Context) (int64, error) {

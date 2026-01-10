@@ -298,6 +298,10 @@ func main() {
 	revokeInviteHandlers := handlers.NewRevokeInviteHandlers(inviteService, eventRepo)
 	regenerateInviteHandlers := handlers.NewRegenerateInviteTokenHandlers(inviteService, eventRepo)
 	listInviteHandlers := handlers.NewListInviteHandlers(inviteService, eventRepo)
+	getInviteHandlers := handlers.NewGetInviteHandlers(inviteService, eventRepo)
+	updateInviteHandlers := handlers.NewUpdateInviteHandlers(inviteService, eventRepo)
+	deleteInviteHandlers := handlers.NewDeleteInviteHandlers(inviteService, eventRepo)
+	sendInviteHandlers := handlers.NewSendInviteHandlers(inviteService, eventRepo, emailQueueRepo, cfg.Server.BaseURL)
 
 	cleanupHandler := handlers.NewCleanupHandler(inviteService)
 
@@ -418,6 +422,10 @@ func main() {
 		RevokeInviteHandlers:     revokeInviteHandlers,
 		RegenerateInviteHandlers: regenerateInviteHandlers,
 		ListInviteHandlers:       listInviteHandlers,
+		GetInviteHandlers:        getInviteHandlers,
+		UpdateInviteHandlers:     updateInviteHandlers,
+		DeleteInviteHandlers:     deleteInviteHandlers,
+		SendInviteHandlers:       sendInviteHandlers,
 		ImageHandlers:            imageHandlers,
 		RSVPHandler:              rsvpHandler,
 		RSVPSummaryHandler:       rsvpSummaryHandler,
@@ -437,12 +445,13 @@ func main() {
 	logger.Info("Registered event management endpoints", "path", "/api/events", "protection", "authenticated")
 	logger.Info("Registered event web UI endpoints", "prefix", "/events", "protection", "authenticated")
 	logger.Info("Registered question management endpoints", "path", "/api/events/{id}/questions", "protection", "authenticated")
-	logger.Info("Registered invite management endpoints", "path", "/api/events/{eventId}/invites", "protection", "authenticated")
-	logger.Info("Registered import invite endpoints", "path", "/api/events/{eventId}/invites/import", "protection", "authenticated")
-	logger.Info("Registered manual invite endpoints", "path", "/api/events/{eventId}/invites/manual", "protection", "authenticated")
-	logger.Info("Registered revoke invite endpoints", "path", "/api/invites/{inviteId}/revoke", "protection", "authenticated")
-	logger.Info("Registered regenerate invite endpoints", "path", "/api/invites/{inviteId}/regenerate", "protection", "authenticated")
-	logger.Info("Registered list invite endpoints", "path", "/api/events/{eventId}/invites", "method", "GET", "protection", "authenticated")
+	logger.Info("Registered invite management endpoints", "path", "/api/events/{eventId}/invites", "methods", "GET,POST", "protection", "authenticated")
+	logger.Info("Registered import invite endpoints", "path", "/api/events/{eventId}/invites/import", "method", "POST", "protection", "authenticated")
+	logger.Info("Registered manual invite endpoints", "path", "/api/events/{eventId}/invites/manual", "method", "POST", "protection", "authenticated")
+	logger.Info("Registered individual invite endpoints", "path", "/api/invites/{inviteId}", "methods", "GET,PUT,DELETE", "protection", "authenticated")
+	logger.Info("Registered revoke invite endpoint", "path", "/api/invites/{inviteId}/revoke", "method", "POST", "protection", "authenticated")
+	logger.Info("Registered regenerate invite endpoint", "path", "/api/invites/{inviteId}/regenerate", "method", "POST", "protection", "authenticated")
+	logger.Info("Registered send invite endpoint", "path", "/api/invites/{inviteId}/send", "method", "POST", "protection", "authenticated")
 	logger.Info("Registered image management endpoints", "path", "/api/events/{event_id}/images", "protection", "authenticated")
 	logger.Info("Registered template management endpoints", "path", "/api/templates", "protection", "authenticated")
 	logger.Info("Registered user management endpoints", "path", "/api/users", "protection", "admin")

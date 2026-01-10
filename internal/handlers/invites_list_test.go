@@ -79,6 +79,18 @@ func (m *mockListInviteService) MarkInviteResponded(ctx context.Context, inviteI
 	return nil
 }
 
+func (m *mockListInviteService) UpdateInvite(ctx context.Context, req *invites.UpdateInviteRequest) error {
+	return nil
+}
+
+func (m *mockListInviteService) DeleteInvite(ctx context.Context, inviteID int64) error {
+	return nil
+}
+
+func (m *mockListInviteService) SendInvite(ctx context.Context, req *invites.SendInviteRequest, emailRepo repositories.EmailQueueRepository) error {
+	return nil
+}
+
 type mockListEventRepository struct {
 	getByIDFunc func(ctx context.Context, id int64) (*models.Event, error)
 }

@@ -51,12 +51,16 @@ Event Questions:
 - Manages custom questions for events
 
 Invite Management:
-- GET  /api/events/{eventId}/invites         - List invites for event
-- POST /api/events/{eventId}/invites         - Create single invite
-- POST /api/events/{eventId}/invites/import  - Bulk import invites from CSV
-- POST /api/events/{eventId}/invites/manual  - Create manual invite
-- POST /api/invites/{inviteId}/revoke        - Revoke an invite
-- POST /api/invites/{inviteId}/regenerate    - Regenerate invite token
+- GET    /api/events/{eventId}/invites         - List invites for event (with pagination and filters)
+- POST   /api/events/{eventId}/invites         - Create single invite with email
+- POST   /api/events/{eventId}/invites/import  - Bulk import invites from CSV
+- POST   /api/events/{eventId}/invites/manual  - Create manual invite (no email)
+- GET    /api/invites/{inviteId}               - Get invite details
+- PUT    /api/invites/{inviteId}               - Update invite (name, max_plus_ones)
+- DELETE /api/invites/{inviteId}               - Delete invite (cannot delete responded invites)
+- POST   /api/invites/{inviteId}/revoke        - Revoke an invite with optional reason
+- POST   /api/invites/{inviteId}/regenerate    - Regenerate invite token (new token, same invite)
+- POST   /api/invites/{inviteId}/send          - Send invite email (queues email for delivery)
 
 Image Management:
 - Routes registered via ImageHandlers.RegisterRoutes()

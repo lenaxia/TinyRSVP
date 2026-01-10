@@ -37,6 +37,17 @@ type CreateManualInviteResponse struct {
 	RSVPURL string
 }
 
+type UpdateInviteRequest struct {
+	InviteID    int64
+	Name        *string
+	MaxPlusOnes *int
+}
+
+type SendInviteRequest struct {
+	InviteID int64
+	BaseURL  string
+}
+
 type RevokeInviteRequest struct {
 	InviteID int64
 	Reason   *string
@@ -70,6 +81,9 @@ type InviteService interface {
 	CreateManualInvite(ctx context.Context, req *CreateManualInviteRequest, expiresAt time.Time) (*CreateManualInviteResponse, error)
 	GetInviteByToken(ctx context.Context, token string) (*models.Invite, error)
 	GetInviteByID(ctx context.Context, id int64) (*models.Invite, error)
+	UpdateInvite(ctx context.Context, req *UpdateInviteRequest) error
+	DeleteInvite(ctx context.Context, inviteID int64) error
+	SendInvite(ctx context.Context, req *SendInviteRequest, emailRepo repositories.EmailQueueRepository) error
 	RevokeInvite(ctx context.Context, req *RevokeInviteRequest) error
 	RegenerateToken(ctx context.Context, inviteID int64) (*RegenerateTokenResponse, error)
 	ListInvites(ctx context.Context, req *ListInvitesRequest) (*ListInvitesResponse, error)
@@ -174,6 +188,124 @@ func (s *inviteService) GetInviteByID(ctx context.Context, id int64) (*models.In
 	}
 
 	return invite, nil
+}
+
+func (s *inviteService) UpdateInvite(ctx context.Context, req *UpdateInviteRequest) error {
+	invite, err := s.repo.GetByID(ctx, req.InviteID)
+	if err != nil {
+		return fmt.Errorf("failed to get invite: %w", err)
+	}
+
+	if invite.Status == models.InviteStatusRevoked {
+		return fmt.Errorf("cannot update revoked invite")
+	}
+
+	if invite.Status == models.InviteStatusResponded {
+		return fmt.Errorf("cannot update responded invite")
+	}
+
+	if req.Name != nil {
+		invite.Name = req.Name
+	}
+
+	if req.MaxPlusOnes != nil {
+		if *req.MaxPlusOnes < 0 {
+			return &models.ValidationError{
+				Field:   "max_plus_ones",
+				Message: "max_plus_ones cannot be negative",
+			}
+		}
+		invite.MaxPlusOnes = *req.MaxPlusOnes
+	}
+
+	invite.UpdatedAt = time.Now()
+
+	if err := s.repo.Update(ctx, invite); err != nil {
+		return fmt.Errorf("failed to update invite: %w", err)
+	}
+
+	return nil
+}
+
+func (s *inviteService) DeleteInvite(ctx context.Context, inviteID int64) error {
+	invite, err := s.repo.GetByID(ctx, inviteID)
+	if err != nil {
+		return fmt.Errorf("failed to get invite: %w", err)
+	}
+
+	if invite.Status == models.InviteStatusResponded {
+		return fmt.Errorf("cannot delete responded invite")
+	}
+
+	if err := s.repo.Delete(ctx, inviteID); err != nil {
+		return fmt.Errorf("failed to delete invite: %w", err)
+	}
+
+	return nil
+}
+
+func (s *inviteService) SendInvite(ctx context.Context, req *SendInviteRequest, emailRepo repositories.EmailQueueRepository) error {
+	invite, err := s.repo.GetByID(ctx, req.InviteID)
+	if err != nil {
+		return fmt.Errorf("failed to get invite: %w", err)
+	}
+
+	if invite.Email == nil || *invite.Email == "" {
+		return fmt.Errorf("invite has no email address")
+	}
+
+	if invite.Status == models.InviteStatusRevoked {
+		return fmt.Errorf("cannot send revoked invite")
+	}
+
+	plainToken, err := s.generator.Generate()
+	if err != nil {
+		return fmt.Errorf("failed to generate token: %w", err)
+	}
+
+	tokenHash, err := s.generator.Hash(plainToken)
+	if err != nil {
+		return fmt.Errorf("failed to hash token: %w", err)
+	}
+
+	invite.TokenHash = tokenHash
+	invite.UpdatedAt = time.Now()
+
+	if err := s.repo.Update(ctx, invite); err != nil {
+		return fmt.Errorf("failed to update invite: %w", err)
+	}
+
+	rsvpURL := fmt.Sprintf("%s/rsvp/%s", req.BaseURL, plainToken)
+	
+	name := "Guest"
+	if invite.Name != nil {
+		name = *invite.Name
+	}
+
+	subject := "You're Invited!"
+	bodyText := fmt.Sprintf("Hello %s,\n\nYou've been invited to an event.\n\nRSVP here: %s\n\nThis link expires on %s.",
+		name, rsvpURL, invite.ExpiresAt.Format("January 2, 2006"))
+
+	emailQueue := &models.EmailQueue{
+		ToEmail:      *invite.Email,
+		ToName:       invite.Name,
+		Subject:      subject,
+		BodyText:     bodyText,
+		Status:       models.EmailStatusPending,
+		Attempts:     0,
+		MaxAttempts:  3,
+		ScheduledFor: time.Now(),
+	}
+
+	if err := emailRepo.Create(ctx, emailQueue); err != nil {
+		return fmt.Errorf("failed to queue email: %w", err)
+	}
+
+	if err := s.MarkInviteSent(ctx, invite.ID); err != nil {
+		return fmt.Errorf("failed to mark invite as sent: %w", err)
+	}
+
+	return nil
 }
 
 func (s *inviteService) RevokeInvite(ctx context.Context, req *RevokeInviteRequest) error {

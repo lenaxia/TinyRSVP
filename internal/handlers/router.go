@@ -48,6 +48,10 @@ type RouterHandlers struct {
 	RevokeInviteHandlers RevokeInviteHandlerInterface
 	RegenerateInviteHandlers RegenerateInviteHandlerInterface
 	ListInviteHandlers ListInviteHandlerInterface
+	GetInviteHandlers GetInviteHandlerInterface
+	UpdateInviteHandlers UpdateInviteHandlerInterface
+	DeleteInviteHandlers DeleteInviteHandlerInterface
+	SendInviteHandlers SendInviteHandlerInterface
 	ImageHandlers    RouteRegistrar
 	RSVPHandler      RSVPHandlerInterface
 	RSVPSummaryHandler RSVPSummaryHandlerInterface
@@ -119,6 +123,22 @@ type RegenerateInviteHandlerInterface interface {
 
 type ListInviteHandlerInterface interface {
 	ListInvites(w http.ResponseWriter, r *http.Request)
+}
+
+type GetInviteHandlerInterface interface {
+	GetInvite(w http.ResponseWriter, r *http.Request)
+}
+
+type UpdateInviteHandlerInterface interface {
+	UpdateInvite(w http.ResponseWriter, r *http.Request)
+}
+
+type DeleteInviteHandlerInterface interface {
+	DeleteInvite(w http.ResponseWriter, r *http.Request)
+}
+
+type SendInviteHandlerInterface interface {
+	SendInvite(w http.ResponseWriter, r *http.Request)
 }
 
 type RSVPHandlerInterface interface {
@@ -349,16 +369,26 @@ func NewRouter(handlers *RouterHandlers) *Router {
 		}
 	})
 
-	if handlers.RevokeInviteHandlers != nil || handlers.RegenerateInviteHandlers != nil {
-		apiRouter.Route("/invites/{inviteId}", func(r chi.Router) {
-			if handlers.RevokeInviteHandlers != nil {
-				r.Post("/revoke", handlers.RevokeInviteHandlers.RevokeInvite)
-			}
-			if handlers.RegenerateInviteHandlers != nil {
-				r.Post("/regenerate", handlers.RegenerateInviteHandlers.RegenerateInviteToken)
-			}
-		})
-	}
+	apiRouter.Route("/invites/{inviteId}", func(r chi.Router) {
+		if handlers.GetInviteHandlers != nil {
+			r.Get("/", handlers.GetInviteHandlers.GetInvite)
+		}
+		if handlers.UpdateInviteHandlers != nil {
+			r.Put("/", handlers.UpdateInviteHandlers.UpdateInvite)
+		}
+		if handlers.DeleteInviteHandlers != nil {
+			r.Delete("/", handlers.DeleteInviteHandlers.DeleteInvite)
+		}
+		if handlers.RevokeInviteHandlers != nil {
+			r.Post("/revoke", handlers.RevokeInviteHandlers.RevokeInvite)
+		}
+		if handlers.RegenerateInviteHandlers != nil {
+			r.Post("/regenerate", handlers.RegenerateInviteHandlers.RegenerateInviteToken)
+		}
+		if handlers.SendInviteHandlers != nil {
+			r.Post("/send", handlers.SendInviteHandlers.SendInvite)
+		}
+	})
 
 	if handlers.ImageHandlers != nil {
 		handlers.ImageHandlers.RegisterRoutes(apiRouter)

@@ -64,6 +64,38 @@ func (m *mockRegenerateInviteService) CleanupExpiredTokens(ctx context.Context) 
 	return 0, nil
 }
 
+func (m *mockRegenerateInviteService) MarkInviteSent(ctx context.Context, inviteID int64) error {
+	return nil
+}
+
+func (m *mockRegenerateInviteService) MarkInviteViewed(ctx context.Context, inviteID int64) error {
+	return nil
+}
+
+func (m *mockRegenerateInviteService) MarkInviteResponded(ctx context.Context, inviteID int64) error {
+	return nil
+}
+
+func (m *mockRegenerateInviteService) ListInvites(ctx context.Context, req *invites.ListInvitesRequest) (*invites.ListInvitesResponse, error) {
+	return &invites.ListInvitesResponse{
+		Invites: []*models.Invite{},
+		Total:   0,
+		Stats:   &repositories.InviteStats{},
+	}, nil
+}
+
+func (m *mockRegenerateInviteService) UpdateInvite(ctx context.Context, req *invites.UpdateInviteRequest) error {
+	return nil
+}
+
+func (m *mockRegenerateInviteService) DeleteInvite(ctx context.Context, inviteID int64) error {
+	return nil
+}
+
+func (m *mockRegenerateInviteService) SendInvite(ctx context.Context, req *invites.SendInviteRequest, emailRepo repositories.EmailQueueRepository) error {
+	return nil
+}
+
 type mockRegenerateEventRepository struct {
 	getByIDFunc func(ctx context.Context, id int64) (*models.Event, error)
 }

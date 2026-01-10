@@ -37,6 +37,66 @@ func (m *mockRevokeInviteService) GetInviteByID(ctx context.Context, id int64) (
 	return nil, &models.NotFoundError{Resource: "invite"}
 }
 
+func (m *mockRevokeInviteService) CreateInvite(ctx context.Context, eventID int64, name *string, email *string, maxPlusOnes int, expiresAt time.Time) (*models.Invite, string, error) {
+	return nil, "", nil
+}
+
+func (m *mockRevokeInviteService) CreateManualInvite(ctx context.Context, req *invites.CreateManualInviteRequest, expiresAt time.Time) (*invites.CreateManualInviteResponse, error) {
+	return nil, nil
+}
+
+func (m *mockRevokeInviteService) GetInviteByToken(ctx context.Context, token string) (*models.Invite, error) {
+	return nil, nil
+}
+
+func (m *mockRevokeInviteService) UpdateInvite(ctx context.Context, req *invites.UpdateInviteRequest) error {
+	return nil
+}
+
+func (m *mockRevokeInviteService) DeleteInvite(ctx context.Context, inviteID int64) error {
+	return nil
+}
+
+func (m *mockRevokeInviteService) RegenerateToken(ctx context.Context, inviteID int64) (*invites.RegenerateTokenResponse, error) {
+	return nil, nil
+}
+
+func (m *mockRevokeInviteService) ListInvites(ctx context.Context, req *invites.ListInvitesRequest) (*invites.ListInvitesResponse, error) {
+	return &invites.ListInvitesResponse{
+		Invites: []*models.Invite{},
+		Total:   0,
+		Stats:   &repositories.InviteStats{},
+	}, nil
+}
+
+func (m *mockRevokeInviteService) ListInvitesByEventID(ctx context.Context, eventID int64, filters repositories.InviteFilters) ([]*models.Invite, error) {
+	return nil, nil
+}
+
+func (m *mockRevokeInviteService) ImportCSV(ctx context.Context, eventID int64, csvData []byte, defaultMaxPlusOnes int, expiresAt time.Time) (*invites.ImportResult, error) {
+	return nil, nil
+}
+
+func (m *mockRevokeInviteService) CleanupExpiredTokens(ctx context.Context) (int64, error) {
+	return 0, nil
+}
+
+func (m *mockRevokeInviteService) MarkInviteSent(ctx context.Context, inviteID int64) error {
+	return nil
+}
+
+func (m *mockRevokeInviteService) MarkInviteViewed(ctx context.Context, inviteID int64) error {
+	return nil
+}
+
+func (m *mockRevokeInviteService) MarkInviteResponded(ctx context.Context, inviteID int64) error {
+	return nil
+}
+
+func (m *mockRevokeInviteService) SendInvite(ctx context.Context, req *invites.SendInviteRequest, emailRepo repositories.EmailQueueRepository) error {
+	return nil
+}
+
 type mockRevokeEventRepository struct {
 	getByIDFunc func(ctx context.Context, id int64) (*models.Event, error)
 }

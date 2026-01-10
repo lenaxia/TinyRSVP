@@ -73,12 +73,24 @@ func (m *mockManualInviteService) MarkInviteResponded(ctx context.Context, invit
 	return errors.New("not implemented")
 }
 
+func (m *mockManualInviteService) UpdateInvite(ctx context.Context, req *invites.UpdateInviteRequest) error {
+	return nil
+}
+
+func (m *mockManualInviteService) DeleteInvite(ctx context.Context, inviteID int64) error {
+	return nil
+}
+
 func (m *mockManualInviteService) ListInvites(ctx context.Context, req *invites.ListInvitesRequest) (*invites.ListInvitesResponse, error) {
 	return &invites.ListInvitesResponse{
 		Invites: []*models.Invite{},
 		Total:   0,
 		Stats:   &repositories.InviteStats{},
 	}, nil
+}
+
+func (m *mockManualInviteService) SendInvite(ctx context.Context, req *invites.SendInviteRequest, emailRepo repositories.EmailQueueRepository) error {
+	return nil
 }
 
 func TestManualInviteHandlers_CreateManualInvite(t *testing.T) {
