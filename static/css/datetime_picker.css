@@ -1,5 +1,16 @@
 /* DateTime Picker - Evite-style date and time selection modal */
 
+/* Override modal-slide-right width for datetime picker */
+#datetime-picker-modal .modal-slide-right {
+    width: 500px;
+    max-width: 95vw;
+}
+
+#timezone-modal .modal-slide-right {
+    width: 400px;
+    max-width: 95vw;
+}
+
 /* DateTime Picker Toggle Buttons */
 .datetime-toggle-group {
     display: flex;
@@ -48,15 +59,10 @@
 
 /* Calendar and Time Picker Layout */
 .datetime-picker-layout {
-    display: grid;
+    display: flex;
+    flex-direction: column;
     gap: var(--spacing-4);
     margin-bottom: var(--spacing-4);
-}
-
-@media (min-width: 768px) {
-    .datetime-picker-layout {
-        grid-template-columns: 1fr 200px;
-    }
 }
 
 /* Calendar Component */

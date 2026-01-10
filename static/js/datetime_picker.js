@@ -71,7 +71,7 @@
             modal.className = 'modal-container';
             modal.innerHTML = `
                 <div class="modal-overlay"></div>
-                <div class="modal-center modal-lg">
+                <div class="modal-slide modal-slide-right">
                     <div class="modal-header">
                         <h3 class="modal-title">Select Date & Time</h3>
                         <button type="button" class="modal-close" data-modal-close aria-label="Close">&times;</button>
@@ -167,8 +167,8 @@
             `).join('');
 
             modal.innerHTML = `
-                <div class="modal-overlay"></div>
-                <div class="modal-center modal-md">
+                <div class="modal-overlay" style="z-index: 1060;"></div>
+                <div class="modal-slide modal-slide-right" style="z-index: 1070;">
                     <div class="modal-header">
                         <h3 class="modal-title">Select Timezone</h3>
                         <button type="button" class="modal-close" data-modal-close aria-label="Close">&times;</button>

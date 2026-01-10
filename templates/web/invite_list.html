@@ -80,7 +80,7 @@
             <div class="invite-filters">
                 <div class="filter-group">
                     <label for="status-filter" class="filter-label">Status</label>
-                    <select id="status-filter" class="filter-select" name="status" aria-label="Filter by status">
+                    <select id="status-filter" class="form-select filter-select" name="status" aria-label="Filter by status">
                         <option value="all" {{if eq .Filter "all"}}selected{{end}}>All Invites</option>
                         <option value="draft" {{if eq .Filter "draft"}}selected{{end}}>Draft</option>
                         <option value="sent" {{if eq .Filter "sent"}}selected{{end}}>Sent</option>
@@ -92,10 +92,10 @@
 
                 <div class="invite-search">
                     <span class="search-icon" aria-hidden="true">🔍</span>
-                    <input 
-                        type="search" 
-                        class="search-input" 
-                        placeholder="Search invites..." 
+                    <input
+                        type="search"
+                        class="form-input search-input"
+                        placeholder="Search invites..."
                         aria-label="Search invites by name or email"
                         name="search"
                         value="{{.Search}}"
