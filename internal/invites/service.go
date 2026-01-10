@@ -93,6 +93,7 @@ type InviteService interface {
 	MarkInviteSent(ctx context.Context, inviteID int64) error
 	MarkInviteViewed(ctx context.Context, inviteID int64) error
 	MarkInviteResponded(ctx context.Context, inviteID int64) error
+	UnsubscribeFromReminders(ctx context.Context, token string) error
 }
 
 type inviteService struct {
@@ -693,6 +694,39 @@ func (s *inviteService) MarkInviteResponded(ctx context.Context, inviteID int64)
 
 	if err := s.repo.Update(ctx, invite); err != nil {
 		return fmt.Errorf("failed to update invite: %w", err)
+	}
+
+	return nil
+}
+
+func (s *inviteService) UnsubscribeFromReminders(ctx context.Context, plainToken string) error {
+	tokenHash, err := s.generator.Hash(plainToken)
+	if err != nil {
+		return fmt.Errorf("failed to hash token: %w", err)
+	}
+
+	invite, err := s.repo.GetByTokenHash(ctx, tokenHash)
+	if err != nil {
+		return err
+	}
+
+	if invite.ExpiresAt.Before(time.Now()) {
+		return fmt.Errorf("invite has expired")
+	}
+
+	if invite.Status == models.InviteStatusRevoked {
+		return fmt.Errorf("invite has been revoked")
+	}
+
+	if invite.Unsubscribed {
+		return nil
+	}
+
+	invite.Unsubscribed = true
+	invite.UpdatedAt = time.Now()
+
+	if err := s.repo.Update(ctx, invite); err != nil {
+		return fmt.Errorf("failed to unsubscribe: %w", err)
 	}
 
 	return nil
