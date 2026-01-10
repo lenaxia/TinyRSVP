@@ -45,7 +45,7 @@
     background: var(--color-surface);
     border-radius: var(--radius-base);
     border-left: 4px solid var(--color-primary-600);
-    padding: var(--spacing-5);
+    padding: var(--spacing-3);
     margin-bottom: var(--spacing-5);
 }
 
@@ -102,7 +102,7 @@
     background: var(--color-surface);
     border-radius: var(--radius-base);
     border-left: 4px solid var(--color-primary-600);
-    padding: var(--spacing-5);
+    padding: var(--spacing-3);
     margin-bottom: var(--spacing-5);
 }
 
@@ -135,7 +135,7 @@
     background: var(--color-surface);
     border-radius: var(--radius-base);
     border-left: 4px solid var(--color-primary-600);
-    padding: var(--spacing-5);
+    padding: var(--spacing-3);
     margin-bottom: var(--spacing-5);
 }
 
@@ -173,7 +173,7 @@
     flex-wrap: wrap;
     gap: var(--spacing-3);
     justify-content: center;
-    margin-top: var(--spacing-8);
+    margin-top: var(--spacing-6);
 }
 
 .calendar-download,
@@ -221,7 +221,7 @@
     }
 
     .confirmation-success {
-        padding: var(--spacing-5);
+        padding: var(--spacing-4);
     }
 
     .confirmation-title {
@@ -241,7 +241,7 @@
 
 @media (min-width: 1024px) {
     .confirmation {
-        padding: var(--spacing-8);
+        padding: var(--spacing-6);
     }
 
     .confirmation-success-icon {

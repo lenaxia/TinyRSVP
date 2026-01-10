@@ -17,7 +17,7 @@
 .event-details {
     background-color: var(--color-surface);
     border-radius: var(--radius-lg);
-    padding: var(--spacing-6);
+    padding: var(--spacing-4);
     margin-bottom: var(--spacing-6);
     box-shadow: var(--shadow-base);
     border: 1px solid var(--color-border);
@@ -85,7 +85,7 @@
 .rsvp-form {
     background-color: var(--color-surface);
     border-radius: var(--radius-lg);
-    padding: var(--spacing-6);
+    padding: var(--spacing-4);
     box-shadow: var(--shadow-sm);
 }
 
@@ -119,7 +119,7 @@
     align-items: center;
     justify-content: center;
     min-height: 44px;
-    padding: var(--spacing-4);
+    padding: var(--spacing-3);
     border: 2px solid var(--color-border);
     border-radius: var(--radius-md);
     background-color: var(--color-background);
@@ -154,7 +154,7 @@
 .plus-ones-selector {
     margin-bottom: var(--spacing-5);
     background-color: var(--color-surface);
-    padding: var(--spacing-4);
+    padding: var(--spacing-3);
     border-radius: var(--radius-md);
     border: 1px solid var(--color-border);
 }
@@ -220,8 +220,8 @@
 }
 
 .preference-questions {
-    margin-top: var(--spacing-8);
-    padding-top: var(--spacing-8);
+    margin-top: var(--spacing-6);
+    padding-top: var(--spacing-6);
     border-top: 1px solid var(--color-border);
     margin-bottom: var(--spacing-5);
 }
@@ -313,7 +313,7 @@
 }
 
 .alert {
-    padding: var(--spacing-8);
+    padding: var(--spacing-3);
     border-radius: var(--radius-md);
     margin-bottom: var(--spacing-4);
     font-size: var(--font-size-base);
@@ -360,7 +360,7 @@
 }
 
 .existing-rsvp-notice {
-    padding: var(--spacing-4);
+    padding: var(--spacing-3);
     background-color: var(--color-success);
     border: 1px solid var(--color-success-dark);
     border-radius: var(--radius-md);
@@ -385,21 +385,21 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: var(--spacing-8);
+    padding: var(--spacing-6);
     color: var(--color-text-secondary);
 }
 
 @media (min-width: 768px) {
     .rsvp-page {
-        padding: var(--spacing-8);
+        padding: var(--spacing-6);
     }
 
     .event-details {
-        padding: var(--spacing-8);
+        padding: var(--spacing-5);
     }
 
     .rsvp-form {
-        padding: var(--spacing-8);
+        padding: var(--spacing-5);
     }
 
     .response-options {
