@@ -277,6 +277,7 @@ func writeHTMLError(w http.ResponseWriter, r *http.Request, apiErr *APIError) {
             margin: 100px auto;
             padding: 20px;
             text-align: center;
+            background-color: #f9fafb;
         }
         h1 {
             font-size: 72px;
