@@ -114,7 +114,6 @@
                 </div>
                 <div class="invite-actions-right">
                     <button class="btn btn-secondary export-btn" aria-label="Export invites">Export</button>
-                    <a href="/events/{{.EventID}}/invites/new" class="btn btn-primary">Create Invite</a>
                 </div>
             </div>
         </section>
@@ -127,12 +126,9 @@
                 {{if .Filter}}
                 No invites match your current filter. Try adjusting your search criteria.
                 {{else}}
-                Get started by creating your first invite.
+                Use the API to create invites for this event.
                 {{end}}
             </p>
-            <div class="invite-empty-action">
-                <a href="/events/{{.EventID}}/invites/new" class="btn btn-primary">Create Invite</a>
-            </div>
         </section>
         {{else}}
         <section class="invite-table-container" aria-label="Invite list">

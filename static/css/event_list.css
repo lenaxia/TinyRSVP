@@ -13,6 +13,14 @@
     gap: var(--spacing-4);
 }
 
+.event-list-title-section {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: var(--spacing-4);
+    flex-wrap: wrap;
+}
+
 .event-list-title {
     font-size: var(--font-size-2xl);
     font-weight: var(--font-weight-bold);
