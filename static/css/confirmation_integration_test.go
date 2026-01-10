@@ -152,12 +152,12 @@ func TestConfirmationCSSPrintOptimization(t *testing.T) {
 }
 
 func TestConfirmationCSSAccessibilityFeatures(t *testing.T) {
-	content, err := os.ReadFile("confirmation.css")
+	buttonsContent, err := os.ReadFile("buttons.css")
 	if err != nil {
-		t.Fatalf("Failed to read confirmation.css: %v", err)
+		t.Fatalf("Failed to read buttons.css: %v", err)
 	}
 
-	css := string(content)
+	buttons := string(buttonsContent)
 
 	accessibilityFeatures := []string{
 		":focus",
@@ -166,8 +166,8 @@ func TestConfirmationCSSAccessibilityFeatures(t *testing.T) {
 	}
 
 	for _, feature := range accessibilityFeatures {
-		if !strings.Contains(css, feature) {
-			t.Errorf("Accessibility feature missing: %s", feature)
+		if !strings.Contains(buttons, feature) {
+			t.Errorf("buttons.css missing accessibility feature: %s", feature)
 		}
 	}
 }
@@ -285,18 +285,18 @@ func TestConfirmationCSSFlexboxUsage(t *testing.T) {
 }
 
 func TestConfirmationCSSTransitions(t *testing.T) {
-	content, err := os.ReadFile("confirmation.css")
+	buttonsContent, err := os.ReadFile("buttons.css")
 	if err != nil {
-		t.Fatalf("Failed to read confirmation.css: %v", err)
+		t.Fatalf("Failed to read buttons.css: %v", err)
 	}
 
-	css := string(content)
+	buttons := string(buttonsContent)
 
-	if !strings.Contains(css, "transition:") {
-		t.Error("CSS should include transitions for smooth interactions")
+	if !strings.Contains(buttons, "transition:") {
+		t.Error("buttons.css should include transitions for smooth interactions")
 	}
 
-	if !strings.Contains(css, ":hover") {
-		t.Error("CSS should include hover states")
+	if !strings.Contains(buttons, ":hover") {
+		t.Error("buttons.css should include hover states")
 	}
 }

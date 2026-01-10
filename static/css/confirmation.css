@@ -176,44 +176,6 @@
     margin-top: var(--spacing-6);
 }
 
-.calendar-download,
-.update-rsvp {
-    display: inline-block;
-    padding: var(--spacing-3) var(--spacing-6);
-    border-radius: var(--radius-base);
-    font-weight: var(--font-weight-bold);
-    text-decoration: none;
-    transition: background var(--transition-base);
-    text-align: center;
-}
-
-.calendar-download {
-    background: var(--color-primary-600);
-    color: var(--color-background);
-}
-
-.calendar-download:hover {
-    background: var(--color-primary-700);
-}
-
-.calendar-download:focus {
-    outline: 2px solid var(--color-primary-600);
-    outline-offset: 2px;
-}
-
-.update-rsvp {
-    background: var(--color-gray-600);
-    color: var(--color-background);
-}
-
-.update-rsvp:hover {
-    background: var(--color-gray-700);
-}
-
-.update-rsvp:focus {
-    outline: 2px solid var(--color-gray-600);
-    outline-offset: 2px;
-}
 
 @media (min-width: 768px) {
     .confirmation {
