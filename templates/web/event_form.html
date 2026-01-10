@@ -10,7 +10,7 @@
     <link rel="stylesheet" href="/static/css/spacing.css">
     <link rel="stylesheet" href="/static/css/grid.css">
     <link rel="stylesheet" href="/static/css/buttons.css">
-    <link rel="stylesheet" href="/static/css/navigation.css">
+    <link rel="stylesheet" href="/static/css/app_navigation.css">
     <link rel="stylesheet" href="/static/css/forms.css">
     <link rel="stylesheet" href="/static/css/dashboard.css">
     <link rel="stylesheet" href="/static/css/event_form.css">
@@ -21,21 +21,10 @@
     <link rel="stylesheet" href="/static/css/focus_management.css">
 </head>
 <body>
-    <a href="#main-content" class="skip-link">Skip to main content</a>
-    <div class="dashboard">
-        <aside class="dashboard-sidebar">
-            <nav class="nav" role="navigation" aria-label="Main navigation">
-                <a href="/" class="logo">TinyRSVP</a>
-                <ul class="nav-menu">
-                    <li><a href="/" class="nav-link">Dashboard</a></li>
-                    <li><a href="/events" class="nav-link active">Events</a></li>
-                    <li><a href="/admin" class="nav-link">Admin</a></li>
-                </ul>
-            </nav>
-        </aside>
+    {{template "navigation" .}}
 
-        <main class="dashboard-main" role="main" aria-label="Main content" id="main-content">
-            <header class="dashboard-header">
+    <main class="dashboard-main" role="main" aria-label="Main content" id="main-content">
+        <header class="dashboard-header">
                 <h1>{{if .Event.ID}}Edit{{else}}Create{{end}} Event</h1>
             </header>
 
@@ -263,8 +252,8 @@
                     </button>
                 </div>
             </form>
-        </main>
-    </div>
+    </main>
+    <script src="/static/js/navigation_toggle.js"></script>
     <script src="/static/js/csrf.js"></script>
     <script src="/static/js/date_defaults.js"></script>
     <script src="/static/js/form_validation.js"></script>

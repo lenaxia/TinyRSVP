@@ -11,7 +11,7 @@
     <link rel="stylesheet" href="/static/css/grid.css">
     <link rel="stylesheet" href="/static/css/buttons.css">
     <link rel="stylesheet" href="/static/css/forms.css">
-    <link rel="stylesheet" href="/static/css/navigation.css">
+    <link rel="stylesheet" href="/static/css/app_navigation.css">
     <link rel="stylesheet" href="/static/css/rsvp_summary.css">
     <link rel="stylesheet" href="/static/css/mobile_optimization.css">
     <link rel="stylesheet" href="/static/css/loading_states.css">
@@ -20,7 +20,7 @@
     <link rel="stylesheet" href="/static/css/focus_management.css">
 </head>
 <body>
-    <a href="#main-content" class="skip-link">Skip to main content</a>
+    {{template "navigation" .}}
     <main class="rsvp-summary" role="main" aria-label="Main content" id="main-content">
         {{if .Error}}
         <section class="rsvp-summary-error" role="alert">
@@ -216,9 +216,13 @@
         {{end}}
         {{end}}
     </main>
+    <script src="/static/js/navigation_toggle.js"></script>
     <script src="/static/js/loading_states.js"></script>
+    <script src="/static/js/navigation_toggle.js"></script>
     <script src="/static/js/keyboard_navigation.js"></script>
+    <script src="/static/js/navigation_toggle.js"></script>
     <script src="/static/js/screen_reader.js"></script>
+    <script src="/static/js/navigation_toggle.js"></script>
     <script src="/static/js/focus_management.js"></script>
 </body>
 </html>

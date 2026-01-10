@@ -11,7 +11,7 @@
     <link rel="stylesheet" href="/static/css/grid.css">
     <link rel="stylesheet" href="/static/css/buttons.css">
     <link rel="stylesheet" href="/static/css/forms.css">
-    <link rel="stylesheet" href="/static/css/navigation.css">
+    <link rel="stylesheet" href="/static/css/app_navigation.css">
     <link rel="stylesheet" href="/static/css/dashboard.css">
     <link rel="stylesheet" href="/static/css/mobile_optimization.css">
     <link rel="stylesheet" href="/static/css/loading_states.css">
@@ -20,20 +20,7 @@
     <link rel="stylesheet" href="/static/css/focus_management.css">
 </head>
 <body>
-    <a href="#main-content" class="skip-link">Skip to main content</a>
-    <div class="dashboard">
-        <aside class="dashboard-sidebar">
-            <nav class="nav" role="navigation" aria-label="Main navigation">
-                <a href="/" class="logo">TinyRSVP</a>
-                <ul class="nav-menu">
-                    <li><a href="/" class="nav-link">Dashboard</a></li>
-                    <li><a href="/events" class="nav-link active">Events</a></li>
-                    <li><a href="/admin" class="nav-link">Admin</a></li>
-                </ul>
-            </nav>
-        </aside>
-
-        <main class="dashboard-main" role="main" aria-label="Main content" id="main-content">
+    {{template "navigation" .}}
             <header class="dashboard-header">
                 <div>
                     <h1>{{.Event.Title}}</h1>
@@ -185,11 +172,17 @@
             </div>
         </main>
     </div>
+    <script src="/static/js/navigation_toggle.js"></script>
     <script src="/static/js/csrf.js"></script>
+    <script src="/static/js/navigation_toggle.js"></script>
     <script src="/static/js/form_validation.js"></script>
+    <script src="/static/js/navigation_toggle.js"></script>
     <script src="/static/js/loading_states.js"></script>
+    <script src="/static/js/navigation_toggle.js"></script>
     <script src="/static/js/keyboard_navigation.js"></script>
+    <script src="/static/js/navigation_toggle.js"></script>
     <script src="/static/js/screen_reader.js"></script>
+    <script src="/static/js/navigation_toggle.js"></script>
     <script src="/static/js/focus_management.js"></script>
 </body>
 </html>

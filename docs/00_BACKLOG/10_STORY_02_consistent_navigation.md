@@ -22,7 +22,7 @@ As a user, I want consistent navigation across all pages so that I can easily mo
 - [ ] All authenticated pages have consistent navigation
 - [ ] Navigation includes: Dashboard, Events, Admin links
 - [ ] "TinyRSVP" logo/link appears on all pages
-- [ ] Mobile navigation works (hamburger menu or persistent nav)
+- [ ] Mobile navigation works (hamburger menu)
 - [ ] Active page is visually indicated
 - [ ] Navigation is accessible (keyboard, screen reader)
 - [ ] Navigation doesn't interfere with page content
