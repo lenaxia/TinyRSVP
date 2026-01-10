@@ -23,6 +23,7 @@ type EventRepository interface {
 	GetByStatus(ctx context.Context, status models.EventStatus) ([]*models.Event, error)
 	GetEventsToArchive(ctx context.Context, daysAfterEvent int) ([]*models.Event, error)
 	GetByCreatorID(ctx context.Context, creatorID int64) ([]*models.Event, error)
+	CountEvents(ctx context.Context) (int, error)
 }
 
 type ListFilters struct {
@@ -506,4 +507,16 @@ func isForeignKeyConstraintError(err error) bool {
 	errMsg := err.Error()
 	return strings.Contains(errMsg, "FOREIGN KEY constraint failed") ||
 		strings.Contains(errMsg, "foreign key constraint")
+}
+
+func (r *eventRepository) CountEvents(ctx context.Context) (int, error) {
+	query := `SELECT COUNT(*) FROM events WHERE status != 'archived'`
+	
+	var count int
+	err := r.db.QueryRow(ctx, query).Scan(&count)
+	if err != nil {
+		return 0, fmt.Errorf("failed to count events: %w", err)
+	}
+	
+	return count, nil
 }

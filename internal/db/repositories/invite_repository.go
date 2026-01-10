@@ -26,6 +26,7 @@ type InviteRepository interface {
 	FindDuplicateEmails(ctx context.Context, eventID int64, emails []string) ([]string, error)
 	DeleteExpired(ctx context.Context, before time.Time) (int64, error)
 	GetByEventIDs(ctx context.Context, eventIDs []int64) ([]*models.Invite, error)
+	CountInvites(ctx context.Context) (int, error)
 }
 
 type InviteFilters struct {
@@ -629,4 +630,16 @@ func (r *inviteRepository) GetByEventIDs(ctx context.Context, eventIDs []int64) 
 	}
 
 	return invites, nil
+}
+
+func (r *inviteRepository) CountInvites(ctx context.Context) (int, error) {
+	query := `SELECT COUNT(*) FROM invites`
+	
+	var count int
+	err := r.db.QueryRow(ctx, query).Scan(&count)
+	if err != nil {
+		return 0, fmt.Errorf("failed to count invites: %w", err)
+	}
+	
+	return count, nil
 }

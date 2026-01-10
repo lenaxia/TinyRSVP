@@ -916,3 +916,80 @@ func TestInviteRepository_DeleteExpired(t *testing.T) {
 		t.Errorf("CountByEventID() = %d, want 1", remaining)
 	}
 }
+
+
+func TestInviteRepository_CountInvites(t *testing.T) {
+	database := setupInviteTestDB(t)
+	defer database.Close()
+
+	repo := NewInviteRepository(database)
+
+	futureTime := time.Now().Add(30 * 24 * time.Hour)
+	email1 := "test1@example.com"
+	name1 := "Test User 1"
+	email2 := "test2@example.com"
+	name2 := "Test User 2"
+	email3 := "test3@example.com"
+	name3 := "Test User 3"
+
+	invites := []*models.Invite{
+		{
+			EventID:     1,
+			Email:       &email1,
+			Name:        &name1,
+			TokenHash:   strings.Repeat("a", 43),
+			MaxPlusOnes: 2,
+			Status:      models.InviteStatusDraft,
+			ExpiresAt:   futureTime,
+		},
+		{
+			EventID:     1,
+			Email:       &email2,
+			Name:        &name2,
+			TokenHash:   strings.Repeat("b", 43),
+			MaxPlusOnes: 2,
+			Status:      models.InviteStatusSent,
+			ExpiresAt:   futureTime,
+		},
+		{
+			EventID:     1,
+			Email:       &email3,
+			Name:        &name3,
+			TokenHash:   strings.Repeat("c", 43),
+			MaxPlusOnes: 2,
+			Status:      models.InviteStatusRevoked,
+			ExpiresAt:   futureTime,
+		},
+	}
+
+	for _, inv := range invites {
+		if err := repo.Create(context.Background(), inv); err != nil {
+			t.Fatalf("Failed to create invite: %v", err)
+		}
+	}
+
+	count, err := repo.CountInvites(context.Background())
+	if err != nil {
+		t.Fatalf("CountInvites() error = %v", err)
+	}
+
+	if count != 3 {
+		t.Errorf("CountInvites() = %d, want 3", count)
+	}
+}
+
+func TestInviteRepository_CountInvites_Empty(t *testing.T) {
+	database := setupInviteTestDB(t)
+	defer database.Close()
+
+	repo := NewInviteRepository(database)
+
+	count, err := repo.CountInvites(context.Background())
+	if err != nil {
+		t.Fatalf("CountInvites() error = %v", err)
+	}
+
+	if count != 0 {
+		t.Errorf("CountInvites() = %d, want 0", count)
+	}
+}

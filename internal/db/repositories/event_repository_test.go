@@ -1297,3 +1297,68 @@ func TestEventRepository_List_ScanError(t *testing.T) {
 		t.Error("Expected at least one result")
 	}
 }
+
+func TestEventRepository_CountEvents(t *testing.T) {
+	database := setupEventTestDB(t)
+	defer database.Close()
+
+	repo := NewEventRepository(database)
+
+	events := []*models.Event{
+		{
+			Title:       "Event 1",
+			StartTime:   time.Now().Add(24 * time.Hour),
+			Timezone:    "America/Los_Angeles",
+			Status:      models.EventStatusDraft,
+			CreatedBy:   1,
+			MaxPlusOnes: 0,
+		},
+		{
+			Title:       "Event 2",
+			StartTime:   time.Now().Add(48 * time.Hour),
+			Timezone:    "America/Los_Angeles",
+			Status:      models.EventStatusPublished,
+			CreatedBy:   1,
+			MaxPlusOnes: 0,
+		},
+		{
+			Title:       "Event 3",
+			StartTime:   time.Now().Add(72 * time.Hour),
+			Timezone:    "America/Los_Angeles",
+			Status:      models.EventStatusArchived,
+			CreatedBy:   1,
+			MaxPlusOnes: 0,
+		},
+	}
+
+	for _, e := range events {
+		if err := repo.Create(context.Background(), e); err != nil {
+			t.Fatalf("Failed to create event: %v", err)
+		}
+	}
+
+	count, err := repo.CountEvents(context.Background())
+	if err != nil {
+		t.Fatalf("CountEvents() error = %v", err)
+	}
+
+	if count != 2 {
+		t.Errorf("CountEvents() = %d, want 2 (excludes archived)", count)
+	}
+}
+
+func TestEventRepository_CountEvents_Empty(t *testing.T) {
+	database := setupEventTestDB(t)
+	defer database.Close()
+
+	repo := NewEventRepository(database)
+
+	count, err := repo.CountEvents(context.Background())
+	if err != nil {
+		t.Fatalf("CountEvents() error = %v", err)
+	}
+
+	if count != 0 {
+		t.Errorf("CountEvents() = %d, want 0", count)
+	}
+}
