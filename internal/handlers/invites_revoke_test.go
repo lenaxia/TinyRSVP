@@ -442,7 +442,9 @@ func TestRevokeInviteHandlers_RevokeInvite(t *testing.T) {
 			}
 
 			req := httptest.NewRequest(http.MethodPost, "/api/invites/"+tt.inviteID+"/revoke", bytes.NewReader(body))
+			req.Header.Set("Accept", "application/json")
 			req.Header.Set("Content-Type", "application/json")
+			req.Header.Set("Accept", "application/json")
 
 			if tt.user != nil {
 				ctx := auth.WithUser(req.Context(), tt.user)

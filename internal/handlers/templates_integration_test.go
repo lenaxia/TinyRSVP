@@ -82,6 +82,7 @@ func TestTemplateHandlers_FullStackIntegration(t *testing.T) {
 		body, _ := json.Marshal(reqBody)
 		req := httptest.NewRequest(http.MethodPost, "/api/templates", bytes.NewReader(body))
 		req.Header.Set("Content-Type", "application/json")
+			req.Header.Set("Accept", "application/json")
 		req = req.WithContext(ctx)
 
 		w := httptest.NewRecorder()
@@ -177,6 +178,7 @@ func TestTemplateHandlers_FullStackIntegration(t *testing.T) {
 
 		req := httptest.NewRequest(http.MethodPut, fmt.Sprintf("/api/templates/%d", createdTemplateID), bytes.NewReader(body))
 		req.Header.Set("Content-Type", "application/json")
+			req.Header.Set("Accept", "application/json")
 		req = req.WithContext(ctx)
 
 		rctx := chi.NewRouteContext()
@@ -217,6 +219,7 @@ func TestTemplateHandlers_FullStackIntegration(t *testing.T) {
 
 		req := httptest.NewRequest(http.MethodPost, fmt.Sprintf("/api/templates/%d/set-active", createdTemplateID), bytes.NewReader(body))
 		req.Header.Set("Content-Type", "application/json")
+			req.Header.Set("Accept", "application/json")
 		req = req.WithContext(ctx)
 
 		rctx := chi.NewRouteContext()
@@ -292,6 +295,7 @@ func TestTemplateHandlers_FullStackIntegration_WithRouter(t *testing.T) {
 		body, _ := json.Marshal(reqBody)
 		req := httptest.NewRequest(http.MethodPost, "/api/templates", bytes.NewReader(body))
 		req.Header.Set("Content-Type", "application/json")
+			req.Header.Set("Accept", "application/json")
 		req = req.WithContext(ctx)
 
 		w := httptest.NewRecorder()
@@ -344,6 +348,7 @@ func TestTemplateHandlers_FullStackIntegration_WithRouter(t *testing.T) {
 
 		req := httptest.NewRequest(http.MethodPut, fmt.Sprintf("/api/templates/%d", createdTemplateID), bytes.NewReader(body))
 		req.Header.Set("Content-Type", "application/json")
+			req.Header.Set("Accept", "application/json")
 		req = req.WithContext(ctx)
 
 		w := httptest.NewRecorder()
@@ -425,6 +430,7 @@ func TestTemplateHandlers_PermissionEnforcement(t *testing.T) {
 
 		req := httptest.NewRequest(http.MethodPut, fmt.Sprintf("/api/templates/%d", template.ID), bytes.NewReader(body))
 		req.Header.Set("Content-Type", "application/json")
+			req.Header.Set("Accept", "application/json")
 		req = req.WithContext(otherCtx)
 
 		rctx := chi.NewRouteContext()

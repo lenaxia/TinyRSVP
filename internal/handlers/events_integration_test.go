@@ -48,6 +48,7 @@ func TestEventHandlers_FullCRUDFlow_Integration(t *testing.T) {
 
 	req := httptest.NewRequest(http.MethodPost, "/api/events", bytes.NewReader([]byte(createReq)))
 	req.Header.Set("Content-Type", "application/json")
+			req.Header.Set("Accept", "application/json")
 	ctx = auth.WithUser(ctx, manager)
 	req = req.WithContext(ctx)
 	w := httptest.NewRecorder()
@@ -104,6 +105,7 @@ func TestEventHandlers_FullCRUDFlow_Integration(t *testing.T) {
 
 	req = httptest.NewRequest(http.MethodPut, "/api/events/1", bytes.NewReader([]byte(updateReq)))
 	req.Header.Set("Content-Type", "application/json")
+			req.Header.Set("Accept", "application/json")
 	rctx = chi.NewRouteContext()
 	rctx.URLParams.Add("id", "1")
 	req = req.WithContext(context.WithValue(req.Context(), chi.RouteCtxKey, rctx))
@@ -227,6 +229,7 @@ func TestEventHandlers_LifecycleTransitions_Integration(t *testing.T) {
 	cancelReq := `{"reason": "Testing cancellation flow with valid reason"}`
 	req = httptest.NewRequest(http.MethodPost, "/api/events/1/cancel", bytes.NewReader([]byte(cancelReq)))
 	req.Header.Set("Content-Type", "application/json")
+			req.Header.Set("Accept", "application/json")
 	rctx = chi.NewRouteContext()
 	rctx.URLParams.Add("id", "1")
 	req = req.WithContext(context.WithValue(req.Context(), chi.RouteCtxKey, rctx))
@@ -305,6 +308,7 @@ func TestEventHandlers_PermissionEnforcement_Integration(t *testing.T) {
 	updateReq := `{"title": "Unauthorized Update", "timezone": "America/Los_Angeles", "version": 1}`
 	req := httptest.NewRequest(http.MethodPut, "/api/events/1", bytes.NewReader([]byte(updateReq)))
 	req.Header.Set("Content-Type", "application/json")
+			req.Header.Set("Accept", "application/json")
 	rctx := chi.NewRouteContext()
 	rctx.URLParams.Add("id", "1")
 	req = req.WithContext(context.WithValue(req.Context(), chi.RouteCtxKey, rctx))
@@ -320,6 +324,7 @@ func TestEventHandlers_PermissionEnforcement_Integration(t *testing.T) {
 
 	req = httptest.NewRequest(http.MethodPut, "/api/events/1", bytes.NewReader([]byte(updateReq)))
 	req.Header.Set("Content-Type", "application/json")
+			req.Header.Set("Accept", "application/json")
 	rctx = chi.NewRouteContext()
 	rctx.URLParams.Add("id", "1")
 	req = req.WithContext(context.WithValue(req.Context(), chi.RouteCtxKey, rctx))

@@ -108,6 +108,7 @@ func createMultipartRequest(csvContent string, filename string) (*http.Request, 
 	}
 
 	req := httptest.NewRequest(http.MethodPost, "/api/events/1/invites/import", body)
+	req.Header.Set("Accept", "application/json")
 	req.Header.Set("Content-Type", writer.FormDataContentType())
 
 	return req, nil

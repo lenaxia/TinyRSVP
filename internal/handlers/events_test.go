@@ -224,7 +224,7 @@ func TestEventHandlers_CreateEvent(t *testing.T) {
 				}
 			},
 			wantStatus: http.StatusInternalServerError,
-			wantBody:   "failed to create event",
+			wantBody:   "An internal error occurred",
 		},
 		{
 			name: "validation error",
@@ -260,7 +260,9 @@ func TestEventHandlers_CreateEvent(t *testing.T) {
 			handlers := NewEventHandlers(mockService)
 
 			req := httptest.NewRequest("POST", "/api/events", strings.NewReader(tt.body))
+			req.Header.Set("Accept", "application/json")
 			req.Header.Set("Content-Type", "application/json")
+			req.Header.Set("Accept", "application/json")
 
 			ctx := auth.WithUser(req.Context(), tt.user)
 			req = req.WithContext(ctx)
@@ -339,7 +341,7 @@ func TestEventHandlers_GetEvent(t *testing.T) {
 				}
 			},
 			wantStatus: http.StatusNotFound,
-			wantBody:   "event not found",
+			wantBody:   "Event not found",
 		},
 		{
 			name:    "unauthorized access",
@@ -372,6 +374,7 @@ func TestEventHandlers_GetEvent(t *testing.T) {
 			handlers := NewEventHandlers(mockService)
 
 			req := httptest.NewRequest("GET", "/api/events/"+tt.eventID, nil)
+			req.Header.Set("Accept", "application/json")
 
 			rctx := chi.NewRouteContext()
 			rctx.URLParams.Add("id", tt.eventID)
@@ -565,7 +568,9 @@ func TestEventHandlers_UpdateEvent(t *testing.T) {
 			handlers := NewEventHandlers(mockService)
 
 			req := httptest.NewRequest("PUT", "/api/events/"+tt.eventID, strings.NewReader(tt.body))
+			req.Header.Set("Accept", "application/json")
 			req.Header.Set("Content-Type", "application/json")
+			req.Header.Set("Accept", "application/json")
 
 			rctx := chi.NewRouteContext()
 			rctx.URLParams.Add("id", tt.eventID)
@@ -660,7 +665,7 @@ func TestEventHandlers_DeleteEvent(t *testing.T) {
 				}
 			},
 			wantStatus: http.StatusNotFound,
-			wantBody:   "event not found",
+			wantBody:   "Event not found",
 		},
 		{
 			name:    "invalid event ID",
@@ -684,6 +689,8 @@ func TestEventHandlers_DeleteEvent(t *testing.T) {
 			handlers := NewEventHandlers(mockService)
 
 			req := httptest.NewRequest("DELETE", "/api/events/"+tt.eventID, nil)
+			req.Header.Set("Accept", "application/json")
+			req.Header.Set("Accept", "application/json")
 
 			rctx := chi.NewRouteContext()
 			rctx.URLParams.Add("id", tt.eventID)
@@ -863,6 +870,7 @@ func TestEventHandlers_ListEvents(t *testing.T) {
 			handlers := NewEventHandlers(mockService)
 
 			req := httptest.NewRequest("GET", "/api/events"+tt.query, nil)
+			req.Header.Set("Accept", "application/json")
 
 			ctx := auth.WithUser(req.Context(), tt.user)
 			req = req.WithContext(ctx)
@@ -964,7 +972,7 @@ func TestEventHandlers_PublishEvent(t *testing.T) {
 				}
 			},
 			wantStatus: http.StatusNotFound,
-			wantBody:   "event not found",
+			wantBody:   "Event not found",
 		},
 	}
 
@@ -978,6 +986,7 @@ func TestEventHandlers_PublishEvent(t *testing.T) {
 			handlers := NewEventHandlers(mockService)
 
 			req := httptest.NewRequest("POST", "/api/events/"+tt.eventID+"/publish", nil)
+			req.Header.Set("Accept", "application/json")
 
 			rctx := chi.NewRouteContext()
 			rctx.URLParams.Add("id", tt.eventID)
@@ -1120,7 +1129,9 @@ func TestEventHandlers_CancelEvent(t *testing.T) {
 			handlers := NewEventHandlers(mockService)
 
 			req := httptest.NewRequest("POST", "/api/events/"+tt.eventID+"/cancel", strings.NewReader(tt.body))
+			req.Header.Set("Accept", "application/json")
 			req.Header.Set("Content-Type", "application/json")
+			req.Header.Set("Accept", "application/json")
 
 			rctx := chi.NewRouteContext()
 			rctx.URLParams.Add("id", tt.eventID)
@@ -1252,7 +1263,9 @@ func TestEventHandlers_CreateEvent_TitleBoundaries(t *testing.T) {
 			}`, tt.title)
 
 			req := httptest.NewRequest("POST", "/api/events", strings.NewReader(body))
+			req.Header.Set("Accept", "application/json")
 			req.Header.Set("Content-Type", "application/json")
+			req.Header.Set("Accept", "application/json")
 
 			ctx := auth.WithUser(req.Context(), &models.User{
 				ID:   1,
@@ -1325,7 +1338,9 @@ func TestEventHandlers_CreateEvent_MaxPlusOnesBoundaries(t *testing.T) {
 			}`, tt.maxPlusOnes)
 
 			req := httptest.NewRequest("POST", "/api/events", strings.NewReader(body))
+			req.Header.Set("Accept", "application/json")
 			req.Header.Set("Content-Type", "application/json")
+			req.Header.Set("Accept", "application/json")
 
 			ctx := auth.WithUser(req.Context(), &models.User{
 				ID:   1,
@@ -1405,6 +1420,7 @@ func TestEventHandlers_ListEvents_LimitOffsetBoundaries(t *testing.T) {
 			handlers := NewEventHandlers(mockService)
 
 			req := httptest.NewRequest("GET", "/api/events"+tt.query, nil)
+			req.Header.Set("Accept", "application/json")
 
 			ctx := auth.WithUser(req.Context(), &models.User{
 				ID:   1,
@@ -1469,7 +1485,9 @@ func TestEventHandlers_CancelEvent_ReasonBoundaries(t *testing.T) {
 			body := fmt.Sprintf(`{"reason": "%s"}`, tt.reason)
 
 			req := httptest.NewRequest("POST", "/api/events/1/cancel", strings.NewReader(body))
+			req.Header.Set("Accept", "application/json")
 			req.Header.Set("Content-Type", "application/json")
+			req.Header.Set("Accept", "application/json")
 
 			rctx := chi.NewRouteContext()
 			rctx.URLParams.Add("id", "1")

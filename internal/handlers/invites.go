@@ -81,25 +81,25 @@ type CreateInviteResponse struct {
 func (h *InviteHandlers) CreateInvite(w http.ResponseWriter, r *http.Request) {
 	user, ok := auth.UserFromContext(r.Context())
 	if !ok {
-		respondError(w, http.StatusUnauthorized, "authentication required")
+		HandleError(w, r, NewUnauthorizedError("authentication required"))
 		return
 	}
 
 	eventIDStr := chi.URLParam(r, "eventId")
 	eventID, err := strconv.ParseInt(eventIDStr, 10, 64)
 	if err != nil || eventID <= 0 {
-		respondError(w, http.StatusBadRequest, "invalid event ID")
+		HandleError(w, r, NewBadRequestError("invalid event ID"))
 		return
 	}
 
 	var req CreateInviteRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		respondError(w, http.StatusBadRequest, "invalid request body")
+		HandleError(w, r, NewBadRequestError("invalid request body"))
 		return
 	}
 
 	if req.Email == "" {
-		respondError(w, http.StatusBadRequest, "email is required")
+		HandleError(w, r, NewBadRequestError("email is required"))
 		return
 	}
 
@@ -112,7 +112,7 @@ func (h *InviteHandlers) CreateInvite(w http.ResponseWriter, r *http.Request) {
 
 	resp, err := h.service.CreateIndividualInvite(r.Context(), user, serviceReq)
 	if err != nil {
-		handleInviteServiceError(w, err)
+		handleInviteServiceError(w, r, err)
 		return
 	}
 
@@ -141,37 +141,21 @@ func toInviteResponse(invite *models.Invite) *InviteResponse {
 	}
 }
 
-func handleInviteServiceError(w http.ResponseWriter, err error) {
-	var notFoundErr *models.NotFoundError
-	var permErr *models.PermissionDeniedError
-	var validationErr *models.ValidationError
-	var conflictErr *models.ConflictError
-
-	switch {
-	case errors.As(err, &notFoundErr):
-		respondError(w, http.StatusNotFound, "event not found")
-	case errors.As(err, &permErr):
-		respondError(w, http.StatusForbidden, "permission denied")
-	case errors.As(err, &validationErr):
-		respondError(w, http.StatusBadRequest, err.Error())
-	case errors.As(err, &conflictErr):
-		respondError(w, http.StatusConflict, "email already invited to this event")
-	default:
-		respondError(w, http.StatusInternalServerError, "failed to create invite")
-	}
+func handleInviteServiceError(w http.ResponseWriter, r *http.Request, err error) {
+	HandleError(w, r, err)
 }
 
 func (h *ImportInviteHandlers) ImportInvites(w http.ResponseWriter, r *http.Request) {
 	user, ok := auth.UserFromContext(r.Context())
 	if !ok {
-		respondError(w, http.StatusUnauthorized, "authentication required")
+		HandleError(w, r, NewUnauthorizedError("authentication required"))
 		return
 	}
 
 	eventIDStr := chi.URLParam(r, "eventId")
 	eventID, err := strconv.ParseInt(eventIDStr, 10, 64)
 	if err != nil || eventID <= 0 {
-		respondError(w, http.StatusBadRequest, "invalid event ID")
+		HandleError(w, r, NewBadRequestError("invalid event ID"))
 		return
 	}
 
@@ -179,60 +163,60 @@ func (h *ImportInviteHandlers) ImportInvites(w http.ResponseWriter, r *http.Requ
 	if err != nil {
 		var notFoundErr *models.NotFoundError
 		if errors.As(err, &notFoundErr) {
-			respondError(w, http.StatusNotFound, "event not found")
+			HandleError(w, r, NewNotFoundError("event not found"))
 			return
 		}
-		respondError(w, http.StatusInternalServerError, "failed to retrieve event")
+		HandleError(w, r, &APIError{StatusCode: http.StatusInternalServerError, Code: "INTERNAL_ERROR", Message: "failed to retrieve event"})
 		return
 	}
 
 	if event.Status == models.EventStatusCancelled {
-		respondError(w, http.StatusBadRequest, "cannot create invite for cancelled event")
+		HandleError(w, r, NewBadRequestError("cannot create invite for cancelled event"))
 		return
 	}
 
 	if event.Status == models.EventStatusArchived {
-		respondError(w, http.StatusBadRequest, "cannot create invite for archived event")
+		HandleError(w, r, NewBadRequestError("cannot create invite for archived event"))
 		return
 	}
 
 	if !user.IsAdmin() && event.CreatedBy != user.ID {
-		respondError(w, http.StatusForbidden, "permission denied")
+		HandleError(w, r, NewPermissionDeniedError("permission denied"))
 		return
 	}
 
 	if err := r.ParseMultipartForm(1 << 20); err != nil {
-		respondError(w, http.StatusBadRequest, "failed to parse multipart form")
+		HandleError(w, r, NewBadRequestError("failed to parse multipart form"))
 		return
 	}
 
 	file, header, err := r.FormFile("file")
 	if err != nil {
-		respondError(w, http.StatusBadRequest, "file is required")
+		HandleError(w, r, NewBadRequestError("file is required"))
 		return
 	}
 	defer file.Close()
 
 	if header.Size > 1<<20 {
-		respondError(w, http.StatusBadRequest, "file size exceeds 1MB limit")
+		HandleError(w, r, NewBadRequestError("file size exceeds 1MB limit"))
 		return
 	}
 
 	if !strings.HasSuffix(strings.ToLower(header.Filename), ".csv") {
-		respondError(w, http.StatusBadRequest, "file must be CSV format")
+		HandleError(w, r, NewBadRequestError("file must be CSV format"))
 		return
 	}
 
 	csvData := make([]byte, header.Size)
 	if _, err := file.Read(csvData); err != nil && err.Error() != "EOF" {
-		respondError(w, http.StatusBadRequest, "failed to read file")
+		HandleError(w, r, NewBadRequestError("failed to read file"))
 		return
 	}
 
 	expiresAt := event.StartTime.Add(30 * 24 * time.Hour)
 	result, err := h.service.ImportCSV(r.Context(), eventID, csvData, event.MaxPlusOnes, expiresAt)
 	if err != nil {
-		handleInviteServiceError(w, err)
+		handleInviteServiceError(w, r, err)
 		return
 	}
 

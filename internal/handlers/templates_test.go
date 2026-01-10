@@ -175,6 +175,8 @@ func TestTemplateHandlers_CreateTemplate(t *testing.T) {
 			}
 
 			req := httptest.NewRequest(http.MethodPost, "/api/templates", bytes.NewReader(body))
+			req.Header.Set("Accept", "application/json")
+			req.Header.Set("Accept", "application/json")
 			if tt.user != nil {
 				req = req.WithContext(auth.WithUser(context.Background(), tt.user))
 			}
@@ -230,7 +232,7 @@ func TestTemplateHandlers_GetTemplate(t *testing.T) {
 			user:           &models.User{ID: 1, Role: models.RoleEventManager},
 			serviceErr:     &models.NotFoundError{Resource: "Template", ID: int64(99999)},
 			wantStatus:     http.StatusNotFound,
-			wantErrMessage: "template not found",
+			wantErrMessage: "Template not found",
 		},
 		{
 			name:           "unauthorized",
@@ -255,6 +257,7 @@ func TestTemplateHandlers_GetTemplate(t *testing.T) {
 			handler := NewTemplateHandlers(mockService)
 
 			req := httptest.NewRequest(http.MethodGet, "/api/templates/"+tt.templateID, nil)
+			req.Header.Set("Accept", "application/json")
 			if tt.user != nil {
 				req = req.WithContext(auth.WithUser(context.Background(), tt.user))
 			}
@@ -354,6 +357,7 @@ func TestTemplateHandlers_UpdateTemplate(t *testing.T) {
 
 			body, _ := json.Marshal(tt.body)
 			req := httptest.NewRequest(http.MethodPut, "/api/templates/"+tt.templateID, bytes.NewReader(body))
+			req.Header.Set("Accept", "application/json")
 			if tt.user != nil {
 				req = req.WithContext(auth.WithUser(context.Background(), tt.user))
 			}
@@ -408,7 +412,7 @@ func TestTemplateHandlers_DeleteTemplate(t *testing.T) {
 			user:           &models.User{ID: 1, Role: models.RoleEventManager},
 			serviceErr:     &models.NotFoundError{Resource: "Template", ID: int64(99999)},
 			wantStatus:     http.StatusNotFound,
-			wantErrMessage: "template not found",
+			wantErrMessage: "Template not found",
 		},
 		{
 			name:           "forbidden",
@@ -431,6 +435,7 @@ func TestTemplateHandlers_DeleteTemplate(t *testing.T) {
 			handler := NewTemplateHandlers(mockService)
 
 			req := httptest.NewRequest(http.MethodDelete, "/api/templates/"+tt.templateID, nil)
+			req.Header.Set("Accept", "application/json")
 			if tt.user != nil {
 				req = req.WithContext(auth.WithUser(context.Background(), tt.user))
 			}
@@ -506,6 +511,7 @@ func TestTemplateHandlers_ListTemplates(t *testing.T) {
 			handler := NewTemplateHandlers(mockService)
 
 			req := httptest.NewRequest(http.MethodGet, "/api/templates"+tt.query, nil)
+			req.Header.Set("Accept", "application/json")
 			if tt.user != nil {
 				req = req.WithContext(auth.WithUser(context.Background(), tt.user))
 			}
@@ -560,7 +566,9 @@ func TestPreviewTemplate_Success(t *testing.T) {
 	}`
 	
 	req := httptest.NewRequest(http.MethodPost, "/api/templates/preview", strings.NewReader(reqBody))
+			req.Header.Set("Accept", "application/json")
 	req.Header.Set("Content-Type", "application/json")
+			req.Header.Set("Accept", "application/json")
 	user := &models.User{ID: 1, Role: models.RoleEventManager}
 	req = req.WithContext(auth.WithUser(context.Background(), user))
 	
@@ -590,7 +598,9 @@ func TestPreviewTemplate_InvalidJSON(t *testing.T) {
 	handlers := NewTemplateHandlers(mockService)
 	
 	req := httptest.NewRequest(http.MethodPost, "/api/templates/preview", strings.NewReader("invalid json"))
+			req.Header.Set("Accept", "application/json")
 	req.Header.Set("Content-Type", "application/json")
+			req.Header.Set("Accept", "application/json")
 	user := &models.User{ID: 1, Role: models.RoleEventManager}
 	req = req.WithContext(auth.WithUser(context.Background(), user))
 	
@@ -620,7 +630,9 @@ func TestPreviewTemplate_ValidationError(t *testing.T) {
 	}`
 	
 	req := httptest.NewRequest(http.MethodPost, "/api/templates/preview", strings.NewReader(reqBody))
+			req.Header.Set("Accept", "application/json")
 	req.Header.Set("Content-Type", "application/json")
+			req.Header.Set("Accept", "application/json")
 	user := &models.User{ID: 1, Role: models.RoleEventManager}
 	req = req.WithContext(auth.WithUser(context.Background(), user))
 	
@@ -642,7 +654,9 @@ func TestPreviewTemplate_Unauthorized(t *testing.T) {
 	}`
 	
 	req := httptest.NewRequest(http.MethodPost, "/api/templates/preview", strings.NewReader(reqBody))
+			req.Header.Set("Accept", "application/json")
 	req.Header.Set("Content-Type", "application/json")
+			req.Header.Set("Accept", "application/json")
 	
 	w := httptest.NewRecorder()
 	handlers.PreviewTemplate(w, req)

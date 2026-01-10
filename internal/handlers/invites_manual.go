@@ -43,14 +43,14 @@ type CreateManualInviteRequest struct {
 func (h *ManualInviteHandlers) CreateManualInvite(w http.ResponseWriter, r *http.Request) {
 	user, ok := auth.UserFromContext(r.Context())
 	if !ok {
-		respondError(w, http.StatusUnauthorized, "authentication required")
+		HandleError(w, r, NewUnauthorizedError("authentication required"))
 		return
 	}
 
 	eventIDStr := chi.URLParam(r, "eventId")
 	eventID, err := strconv.ParseInt(eventIDStr, 10, 64)
 	if err != nil || eventID <= 0 {
-		respondError(w, http.StatusBadRequest, "invalid event ID")
+		HandleError(w, r, NewBadRequestError("invalid event ID"))
 		return
 	}
 
@@ -58,31 +58,31 @@ func (h *ManualInviteHandlers) CreateManualInvite(w http.ResponseWriter, r *http
 	if err != nil {
 		var notFoundErr *models.NotFoundError
 		if errors.As(err, &notFoundErr) {
-			respondError(w, http.StatusNotFound, "event not found")
+			HandleError(w, r, NewNotFoundError("event not found"))
 			return
 		}
-		respondError(w, http.StatusInternalServerError, "failed to retrieve event")
+		HandleError(w, r, &APIError{StatusCode: http.StatusInternalServerError, Code: "INTERNAL_ERROR", Message: "failed to retrieve event"})
 		return
 	}
 
 	if event.Status == models.EventStatusCancelled {
-		respondError(w, http.StatusBadRequest, "cannot create invite for cancelled event")
+		HandleError(w, r, NewBadRequestError("cannot create invite for cancelled event"))
 		return
 	}
 
 	if event.Status == models.EventStatusArchived {
-		respondError(w, http.StatusBadRequest, "cannot create invite for archived event")
+		HandleError(w, r, NewBadRequestError("cannot create invite for archived event"))
 		return
 	}
 
 	if !user.IsAdmin() && event.CreatedBy != user.ID {
-		respondError(w, http.StatusForbidden, "permission denied")
+		HandleError(w, r, NewPermissionDeniedError("permission denied"))
 		return
 	}
 
 	var req CreateManualInviteRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		respondError(w, http.StatusBadRequest, "invalid request body")
+		HandleError(w, r, NewBadRequestError("invalid request body"))
 		return
 	}
 
@@ -95,7 +95,7 @@ func (h *ManualInviteHandlers) CreateManualInvite(w http.ResponseWriter, r *http
 
 	resp, err := h.service.CreateManualInvite(r.Context(), serviceReq, expiresAt)
 	if err != nil {
-		handleInviteServiceError(w, err)
+		handleInviteServiceError(w, r, err)
 		return
 	}
 

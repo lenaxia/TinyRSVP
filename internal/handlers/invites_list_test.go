@@ -3,6 +3,7 @@ package handlers
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -181,6 +182,7 @@ func TestListInvitesHandler_Success(t *testing.T) {
 	handler.RegisterRoutes(r)
 
 	req := httptest.NewRequest(http.MethodGet, "/api/events/1/invites?limit=50&offset=0", nil)
+			req.Header.Set("Accept", "application/json")
 	user := &models.User{ID: 1, Role: models.RoleAdmin}
 	ctx := auth.WithUser(req.Context(), user)
 	req = req.WithContext(ctx)
@@ -251,6 +253,7 @@ func TestListInvitesHandler_WithFilters(t *testing.T) {
 	handler.RegisterRoutes(r)
 
 	req := httptest.NewRequest(http.MethodGet, "/api/events/1/invites?status=sent&search=john&sort_by=email&sort_order=asc&limit=25&offset=0", nil)
+			req.Header.Set("Accept", "application/json")
 	user := &models.User{ID: 1, Role: models.RoleAdmin}
 	ctx := auth.WithUser(req.Context(), user)
 	req = req.WithContext(ctx)
@@ -273,6 +276,7 @@ func TestListInvitesHandler_Unauthorized(t *testing.T) {
 	handler.RegisterRoutes(r)
 
 	req := httptest.NewRequest(http.MethodGet, "/api/events/1/invites", nil)
+			req.Header.Set("Accept", "application/json")
 	rr := httptest.NewRecorder()
 	r.ServeHTTP(rr, req)
 
@@ -291,6 +295,7 @@ func TestListInvitesHandler_InvalidEventID(t *testing.T) {
 	handler.RegisterRoutes(r)
 
 	req := httptest.NewRequest(http.MethodGet, "/api/events/invalid/invites", nil)
+			req.Header.Set("Accept", "application/json")
 	user := &models.User{ID: 1, Role: models.RoleAdmin}
 	ctx := auth.WithUser(req.Context(), user)
 	req = req.WithContext(ctx)
@@ -317,6 +322,7 @@ func TestListInvitesHandler_EventNotFound(t *testing.T) {
 	handler.RegisterRoutes(r)
 
 	req := httptest.NewRequest(http.MethodGet, "/api/events/999/invites", nil)
+			req.Header.Set("Accept", "application/json")
 	user := &models.User{ID: 1, Role: models.RoleAdmin}
 	ctx := auth.WithUser(req.Context(), user)
 	req = req.WithContext(ctx)
@@ -348,6 +354,7 @@ func TestListInvitesHandler_PermissionDenied(t *testing.T) {
 	handler.RegisterRoutes(r)
 
 	req := httptest.NewRequest(http.MethodGet, "/api/events/1/invites", nil)
+			req.Header.Set("Accept", "application/json")
 	user := &models.User{ID: 1, Role: models.RoleEventManager}
 	ctx := auth.WithUser(req.Context(), user)
 	req = req.WithContext(ctx)
@@ -408,6 +415,7 @@ func TestListInvitesHandler_InvalidQueryParams(t *testing.T) {
 			handler.RegisterRoutes(r)
 
 			req := httptest.NewRequest(http.MethodGet, "/api/events/1/invites"+tt.queryParam, nil)
+			req.Header.Set("Accept", "application/json")
 			user := &models.User{ID: 1, Role: models.RoleAdmin}
 			ctx := auth.WithUser(req.Context(), user)
 			req = req.WithContext(ctx)
@@ -457,6 +465,7 @@ func TestListInvitesHandler_DefaultValues(t *testing.T) {
 	handler.RegisterRoutes(r)
 
 	req := httptest.NewRequest(http.MethodGet, "/api/events/1/invites", nil)
+			req.Header.Set("Accept", "application/json")
 	user := &models.User{ID: 1, Role: models.RoleAdmin}
 	ctx := auth.WithUser(req.Context(), user)
 	req = req.WithContext(ctx)
@@ -496,6 +505,7 @@ func TestListInvitesHandler_ServiceValidationError(t *testing.T) {
 	handler.RegisterRoutes(r)
 
 	req := httptest.NewRequest(http.MethodGet, "/api/events/1/invites?status=invalid", nil)
+			req.Header.Set("Accept", "application/json")
 	user := &models.User{ID: 1, Role: models.RoleAdmin}
 	ctx := auth.WithUser(req.Context(), user)
 	req = req.WithContext(ctx)
@@ -511,7 +521,7 @@ func TestListInvitesHandler_ServiceValidationError(t *testing.T) {
 func TestListInvitesHandler_ServiceInternalError(t *testing.T) {
 	mockService := &mockListInviteService{
 		listInvitesFunc: func(ctx context.Context, req *invites.ListInvitesRequest) (*invites.ListInvitesResponse, error) {
-			return nil, context.DeadlineExceeded
+			return nil, fmt.Errorf("database connection failed")
 		},
 	}
 
@@ -532,6 +542,7 @@ func TestListInvitesHandler_ServiceInternalError(t *testing.T) {
 	handler.RegisterRoutes(r)
 
 	req := httptest.NewRequest(http.MethodGet, "/api/events/1/invites", nil)
+	req.Header.Set("Accept", "application/json")
 	user := &models.User{ID: 1, Role: models.RoleAdmin}
 	ctx := auth.WithUser(req.Context(), user)
 	req = req.WithContext(ctx)
@@ -594,6 +605,7 @@ func TestListInvitesHandler_ResponseJSONStructure(t *testing.T) {
 	handler.RegisterRoutes(r)
 
 	req := httptest.NewRequest(http.MethodGet, "/api/events/1/invites", nil)
+			req.Header.Set("Accept", "application/json")
 	user := &models.User{ID: 1, Role: models.RoleAdmin}
 	ctx := auth.WithUser(req.Context(), user)
 	req = req.WithContext(ctx)
@@ -708,6 +720,7 @@ func TestListInvitesHandler_LimitBoundaryValues(t *testing.T) {
 			handler.RegisterRoutes(r)
 
 			req := httptest.NewRequest(http.MethodGet, "/api/events/1/invites?limit="+tt.limit, nil)
+			req.Header.Set("Accept", "application/json")
 			user := &models.User{ID: 1, Role: models.RoleAdmin}
 			ctx := auth.WithUser(req.Context(), user)
 			req = req.WithContext(ctx)

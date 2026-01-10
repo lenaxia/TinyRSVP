@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"errors"
 	"net/http"
 	"strconv"
 
@@ -9,7 +8,6 @@ import (
 	"github.com/lenaxia/tinyrsvp/internal/auth"
 	"github.com/lenaxia/tinyrsvp/internal/db/repositories"
 	"github.com/lenaxia/tinyrsvp/internal/invites"
-	"github.com/lenaxia/tinyrsvp/internal/models"
 )
 
 type ListInviteHandlers struct {
@@ -33,30 +31,25 @@ func (h *ListInviteHandlers) RegisterRoutes(r chi.Router) {
 func (h *ListInviteHandlers) ListInvites(w http.ResponseWriter, r *http.Request) {
 	user, ok := auth.UserFromContext(r.Context())
 	if !ok {
-		respondError(w, http.StatusUnauthorized, "authentication required")
+		HandleError(w, r, NewUnauthorizedError("authentication required"))
 		return
 	}
 
 	eventIDStr := chi.URLParam(r, "eventId")
 	eventID, err := strconv.ParseInt(eventIDStr, 10, 64)
 	if err != nil || eventID <= 0 {
-		respondError(w, http.StatusBadRequest, "invalid event ID")
+		HandleError(w, r, NewBadRequestError("invalid event ID"))
 		return
 	}
 
 	event, err := h.eventRepo.GetByID(r.Context(), eventID)
 	if err != nil {
-		var notFoundErr *models.NotFoundError
-		if errors.As(err, &notFoundErr) {
-			respondError(w, http.StatusNotFound, "event not found")
-			return
-		}
-		respondError(w, http.StatusInternalServerError, "failed to retrieve event")
+		HandleError(w, r, err)
 		return
 	}
 
 	if !user.IsAdmin() && event.CreatedBy != user.ID {
-		respondError(w, http.StatusForbidden, "permission denied")
+		HandleError(w, r, NewPermissionDeniedError("permission denied"))
 		return
 	}
 
@@ -66,11 +59,11 @@ func (h *ListInviteHandlers) ListInvites(w http.ResponseWriter, r *http.Request)
 	if limitStr := query.Get("limit"); limitStr != "" {
 		parsedLimit, err := strconv.Atoi(limitStr)
 		if err != nil {
-			respondError(w, http.StatusBadRequest, "invalid limit parameter")
+			HandleError(w, r, NewBadRequestError("invalid limit parameter"))
 			return
 		}
 		if parsedLimit < 1 || parsedLimit > 100 {
-			respondError(w, http.StatusBadRequest, "limit must be between 1 and 100")
+			HandleError(w, r, NewBadRequestError("limit must be between 1 and 100"))
 			return
 		}
 		limit = parsedLimit
@@ -80,11 +73,11 @@ func (h *ListInviteHandlers) ListInvites(w http.ResponseWriter, r *http.Request)
 	if offsetStr := query.Get("offset"); offsetStr != "" {
 		parsedOffset, err := strconv.Atoi(offsetStr)
 		if err != nil {
-			respondError(w, http.StatusBadRequest, "invalid offset parameter")
+			HandleError(w, r, NewBadRequestError("invalid offset parameter"))
 			return
 		}
 		if parsedOffset < 0 {
-			respondError(w, http.StatusBadRequest, "offset must be non-negative")
+			HandleError(w, r, NewBadRequestError("offset must be non-negative"))
 			return
 		}
 		offset = parsedOffset
@@ -124,12 +117,7 @@ func (h *ListInviteHandlers) ListInvites(w http.ResponseWriter, r *http.Request)
 
 	resp, err := h.service.ListInvites(r.Context(), req)
 	if err != nil {
-		var validationErr *models.ValidationError
-		if errors.As(err, &validationErr) {
-			respondError(w, http.StatusBadRequest, err.Error())
-			return
-		}
-		respondError(w, http.StatusInternalServerError, "failed to list invites")
+		HandleError(w, r, err)
 		return
 	}
 

@@ -49,20 +49,20 @@ type RevokeInviteResponse struct {
 func (h *RevokeInviteHandlers) RevokeInvite(w http.ResponseWriter, r *http.Request) {
 	user, ok := auth.UserFromContext(r.Context())
 	if !ok {
-		respondError(w, http.StatusUnauthorized, "authentication required")
+		HandleError(w, r, NewUnauthorizedError("authentication required"))
 		return
 	}
 
 	inviteIDStr := chi.URLParam(r, "inviteId")
 	inviteID, err := strconv.ParseInt(inviteIDStr, 10, 64)
 	if err != nil || inviteID <= 0 {
-		respondError(w, http.StatusBadRequest, "invalid invite ID")
+		HandleError(w, r, NewBadRequestError("invalid invite ID"))
 		return
 	}
 
 	var req RevokeInviteRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		respondError(w, http.StatusBadRequest, "invalid request body")
+		HandleError(w, r, NewBadRequestError("invalid request body"))
 		return
 	}
 
@@ -70,10 +70,10 @@ func (h *RevokeInviteHandlers) RevokeInvite(w http.ResponseWriter, r *http.Reque
 	if err != nil {
 		var notFoundErr *models.NotFoundError
 		if errors.As(err, &notFoundErr) {
-			respondError(w, http.StatusNotFound, "invite not found")
+			HandleError(w, r, NewNotFoundError("invite not found"))
 			return
 		}
-		respondError(w, http.StatusInternalServerError, "failed to retrieve invite")
+		HandleError(w, r, &APIError{StatusCode: http.StatusInternalServerError, Code: "INTERNAL_ERROR", Message: "failed to retrieve invite"})
 		return
 	}
 
@@ -81,15 +81,15 @@ func (h *RevokeInviteHandlers) RevokeInvite(w http.ResponseWriter, r *http.Reque
 	if err != nil {
 		var notFoundErr *models.NotFoundError
 		if errors.As(err, &notFoundErr) {
-			respondError(w, http.StatusNotFound, "event not found")
+			HandleError(w, r, NewNotFoundError("event not found"))
 			return
 		}
-		respondError(w, http.StatusInternalServerError, "failed to retrieve event")
+		HandleError(w, r, &APIError{StatusCode: http.StatusInternalServerError, Code: "INTERNAL_ERROR", Message: "failed to retrieve event"})
 		return
 	}
 
 	if !user.IsAdmin() && event.CreatedBy != user.ID {
-		respondError(w, http.StatusForbidden, "permission denied")
+		HandleError(w, r, NewPermissionDeniedError("permission denied"))
 		return
 	}
 
@@ -102,10 +102,10 @@ func (h *RevokeInviteHandlers) RevokeInvite(w http.ResponseWriter, r *http.Reque
 		errMsg := err.Error()
 		if strings.Contains(errMsg, "cannot transition from responded") ||
 		   strings.Contains(errMsg, "cannot transition from revoked") {
-			respondError(w, http.StatusBadRequest, err.Error())
+			HandleError(w, r, NewBadRequestError(err.Error()))
 			return
 		}
-		respondError(w, http.StatusInternalServerError, "failed to revoke invite")
+		HandleError(w, r, &APIError{StatusCode: http.StatusInternalServerError, Code: "INTERNAL_ERROR", Message: "failed to revoke invite"})
 		return
 	}
 

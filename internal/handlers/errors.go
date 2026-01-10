@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/lenaxia/tinyrsvp/internal/assets"
 	"github.com/lenaxia/tinyrsvp/internal/middleware"
 	"github.com/lenaxia/tinyrsvp/internal/models"
 )
@@ -179,6 +180,45 @@ func toAPIError(err error) *APIError {
 		}
 	}
 
+	var assetsValidationErr *assets.ValidationError
+	if errors.As(err, &assetsValidationErr) {
+		return &APIError{
+			StatusCode: http.StatusBadRequest,
+			Code:       "VALIDATION_ERROR",
+			Message:    assetsValidationErr.Error(),
+			Err:        err,
+		}
+	}
+
+	var versionConflictErr *models.VersionConflictError
+	if errors.As(err, &versionConflictErr) {
+		return &APIError{
+			StatusCode: http.StatusConflict,
+			Code:       "VERSION_CONFLICT",
+			Message:    "version conflict",
+			Err:        err,
+		}
+	}
+
+	var optimisticLockErr *models.OptimisticLockError
+	if errors.As(err, &optimisticLockErr) {
+		return &APIError{
+			StatusCode: http.StatusConflict,
+			Code:       "VERSION_CONFLICT",
+			Message:    "version conflict",
+			Err:        err,
+		}
+	}
+
+	if err.Error() == "invalid state transition" {
+		return &APIError{
+			StatusCode: http.StatusBadRequest,
+			Code:       "BAD_REQUEST",
+			Message:    "invalid state transition",
+			Err:        err,
+		}
+	}
+
 	return &APIError{
 		StatusCode: http.StatusInternalServerError,
 		Code:       "INTERNAL_ERROR",
@@ -308,13 +348,3 @@ func HandleError(w http.ResponseWriter, r *http.Request, err error) {
 	}
 }
 
-func respondError(w http.ResponseWriter, status int, message string) {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(status)
-	resp := ErrorResponse{
-		Error:   http.StatusText(status),
-		Message: message,
-		Code:    http.StatusText(status),
-	}
-	json.NewEncoder(w).Encode(resp)
-}

@@ -55,13 +55,13 @@ func (h *QuestionHandlers) CreateQuestion(w http.ResponseWriter, r *http.Request
 	eventIDStr := chi.URLParam(r, "id")
 	eventID, err := strconv.ParseInt(eventIDStr, 10, 64)
 	if err != nil {
-		respondError(w, http.StatusBadRequest, "invalid event ID")
+		HandleError(w, r, NewBadRequestError("invalid event ID"))
 		return
 	}
 
 	var req CreateQuestionRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		respondError(w, http.StatusBadRequest, "invalid request body")
+		HandleError(w, r, NewBadRequestError("invalid request body"))
 		return
 	}
 
@@ -74,13 +74,13 @@ func (h *QuestionHandlers) CreateQuestion(w http.ResponseWriter, r *http.Request
 
 	if len(req.Options) > 0 {
 		if err := question.SetOptions(req.Options); err != nil {
-			respondError(w, http.StatusBadRequest, "invalid options")
+			HandleError(w, r, NewBadRequestError("invalid options"))
 			return
 		}
 	}
 
 	if err := h.service.AddQuestion(r.Context(), question); err != nil {
-		handleServiceError(w, err)
+		handleServiceError(w, r, err)
 		return
 	}
 
@@ -91,13 +91,13 @@ func (h *QuestionHandlers) GetQuestions(w http.ResponseWriter, r *http.Request) 
 	eventIDStr := chi.URLParam(r, "id")
 	eventID, err := strconv.ParseInt(eventIDStr, 10, 64)
 	if err != nil {
-		respondError(w, http.StatusBadRequest, "invalid event ID")
+		HandleError(w, r, NewBadRequestError("invalid event ID"))
 		return
 	}
 
 	questions, err := h.service.GetQuestions(r.Context(), eventID)
 	if err != nil {
-		handleServiceError(w, err)
+		handleServiceError(w, r, err)
 		return
 	}
 
@@ -108,20 +108,20 @@ func (h *QuestionHandlers) UpdateQuestion(w http.ResponseWriter, r *http.Request
 	eventIDStr := chi.URLParam(r, "id")
 	eventID, err := strconv.ParseInt(eventIDStr, 10, 64)
 	if err != nil {
-		respondError(w, http.StatusBadRequest, "invalid event ID")
+		HandleError(w, r, NewBadRequestError("invalid event ID"))
 		return
 	}
 
 	questionIDStr := chi.URLParam(r, "qid")
 	questionID, err := strconv.ParseInt(questionIDStr, 10, 64)
 	if err != nil {
-		respondError(w, http.StatusBadRequest, "invalid question ID")
+		HandleError(w, r, NewBadRequestError("invalid question ID"))
 		return
 	}
 
 	var req UpdateQuestionRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		respondError(w, http.StatusBadRequest, "invalid request body")
+		HandleError(w, r, NewBadRequestError("invalid request body"))
 		return
 	}
 
@@ -135,13 +135,13 @@ func (h *QuestionHandlers) UpdateQuestion(w http.ResponseWriter, r *http.Request
 
 	if len(req.Options) > 0 {
 		if err := question.SetOptions(req.Options); err != nil {
-			respondError(w, http.StatusBadRequest, "invalid options")
+			HandleError(w, r, NewBadRequestError("invalid options"))
 			return
 		}
 	}
 
 	if err := h.service.UpdateQuestion(r.Context(), question); err != nil {
-		handleServiceError(w, err)
+		handleServiceError(w, r, err)
 		return
 	}
 
@@ -152,19 +152,19 @@ func (h *QuestionHandlers) DeleteQuestion(w http.ResponseWriter, r *http.Request
 	eventIDStr := chi.URLParam(r, "id")
 	_, err := strconv.ParseInt(eventIDStr, 10, 64)
 	if err != nil {
-		respondError(w, http.StatusBadRequest, "invalid event ID")
+		HandleError(w, r, NewBadRequestError("invalid event ID"))
 		return
 	}
 
 	questionIDStr := chi.URLParam(r, "qid")
 	questionID, err := strconv.ParseInt(questionIDStr, 10, 64)
 	if err != nil {
-		respondError(w, http.StatusBadRequest, "invalid question ID")
+		HandleError(w, r, NewBadRequestError("invalid question ID"))
 		return
 	}
 
 	if err := h.service.DeleteQuestion(r.Context(), questionID); err != nil {
-		handleServiceError(w, err)
+		handleServiceError(w, r, err)
 		return
 	}
 
@@ -175,18 +175,18 @@ func (h *QuestionHandlers) ReorderQuestions(w http.ResponseWriter, r *http.Reque
 	eventIDStr := chi.URLParam(r, "id")
 	eventID, err := strconv.ParseInt(eventIDStr, 10, 64)
 	if err != nil {
-		respondError(w, http.StatusBadRequest, "invalid event ID")
+		HandleError(w, r, NewBadRequestError("invalid event ID"))
 		return
 	}
 
 	var req ReorderQuestionsRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		respondError(w, http.StatusBadRequest, "invalid request body")
+		HandleError(w, r, NewBadRequestError("invalid request body"))
 		return
 	}
 
 	if err := h.service.ReorderQuestions(r.Context(), eventID, req.QuestionIDs); err != nil {
-		handleServiceError(w, err)
+		handleServiceError(w, r, err)
 		return
 	}
 

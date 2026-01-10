@@ -523,6 +523,7 @@ func TestRSVPHandler_SubmitRSVP_Success(t *testing.T) {
 	body := `{"response":"yes","plus_ones":2,"answers":[]}`
 	req := httptest.NewRequest("POST", "/api/rsvp/validtoken", strings.NewReader(body))
 	req.Header.Set("Content-Type", "application/json")
+			req.Header.Set("Accept", "application/json")
 	
 	rctx := chi.NewRouteContext()
 	rctx.URLParams.Add("token", "validtoken")
@@ -548,6 +549,7 @@ func TestRSVPHandler_SubmitRSVP_InvalidJSON(t *testing.T) {
 	body := `{invalid json`
 	req := httptest.NewRequest("POST", "/api/rsvp/validtoken", strings.NewReader(body))
 	req.Header.Set("Content-Type", "application/json")
+			req.Header.Set("Accept", "application/json")
 	
 	rctx := chi.NewRouteContext()
 	rctx.URLParams.Add("token", "validtoken")
@@ -577,6 +579,7 @@ func TestRSVPHandler_SubmitRSVP_ValidationError(t *testing.T) {
 	body := `{"response":"yes","plus_ones":5,"answers":[]}`
 	req := httptest.NewRequest("POST", "/api/rsvp/validtoken", strings.NewReader(body))
 	req.Header.Set("Content-Type", "application/json")
+			req.Header.Set("Accept", "application/json")
 	
 	rctx := chi.NewRouteContext()
 	rctx.URLParams.Add("token", "validtoken")
@@ -606,6 +609,7 @@ func TestRSVPHandler_SubmitRSVP_DeadlinePassed(t *testing.T) {
 	body := `{"response":"yes","plus_ones":0,"answers":[]}`
 	req := httptest.NewRequest("POST", "/api/rsvp/validtoken", strings.NewReader(body))
 	req.Header.Set("Content-Type", "application/json")
+			req.Header.Set("Accept", "application/json")
 	
 	rctx := chi.NewRouteContext()
 	rctx.URLParams.Add("token", "validtoken")
@@ -632,6 +636,7 @@ func TestRSVPHandler_SubmitRSVP_DuplicateRSVP(t *testing.T) {
 	body := `{"response":"yes","plus_ones":0,"answers":[]}`
 	req := httptest.NewRequest("POST", "/api/rsvp/validtoken", strings.NewReader(body))
 	req.Header.Set("Content-Type", "application/json")
+			req.Header.Set("Accept", "application/json")
 	
 	rctx := chi.NewRouteContext()
 	rctx.URLParams.Add("token", "validtoken")
@@ -658,6 +663,7 @@ func TestRSVPHandler_SubmitRSVP_InternalError(t *testing.T) {
 	body := `{"response":"yes","plus_ones":0,"answers":[]}`
 	req := httptest.NewRequest("POST", "/api/rsvp/validtoken", strings.NewReader(body))
 	req.Header.Set("Content-Type", "application/json")
+			req.Header.Set("Accept", "application/json")
 	
 	rctx := chi.NewRouteContext()
 	rctx.URLParams.Add("token", "validtoken")
@@ -712,6 +718,7 @@ func TestRSVPHandler_UpdateRSVP_Success(t *testing.T) {
 	body := `{"response":"maybe","plus_ones":1,"answers":[]}`
 	req := httptest.NewRequest("PUT", "/api/rsvp/validtoken", strings.NewReader(body))
 	req.Header.Set("Content-Type", "application/json")
+			req.Header.Set("Accept", "application/json")
 	
 	rctx := chi.NewRouteContext()
 	rctx.URLParams.Add("token", "validtoken")
@@ -742,6 +749,7 @@ func TestRSVPHandler_UpdateRSVP_NoExistingRSVP(t *testing.T) {
 	body := `{"response":"yes","plus_ones":0,"answers":[]}`
 	req := httptest.NewRequest("PUT", "/api/rsvp/validtoken", strings.NewReader(body))
 	req.Header.Set("Content-Type", "application/json")
+			req.Header.Set("Accept", "application/json")
 	
 	rctx := chi.NewRouteContext()
 	rctx.URLParams.Add("token", "validtoken")
@@ -771,6 +779,7 @@ func TestRSVPHandler_UpdateRSVP_DeadlinePassed(t *testing.T) {
 	body := `{"response":"no","plus_ones":0,"answers":[]}`
 	req := httptest.NewRequest("PUT", "/api/rsvp/validtoken", strings.NewReader(body))
 	req.Header.Set("Content-Type", "application/json")
+			req.Header.Set("Accept", "application/json")
 	
 	rctx := chi.NewRouteContext()
 	rctx.URLParams.Add("token", "validtoken")
@@ -800,6 +809,7 @@ func TestRSVPHandler_UpdateRSVP_ValidationError(t *testing.T) {
 	body := `{"response":"yes","plus_ones":5,"answers":[]}`
 	req := httptest.NewRequest("PUT", "/api/rsvp/validtoken", strings.NewReader(body))
 	req.Header.Set("Content-Type", "application/json")
+			req.Header.Set("Accept", "application/json")
 	
 	rctx := chi.NewRouteContext()
 	rctx.URLParams.Add("token", "validtoken")
@@ -821,6 +831,7 @@ func TestRSVPHandler_UpdateRSVP_InvalidJSON(t *testing.T) {
 	body := `{invalid json`
 	req := httptest.NewRequest("PUT", "/api/rsvp/validtoken", strings.NewReader(body))
 	req.Header.Set("Content-Type", "application/json")
+			req.Header.Set("Accept", "application/json")
 	
 	rctx := chi.NewRouteContext()
 	rctx.URLParams.Add("token", "validtoken")
@@ -1054,6 +1065,7 @@ func TestRSVPHandler_UpdateRSVP_EmptyToken(t *testing.T) {
 	body := `{"response":"yes","plus_ones":0,"answers":[]}`
 	req := httptest.NewRequest("PUT", "/api/rsvp/", strings.NewReader(body))
 	req.Header.Set("Content-Type", "application/json")
+			req.Header.Set("Accept", "application/json")
 	
 	rctx := chi.NewRouteContext()
 	rctx.URLParams.Add("token", "")

@@ -479,6 +479,7 @@ func TestRSVPHandler_Integration_SubmitRSVP_Success(t *testing.T) {
 	body := `{"response":"yes","plus_ones":2,"answers":[]}`
 	req := httptest.NewRequest("POST", "/api/rsvp/"+inviteToken, strings.NewReader(body))
 	req.Header.Set("Content-Type", "application/json")
+			req.Header.Set("Accept", "application/json")
 	w := httptest.NewRecorder()
 
 	r.ServeHTTP(w, req)
@@ -568,6 +569,7 @@ func TestRSVPHandler_Integration_SubmitRSVP_WithAnswers(t *testing.T) {
 	}`
 	req := httptest.NewRequest("POST", "/api/rsvp/"+inviteToken, strings.NewReader(body))
 	req.Header.Set("Content-Type", "application/json")
+			req.Header.Set("Accept", "application/json")
 	w := httptest.NewRecorder()
 
 	r.ServeHTTP(w, req)
@@ -635,6 +637,7 @@ func TestRSVPHandler_Integration_SubmitRSVP_DeadlinePassed(t *testing.T) {
 	body := `{"response":"yes","plus_ones":0,"answers":[]}`
 	req := httptest.NewRequest("POST", "/api/rsvp/"+inviteToken, strings.NewReader(body))
 	req.Header.Set("Content-Type", "application/json")
+			req.Header.Set("Accept", "application/json")
 	w := httptest.NewRecorder()
 
 	r.ServeHTTP(w, req)
@@ -755,6 +758,7 @@ func TestRSVPHandler_Integration_SubmitRSVP_MissingRequiredAnswer(t *testing.T) 
 	body := `{"response":"yes","plus_ones":0,"answers":[]}`
 	req := httptest.NewRequest("POST", "/api/rsvp/"+inviteToken, strings.NewReader(body))
 	req.Header.Set("Content-Type", "application/json")
+			req.Header.Set("Accept", "application/json")
 	w := httptest.NewRecorder()
 
 	r.ServeHTTP(w, req)

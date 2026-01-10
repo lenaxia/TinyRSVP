@@ -334,6 +334,7 @@ func TestManualInviteHandlers_CreateManualInvite(t *testing.T) {
 
 			req := httptest.NewRequest(http.MethodPost, "/api/events/"+tt.eventID+"/invites/manual", bytes.NewReader(body))
 			req.Header.Set("Content-Type", "application/json")
+			req.Header.Set("Accept", "application/json")
 
 			if tt.user != nil {
 				ctx := auth.WithUser(req.Context(), tt.user)

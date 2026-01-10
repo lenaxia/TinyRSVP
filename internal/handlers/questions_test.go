@@ -161,6 +161,7 @@ func TestQuestionHandlers_CreateQuestion(t *testing.T) {
 
 			req := httptest.NewRequest(http.MethodPost, "/api/events/"+tt.eventID+"/questions", bytes.NewReader(body))
 			req.Header.Set("Content-Type", "application/json")
+			req.Header.Set("Accept", "application/json")
 
 			user := &models.User{ID: 1, Role: models.RoleEventManager}
 			ctx := auth.WithUser(req.Context(), user)
@@ -316,6 +317,7 @@ func TestQuestionHandlers_UpdateQuestion(t *testing.T) {
 
 			req := httptest.NewRequest(http.MethodPut, "/api/events/"+tt.eventID+"/questions/"+tt.questionID, bytes.NewReader(body))
 			req.Header.Set("Content-Type", "application/json")
+			req.Header.Set("Accept", "application/json")
 
 			user := &models.User{ID: 1, Role: models.RoleEventManager}
 			ctx := auth.WithUser(req.Context(), user)
@@ -461,6 +463,7 @@ func TestQuestionHandlers_ReorderQuestions(t *testing.T) {
 
 			req := httptest.NewRequest(http.MethodPost, "/api/events/"+tt.eventID+"/questions/reorder", bytes.NewReader(body))
 			req.Header.Set("Content-Type", "application/json")
+			req.Header.Set("Accept", "application/json")
 
 			user := &models.User{ID: 1, Role: models.RoleEventManager}
 			ctx := auth.WithUser(req.Context(), user)

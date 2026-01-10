@@ -83,6 +83,7 @@ func TestQuestionIntegration_FullLifecycle(t *testing.T) {
 
 	req := httptest.NewRequest(http.MethodPost, "/api/events", bytes.NewReader(eventBody))
 	req.Header.Set("Content-Type", "application/json")
+			req.Header.Set("Accept", "application/json")
 	req = req.WithContext(ctx)
 	rec := httptest.NewRecorder()
 
@@ -105,6 +106,7 @@ func TestQuestionIntegration_FullLifecycle(t *testing.T) {
 
 		req := httptest.NewRequest(http.MethodPost, "/api/events/1/questions", bytes.NewReader(body))
 		req.Header.Set("Content-Type", "application/json")
+			req.Header.Set("Accept", "application/json")
 		req = req.WithContext(ctx)
 
 		rctx := chi.NewRouteContext()
@@ -130,6 +132,7 @@ func TestQuestionIntegration_FullLifecycle(t *testing.T) {
 
 		req := httptest.NewRequest(http.MethodPost, "/api/events/1/questions", bytes.NewReader(body))
 		req.Header.Set("Content-Type", "application/json")
+			req.Header.Set("Accept", "application/json")
 		req = req.WithContext(ctx)
 
 		rctx := chi.NewRouteContext()
@@ -177,6 +180,7 @@ func TestQuestionIntegration_FullLifecycle(t *testing.T) {
 
 		req := httptest.NewRequest(http.MethodPut, "/api/events/1/questions/1", bytes.NewReader(body))
 		req.Header.Set("Content-Type", "application/json")
+			req.Header.Set("Accept", "application/json")
 		req = req.WithContext(ctx)
 
 		rctx := chi.NewRouteContext()
@@ -200,6 +204,7 @@ func TestQuestionIntegration_FullLifecycle(t *testing.T) {
 
 		req := httptest.NewRequest(http.MethodPost, "/api/events/1/questions/reorder", bytes.NewReader(body))
 		req.Header.Set("Content-Type", "application/json")
+			req.Header.Set("Accept", "application/json")
 		req = req.WithContext(ctx)
 
 		rctx := chi.NewRouteContext()
@@ -287,6 +292,7 @@ func TestQuestionIntegration_PublishedEventRestrictions(t *testing.T) {
 
 	req := httptest.NewRequest(http.MethodPost, "/api/events", bytes.NewReader(eventBody))
 	req.Header.Set("Content-Type", "application/json")
+			req.Header.Set("Accept", "application/json")
 	req = req.WithContext(ctx)
 	rec := httptest.NewRecorder()
 
@@ -305,6 +311,7 @@ func TestQuestionIntegration_PublishedEventRestrictions(t *testing.T) {
 
 	req = httptest.NewRequest(http.MethodPost, "/api/events/1/questions", bytes.NewReader(body))
 	req.Header.Set("Content-Type", "application/json")
+			req.Header.Set("Accept", "application/json")
 	req = req.WithContext(ctx)
 
 	rctx := chi.NewRouteContext()
@@ -340,6 +347,7 @@ func TestQuestionIntegration_PublishedEventRestrictions(t *testing.T) {
 
 		req := httptest.NewRequest(http.MethodPost, "/api/events/1/questions", bytes.NewReader(body))
 		req.Header.Set("Content-Type", "application/json")
+			req.Header.Set("Accept", "application/json")
 		req = req.WithContext(ctx)
 
 		rctx := chi.NewRouteContext()
@@ -363,6 +371,7 @@ func TestQuestionIntegration_PublishedEventRestrictions(t *testing.T) {
 
 		req := httptest.NewRequest(http.MethodPut, "/api/events/1/questions/1", bytes.NewReader(body))
 		req.Header.Set("Content-Type", "application/json")
+			req.Header.Set("Accept", "application/json")
 		req = req.WithContext(ctx)
 
 		rctx := chi.NewRouteContext()
@@ -403,6 +412,7 @@ func TestQuestionIntegration_PublishedEventRestrictions(t *testing.T) {
 
 		req := httptest.NewRequest(http.MethodPost, "/api/events/1/questions/reorder", bytes.NewReader(body))
 		req.Header.Set("Content-Type", "application/json")
+			req.Header.Set("Accept", "application/json")
 		req = req.WithContext(ctx)
 
 		rctx := chi.NewRouteContext()
@@ -434,6 +444,7 @@ func TestQuestionIntegration_ValidationErrors(t *testing.T) {
 
 	req := httptest.NewRequest(http.MethodPost, "/api/events", bytes.NewReader(eventBody))
 	req.Header.Set("Content-Type", "application/json")
+			req.Header.Set("Accept", "application/json")
 	req = req.WithContext(ctx)
 	rec := httptest.NewRecorder()
 
@@ -448,6 +459,7 @@ func TestQuestionIntegration_ValidationErrors(t *testing.T) {
 
 		req := httptest.NewRequest(http.MethodPost, "/api/events/1/questions", bytes.NewReader(body))
 		req.Header.Set("Content-Type", "application/json")
+			req.Header.Set("Accept", "application/json")
 		req = req.WithContext(ctx)
 
 		rctx := chi.NewRouteContext()
@@ -471,6 +483,7 @@ func TestQuestionIntegration_ValidationErrors(t *testing.T) {
 
 		req := httptest.NewRequest(http.MethodPost, "/api/events/1/questions", bytes.NewReader(body))
 		req.Header.Set("Content-Type", "application/json")
+			req.Header.Set("Accept", "application/json")
 		req = req.WithContext(ctx)
 
 		rctx := chi.NewRouteContext()
@@ -495,6 +508,7 @@ func TestQuestionIntegration_ValidationErrors(t *testing.T) {
 
 		req := httptest.NewRequest(http.MethodPost, "/api/events/1/questions", bytes.NewReader(body))
 		req.Header.Set("Content-Type", "application/json")
+			req.Header.Set("Accept", "application/json")
 		req = req.WithContext(ctx)
 
 		rctx := chi.NewRouteContext()

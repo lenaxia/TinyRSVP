@@ -391,6 +391,7 @@ func TestRegenerateInviteTokenHandlers_RegenerateInviteToken(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			req := httptest.NewRequest(http.MethodPost, "/api/invites/"+tt.inviteID+"/regenerate", nil)
+			req.Header.Set("Accept", "application/json")
 
 			if tt.user != nil {
 				ctx := auth.WithUser(req.Context(), tt.user)

@@ -2,7 +2,6 @@ package handlers
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
 	"net/http"
 	"strconv"
@@ -92,12 +91,12 @@ type ListEventsResponse struct {
 func (h *EventHandlers) CreateEvent(w http.ResponseWriter, r *http.Request) {
 	var req CreateEventRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		respondError(w, http.StatusBadRequest, "invalid request body")
+		HandleError(w, r, NewBadRequestError("invalid request body"))
 		return
 	}
 
 	if err := validateCreateEventRequest(&req); err != nil {
-		respondError(w, http.StatusBadRequest, err.Error())
+		HandleError(w, r, NewBadRequestError(err.Error()))
 		return
 	}
 
@@ -113,7 +112,7 @@ func (h *EventHandlers) CreateEvent(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := h.service.CreateEvent(r.Context(), event); err != nil {
-		handleServiceError(w, err)
+		handleServiceError(w, r, err)
 		return
 	}
 
@@ -123,13 +122,13 @@ func (h *EventHandlers) CreateEvent(w http.ResponseWriter, r *http.Request) {
 func (h *EventHandlers) GetEvent(w http.ResponseWriter, r *http.Request) {
 	id, err := parseEventID(chi.URLParam(r, "id"))
 	if err != nil {
-		respondError(w, http.StatusBadRequest, "invalid event ID")
+		HandleError(w, r, NewBadRequestError("invalid event ID"))
 		return
 	}
 
 	event, err := h.service.GetEvent(r.Context(), id)
 	if err != nil {
-		handleServiceError(w, err)
+		handleServiceError(w, r, err)
 		return
 	}
 
@@ -139,24 +138,24 @@ func (h *EventHandlers) GetEvent(w http.ResponseWriter, r *http.Request) {
 func (h *EventHandlers) UpdateEvent(w http.ResponseWriter, r *http.Request) {
 	id, err := parseEventID(chi.URLParam(r, "id"))
 	if err != nil {
-		respondError(w, http.StatusBadRequest, "invalid event ID")
+		HandleError(w, r, NewBadRequestError("invalid event ID"))
 		return
 	}
 
 	var req UpdateEventRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		respondError(w, http.StatusBadRequest, "invalid request body")
+		HandleError(w, r, NewBadRequestError("invalid request body"))
 		return
 	}
 
 	if err := validateUpdateEventRequest(&req); err != nil {
-		respondError(w, http.StatusBadRequest, err.Error())
+		HandleError(w, r, NewBadRequestError(err.Error()))
 		return
 	}
 
 	existing, err := h.service.GetEvent(r.Context(), id)
 	if err != nil {
-		handleServiceError(w, err)
+		handleServiceError(w, r, err)
 		return
 	}
 
@@ -199,7 +198,7 @@ func (h *EventHandlers) UpdateEvent(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := h.service.UpdateEvent(r.Context(), event); err != nil {
-		handleServiceError(w, err)
+		handleServiceError(w, r, err)
 		return
 	}
 
@@ -209,12 +208,12 @@ func (h *EventHandlers) UpdateEvent(w http.ResponseWriter, r *http.Request) {
 func (h *EventHandlers) DeleteEvent(w http.ResponseWriter, r *http.Request) {
 	id, err := parseEventID(chi.URLParam(r, "id"))
 	if err != nil {
-		respondError(w, http.StatusBadRequest, "invalid event ID")
+		HandleError(w, r, NewBadRequestError("invalid event ID"))
 		return
 	}
 
 	if err := h.service.DeleteEvent(r.Context(), id); err != nil {
-		handleServiceError(w, err)
+		handleServiceError(w, r, err)
 		return
 	}
 
@@ -228,7 +227,7 @@ func (h *EventHandlers) ListEvents(w http.ResponseWriter, r *http.Request) {
 	if limitStr := r.URL.Query().Get("limit"); limitStr != "" {
 		parsedLimit, err := strconv.Atoi(limitStr)
 		if err != nil || parsedLimit < 1 || parsedLimit > 100 {
-			respondError(w, http.StatusBadRequest, "invalid limit parameter")
+			HandleError(w, r, NewBadRequestError("invalid limit parameter"))
 			return
 		}
 		limit = parsedLimit
@@ -237,7 +236,7 @@ func (h *EventHandlers) ListEvents(w http.ResponseWriter, r *http.Request) {
 	if offsetStr := r.URL.Query().Get("offset"); offsetStr != "" {
 		parsedOffset, err := strconv.Atoi(offsetStr)
 		if err != nil || parsedOffset < 0 {
-			respondError(w, http.StatusBadRequest, "invalid offset parameter")
+			HandleError(w, r, NewBadRequestError("invalid offset parameter"))
 			return
 		}
 		offset = parsedOffset
@@ -251,7 +250,7 @@ func (h *EventHandlers) ListEvents(w http.ResponseWriter, r *http.Request) {
 	if statusStr := r.URL.Query().Get("status"); statusStr != "" {
 		status, err := parseEventStatus(statusStr)
 		if err != nil {
-			respondError(w, http.StatusBadRequest, "invalid status parameter")
+			HandleError(w, r, NewBadRequestError("invalid status parameter"))
 			return
 		}
 		filters.Status = &status
@@ -260,7 +259,7 @@ func (h *EventHandlers) ListEvents(w http.ResponseWriter, r *http.Request) {
 	if creatorIDStr := r.URL.Query().Get("creator_id"); creatorIDStr != "" {
 		creatorID, err := strconv.ParseInt(creatorIDStr, 10, 64)
 		if err != nil {
-			respondError(w, http.StatusBadRequest, "invalid creator_id parameter")
+			HandleError(w, r, NewBadRequestError("invalid creator_id parameter"))
 			return
 		}
 		filters.CreatorID = &creatorID
@@ -268,7 +267,7 @@ func (h *EventHandlers) ListEvents(w http.ResponseWriter, r *http.Request) {
 
 	eventList, err := h.service.ListEvents(r.Context(), filters)
 	if err != nil {
-		handleServiceError(w, err)
+		handleServiceError(w, r, err)
 		return
 	}
 
@@ -290,12 +289,12 @@ func (h *EventHandlers) ListEvents(w http.ResponseWriter, r *http.Request) {
 func (h *EventHandlers) PublishEvent(w http.ResponseWriter, r *http.Request) {
 	id, err := parseEventID(chi.URLParam(r, "id"))
 	if err != nil {
-		respondError(w, http.StatusBadRequest, "invalid event ID")
+		HandleError(w, r, NewBadRequestError("invalid event ID"))
 		return
 	}
 
 	if err := h.service.PublishEvent(r.Context(), id); err != nil {
-		handleServiceError(w, err)
+		handleServiceError(w, r, err)
 		return
 	}
 
@@ -305,23 +304,23 @@ func (h *EventHandlers) PublishEvent(w http.ResponseWriter, r *http.Request) {
 func (h *EventHandlers) CancelEvent(w http.ResponseWriter, r *http.Request) {
 	id, err := parseEventID(chi.URLParam(r, "id"))
 	if err != nil {
-		respondError(w, http.StatusBadRequest, "invalid event ID")
+		HandleError(w, r, NewBadRequestError("invalid event ID"))
 		return
 	}
 
 	var req CancelEventRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		respondError(w, http.StatusBadRequest, "invalid request body")
+		HandleError(w, r, NewBadRequestError("invalid request body"))
 		return
 	}
 
 	if err := validateCancelEventRequest(&req); err != nil {
-		respondError(w, http.StatusBadRequest, err.Error())
+		HandleError(w, r, NewBadRequestError(err.Error()))
 		return
 	}
 
 	if err := h.service.CancelEvent(r.Context(), id, req.Reason); err != nil {
-		handleServiceError(w, err)
+		handleServiceError(w, r, err)
 		return
 	}
 
@@ -429,29 +428,6 @@ func toEventResponse(event *models.Event) *EventResponse {
 	}
 }
 
-func handleServiceError(w http.ResponseWriter, err error) {
-	var notFoundErr *models.NotFoundError
-	var permErr *models.PermissionDeniedError
-	var validationErr *models.ValidationError
-	var versionConflictErr *models.VersionConflictError
-	var optimisticLockErr *models.OptimisticLockError
-
-	switch {
-	case errors.As(err, &notFoundErr):
-		respondError(w, http.StatusNotFound, "event not found")
-	case errors.As(err, &permErr):
-		respondError(w, http.StatusForbidden, "permission denied")
-	case errors.As(err, &validationErr):
-		respondError(w, http.StatusBadRequest, err.Error())
-	case errors.As(err, &versionConflictErr):
-		respondError(w, http.StatusConflict, "version conflict")
-	case errors.As(err, &optimisticLockErr):
-		respondError(w, http.StatusConflict, "version conflict")
-	default:
-		if err.Error() == "invalid state transition" {
-			respondError(w, http.StatusBadRequest, err.Error())
-		} else {
-			respondError(w, http.StatusInternalServerError, "failed to create event")
-		}
-	}
+func handleServiceError(w http.ResponseWriter, r *http.Request, err error) {
+	HandleError(w, r, err)
 }

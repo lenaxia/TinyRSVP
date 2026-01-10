@@ -2,7 +2,6 @@ package handlers
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
 	"net/http"
 	"strconv"
@@ -87,19 +86,19 @@ type ListTemplatesResponse struct {
 func (h *TemplateHandlers) CreateTemplate(w http.ResponseWriter, r *http.Request) {
 	user, ok := auth.UserFromContext(r.Context())
 	if !ok || user.ID == 0 {
-		respondError(w, http.StatusUnauthorized, "authentication required")
+		HandleError(w, r, NewUnauthorizedError("authentication required"))
 		return
 	}
 
 	var req CreateTemplateRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		respondError(w, http.StatusBadRequest, "invalid request body")
+		HandleError(w, r, NewBadRequestError("invalid request body"))
 		return
 	}
 
 	templateType := models.TemplateType(req.Type)
 	if !templateType.IsValid() {
-		respondError(w, http.StatusBadRequest, "invalid template type")
+		HandleError(w, r, NewBadRequestError("invalid template type"))
 		return
 	}
 
@@ -114,7 +113,7 @@ func (h *TemplateHandlers) CreateTemplate(w http.ResponseWriter, r *http.Request
 	}
 
 	if err := h.service.CreateTemplate(r.Context(), template); err != nil {
-		handleTemplateServiceError(w, err)
+		handleTemplateServiceError(w, r, err)
 		return
 	}
 
@@ -126,19 +125,19 @@ func (h *TemplateHandlers) CreateTemplate(w http.ResponseWriter, r *http.Request
 func (h *TemplateHandlers) GetTemplate(w http.ResponseWriter, r *http.Request) {
 	user, ok := auth.UserFromContext(r.Context())
 	if !ok || user.ID == 0 {
-		respondError(w, http.StatusUnauthorized, "authentication required")
+		HandleError(w, r, NewUnauthorizedError("authentication required"))
 		return
 	}
 
 	id, err := parseTemplateID(chi.URLParam(r, "id"))
 	if err != nil {
-		respondError(w, http.StatusBadRequest, "invalid template ID")
+		HandleError(w, r, NewBadRequestError("invalid template ID"))
 		return
 	}
 
 	template, err := h.service.GetTemplate(r.Context(), id)
 	if err != nil {
-		handleTemplateServiceError(w, err)
+		handleTemplateServiceError(w, r, err)
 		return
 	}
 
@@ -150,25 +149,25 @@ func (h *TemplateHandlers) GetTemplate(w http.ResponseWriter, r *http.Request) {
 func (h *TemplateHandlers) UpdateTemplate(w http.ResponseWriter, r *http.Request) {
 	user, ok := auth.UserFromContext(r.Context())
 	if !ok || user.ID == 0 {
-		respondError(w, http.StatusUnauthorized, "authentication required")
+		HandleError(w, r, NewUnauthorizedError("authentication required"))
 		return
 	}
 
 	id, err := parseTemplateID(chi.URLParam(r, "id"))
 	if err != nil {
-		respondError(w, http.StatusBadRequest, "invalid template ID")
+		HandleError(w, r, NewBadRequestError("invalid template ID"))
 		return
 	}
 
 	var req UpdateTemplateRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		respondError(w, http.StatusBadRequest, "invalid request body")
+		HandleError(w, r, NewBadRequestError("invalid request body"))
 		return
 	}
 
 	existing, err := h.service.GetTemplate(r.Context(), id)
 	if err != nil {
-		handleTemplateServiceError(w, err)
+		handleTemplateServiceError(w, r, err)
 		return
 	}
 
@@ -201,7 +200,7 @@ func (h *TemplateHandlers) UpdateTemplate(w http.ResponseWriter, r *http.Request
 	}
 
 	if err := h.service.UpdateTemplate(r.Context(), template); err != nil {
-		handleTemplateServiceError(w, err)
+		handleTemplateServiceError(w, r, err)
 		return
 	}
 
@@ -213,18 +212,18 @@ func (h *TemplateHandlers) UpdateTemplate(w http.ResponseWriter, r *http.Request
 func (h *TemplateHandlers) DeleteTemplate(w http.ResponseWriter, r *http.Request) {
 	user, ok := auth.UserFromContext(r.Context())
 	if !ok || user.ID == 0 {
-		respondError(w, http.StatusUnauthorized, "authentication required")
+		HandleError(w, r, NewUnauthorizedError("authentication required"))
 		return
 	}
 
 	id, err := parseTemplateID(chi.URLParam(r, "id"))
 	if err != nil {
-		respondError(w, http.StatusBadRequest, "invalid template ID")
+		HandleError(w, r, NewBadRequestError("invalid template ID"))
 		return
 	}
 
 	if err := h.service.DeleteTemplate(r.Context(), id); err != nil {
-		handleTemplateServiceError(w, err)
+		handleTemplateServiceError(w, r, err)
 		return
 	}
 
@@ -234,7 +233,7 @@ func (h *TemplateHandlers) DeleteTemplate(w http.ResponseWriter, r *http.Request
 func (h *TemplateHandlers) ListTemplates(w http.ResponseWriter, r *http.Request) {
 	user, ok := auth.UserFromContext(r.Context())
 	if !ok || user.ID == 0 {
-		respondError(w, http.StatusUnauthorized, "authentication required")
+		HandleError(w, r, NewUnauthorizedError("authentication required"))
 		return
 	}
 
@@ -245,7 +244,7 @@ func (h *TemplateHandlers) ListTemplates(w http.ResponseWriter, r *http.Request)
 	if typeStr := r.URL.Query().Get("type"); typeStr != "" {
 		templateType := models.TemplateType(typeStr)
 		if !templateType.IsValid() {
-			respondError(w, http.StatusBadRequest, "invalid template type")
+			HandleError(w, r, NewBadRequestError("invalid template type"))
 			return
 		}
 		filters.Type = &templateType
@@ -254,7 +253,7 @@ func (h *TemplateHandlers) ListTemplates(w http.ResponseWriter, r *http.Request)
 	if eventIDStr := r.URL.Query().Get("event_id"); eventIDStr != "" {
 		eventID, err := strconv.ParseInt(eventIDStr, 10, 64)
 		if err != nil {
-			respondError(w, http.StatusBadRequest, "invalid event_id parameter")
+			HandleError(w, r, NewBadRequestError("invalid event_id parameter"))
 			return
 		}
 		filters.EventID = &eventID
@@ -273,7 +272,7 @@ func (h *TemplateHandlers) ListTemplates(w http.ResponseWriter, r *http.Request)
 	if limitStr := r.URL.Query().Get("limit"); limitStr != "" {
 		limit, err := strconv.Atoi(limitStr)
 		if err != nil || limit < 1 || limit > 100 {
-			respondError(w, http.StatusBadRequest, "invalid limit parameter")
+			HandleError(w, r, NewBadRequestError("invalid limit parameter"))
 			return
 		}
 		filters.Limit = limit
@@ -282,7 +281,7 @@ func (h *TemplateHandlers) ListTemplates(w http.ResponseWriter, r *http.Request)
 	if offsetStr := r.URL.Query().Get("offset"); offsetStr != "" {
 		offset, err := strconv.Atoi(offsetStr)
 		if err != nil || offset < 0 {
-			respondError(w, http.StatusBadRequest, "invalid offset parameter")
+			HandleError(w, r, NewBadRequestError("invalid offset parameter"))
 			return
 		}
 		filters.Offset = offset
@@ -290,7 +289,7 @@ func (h *TemplateHandlers) ListTemplates(w http.ResponseWriter, r *http.Request)
 
 	templateList, err := h.service.ListTemplates(r.Context(), filters)
 	if err != nil {
-		handleTemplateServiceError(w, err)
+		handleTemplateServiceError(w, r, err)
 		return
 	}
 
@@ -310,24 +309,24 @@ func (h *TemplateHandlers) ListTemplates(w http.ResponseWriter, r *http.Request)
 func (h *TemplateHandlers) SetActive(w http.ResponseWriter, r *http.Request) {
 	user, ok := auth.UserFromContext(r.Context())
 	if !ok || user.ID == 0 {
-		respondError(w, http.StatusUnauthorized, "authentication required")
+		HandleError(w, r, NewUnauthorizedError("authentication required"))
 		return
 	}
 
 	id, err := parseTemplateID(chi.URLParam(r, "id"))
 	if err != nil {
-		respondError(w, http.StatusBadRequest, "invalid template ID")
+		HandleError(w, r, NewBadRequestError("invalid template ID"))
 		return
 	}
 
 	var req SetActiveRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		respondError(w, http.StatusBadRequest, "invalid request body")
+		HandleError(w, r, NewBadRequestError("invalid request body"))
 		return
 	}
 
 	if err := h.service.SetActive(r.Context(), id, req.Active); err != nil {
-		handleTemplateServiceError(w, err)
+		handleTemplateServiceError(w, r, err)
 		return
 	}
 
@@ -337,18 +336,18 @@ func (h *TemplateHandlers) SetActive(w http.ResponseWriter, r *http.Request) {
 func (h *TemplateHandlers) SetDefault(w http.ResponseWriter, r *http.Request) {
 	user, ok := auth.UserFromContext(r.Context())
 	if !ok || user.ID == 0 {
-		respondError(w, http.StatusUnauthorized, "authentication required")
+		HandleError(w, r, NewUnauthorizedError("authentication required"))
 		return
 	}
 
 	id, err := parseTemplateID(chi.URLParam(r, "id"))
 	if err != nil {
-		respondError(w, http.StatusBadRequest, "invalid template ID")
+		HandleError(w, r, NewBadRequestError("invalid template ID"))
 		return
 	}
 
 	if err := h.service.SetDefault(r.Context(), id); err != nil {
-		handleTemplateServiceError(w, err)
+		handleTemplateServiceError(w, r, err)
 		return
 	}
 
@@ -387,42 +386,26 @@ func toTemplateResponse(template *models.Template) *TemplateResponse {
 	}
 }
 
-func handleTemplateServiceError(w http.ResponseWriter, err error) {
-	var notFoundErr *models.NotFoundError
-	var forbiddenErr *models.ForbiddenError
-	var unauthorizedErr *models.UnauthorizedError
-	var validationErr *models.ValidationError
-
-	switch {
-	case errors.As(err, &notFoundErr):
-		respondError(w, http.StatusNotFound, "template not found")
-	case errors.As(err, &forbiddenErr):
-		respondError(w, http.StatusForbidden, err.Error())
-	case errors.As(err, &unauthorizedErr):
-		respondError(w, http.StatusUnauthorized, err.Error())
-	case errors.As(err, &validationErr):
-		respondError(w, http.StatusBadRequest, err.Error())
-	default:
-		respondError(w, http.StatusInternalServerError, "internal server error")
-	}
+func handleTemplateServiceError(w http.ResponseWriter, r *http.Request, err error) {
+	HandleError(w, r, err)
 }
 
 func (h *TemplateHandlers) PreviewTemplate(w http.ResponseWriter, r *http.Request) {
 	user, ok := auth.UserFromContext(r.Context())
 	if !ok || user.ID == 0 {
-		respondError(w, http.StatusUnauthorized, "authentication required")
+		HandleError(w, r, NewUnauthorizedError("authentication required"))
 		return
 	}
 
 	var req templates.PreviewRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		respondError(w, http.StatusBadRequest, "invalid request body")
+		HandleError(w, r, NewBadRequestError("invalid request body"))
 		return
 	}
 
 	resp, err := h.service.PreviewTemplate(r.Context(), &req)
 	if err != nil {
-		handleTemplateServiceError(w, err)
+		handleTemplateServiceError(w, r, err)
 		return
 	}
 

@@ -62,6 +62,7 @@ func TestInviteHandlers_Integration_CreateInvite(t *testing.T) {
 
 	req := httptest.NewRequest(http.MethodPost, "/api/events/1/invites", bytes.NewReader(body))
 	req.Header.Set("Content-Type", "application/json")
+			req.Header.Set("Accept", "application/json")
 
 	authCtx := auth.WithUser(req.Context(), user)
 	req = req.WithContext(authCtx)
@@ -174,6 +175,7 @@ func TestInviteHandlers_Integration_DuplicateEmail(t *testing.T) {
 
 	req := httptest.NewRequest(http.MethodPost, "/api/events/1/invites", bytes.NewReader(body))
 	req.Header.Set("Content-Type", "application/json")
+			req.Header.Set("Accept", "application/json")
 
 	authCtx := auth.WithUser(req.Context(), user)
 	req = req.WithContext(authCtx)
@@ -242,6 +244,7 @@ func TestInviteHandlers_Integration_PermissionCheck(t *testing.T) {
 
 	req := httptest.NewRequest(http.MethodPost, "/api/events/1/invites", bytes.NewReader(body))
 	req.Header.Set("Content-Type", "application/json")
+			req.Header.Set("Accept", "application/json")
 
 	authCtx := auth.WithUser(req.Context(), otherUser)
 	req = req.WithContext(authCtx)

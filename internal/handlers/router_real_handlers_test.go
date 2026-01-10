@@ -302,6 +302,7 @@ func TestRouter_Integration_RealHandlersCalled(t *testing.T) {
 			req := httptest.NewRequest(tt.method, tt.path, body)
 			if tt.body != "" {
 				req.Header.Set("Content-Type", "application/json")
+			req.Header.Set("Accept", "application/json")
 			}
 			w := httptest.NewRecorder()
 
