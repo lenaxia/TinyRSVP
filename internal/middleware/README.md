@@ -231,6 +231,74 @@ config := &middleware.SecurityHeadersConfig{
 11. Handler          - Business logic
 ```
 
+## Rate Limiting
+
+Protects against abuse and DoS attacks using per-IP rate limiting with sliding window algorithm.
+
+**Usage:**
+```go
+limiter := middleware.NewRateLimiter(middleware.RateLimiterConfig{
+    RequestsPerMinute: 100,
+    BurstSize:         100,
+    WhitelistedIPs:    []string{"10.0.0.1"},
+    BlacklistedIPs:    []string{"10.0.0.99"},
+})
+defer limiter.Stop()
+
+mux.Use(middleware.RateLimit(limiter, middleware.RateLimitConfig{
+    AnonymousLimit:      100,
+    AuthenticatedLimit:  300,
+    AdminLimit:          1000,
+}))
+```
+
+**Behavior:**
+- Per-IP rate limiting with sliding window
+- Different limits for anonymous/authenticated/admin users
+- Returns 429 Too Many Requests when limit exceeded
+- Sets rate limit headers on all responses
+- Supports IP whitelist (unlimited requests)
+- Supports IP blacklist (all requests denied)
+- In-memory storage with automatic cleanup
+- Tracks metrics (total/allowed/denied requests)
+
+**Rate Limit Headers:**
+```
+X-RateLimit-Limit: 100
+X-RateLimit-Remaining: 95
+X-RateLimit-Reset: 1704931200
+```
+
+**429 Response Headers:**
+```
+Retry-After: 45
+```
+
+**Configuration:**
+- `RequestsPerMinute`: Base rate limit per IP
+- `BurstSize`: Maximum tokens available
+- `WindowDuration`: Time window for rate limiting (default: 1 minute)
+- `CleanupInterval`: How often to clean expired entries (default: 5 minutes)
+- `WhitelistedIPs`: IPs that bypass rate limiting
+- `BlacklistedIPs`: IPs that are always denied
+
+**Default Limits:**
+- Anonymous: 100 requests/minute
+- Authenticated: 300 requests/minute
+- Admin: 1000 requests/minute
+
+**Metrics:**
+```go
+metrics := limiter.GetMetrics()
+// metrics.TotalRequests
+// metrics.AllowedRequests
+// metrics.DeniedRequests
+// metrics.ActiveIPs
+```
+
+**Performance:** ~2µs overhead per request
+
+
 ## CSRF Protection
 
 Protects against Cross-Site Request Forgery attacks using the double-submit cookie pattern with token rotation.

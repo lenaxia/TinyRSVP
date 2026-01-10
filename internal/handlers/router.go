@@ -166,6 +166,18 @@ func NewRouter(handlers *RouterHandlers) *Router {
 	r.Use(func(next http.Handler) http.Handler {
 		return customMiddleware.CSRF(32)(next)
 	})
+	
+	rateLimiter := customMiddleware.NewRateLimiter(customMiddleware.RateLimiterConfig{
+		RequestsPerMinute: 100,
+		BurstSize:         100,
+	})
+	r.Use(func(next http.Handler) http.Handler {
+		return customMiddleware.RateLimit(rateLimiter, customMiddleware.RateLimitConfig{
+			AnonymousLimit:      100,
+			AuthenticatedLimit:  300,
+			AdminLimit:          1000,
+		})(next)
+	})
 
 	r.NotFound(NotFoundHandler)
 	r.MethodNotAllowed(MethodNotAllowedHandler)
