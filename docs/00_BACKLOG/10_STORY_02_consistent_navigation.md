@@ -7,7 +7,7 @@
 
 ## User Story
 
-As a user, I want consistent navigation across all pages so that I can easily move between different sections of the application regardless of which page I'm on or what device I'm using.
+As a user, I want consistent navigation across all pages so that I can easily move between different sections of the application regardless of which page I'm on or what device I'm using. This includes both desktop and mobile
 
 ## Current Issues
 

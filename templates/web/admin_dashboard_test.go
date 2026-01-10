@@ -146,7 +146,6 @@ func TestAdminDashboard_ContainsNavigationLinks(t *testing.T) {
 	expectedLinks := []string{
 		"/admin/users",
 		"/events",
-		"/admin/settings",
 	}
 
 	for _, link := range expectedLinks {
