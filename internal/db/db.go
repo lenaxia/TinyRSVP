@@ -74,6 +74,16 @@ func NewDatabase(cfg Config) (Database, error) {
 	return &database{db: db}, nil
 }
 
+// NewDatabaseWithRetry creates a new database connection with automatic retry logic
+func NewDatabaseWithRetry(cfg Config) (Database, error) {
+	db, err := NewDatabase(cfg)
+	if err != nil {
+		return nil, err
+	}
+
+	return NewRetryableDatabase(db, DefaultRetryConfig), nil
+}
+
 func (d *database) DB() *sql.DB {
 	return d.db
 }

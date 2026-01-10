@@ -41,6 +41,7 @@ func (h *RSVPSummaryHandler) SetTemplates(tmpl *template.Template) {
 }
 
 type RSVPSummaryData struct {
+	ActivePage    string
 	Event         *models.Event
 	Stats         *repositories.RSVPStats
 	RSVPs         []*models.RSVP
@@ -111,6 +112,7 @@ func (h *RSVPSummaryHandler) GetRSVPSummary(w http.ResponseWriter, r *http.Reque
 	}
 
 	data := &RSVPSummaryData{
+		ActivePage:    "events",
 		Event:         event,
 		Stats:         stats,
 		RSVPs:         rsvps,
@@ -160,7 +162,8 @@ func (h *RSVPSummaryHandler) buildQuestionStats(ctx context.Context, eventID int
 
 func (h *RSVPSummaryHandler) renderError(w http.ResponseWriter, status int, message string) {
 	data := &RSVPSummaryData{
-		Error: message,
+		ActivePage: "events",
+		Error:      message,
 	}
 	h.renderPage(w, status, data)
 }

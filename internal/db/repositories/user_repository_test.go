@@ -805,3 +805,169 @@ func TestIsUniqueConstraintError(t *testing.T) {
 		})
 	}
 }
+
+func TestUserRepository_List_ExcludesSystemUser(t *testing.T) {
+	database := setupTestDB(t)
+	defer database.Close()
+
+	repo := NewUserRepository(database)
+	ctx := context.Background()
+
+	systemUser := &models.User{
+		Email: models.SystemUserEmail,
+		Name:  "System",
+		Role:  models.RoleAdmin,
+	}
+	if err := repo.Create(ctx, systemUser); err != nil {
+		t.Fatalf("Failed to create system user: %v", err)
+	}
+
+	regularUser1 := &models.User{
+		Email: "user1@example.com",
+		Name:  "User 1",
+		Role:  models.RoleEventManager,
+	}
+	if err := repo.Create(ctx, regularUser1); err != nil {
+		t.Fatalf("Failed to create regular user 1: %v", err)
+	}
+
+	regularUser2 := &models.User{
+		Email: "user2@example.com",
+		Name:  "User 2",
+		Role:  models.RoleAdmin,
+	}
+	if err := repo.Create(ctx, regularUser2); err != nil {
+		t.Fatalf("Failed to create regular user 2: %v", err)
+	}
+
+	t.Run("list excludes system user", func(t *testing.T) {
+		users, err := repo.List(ctx, 10, 0)
+		if err != nil {
+			t.Fatalf("List() error = %v", err)
+		}
+
+		if len(users) != 2 {
+			t.Errorf("Expected 2 users (excluding system), got %d", len(users))
+		}
+
+		for _, user := range users {
+			if user.Email == models.SystemUserEmail {
+				t.Error("System user should not be included in list")
+			}
+		}
+	})
+
+	t.Run("list with pagination excludes system user", func(t *testing.T) {
+		users, err := repo.List(ctx, 1, 0)
+		if err != nil {
+			t.Fatalf("List() error = %v", err)
+		}
+
+		if len(users) != 1 {
+			t.Errorf("Expected 1 user with limit, got %d", len(users))
+		}
+
+		if users[0].Email == models.SystemUserEmail {
+			t.Error("System user should not be included in paginated list")
+		}
+	})
+
+	t.Run("list with offset excludes system user", func(t *testing.T) {
+		users, err := repo.List(ctx, 10, 1)
+		if err != nil {
+			t.Fatalf("List() error = %v", err)
+		}
+
+		if len(users) != 1 {
+			t.Errorf("Expected 1 user with offset, got %d", len(users))
+		}
+
+		if users[0].Email == models.SystemUserEmail {
+			t.Error("System user should not be included in offset list")
+		}
+	})
+}
+
+func TestUserRepository_Count_ExcludesSystemUser(t *testing.T) {
+	database := setupTestDB(t)
+	defer database.Close()
+
+	repo := NewUserRepository(database)
+	ctx := context.Background()
+
+	t.Run("count excludes system user", func(t *testing.T) {
+		systemUser := &models.User{
+			Email: models.SystemUserEmail,
+			Name:  "System",
+			Role:  models.RoleAdmin,
+		}
+		if err := repo.Create(ctx, systemUser); err != nil {
+			t.Fatalf("Failed to create system user: %v", err)
+		}
+
+		count, err := repo.Count(ctx)
+		if err != nil {
+			t.Fatalf("Count() error = %v", err)
+		}
+
+		if count != 0 {
+			t.Errorf("Expected count 0 (excluding system user), got %d", count)
+		}
+	})
+
+	t.Run("count with regular users excludes system user", func(t *testing.T) {
+		regularUser1 := &models.User{
+			Email: "count1@example.com",
+			Name:  "Count User 1",
+			Role:  models.RoleEventManager,
+		}
+		if err := repo.Create(ctx, regularUser1); err != nil {
+			t.Fatalf("Failed to create regular user 1: %v", err)
+		}
+
+		regularUser2 := &models.User{
+			Email: "count2@example.com",
+			Name:  "Count User 2",
+			Role:  models.RoleAdmin,
+		}
+		if err := repo.Create(ctx, regularUser2); err != nil {
+			t.Fatalf("Failed to create regular user 2: %v", err)
+		}
+
+		count, err := repo.Count(ctx)
+		if err != nil {
+			t.Fatalf("Count() error = %v", err)
+		}
+
+		if count != 2 {
+			t.Errorf("Expected count 2 (excluding system user), got %d", count)
+		}
+	})
+
+}
+
+func TestUserRepository_Count_OnlySystemUser(t *testing.T) {
+	database := setupTestDB(t)
+	defer database.Close()
+
+	repo := NewUserRepository(database)
+	ctx := context.Background()
+
+	systemUser := &models.User{
+		Email: models.SystemUserEmail,
+		Name:  "System",
+		Role:  models.RoleAdmin,
+	}
+	if err := repo.Create(ctx, systemUser); err != nil {
+		t.Fatalf("Failed to create system user: %v", err)
+	}
+
+	count, err := repo.Count(ctx)
+	if err != nil {
+		t.Fatalf("Count() error = %v", err)
+	}
+
+	if count != 0 {
+		t.Errorf("Expected count 0 when only system user exists, got %d", count)
+	}
+}

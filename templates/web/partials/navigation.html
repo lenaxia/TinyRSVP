@@ -1,13 +1,18 @@
 {{define "navigation"}}
 <a href="#main-content" class="skip-link">Skip to main content</a>
+<div class="app-nav-overlay" id="app-nav-overlay"></div>
 <nav class="app-nav" role="navigation" aria-label="Main navigation">
     <div class="app-nav-header">
-        <a href="/" class="app-nav-brand">TinyRSVP</a>
         <button class="app-nav-toggle" aria-label="Toggle navigation" aria-expanded="false">
             <span></span>
         </button>
+        <a href="/" class="app-nav-brand">TinyRSVP</a>
     </div>
     <ul class="app-nav-menu" id="app-nav-menu">
+        <li class="app-nav-menu-header">
+            <span class="app-nav-menu-title">Menu</span>
+            <button class="app-nav-menu-close" aria-label="Close navigation">×</button>
+        </li>
         <li><a href="/" class="app-nav-link {{if eq .ActivePage "dashboard"}}active{{end}}" {{if eq .ActivePage "dashboard"}}aria-current="page"{{end}}>Dashboard</a></li>
         <li><a href="/events" class="app-nav-link {{if eq .ActivePage "events"}}active{{end}}" {{if eq .ActivePage "events"}}aria-current="page"{{end}}>Events</a></li>
         <li><a href="/admin" class="app-nav-link {{if eq .ActivePage "admin"}}active{{end}}" {{if eq .ActivePage "admin"}}aria-current="page"{{end}}>Admin</a></li>

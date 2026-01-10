@@ -175,3 +175,59 @@ func TestUser_RolePermissions(t *testing.T) {
 		}
 	})
 }
+
+func TestUser_IsSystem(t *testing.T) {
+	tests := []struct {
+		name  string
+		email string
+		want  bool
+	}{
+		{
+			name:  "system user email returns true",
+			email: "system@tinyrsvp.local",
+			want:  true,
+		},
+		{
+			name:  "regular user email returns false",
+			email: "user@example.com",
+			want:  false,
+		},
+		{
+			name:  "admin user email returns false",
+			email: "admin@example.com",
+			want:  false,
+		},
+		{
+			name:  "empty email returns false",
+			email: "",
+			want:  false,
+		},
+		{
+			name:  "case sensitive check",
+			email: "System@tinyrsvp.local",
+			want:  false,
+		},
+		{
+			name:  "similar but different email returns false",
+			email: "system@tinyrsvp.com",
+			want:  false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			u := &User{Email: tt.email}
+			if got := u.IsSystem(); got != tt.want {
+				t.Errorf("User.IsSystem() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestSystemUserEmail_Constant(t *testing.T) {
+	t.Run("system user email constant has correct value", func(t *testing.T) {
+		if SystemUserEmail != "system@tinyrsvp.local" {
+			t.Errorf("SystemUserEmail = %v, want 'system@tinyrsvp.local'", SystemUserEmail)
+		}
+	})
+}

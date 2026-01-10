@@ -51,7 +51,7 @@ func main() {
 	logger.Info("Configuration loaded successfully")
 	logger.Debug("Configuration details", "config", cfg.String())
 
-	database, err := db.NewDatabase(db.Config{
+	baseDatabase, err := db.NewDatabase(db.Config{
 		Type:         cfg.Database.Type,
 		Path:         cfg.Database.Path,
 		MaxOpenConns: cfg.Database.MaxOpenConns,
@@ -62,11 +62,15 @@ func main() {
 		logger.Error("Failed to initialize database", "error", err)
 		os.Exit(1)
 	}
-	defer database.Close()
+	defer baseDatabase.Close()
 
-	logger.Info("Database connection established",
+	database := db.NewRetryableDatabase(baseDatabase, db.DefaultRetryConfig)
+
+	logger.Info("Database connection established with retry logic",
 		"type", cfg.Database.Type,
 		"path", cfg.Database.Path,
+		"retry_max_attempts", db.DefaultRetryConfig.MaxAttempts,
+		"retry_initial_delay", db.DefaultRetryConfig.InitialDelay,
 	)
 
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
@@ -343,14 +347,20 @@ func main() {
 	}
 	logger.Info("RSVP templates loaded successfully")
 
-	rsvpSummaryTemplates, err := template.New("rsvp_summary.html").Funcs(funcMap).ParseFiles("templates/web/rsvp_summary.html")
+	rsvpSummaryTemplates, err := template.New("rsvp_summary.html").Funcs(funcMap).ParseFiles(
+		"templates/web/partials/navigation.html",
+		"templates/web/rsvp_summary.html",
+	)
 	if err != nil {
 		logger.Error("Failed to load RSVP summary templates", "error", err)
 		os.Exit(1)
 	}
 	logger.Info("RSVP summary templates loaded successfully")
 
-	dashboardTemplates, err := template.New("dashboard.html").ParseFiles("templates/web/dashboard.html")
+	dashboardTemplates, err := template.New("dashboard.html").ParseFiles(
+		"templates/web/partials/navigation.html",
+		"templates/web/dashboard.html",
+	)
 	if err != nil {
 		logger.Error("Failed to load dashboard templates", "error", err)
 		os.Exit(1)
@@ -359,6 +369,7 @@ func main() {
 	logger.Info("Dashboard templates loaded successfully")
 
 	eventWebTemplates, err := template.New("events").Funcs(funcMap).ParseFiles(
+		"templates/web/partials/navigation.html",
 		"templates/web/event_list.html",
 		"templates/web/event_form.html",
 		"templates/web/event_detail.html",
@@ -371,7 +382,10 @@ func main() {
 
 	eventWebHandlers := handlers.NewEventWebHandlers(eventService, eventWebTemplates)
 
-	inviteListTemplates, err := template.New("invite_list.html").Funcs(funcMap).ParseFiles("templates/web/invite_list.html")
+	inviteListTemplates, err := template.New("invite_list.html").Funcs(funcMap).ParseFiles(
+		"templates/web/partials/navigation.html",
+		"templates/web/invite_list.html",
+	)
 	if err != nil {
 		logger.Error("Failed to load invite list templates", "error", err)
 		os.Exit(1)
@@ -381,7 +395,10 @@ func main() {
 	inviteWebHandlers := handlers.NewInviteWebHandlers(inviteService, eventRepo)
 	inviteWebHandlers.SetTemplates(inviteListTemplates)
 
-	adminDashboardTemplates, err := template.New("admin_dashboard.html").ParseFiles("templates/web/admin_dashboard.html")
+	adminDashboardTemplates, err := template.New("admin_dashboard.html").ParseFiles(
+		"templates/web/partials/navigation.html",
+		"templates/web/admin_dashboard.html",
+	)
 	if err != nil {
 		logger.Error("Failed to load admin dashboard templates", "error", err)
 		os.Exit(1)
@@ -389,7 +406,10 @@ func main() {
 	adminDashboardHandler.SetTemplates(adminDashboardTemplates)
 	logger.Info("Admin dashboard templates loaded successfully")
 
-	userManagementTemplates, err := template.New("user_management.html").ParseFiles("templates/web/user_management.html")
+	userManagementTemplates, err := template.New("user_management.html").ParseFiles(
+		"templates/web/partials/navigation.html",
+		"templates/web/user_management.html",
+	)
 	if err != nil {
 		logger.Error("Failed to load user management templates", "error", err)
 		os.Exit(1)

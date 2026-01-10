@@ -10,6 +10,10 @@ const (
 	RoleGuest        UserRole = "guest"
 )
 
+const (
+	SystemUserEmail = "system@tinyrsvp.local"
+)
+
 type User struct {
 	ID          int64      `db:"id" json:"id"`
 	Email       string     `db:"email" json:"email"`
@@ -27,4 +31,8 @@ func (u *User) IsAdmin() bool {
 
 func (u *User) IsEventManager() bool {
 	return u.Role == RoleEventManager || u.Role == RoleAdmin
+}
+
+func (u *User) IsSystem() bool {
+	return u.Email == SystemUserEmail
 }

@@ -103,18 +103,82 @@
     bottom: 21px;
 }
 
-.app-nav-menu {
+.app-nav-overlay {
     display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 998;
+    opacity: 0;
+    transition: opacity var(--transition-base);
+}
+
+.app-nav-overlay.open {
+    display: block;
+    opacity: 1;
+}
+
+.app-nav-menu {
+    position: fixed;
+    top: 0;
+    left: -280px;
+    bottom: 0;
+    width: 280px;
     list-style: none;
     margin: 0;
     padding: 0;
     background: var(--color-background);
-    border-top: 1px solid var(--color-border);
+    box-shadow: var(--shadow-lg);
+    z-index: 999;
+    transition: left var(--transition-base);
+    overflow-y: auto;
 }
 
 .app-nav-menu.open {
+    left: 0;
+}
+
+.app-nav-menu-header {
     display: flex;
-    flex-direction: column;
+    justify-content: space-between;
+    align-items: center;
+    padding: var(--spacing-4);
+    border-bottom: 1px solid var(--color-border);
+}
+
+.app-nav-menu-title {
+    font-size: var(--font-size-xl);
+    font-weight: var(--font-weight-bold);
+    color: var(--color-text-primary);
+}
+
+.app-nav-menu-close {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    padding: 0;
+    background: transparent;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-base);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    font-size: var(--font-size-xl);
+    color: var(--color-text-primary);
+}
+
+.app-nav-menu-close:hover {
+    background: var(--color-surface);
+    border-color: var(--color-primary-600);
+}
+
+.app-nav-menu-close:focus {
+    outline: 2px solid var(--color-border-focus);
+    outline-offset: 2px;
 }
 
 .app-nav-menu li {
@@ -157,18 +221,31 @@
         display: none;
     }
 
+    .app-nav-overlay {
+        display: none !important;
+    }
+
     .app-nav-menu {
-        display: flex;
+        position: static;
+        display: flex !important;
         flex-direction: row;
-        border-top: none;
+        width: auto;
+        left: auto;
+        box-shadow: none;
         padding: 0 var(--spacing-4);
         max-width: 1200px;
         margin: 0 auto;
         gap: var(--spacing-2);
+        overflow-y: visible;
     }
 
     .app-nav-menu.open {
         flex-direction: row;
+        left: auto;
+    }
+
+    .app-nav-menu-header {
+        display: none;
     }
 
     .app-nav-link {

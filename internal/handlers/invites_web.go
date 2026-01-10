@@ -98,6 +98,7 @@ func (h *InviteWebHandlers) ListInvitesPage(w http.ResponseWriter, r *http.Reque
 	}
 
 	data := map[string]interface{}{
+		"ActivePage": "events",
 		"EventID":    eventID,
 		"EventTitle": event.Title,
 		"Invites":    resp.Invites,

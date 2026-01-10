@@ -1,0 +1,25 @@
+{{define "modal_slide"}}
+<!-- Slide-in Panel Template
+Usage:
+{{template "modal_slide" dict "ID" "myPanel" "Title" "Panel Title" "Direction" "right" "Content" .PanelContent}}
+
+Directions: top, bottom, left, right
+-->
+<div id="{{.ID}}" class="modal-container">
+    <div class="modal-overlay" aria-hidden="true"></div>
+    <div class="modal-slide modal-slide-{{.Direction | default "right"}}" role="dialog" aria-modal="true" aria-labelledby="{{.ID}}-title" aria-hidden="true">
+        <div class="modal-header">
+            <h2 class="modal-title" id="{{.ID}}-title">{{.Title}}</h2>
+            <button type="button" class="modal-close" data-modal-close aria-label="Close panel">×</button>
+        </div>
+        <div class="modal-body{{if .CompactBody}} modal-body-compact{{end}}">
+            {{.Content}}
+        </div>
+        {{if .Footer}}
+        <div class="modal-footer{{if .FooterAlign}} modal-footer-{{.FooterAlign}}{{end}}">
+            {{.Footer}}
+        </div>
+        {{end}}
+    </div>
+</div>
+{{end}}

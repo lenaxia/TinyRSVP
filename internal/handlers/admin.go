@@ -25,10 +25,11 @@ type AdminDashboardHandler struct {
 }
 
 type AdminDashboardPageData struct {
-	User    *models.User
-	Stats   *AdminDashboardStats
-	Error   string
-	Loading bool
+	ActivePage string
+	User       *models.User
+	Stats      *AdminDashboardStats
+	Error      string
+	Loading    bool
 }
 
 func NewAdminDashboardHandler(service AdminDashboardService) *AdminDashboardHandler {
@@ -54,15 +55,17 @@ func (h *AdminDashboardHandler) AdminDashboard(w http.ResponseWriter, r *http.Re
 	stats, err := h.service.GetAdminStats(r.Context())
 	if err != nil {
 		h.renderPage(w, http.StatusOK, &AdminDashboardPageData{
-			User:  user,
-			Error: "Failed to load admin statistics",
+			ActivePage: "admin",
+			User:       user,
+			Error:      "Failed to load admin statistics",
 		})
 		return
 	}
 
 	data := &AdminDashboardPageData{
-		User:  user,
-		Stats: stats,
+		ActivePage: "admin",
+		User:       user,
+		Stats:      stats,
 	}
 
 	h.renderPage(w, http.StatusOK, data)
@@ -112,15 +115,16 @@ type UserManagementHandler struct {
 }
 
 type UserManagementPageData struct {
-	User      *models.User
-	Users     []*models.User
-	Total     int
-	Limit     int
-	Offset    int
-	CSRFToken string
-	Error     string
-	Success   string
-	Loading   bool
+	ActivePage string
+	User       *models.User
+	Users      []*models.User
+	Total      int
+	Limit      int
+	Offset     int
+	CSRFToken  string
+	Error      string
+	Success    string
+	Loading    bool
 }
 
 func NewUserManagementHandler(service UserListService) *UserManagementHandler {
@@ -163,8 +167,9 @@ func (h *UserManagementHandler) UserManagementPage(w http.ResponseWriter, r *htt
 	users, err := h.service.ListUsers(r.Context(), limit, offset)
 	if err != nil {
 		h.renderPage(w, http.StatusOK, &UserManagementPageData{
-			User:  user,
-			Error: "Failed to load users",
+			ActivePage: "admin",
+			User:       user,
+			Error:      "Failed to load users",
 		})
 		return
 	}
@@ -172,9 +177,10 @@ func (h *UserManagementHandler) UserManagementPage(w http.ResponseWriter, r *htt
 	total, err := h.service.CountUsers(r.Context())
 	if err != nil {
 		h.renderPage(w, http.StatusOK, &UserManagementPageData{
-			User:  user,
-			Users: users,
-			Error: "Failed to get user count",
+			ActivePage: "admin",
+			User:       user,
+			Users:      users,
+			Error:      "Failed to get user count",
 		})
 		return
 	}
@@ -182,12 +188,13 @@ func (h *UserManagementHandler) UserManagementPage(w http.ResponseWriter, r *htt
 	csrfToken := middleware.GetCSRFToken(r.Context())
 
 	data := &UserManagementPageData{
-		User:      user,
-		Users:     users,
-		Total:     total,
-		Limit:     limit,
-		Offset:    offset,
-		CSRFToken: csrfToken,
+		ActivePage: "admin",
+		User:       user,
+		Users:      users,
+		Total:      total,
+		Limit:      limit,
+		Offset:     offset,
+		CSRFToken:  csrfToken,
 	}
 
 	h.renderPage(w, http.StatusOK, data)

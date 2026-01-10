@@ -22,27 +22,30 @@ type EventWebHandlers struct {
 }
 
 type EventListPageData struct {
-	Events  []*models.Event
-	Total   int
-	Page    int
-	Filter  string
-	Sort    string
-	Error   string
-	Loading bool
+	ActivePage string
+	Events     []*models.Event
+	Total      int
+	Page       int
+	Filter     string
+	Sort       string
+	Error      string
+	Loading    bool
 }
 
 type EventFormPageData struct {
-	Event     *models.Event
-	Questions []*models.PreferenceQuestion
-	Errors    map[string]string
-	Error     string
-	CSRFToken string
+	ActivePage string
+	Event      *models.Event
+	Questions  []*models.PreferenceQuestion
+	Errors     map[string]string
+	Error      string
+	CSRFToken  string
 }
 
 type EventDetailPageData struct {
-	Event     *models.Event
-	CSRFToken string
-	Error     string
+	ActivePage string
+	Event      *models.Event
+	CSRFToken  string
+	Error      string
 }
 
 func NewEventWebHandlers(service events.Service, templates *template.Template) *EventWebHandlers {
@@ -97,17 +100,19 @@ func (h *EventWebHandlers) ListEventsPage(w http.ResponseWriter, r *http.Request
 	eventList, err := h.service.ListEvents(r.Context(), filters)
 	if err != nil {
 		h.renderListPage(w, http.StatusOK, &EventListPageData{
-			Error: "Failed to load events",
+			ActivePage: "events",
+			Error:      "Failed to load events",
 		})
 		return
 	}
 
 	data := &EventListPageData{
-		Events: eventList,
-		Total:  len(eventList),
-		Page:   page,
-		Filter: r.URL.Query().Get("status"),
-		Sort:   r.URL.Query().Get("sort"),
+		ActivePage: "events",
+		Events:     eventList,
+		Total:      len(eventList),
+		Page:       page,
+		Filter:     r.URL.Query().Get("status"),
+		Sort:       r.URL.Query().Get("sort"),
 	}
 
 	h.renderListPage(w, http.StatusOK, data)
@@ -134,6 +139,7 @@ func (h *EventWebHandlers) NewEventForm(w http.ResponseWriter, r *http.Request) 
 	csrfToken := middleware.GetCSRFToken(r.Context())
 
 	data := &EventFormPageData{
+		ActivePage: "events",
 		Event: &models.Event{
 			MaxPlusOnes: 0,
 		},
@@ -161,10 +167,11 @@ func (h *EventWebHandlers) EditEventForm(w http.ResponseWriter, r *http.Request)
 	csrfToken := middleware.GetCSRFToken(r.Context())
 
 	data := &EventFormPageData{
-		Event:     event,
-		Questions: []*models.PreferenceQuestion{},
-		Errors:    make(map[string]string),
-		CSRFToken: csrfToken,
+		ActivePage: "events",
+		Event:      event,
+		Questions:  []*models.PreferenceQuestion{},
+		Errors:     make(map[string]string),
+		CSRFToken:  csrfToken,
 	}
 
 	h.renderFormPage(w, http.StatusOK, data)
@@ -186,8 +193,9 @@ func (h *EventWebHandlers) GetEventPage(w http.ResponseWriter, r *http.Request) 
 	csrfToken := middleware.GetCSRFToken(r.Context())
 
 	data := &EventDetailPageData{
-		Event:     event,
-		CSRFToken: csrfToken,
+		ActivePage: "events",
+		Event:      event,
+		CSRFToken:  csrfToken,
 	}
 
 	h.renderDetailPage(w, http.StatusOK, data)

@@ -16,6 +16,7 @@ type DashboardHandler struct {
 }
 
 type DashboardPageData struct {
+	ActivePage string
 	User       *models.User
 	Stats      *events.DashboardStats
 	Activities []*events.ActivityItem
@@ -46,8 +47,9 @@ func (h *DashboardHandler) Dashboard(w http.ResponseWriter, r *http.Request) {
 	stats, err := h.service.GetDashboardStats(r.Context(), user.ID)
 	if err != nil {
 		h.renderPage(w, http.StatusOK, &DashboardPageData{
-			User:  user,
-			Error: "Failed to load dashboard statistics",
+			ActivePage: "dashboard",
+			User:       user,
+			Error:      "Failed to load dashboard statistics",
 		})
 		return
 	}
@@ -55,14 +57,16 @@ func (h *DashboardHandler) Dashboard(w http.ResponseWriter, r *http.Request) {
 	activity, err := h.service.GetRecentActivity(r.Context(), user.ID, 10)
 	if err != nil {
 		h.renderPage(w, http.StatusOK, &DashboardPageData{
-			User:  user,
-			Stats: stats,
-			Error: "Failed to load recent activity",
+			ActivePage: "dashboard",
+			User:       user,
+			Stats:      stats,
+			Error:      "Failed to load recent activity",
 		})
 		return
 	}
 
 	data := &DashboardPageData{
+		ActivePage: "dashboard",
 		User:       user,
 		Stats:      stats,
 		Activities: activity,

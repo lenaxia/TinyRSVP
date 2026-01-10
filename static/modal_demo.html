@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Modal System Demo - TinyRSVP</title>
+    <link rel="stylesheet" href="/static/css/variables.css">
+    <link rel="stylesheet" href="/static/css/typography.css">
+    <link rel="stylesheet" href="/static/css/buttons.css">
+    <link rel="stylesheet" href="/static/css/modal.css">
+    <style>
+        body {
+            padding: var(--spacing-6);
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .demo-section {
+            margin-bottom: var(--spacing-8);
+        }
+        .demo-buttons {
+            display: flex;
+            gap: var(--spacing-3);
+            flex-wrap: wrap;
+        }
+        h1 { margin-bottom: var(--spacing-6); }
+        h2 { margin-bottom: var(--spacing-4); }
+    </style>
+</head>
+<body>
+    <h1>Modal System Demo</h1>
+    <p>This page demonstrates the modal system with various configurations.</p>
+
+    <div class="demo-section">
+        <h2>Center Modals (Popups)</h2>
+        <div class="demo-buttons">
+            <button class="btn btn-primary" data-modal-trigger="modal-sm">Small Modal</button>
+            <button class="btn btn-primary" data-modal-trigger="modal-md">Medium Modal</button>
+            <button class="btn btn-primary" data-modal-trigger="modal-lg">Large Modal</button>
+            <button class="btn btn-primary" data-modal-trigger="modal-xl">Extra Large Modal</button>
+        </div>
+    </div>
+
+    <div class="demo-section">
+        <h2>Slide-in Panels</h2>
+        <div class="demo-buttons">
+            <button class="btn btn-secondary" data-modal-trigger="slide-top">Slide from Top</button>
+            <button class="btn btn-secondary" data-modal-trigger="slide-bottom">Slide from Bottom</button>
+            <button class="btn btn-secondary" data-modal-trigger="slide-left">Slide from Left</button>
+            <button class="btn btn-secondary" data-modal-trigger="slide-right">Slide from Right</button>
+        </div>
+    </div>
+
+    <!-- Small Center Modal -->
+    <div id="modal-sm" class="modal-container">
+        <div class="modal-overlay" aria-hidden="true"></div>
+        <div class="modal-center modal-sm" role="dialog" aria-modal="true" aria-labelledby="modal-sm-title" aria-hidden="true">
+            <div class="modal-header">
+                <h2 class="modal-title" id="modal-sm-title">Small Modal</h2>
+                <button type="button" class="modal-close" data-modal-close aria-label="Close modal">×</button>
+            </div>
+            <div class="modal-body">
+                <p>This is a small modal (400px wide). Perfect for simple confirmations or alerts.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-modal-close>Cancel</button>
+                <button type="button" class="btn btn-primary">Confirm</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Medium Center Modal -->
+    <div id="modal-md" class="modal-container">
+        <div class="modal-overlay" aria-hidden="true"></div>
+        <div class="modal-center modal-md" role="dialog" aria-modal="true" aria-labelledby="modal-md-title" aria-hidden="true">
+            <div class="modal-header">
+                <h2 class="modal-title" id="modal-md-title">Medium Modal</h2>
+                <button type="button" class="modal-close" data-modal-close aria-label="Close modal">×</button>
+            </div>
+            <div class="modal-body">
+                <p>This is a medium modal (600px wide). Good for forms and detailed content.</p>
+                <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-modal-close>Cancel</button>
+                <button type="button" class="btn btn-primary">Save</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Large Center Modal -->
+    <div id="modal-lg" class="modal-container">
+        <div class="modal-overlay" aria-hidden="true"></div>
+        <div class="modal-center modal-lg" role="dialog" aria-modal="true" aria-labelledby="modal-lg-title" aria-hidden="true">
+            <div class="modal-header">
+                <h2 class="modal-title" id="modal-lg-title">Large Modal</h2>
+                <button type="button" class="modal-close" data-modal-close aria-label="Close modal">×</button>
+            </div>
+            <div class="modal-body">
+                <h3>Large Modal Content</h3>
+                <p>This is a large modal (800px wide). Suitable for complex forms or data tables.</p>
+                <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris.</p>
+                <p>Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.</p>
+            </div>
+            <div class="modal-footer modal-footer-between">
+                <button type="button" class="btn btn-danger">Delete</button>
+                <div>
+                    <button type="button" class="btn btn-secondary" data-modal-close>Cancel</button>
+                    <button type="button" class="btn btn-primary">Save Changes</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Extra Large Center Modal -->
+    <div id="modal-xl" class="modal-container">
+        <div class="modal-overlay" aria-hidden="true"></div>
+        <div class="modal-center modal-xl" role="dialog" aria-modal="true" aria-labelledby="modal-xl-title" aria-hidden="true">
+            <div class="modal-header">
+                <h2 class="modal-title" id="modal-xl-title">Extra Large Modal</h2>
+                <button type="button" class="modal-close" data-modal-close aria-label="Close modal">×</button>
+            </div>
+            <div class="modal-body">
+                <h3>Extra Large Modal</h3>
+                <p>This is an extra large modal (1000px wide). Best for dashboards or detailed views.</p>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-top: 1rem;">
+                    <div style="padding: 1rem; background: #f5f5f5; border-radius: 4px;">
+                        <h4>Section 1</h4>
+                        <p>Content here</p>
+                    </div>
+                    <div style="padding: 1rem; background: #f5f5f5; border-radius: 4px;">
+                        <h4>Section 2</h4>
+                        <p>Content here</p>
+                    </div>
+                    <div style="padding: 1rem; background: #f5f5f5; border-radius: 4px;">
+                        <h4>Section 3</h4>
+                        <p>Content here</p>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-modal-close>Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Slide from Top -->
+    <div id="slide-top" class="modal-container">
+        <div class="modal-overlay" aria-hidden="true"></div>
+        <div class="modal-slide modal-slide-top" role="dialog" aria-modal="true" aria-labelledby="slide-top-title" aria-hidden="true">
+            <div class="modal-header">
+                <h2 class="modal-title" id="slide-top-title">Slide from Top</h2>
+                <button type="button" class="modal-close" data-modal-close aria-label="Close panel">×</button>
+            </div>
+            <div class="modal-body">
+                <p>This panel slides in from the top. Great for notifications or announcements.</p>
+                <p>Maximum height is 80vh to ensure it doesn't cover the entire screen.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Slide from Bottom -->
+    <div id="slide-bottom" class="modal-container">
+        <div class="modal-overlay" aria-hidden="true"></div>
+        <div class="modal-slide modal-slide-bottom" role="dialog" aria-modal="true" aria-labelledby="slide-bottom-title" aria-hidden="true">
+            <div class="modal-header">
+                <h2 class="modal-title" id="slide-bottom-title">Slide from Bottom</h2>
+                <button type="button" class="modal-close" data-modal-close aria-label="Close panel">×</button>
+            </div>
+            <div class="modal-body">
+                <p>This panel slides in from the bottom. Perfect for mobile-style action sheets.</p>
+                <p>Has rounded top corners for a modern look.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" style="width: 100%;">Take Action</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Slide from Left -->
+    <div id="slide-left" class="modal-container">
+        <div class="modal-overlay" aria-hidden="true"></div>
+        <div class="modal-slide modal-slide-left" role="dialog" aria-modal="true" aria-labelledby="slide-left-title" aria-hidden="true">
+            <div class="modal-header">
+                <h2 class="modal-title" id="slide-left-title">Slide from Left</h2>
+                <button type="button" class="modal-close" data-modal-close aria-label="Close panel">×</button>
+            </div>
+            <div class="modal-body">
+                <p>This panel slides in from the left (320px wide, 85vw on mobile).</p>
+                <p>Ideal for navigation menus or filters.</p>
+                <nav style="margin-top: 1rem;">
+                    <ul style="list-style: none; padding: 0;">
+                        <li style="padding: 0.5rem 0;"><a href="#">Menu Item 1</a></li>
+                        <li style="padding: 0.5rem 0;"><a href="#">Menu Item 2</a></li>
+                        <li style="padding: 0.5rem 0;"><a href="#">Menu Item 3</a></li>
+                        <li style="padding: 0.5rem 0;"><a href="#">Menu Item 4</a></li>
+                    </ul>
+                </nav>
+            </div>
+        </div>
+    </div>
+
+    <!-- Slide from Right -->
+    <div id="slide-right" class="modal-container">
+        <div class="modal-overlay" aria-hidden="true"></div>
+        <div class="modal-slide modal-slide-right" role="dialog" aria-modal="true" aria-labelledby="slide-right-title" aria-hidden="true">
+            <div class="modal-header">
+                <h2 class="modal-title" id="slide-right-title">Slide from Right</h2>
+                <button type="button" class="modal-close" data-modal-close aria-label="Close panel">×</button>
+            </div>
+            <div class="modal-body">
+                <p>This panel slides in from the right (320px wide, 85vw on mobile).</p>
+                <p>Perfect for settings panels, shopping carts, or detail views.</p>
+                <div style="margin-top: 1rem;">
+                    <h4>Settings</h4>
+                    <label style="display: block; margin: 0.5rem 0;">
+                        <input type="checkbox" checked> Enable notifications
+                    </label>
+                    <label style="display: block; margin: 0.5rem 0;">
+                        <input type="checkbox"> Dark mode
+                    </label>
+                    <label style="display: block; margin: 0.5rem 0;">
+                        <input type="checkbox" checked> Auto-save
+                    </label>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" data-modal-close>Save Settings</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="/static/js/modal.js"></script>
+    <script>
+        // Example: Programmatic modal control
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('Modal system initialized');
+            
+            // You can also control modals programmatically:
+            // const myModal = new Modal('modal-sm');
+            // myModal.open();
+            // myModal.close();
+        });
+    </script>
+</body>
+</html>

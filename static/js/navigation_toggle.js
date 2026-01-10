@@ -3,8 +3,10 @@
 
     const toggle = document.querySelector('.app-nav-toggle');
     const menu = document.querySelector('.app-nav-menu');
+    const overlay = document.querySelector('.app-nav-overlay');
+    const closeBtn = document.querySelector('.app-nav-menu-close');
     
-    if (!toggle || !menu) {
+    if (!toggle || !menu || !overlay) {
         return;
     }
 
@@ -12,7 +14,9 @@
 
     function openMenu() {
         menu.classList.add('open');
+        overlay.classList.add('open');
         toggle.setAttribute('aria-expanded', 'true');
+        document.body.style.overflow = 'hidden';
         try {
             localStorage.setItem(STORAGE_KEY, 'open');
         } catch (e) {
@@ -22,7 +26,9 @@
 
     function closeMenu() {
         menu.classList.remove('open');
+        overlay.classList.remove('open');
         toggle.setAttribute('aria-expanded', 'false');
+        document.body.style.overflow = '';
         try {
             localStorage.setItem(STORAGE_KEY, 'closed');
         } catch (e) {
@@ -47,10 +53,25 @@
         }
     });
 
+    if (closeBtn) {
+        closeBtn.addEventListener('click', closeMenu);
+        
+        closeBtn.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                closeMenu();
+            }
+        });
+    }
+
+    overlay.addEventListener('click', closeMenu);
+
     function handleResize() {
         if (window.innerWidth >= 768) {
             menu.classList.remove('open');
+            overlay.classList.remove('open');
             toggle.setAttribute('aria-expanded', 'false');
+            document.body.style.overflow = '';
         } else {
             try {
                 const savedState = localStorage.getItem(STORAGE_KEY);
@@ -66,11 +87,8 @@
     window.addEventListener('resize', handleResize);
     handleResize();
 
-    document.addEventListener('click', function(e) {
-        if (window.innerWidth < 768 && 
-            menu.classList.contains('open') && 
-            !menu.contains(e.target) && 
-            !toggle.contains(e.target)) {
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && menu.classList.contains('open')) {
             closeMenu();
         }
     });

@@ -352,11 +352,12 @@ func (r *userRepository) List(ctx context.Context, limit, offset int) ([]*models
 	query := `
 		SELECT id, email, name, role, oidc_subject, created_at, updated_at, last_login_at
 		FROM users
+		WHERE email != ?
 		ORDER BY created_at DESC
 		LIMIT ? OFFSET ?
 	`
 
-	rows, err := r.db.Query(ctx, query, limit, offset)
+	rows, err := r.db.Query(ctx, query, models.SystemUserEmail, limit, offset)
 	if err != nil {
 		return nil, fmt.Errorf("failed to list users: %w", err)
 	}
@@ -389,10 +390,10 @@ func (r *userRepository) List(ctx context.Context, limit, offset int) ([]*models
 }
 
 func (r *userRepository) Count(ctx context.Context) (int, error) {
-	query := `SELECT COUNT(*) FROM users`
+	query := `SELECT COUNT(*) FROM users WHERE email != ?`
 
 	var count int
-	err := r.db.QueryRow(ctx, query).Scan(&count)
+	err := r.db.QueryRow(ctx, query, models.SystemUserEmail).Scan(&count)
 	if err != nil {
 		return 0, fmt.Errorf("failed to count users: %w", err)
 	}
