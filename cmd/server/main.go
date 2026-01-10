@@ -335,6 +335,19 @@ func main() {
 	dashboardHandler.SetTemplates(dashboardTemplates)
 	logger.Info("Dashboard templates loaded successfully")
 
+	eventWebTemplates, err := template.New("events").ParseFiles(
+		"templates/web/event_list.html",
+		"templates/web/event_form.html",
+		"templates/web/event_detail.html",
+	)
+	if err != nil {
+		logger.Error("Failed to load event web templates", "error", err)
+		os.Exit(1)
+	}
+	logger.Info("Event web templates loaded successfully")
+
+	eventWebHandlers := handlers.NewEventWebHandlers(eventService, eventWebTemplates)
+
 	icsGenerator := ics.NewGenerator()
 	emailService := email.NewConfirmationService(templateRenderer, emailQueueRepo, icsGenerator)
 	logger.Info("Initialized email confirmation service")
@@ -397,6 +410,7 @@ func main() {
 		ReadinessHandler:         readinessHandler,
 		DashboardHandler:         dashboardHandler,
 		EventHandlers:            eventHandlers,
+		EventWebHandlers:         eventWebHandlers,
 		QuestionHandlers:         questionHandlers,
 		InviteHandlers:           inviteHandlers,
 		ImportInviteHandlers:     importInviteHandlers,
@@ -421,6 +435,7 @@ func main() {
 	logger.Info("Registered health endpoints", "paths", "/health, /ready")
 	logger.Info("Registered dashboard endpoint", "path", "/", "method", "GET", "protection", "authenticated")
 	logger.Info("Registered event management endpoints", "path", "/api/events", "protection", "authenticated")
+	logger.Info("Registered event web UI endpoints", "prefix", "/events", "protection", "authenticated")
 	logger.Info("Registered question management endpoints", "path", "/api/events/{id}/questions", "protection", "authenticated")
 	logger.Info("Registered invite management endpoints", "path", "/api/events/{eventId}/invites", "protection", "authenticated")
 	logger.Info("Registered import invite endpoints", "path", "/api/events/{eventId}/invites/import", "protection", "authenticated")
