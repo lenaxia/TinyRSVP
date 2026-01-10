@@ -201,6 +201,30 @@ docker exec tinyrsvp-tinyrsvp ls -la /usr/share/zoneinfo/America/Los_Angeles
 
 **Recommended Solution**: Add `ADMIN_EMAILS` environment variable to automatically assign admin role to specific emails
 
+### 11. ✅ Manage Invites Button Redirects to API Endpoint
+
+**Issue**: Clicking "Manage Invites" button from event detail page redirected to `/api/events/{id}/invites` showing raw JSON instead of HTML page
+
+**Root Cause**: Template used API endpoint `/api/events/{id}/invites` instead of HTML route `/events/{id}/invites`
+
+**Fix**: Changed button href from `/api/events/{{.Event.ID}}/invites` to `/events/{{.Event.ID}}/invites`
+
+**Files Modified**:
+- `templates/web/event_detail.html` (line 151)
+
+---
+
+### 12. ✅ Unreadable "Manage Invites" and "View RSVPs" Buttons
+
+**Issue**: "Manage Invites" and "View RSVPs" buttons had poor contrast using `.btn-secondary` class
+
+**Root Cause**: `.btn-secondary` uses light gray background that's hard to see against light page backgrounds
+
+**Fix**: Changed both buttons from `.btn-secondary` to `.btn-primary` for better visibility
+
+**Files Modified**:
+- `templates/web/event_detail.html` (lines 151-152)
+
 ---
 
 ## Testing Status
@@ -268,7 +292,7 @@ docker exec tinyrsvp-tinyrsvp ls -la /usr/share/zoneinfo/America/Los_Angeles
 
 ### Templates
 - `templates/web/event_form.html` - Navigation links, date_defaults.js script
-- `templates/web/event_detail.html` - Navigation links
+- `templates/web/event_detail.html` - Navigation links, button routes and styling
 - `templates/web/dashboard.html` - Navigation links
 
 ### Go Code
