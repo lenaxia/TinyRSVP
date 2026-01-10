@@ -19,6 +19,8 @@ type csrfContextKey string
 
 const csrfTokenKey csrfContextKey = "csrf_token"
 
+var CSRFTokenKey = csrfTokenKey
+
 func CSRF(tokenLength int) Middleware {
 	if tokenLength <= 0 {
 		panic("CSRF token length must be positive")

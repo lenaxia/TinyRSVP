@@ -132,6 +132,7 @@
                 {{if not .DeadlinePassed}}
                 {{if not .EventPassed}}
                 <form class="rsvp-form" method="POST" action="/rsvp/{{.Token}}" novalidate style="background-color: var(--color-surface); padding: var(--spacing-6);">
+                    <input type="hidden" name="csrf_token" value="{{.CSRFToken}}">
                     <h2 class="rsvp-form-title">
                         {{if .ExistingRSVP}}Update Your RSVP{{else}}Please Respond{{end}}
                     </h2>
@@ -327,6 +328,7 @@
             updatePlusOnesState();
         });
     </script>
+    <script src="/static/js/csrf.js"></script>
     <script src="/static/js/form_validation.js"></script>
     <script src="/static/js/loading_states.js"></script>
     <script src="/static/js/keyboard_navigation.js"></script>

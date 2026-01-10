@@ -47,6 +47,7 @@
             {{end}}
 
             <form method="POST" action="{{if .Event.ID}}/events/{{.Event.ID}}{{else}}/events{{end}}" class="event-form" novalidate>
+                <input type="hidden" name="csrf_token" value="{{.CSRFToken}}">
                 {{if .Event.ID}}
                 <input type="hidden" name="_method" value="PUT">
                 {{end}}
@@ -265,6 +266,7 @@
             </form>
         </main>
     </div>
+    <script src="/static/js/csrf.js"></script>
     <script src="/static/js/form_validation.js"></script>
     <script src="/static/js/loading_states.js"></script>
     <script src="/static/js/keyboard_navigation.js"></script>

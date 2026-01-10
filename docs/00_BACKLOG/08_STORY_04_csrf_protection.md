@@ -109,8 +109,9 @@ func TestCSRF_InvalidToken(t *testing.T)
 
 ## Status
 
-**Status:** Complete
+**Status:** Complete (Including Template Integration)
 **Completed:** 2026-01-10
+**Template Integration:** 2026-01-10
 **Implementation Notes:**
 - CSRF middleware implemented with double-submit cookie pattern
 - Token rotation on every state-changing request
@@ -119,3 +120,9 @@ func TestCSRF_InvalidToken(t *testing.T)
 - Comprehensive test coverage (unit, integration, benchmark)
 - Integrated into router middleware chain
 - Documentation updated in middleware README
+- **Template Integration Complete:**
+  - CSRF tokens injected into handler template data (rsvp.go)
+  - CSRF hidden fields added to all forms (rsvp_page.html, event_form.html)
+  - JavaScript helper created (static/js/csrf.js)
+  - Integration tests verify end-to-end functionality (10 tests)
+  - All tests passing

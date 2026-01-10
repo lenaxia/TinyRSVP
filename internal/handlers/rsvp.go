@@ -12,6 +12,7 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	"github.com/lenaxia/tinyrsvp/internal/db/repositories"
+	"github.com/lenaxia/tinyrsvp/internal/middleware"
 	"github.com/lenaxia/tinyrsvp/internal/models"
 	"github.com/lenaxia/tinyrsvp/internal/rsvp"
 )
@@ -76,6 +77,7 @@ type RSVPPageData struct {
 	TimeUntilEvent string
 	CanUpdate      bool
 	ErrorMessage   string
+	CSRFToken      string
 }
 
 func (h *RSVPHandler) GetRSVPPage(w http.ResponseWriter, r *http.Request) {
@@ -190,6 +192,7 @@ func (h *RSVPHandler) GetRSVPPage(w http.ResponseWriter, r *http.Request) {
 		LocalEndTime:   localEndTime,
 		TimeUntilEvent: timeUntilEvent,
 		CanUpdate:      canUpdate,
+		CSRFToken:      middleware.GetCSRFToken(r.Context()),
 	}
 
 	h.renderPage(w, http.StatusOK, data)
@@ -427,15 +430,16 @@ type AnswerWithQuestion struct {
 }
 
 type ConfirmationPageData struct {
-	Event              *models.Event
-	Invite             *models.Invite
-	RSVP               *models.RSVP
+	Event                *models.Event
+	Invite               *models.Invite
+	RSVP                 *models.RSVP
 	AnswersWithQuestions []*AnswerWithQuestion
-	Token              string
-	CanUpdate          bool
-	LocalStartTime     string
-	LocalEndTime       string
-	ErrorMessage       string
+	Token                string
+	CanUpdate            bool
+	LocalStartTime       string
+	LocalEndTime         string
+	ErrorMessage         string
+	CSRFToken            string
 }
 
 func (h *RSVPHandler) GetConfirmationPage(w http.ResponseWriter, r *http.Request) {
@@ -545,6 +549,7 @@ func (h *RSVPHandler) GetConfirmationPage(w http.ResponseWriter, r *http.Request
 		CanUpdate:            canUpdate,
 		LocalStartTime:       localStartTime,
 		LocalEndTime:         localEndTime,
+		CSRFToken:            middleware.GetCSRFToken(r.Context()),
 	}
 
 	h.renderConfirmationPage(w, http.StatusOK, data)
