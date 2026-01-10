@@ -633,7 +633,8 @@ Duration: ~36 seconds (with caching)
 **Lines:** 677
 
 #### Services Initialized: 45+
-- ✅ Database and migrator- ✅ All repositories (lines 161-167)
+- ✅ Database and migrator (lines 54-105)
+- ✅ All repositories (lines 161-167)
 - ✅ Template engine and services (lines 156-159)
 - ✅ Email template renderer (lines 169-177)
 - ✅ Session manager (line 179)
