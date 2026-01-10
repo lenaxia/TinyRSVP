@@ -17,18 +17,18 @@
     <link rel="stylesheet" href="/static/css/keyboard_navigation.css">
     <link rel="stylesheet" href="/static/css/focus_management.css">
 </head>
-<body style="background-color: var(--color-background); padding: var(--spacing-4);">
+<body>
     <a href="#main-content" class="skip-link">Skip to main content</a>
     <div class="rsvp-page">
         <div class="rsvp-container">
             {{if .ErrorMessage}}
-                <div class="alert alert-error" role="alert" style="background-color: var(--color-error); color: var(--color-text-primary); padding: var(--spacing-8);">
+                <div class="alert alert-error" role="alert">
                     <strong>Unable to Load RSVP</strong>
                     <p>{{.ErrorMessage}}</p>
                 </div>
             {{else if .Event}}
                 {{if .ExistingRSVP}}
-                <div class="existing-rsvp-notice" role="status" style="background-color: var(--color-success);">
+                <div class="existing-rsvp-notice" role="status">
                     <div class="existing-rsvp-notice-title">✓ You've Already Responded</div>
                     <div class="existing-rsvp-notice-text">
                         <p><strong>Response:</strong> {{.ExistingRSVP.Response}}</p>
@@ -42,7 +42,7 @@
                 </div>
                 {{end}}
 
-                <article class="event-details" role="main" aria-label="Main content" id="main-content" style="background-color: var(--color-surface); padding: var(--spacing-6); box-shadow: var(--shadow-base); border: 1px solid var(--color-border);">
+                <article class="event-details" role="main" aria-label="Main content" id="main-content">
                     <header>
                         <h1 class="event-title">{{.Event.Title}}</h1>
                     </header>
@@ -73,7 +73,7 @@
                             </svg>
                             <div class="event-info-content">
                                 <div class="event-info-label">Location</div>
-                                <address style="font-style: normal;">{{.Event.Location}}</address>
+                                <address class="event-location">{{.Event.Location}}</address>
                             </div>
                         </div>
                         {{end}}
@@ -102,7 +102,7 @@
                                 <div>
                                     {{if .Invite.Name}}{{.Invite.Name}}{{end}}
                                     {{if and .Invite.Name .Invite.Email}}<br>{{end}}
-                                    {{if .Invite.Email}}<span style="font-size: var(--font-size-sm); color: var(--color-text-secondary);">{{.Invite.Email}}</span>{{end}}
+                                    {{if .Invite.Email}}<span class="invite-email-secondary">{{.Invite.Email}}</span>{{end}}
                                 </div>
                             </div>
                         </div>
@@ -131,7 +131,7 @@
 
                 {{if not .DeadlinePassed}}
                 {{if not .EventPassed}}
-                <form class="rsvp-form" method="POST" action="/rsvp/{{.Token}}" novalidate style="background-color: var(--color-surface); padding: var(--spacing-6);">
+                <form class="rsvp-form" method="POST" action="/rsvp/{{.Token}}" novalidate>
                     <input type="hidden" name="csrf_token" value="{{.CSRFToken}}">
                     <h2 class="rsvp-form-title">
                         {{if .ExistingRSVP}}Update Your RSVP{{else}}Please Respond{{end}}
@@ -160,9 +160,9 @@
                     {{if .Invite}}
                     {{if gt .Invite.MaxPlusOnes 0}}
                     <div class="plus-ones-selector" data-max-plus-ones="{{.Invite.MaxPlusOnes}}">
-                        <label for="plus_ones" class="form-label" style="color: var(--color-text-primary);">
+                        <label for="plus_ones" class="form-label">
                             Additional Guests
-                            <span style="color: var(--color-text-secondary); font-weight: var(--font-weight-normal); font-size: var(--font-size-sm);">(up to {{.Invite.MaxPlusOnes}})</span>
+                            <span class="plus-ones-max-label">(up to {{.Invite.MaxPlusOnes}})</span>
                         </label>
                         
                         <div class="plus-ones-controls">
@@ -186,7 +186,7 @@
                     {{end}}
 
                     {{if .Questions}}
-                    <div class="preference-questions" style="margin-top: var(--spacing-8); padding-top: var(--spacing-8); border-top: 1px solid var(--color-border);">
+                    <div class="preference-questions">
                         <h3 class="preference-questions-title">Additional Information</h3>
                         {{range .Questions}}
                         <div class="question-item" data-question-id="{{.ID}}" data-type="{{.QuestionType}}">
@@ -243,8 +243,8 @@
                     </div>
                     {{end}}
 
-                    <div class="rsvp-actions" style="margin-top: var(--spacing-8); gap: var(--spacing-3);">
-                        <button type="submit" class="btn btn-primary" style="background-color: var(--color-primary-600);" onmouseover="this.style.backgroundColor='var(--color-primary-700)'" onmouseout="this.style.backgroundColor='var(--color-primary-600)'">
+                    <div class="rsvp-actions">
+                        <button type="submit" class="btn btn-primary">
                             {{if .ExistingRSVP}}Update RSVP{{else}}Submit RSVP{{end}}
                         </button>
                     </div>
@@ -254,13 +254,6 @@
             {{end}}
         </div>
     </div>
-    <style>
-        @media (min-width: 768px) {
-            body {
-                padding: var(--spacing-8);
-            }
-        }
-    </style>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             const responseInputs = document.querySelectorAll('input[name="response"]');

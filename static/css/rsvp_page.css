@@ -14,7 +14,8 @@
     border-radius: var(--radius-lg);
     padding: var(--spacing-6);
     margin-bottom: var(--spacing-6);
-    box-shadow: var(--shadow-sm);
+    box-shadow: var(--shadow-base);
+    border: 1px solid var(--color-border);
 }
 
 .event-title {
@@ -147,10 +148,21 @@
 
 .plus-ones-selector {
     margin-bottom: var(--spacing-5);
+    background-color: var(--color-surface);
+    padding: var(--spacing-4);
+    border-radius: var(--radius-md);
+    border: 1px solid var(--color-border);
 }
 
 .plus-ones-selector .form-label {
     margin-bottom: var(--spacing-3);
+    color: var(--color-text-primary);
+}
+
+.plus-ones-max-label {
+    color: var(--color-text-secondary);
+    font-weight: var(--font-weight-normal);
+    font-size: var(--font-size-sm);
 }
 
 .plus-ones-controls {
@@ -203,6 +215,9 @@
 }
 
 .preference-questions {
+    margin-top: var(--spacing-8);
+    padding-top: var(--spacing-8);
+    border-top: 1px solid var(--color-border);
     margin-bottom: var(--spacing-5);
 }
 
@@ -211,6 +226,15 @@
     font-weight: var(--font-weight-semibold);
     color: var(--color-text-primary);
     margin-bottom: var(--spacing-4);
+}
+
+.event-location {
+    font-style: normal;
+}
+
+.invite-email-secondary {
+    font-size: var(--font-size-sm);
+    color: var(--color-text-secondary);
 }
 
 .question-item {
@@ -284,7 +308,7 @@
 }
 
 .alert {
-    padding: var(--spacing-4);
+    padding: var(--spacing-8);
     border-radius: var(--radius-md);
     margin-bottom: var(--spacing-4);
     font-size: var(--font-size-base);
@@ -292,9 +316,13 @@
 }
 
 .alert-error {
-    background-color: var(--color-error-50);
-    border: 1px solid var(--color-error-200);
-    color: var(--color-error-700);
+    background-color: var(--color-error);
+    color: var(--color-background);
+}
+
+.alert-error strong {
+    display: block;
+    margin-bottom: var(--spacing-2);
 }
 
 .alert-success {
@@ -328,21 +356,24 @@
 
 .existing-rsvp-notice {
     padding: var(--spacing-4);
-    background-color: var(--color-primary-50);
-    border: 1px solid var(--color-primary-200);
+    background-color: var(--color-success);
+    border: 1px solid var(--color-success-dark);
     border-radius: var(--radius-md);
     margin-bottom: var(--spacing-4);
+    color: var(--color-background);
 }
 
 .existing-rsvp-notice-title {
     font-weight: var(--font-weight-semibold);
-    color: var(--color-primary-700);
     margin-bottom: var(--spacing-2);
 }
 
 .existing-rsvp-notice-text {
-    color: var(--color-primary-600);
     font-size: var(--font-size-sm);
+}
+
+.existing-rsvp-notice-text p {
+    margin-top: var(--spacing-2);
 }
 
 .loading {
