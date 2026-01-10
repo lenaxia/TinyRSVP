@@ -164,17 +164,35 @@
         });
     }
 
-    function handleCopyLink(inviteId, token) {
-        const baseURL = window.location.origin;
-        const inviteURL = `${baseURL}/rsvp/${token}`;
+    function handleCopyLink(inviteId) {
+        fetch(`/api/invites/${inviteId}`, {
+            method: 'GET',
+            headers: {
+                'Accept': 'application/json',
+            },
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Failed to fetch invite details');
+            }
+            return response.json();
+        })
+        .then(data => {
+            const token = data.token;
+            if (!token) {
+                throw new Error('No token available for this invite');
+            }
+            const baseURL = window.location.origin;
+            const inviteURL = `${baseURL}/rsvp/${token}`;
 
-        navigator.clipboard.writeText(inviteURL)
-            .then(() => {
-                showFeedback('Invite link copied to clipboard', 'success');
-            })
-            .catch(() => {
-                showFeedback('Failed to copy link', 'error');
-            });
+            return navigator.clipboard.writeText(inviteURL);
+        })
+        .then(() => {
+            showFeedback('Invite link copied to clipboard', 'success');
+        })
+        .catch(error => {
+            showFeedback(error.message || 'Failed to copy link', 'error');
+        });
     }
 
     function handleRegenerateWithConfirm(inviteId) {
@@ -243,11 +261,10 @@
 
         const action = btn.getAttribute('data-action');
         const inviteId = btn.getAttribute('data-invite-id');
-        const token = btn.getAttribute('data-invite-token');
 
         switch (action) {
             case 'copy-link':
-                handleCopyLink(inviteId, token);
+                handleCopyLink(inviteId);
                 break;
             case 'regenerate':
                 handleRegenerateWithConfirm(inviteId);
