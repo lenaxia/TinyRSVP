@@ -342,3 +342,204 @@ func TestErrorHandling_Integration_NoRequestID(t *testing.T) {
 		t.Error("HTML response should still render without request ID")
 	}
 }
+
+func TestErrorHandling_Integration_TimeoutError(t *testing.T) {
+	tests := []struct {
+		name           string
+		err            error
+		wantStatusCode int
+		wantCode       string
+		wantMessage    string
+	}{
+		{
+			name:           "timeout error constructor",
+			err:            NewTimeoutError(),
+			wantStatusCode: http.StatusGatewayTimeout,
+			wantCode:       "TIMEOUT",
+			wantMessage:    "Request timeout",
+		},
+		{
+			name:           "context deadline exceeded",
+			err:            context.DeadlineExceeded,
+			wantStatusCode: http.StatusGatewayTimeout,
+			wantCode:       "TIMEOUT",
+			wantMessage:    "Request timeout",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			req := httptest.NewRequest(http.MethodGet, "/test", nil)
+			req.Header.Set("Accept", "application/json")
+			ctx := context.WithValue(req.Context(), middleware.RequestIDKey, "test-req-id")
+			req = req.WithContext(ctx)
+
+			w := httptest.NewRecorder()
+
+			HandleError(w, req, tt.err)
+
+			if w.Code != tt.wantStatusCode {
+				t.Errorf("Status code = %v, want %v", w.Code, tt.wantStatusCode)
+			}
+
+			var resp ErrorResponse
+			if err := json.NewDecoder(w.Body).Decode(&resp); err != nil {
+				t.Fatalf("Failed to decode response: %v", err)
+			}
+
+			if resp.Code != tt.wantCode {
+				t.Errorf("Code = %v, want %v", resp.Code, tt.wantCode)
+			}
+
+			if resp.Message != tt.wantMessage {
+				t.Errorf("Message = %v, want %v", resp.Message, tt.wantMessage)
+			}
+		})
+	}
+}
+
+func TestErrorHandling_Integration_RouterErrorHandlers(t *testing.T) {
+	tests := []struct {
+		name           string
+		handler        http.HandlerFunc
+		acceptHeader   string
+		wantStatusCode int
+		wantCode       string
+		checkJSON      bool
+		checkHTML      bool
+	}{
+		{
+			name:           "not found handler JSON",
+			handler:        NotFoundHandler,
+			acceptHeader:   "application/json",
+			wantStatusCode: http.StatusNotFound,
+			wantCode:       "NOT_FOUND",
+			checkJSON:      true,
+		},
+		{
+			name:           "not found handler HTML",
+			handler:        NotFoundHandler,
+			acceptHeader:   "text/html",
+			wantStatusCode: http.StatusNotFound,
+			checkHTML:      true,
+		},
+		{
+			name:           "method not allowed handler JSON",
+			handler:        MethodNotAllowedHandler,
+			acceptHeader:   "application/json",
+			wantStatusCode: http.StatusMethodNotAllowed,
+			wantCode:       "METHOD_NOT_ALLOWED",
+			checkJSON:      true,
+		},
+		{
+			name:           "method not allowed handler HTML",
+			handler:        MethodNotAllowedHandler,
+			acceptHeader:   "text/html",
+			wantStatusCode: http.StatusMethodNotAllowed,
+			checkHTML:      true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			req := httptest.NewRequest(http.MethodGet, "/test", nil)
+			req.Header.Set("Accept", tt.acceptHeader)
+			ctx := context.WithValue(req.Context(), middleware.RequestIDKey, "test-req-id")
+			req = req.WithContext(ctx)
+
+			w := httptest.NewRecorder()
+
+			tt.handler(w, req)
+
+			if w.Code != tt.wantStatusCode {
+				t.Errorf("Status code = %v, want %v", w.Code, tt.wantStatusCode)
+			}
+
+			if tt.checkJSON {
+				var resp ErrorResponse
+				if err := json.NewDecoder(w.Body).Decode(&resp); err != nil {
+					t.Fatalf("Failed to decode JSON response: %v", err)
+				}
+
+				if resp.Code != tt.wantCode {
+					t.Errorf("Code = %v, want %v", resp.Code, tt.wantCode)
+				}
+
+				contentType := w.Header().Get("Content-Type")
+				if contentType != "application/json" {
+					t.Errorf("Content-Type = %v, want application/json", contentType)
+				}
+			}
+
+			if tt.checkHTML {
+				body := w.Body.String()
+				if !strings.Contains(body, "<!DOCTYPE html>") {
+					t.Error("HTML response should contain DOCTYPE")
+				}
+
+				contentType := w.Header().Get("Content-Type")
+				if !strings.Contains(contentType, "text/html") {
+					t.Errorf("Content-Type = %v, want text/html", contentType)
+				}
+			}
+		})
+	}
+}
+
+func TestErrorHandling_Integration_RespondErrorWrapper(t *testing.T) {
+	tests := []struct {
+		name           string
+		status         int
+		message        string
+		wantStatusCode int
+		wantMessage    string
+	}{
+		{
+			name:           "bad request",
+			status:         http.StatusBadRequest,
+			message:        "Invalid input",
+			wantStatusCode: http.StatusBadRequest,
+			wantMessage:    "Invalid input",
+		},
+		{
+			name:           "not found",
+			status:         http.StatusNotFound,
+			message:        "Resource not found",
+			wantStatusCode: http.StatusNotFound,
+			wantMessage:    "Resource not found",
+		},
+		{
+			name:           "internal error",
+			status:         http.StatusInternalServerError,
+			message:        "Database error",
+			wantStatusCode: http.StatusInternalServerError,
+			wantMessage:    "Database error",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			w := httptest.NewRecorder()
+
+			respondError(w, tt.status, tt.message)
+
+			if w.Code != tt.wantStatusCode {
+				t.Errorf("Status code = %v, want %v", w.Code, tt.wantStatusCode)
+			}
+
+			var resp ErrorResponse
+			if err := json.NewDecoder(w.Body).Decode(&resp); err != nil {
+				t.Fatalf("Failed to decode response: %v", err)
+			}
+
+			if resp.Message != tt.wantMessage {
+				t.Errorf("Message = %v, want %v", resp.Message, tt.wantMessage)
+			}
+
+			contentType := w.Header().Get("Content-Type")
+			if contentType != "application/json" {
+				t.Errorf("Content-Type = %v, want application/json", contentType)
+			}
+		})
+	}
+}

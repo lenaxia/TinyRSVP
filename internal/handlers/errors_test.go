@@ -191,6 +191,20 @@ func TestNewBadRequestError(t *testing.T) {
 	}
 }
 
+func TestNewTimeoutError(t *testing.T) {
+	err := NewTimeoutError()
+
+	if err.StatusCode != http.StatusGatewayTimeout {
+		t.Errorf("StatusCode = %v, want %v", err.StatusCode, http.StatusGatewayTimeout)
+	}
+	if err.Code != "TIMEOUT" {
+		t.Errorf("Code = %v, want TIMEOUT", err.Code)
+	}
+	if err.Message != "Request timeout" {
+		t.Errorf("Message = %v, want 'Request timeout'", err.Message)
+	}
+}
+
 func TestToAPIError(t *testing.T) {
 	tests := []struct {
 		name           string
@@ -245,6 +259,12 @@ func TestToAPIError(t *testing.T) {
 			err:            errors.New("something went wrong"),
 			wantStatusCode: http.StatusInternalServerError,
 			wantCode:       "INTERNAL_ERROR",
+		},
+		{
+			name:           "context deadline exceeded",
+			err:            context.DeadlineExceeded,
+			wantStatusCode: http.StatusGatewayTimeout,
+			wantCode:       "TIMEOUT",
 		},
 	}
 

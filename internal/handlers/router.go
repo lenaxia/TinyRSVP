@@ -418,59 +418,16 @@ func (router *Router) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 }
 
 func NotFoundHandler(w http.ResponseWriter, r *http.Request) {
-	if IsAPIRequest(r) {
-		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusNotFound)
-		json.NewEncoder(w).Encode(map[string]string{
-			"error": "Route not found",
-		})
-		return
-	}
-
-	w.Header().Set("Content-Type", "text/html; charset=utf-8")
-	w.WriteHeader(http.StatusNotFound)
-	fmt.Fprintf(w, `<!DOCTYPE html>
-<html>
-<head>
-    <title>404 - Not Found</title>
-    <style>
-        body { font-family: sans-serif; text-align: center; padding: 50px; }
-        h1 { color: #333; }
-    </style>
-</head>
-<body>
-    <h1>404 - Page Not Found</h1>
-    <p>The page you are looking for does not exist.</p>
-</body>
-</html>`)
+	HandleError(w, r, NewNotFoundError("Route not found"))
 }
 
 func MethodNotAllowedHandler(w http.ResponseWriter, r *http.Request) {
-	if IsAPIRequest(r) {
-		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusMethodNotAllowed)
-		json.NewEncoder(w).Encode(map[string]string{
-			"error": "Method not allowed",
-		})
-		return
+	err := &APIError{
+		StatusCode: http.StatusMethodNotAllowed,
+		Code:       "METHOD_NOT_ALLOWED",
+		Message:    "Method not allowed",
 	}
-
-	w.Header().Set("Content-Type", "text/html; charset=utf-8")
-	w.WriteHeader(http.StatusMethodNotAllowed)
-	fmt.Fprintf(w, `<!DOCTYPE html>
-<html>
-<head>
-    <title>405 - Method Not Allowed</title>
-    <style>
-        body { font-family: sans-serif; text-align: center; padding: 50px; }
-        h1 { color: #333; }
-    </style>
-</head>
-<body>
-    <h1>405 - Method Not Allowed</h1>
-    <p>The HTTP method used is not allowed for this resource.</p>
-</body>
-</html>`)
+	HandleError(w, r, err)
 }
 
 func IsAPIRequest(r *http.Request) bool {

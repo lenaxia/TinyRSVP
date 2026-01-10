@@ -3,7 +3,6 @@ package handlers
 import (
 	"context"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"net/http"
 	"strconv"
@@ -57,7 +56,7 @@ type UpdateRoleRequest struct {
 func (h *UserHandler) ListUsers(w http.ResponseWriter, r *http.Request) {
 	user, _ := auth.UserFromContext(r.Context())
 	if !h.authChecker.CanManageUsers(r.Context(), user) {
-		respondError(w, http.StatusForbidden, "insufficient permissions")
+		HandleError(w, r, NewPermissionDeniedError("insufficient permissions"))
 		return
 	}
 
@@ -67,7 +66,7 @@ func (h *UserHandler) ListUsers(w http.ResponseWriter, r *http.Request) {
 	if limitStr := r.URL.Query().Get("limit"); limitStr != "" {
 		parsedLimit, err := strconv.Atoi(limitStr)
 		if err != nil || parsedLimit < 1 || parsedLimit > 100 {
-			respondError(w, http.StatusBadRequest, "invalid limit parameter")
+			HandleError(w, r, NewBadRequestError("invalid limit parameter"))
 			return
 		}
 		limit = parsedLimit
@@ -76,7 +75,7 @@ func (h *UserHandler) ListUsers(w http.ResponseWriter, r *http.Request) {
 	if offsetStr := r.URL.Query().Get("offset"); offsetStr != "" {
 		parsedOffset, err := strconv.Atoi(offsetStr)
 		if err != nil || parsedOffset < 0 {
-			respondError(w, http.StatusBadRequest, "invalid offset parameter")
+			HandleError(w, r, NewBadRequestError("invalid offset parameter"))
 			return
 		}
 		offset = parsedOffset
@@ -84,13 +83,13 @@ func (h *UserHandler) ListUsers(w http.ResponseWriter, r *http.Request) {
 
 	users, err := h.userService.ListUsers(r.Context(), limit, offset)
 	if err != nil {
-		respondError(w, http.StatusInternalServerError, "failed to list users")
+		HandleError(w, r, err)
 		return
 	}
 
 	total, err := h.userService.CountUsers(r.Context())
 	if err != nil {
-		respondError(w, http.StatusInternalServerError, "failed to count users")
+		HandleError(w, r, err)
 		return
 	}
 
@@ -112,24 +111,19 @@ func (h *UserHandler) ListUsers(w http.ResponseWriter, r *http.Request) {
 func (h *UserHandler) GetUser(w http.ResponseWriter, r *http.Request, userIDStr string) {
 	currentUser, _ := auth.UserFromContext(r.Context())
 	if !h.authChecker.CanManageUsers(r.Context(), currentUser) {
-		respondError(w, http.StatusForbidden, "insufficient permissions")
+		HandleError(w, r, NewPermissionDeniedError("insufficient permissions"))
 		return
 	}
 
 	userID, err := parseUserID(userIDStr)
 	if err != nil {
-		respondError(w, http.StatusBadRequest, "invalid user ID")
+		HandleError(w, r, NewBadRequestError("invalid user ID"))
 		return
 	}
 
 	user, err := h.userService.GetUserByID(r.Context(), userID)
 	if err != nil {
-		var notFoundErr *models.NotFoundError
-		if errors.As(err, &notFoundErr) {
-			respondError(w, http.StatusNotFound, "user not found")
-			return
-		}
-		respondError(w, http.StatusInternalServerError, "failed to get user")
+		HandleError(w, r, err)
 		return
 	}
 
@@ -139,54 +133,49 @@ func (h *UserHandler) GetUser(w http.ResponseWriter, r *http.Request, userIDStr 
 func (h *UserHandler) UpdateUserRole(w http.ResponseWriter, r *http.Request, userIDStr string) {
 	currentUser, _ := auth.UserFromContext(r.Context())
 	if !h.authChecker.CanManageUsers(r.Context(), currentUser) {
-		respondError(w, http.StatusForbidden, "insufficient permissions")
+		HandleError(w, r, NewPermissionDeniedError("insufficient permissions"))
 		return
 	}
 
 	userID, err := parseUserID(userIDStr)
 	if err != nil {
-		respondError(w, http.StatusBadRequest, "invalid user ID")
+		HandleError(w, r, NewBadRequestError("invalid user ID"))
 		return
 	}
 
 	var req UpdateRoleRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		respondError(w, http.StatusBadRequest, "invalid request body")
+		HandleError(w, r, NewBadRequestError("invalid request body"))
 		return
 	}
 
 	newRole, err := validateRole(req.Role)
 	if err != nil {
-		respondError(w, http.StatusBadRequest, err.Error())
+		HandleError(w, r, NewBadRequestError(err.Error()))
 		return
 	}
 
 	user, err := h.userService.GetUserByID(r.Context(), userID)
 	if err != nil {
-		var notFoundErr *models.NotFoundError
-		if errors.As(err, &notFoundErr) {
-			respondError(w, http.StatusNotFound, "user not found")
-			return
-		}
-		respondError(w, http.StatusInternalServerError, "failed to get user")
+		HandleError(w, r, err)
 		return
 	}
 
 	if user.Role == models.RoleAdmin && newRole != models.RoleAdmin {
 		adminCount, err := h.userService.CountAdmins(r.Context())
 		if err != nil {
-			respondError(w, http.StatusInternalServerError, "failed to check admin count")
+			HandleError(w, r, err)
 			return
 		}
 
 		if adminCount <= 1 {
-			respondError(w, http.StatusConflict, "cannot demote last admin")
+			HandleError(w, r, NewConflictError("cannot demote last admin"))
 			return
 		}
 	}
 
 	if err := h.userService.UpdateUserRole(r.Context(), userID, newRole); err != nil {
-		respondError(w, http.StatusInternalServerError, "failed to update user role")
+		HandleError(w, r, err)
 		return
 	}
 
@@ -197,42 +186,37 @@ func (h *UserHandler) UpdateUserRole(w http.ResponseWriter, r *http.Request, use
 func (h *UserHandler) DeleteUser(w http.ResponseWriter, r *http.Request, userIDStr string) {
 	currentUser, _ := auth.UserFromContext(r.Context())
 	if !h.authChecker.CanManageUsers(r.Context(), currentUser) {
-		respondError(w, http.StatusForbidden, "insufficient permissions")
+		HandleError(w, r, NewPermissionDeniedError("insufficient permissions"))
 		return
 	}
 
 	userID, err := parseUserID(userIDStr)
 	if err != nil {
-		respondError(w, http.StatusBadRequest, "invalid user ID")
+		HandleError(w, r, NewBadRequestError("invalid user ID"))
 		return
 	}
 
 	user, err := h.userService.GetUserByID(r.Context(), userID)
 	if err != nil {
-		var notFoundErr *models.NotFoundError
-		if errors.As(err, &notFoundErr) {
-			respondError(w, http.StatusNotFound, "user not found")
-			return
-		}
-		respondError(w, http.StatusInternalServerError, "failed to get user")
+		HandleError(w, r, err)
 		return
 	}
 
 	if user.Role == models.RoleAdmin {
 		adminCount, err := h.userService.CountAdmins(r.Context())
 		if err != nil {
-			respondError(w, http.StatusInternalServerError, "failed to check admin count")
+			HandleError(w, r, err)
 			return
 		}
 
 		if adminCount <= 1 {
-			respondError(w, http.StatusConflict, "cannot delete last admin")
+			HandleError(w, r, NewConflictError("cannot delete last admin"))
 			return
 		}
 	}
 
 	if err := h.userService.DeleteUser(r.Context(), userID); err != nil {
-		respondError(w, http.StatusInternalServerError, "failed to delete user")
+		HandleError(w, r, err)
 		return
 	}
 
@@ -278,10 +262,4 @@ func respondJSON(w http.ResponseWriter, status int, data interface{}) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(status)
 	json.NewEncoder(w).Encode(data)
-}
-
-func respondError(w http.ResponseWriter, status int, message string) {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(status)
-	json.NewEncoder(w).Encode(ErrorResponse{Error: message})
 }

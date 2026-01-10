@@ -96,7 +96,24 @@ func NewBadRequestError(message string) *APIError {
 	}
 }
 
+func NewTimeoutError() *APIError {
+	return &APIError{
+		StatusCode: http.StatusGatewayTimeout,
+		Code:       "TIMEOUT",
+		Message:    "Request timeout",
+	}
+}
+
 func toAPIError(err error) *APIError {
+	if errors.Is(err, context.DeadlineExceeded) {
+		return &APIError{
+			StatusCode: http.StatusGatewayTimeout,
+			Code:       "TIMEOUT",
+			Message:    "Request timeout",
+			Err:        err,
+		}
+	}
+
 	var apiErr *APIError
 	if errors.As(err, &apiErr) {
 		return apiErr
@@ -289,4 +306,15 @@ func HandleError(w http.ResponseWriter, r *http.Request, err error) {
 	} else {
 		writeHTMLError(w, r, apiErr)
 	}
+}
+
+func respondError(w http.ResponseWriter, status int, message string) {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(status)
+	resp := ErrorResponse{
+		Error:   http.StatusText(status),
+		Message: message,
+		Code:    http.StatusText(status),
+	}
+	json.NewEncoder(w).Encode(resp)
 }

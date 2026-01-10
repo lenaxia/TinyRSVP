@@ -296,8 +296,8 @@ john@example.com,John Doe`
 		t.Fatalf("Failed to decode response: %v", err)
 	}
 
-	if response["error"] != "cannot create invite for cancelled event" {
-		t.Errorf("Expected cancelled event error, got: %s", response["error"])
+	if response["message"] != "cannot create invite for cancelled event" {
+		t.Errorf("Expected cancelled event error, got: %s", response["message"])
 	}
 }
 
@@ -347,8 +347,8 @@ john@example.com,John Doe`
 		t.Fatalf("Failed to decode response: %v", err)
 	}
 
-	if response["error"] != "cannot create invite for archived event" {
-		t.Errorf("Expected archived event error, got: %s", response["error"])
+	if response["message"] != "cannot create invite for archived event" {
+		t.Errorf("Expected archived event error, got: %s", response["message"])
 	}
 }
 

@@ -189,7 +189,7 @@ func TestTemplateHandlers_CreateTemplate(t *testing.T) {
 			if tt.wantErrMessage != "" {
 				var resp map[string]interface{}
 				json.NewDecoder(w.Body).Decode(&resp)
-				if errMsg, ok := resp["error"].(string); !ok || !containsStr(errMsg, tt.wantErrMessage) {
+				if errMsg, ok := resp["message"].(string); !ok || !containsStr(errMsg, tt.wantErrMessage) {
 					t.Errorf("Error message = %v, want to contain %s", errMsg, tt.wantErrMessage)
 				}
 			}
@@ -273,7 +273,7 @@ func TestTemplateHandlers_GetTemplate(t *testing.T) {
 			if tt.wantErrMessage != "" {
 				var resp map[string]interface{}
 				json.NewDecoder(w.Body).Decode(&resp)
-				if errMsg, ok := resp["error"].(string); !ok || !containsStr(errMsg, tt.wantErrMessage) {
+				if errMsg, ok := resp["message"].(string); !ok || !containsStr(errMsg, tt.wantErrMessage) {
 					t.Errorf("Error message = %v, want to contain %s", errMsg, tt.wantErrMessage)
 				}
 			}
@@ -372,7 +372,7 @@ func TestTemplateHandlers_UpdateTemplate(t *testing.T) {
 			if tt.wantErrMessage != "" {
 				var resp map[string]interface{}
 				json.NewDecoder(w.Body).Decode(&resp)
-				if errMsg, ok := resp["error"].(string); !ok || !containsStr(errMsg, tt.wantErrMessage) {
+				if errMsg, ok := resp["message"].(string); !ok || !containsStr(errMsg, tt.wantErrMessage) {
 					t.Errorf("Error message = %v, want to contain %s", errMsg, tt.wantErrMessage)
 				}
 			}
@@ -449,7 +449,7 @@ func TestTemplateHandlers_DeleteTemplate(t *testing.T) {
 			if tt.wantErrMessage != "" {
 				var resp map[string]interface{}
 				json.NewDecoder(w.Body).Decode(&resp)
-				if errMsg, ok := resp["error"].(string); !ok || !containsStr(errMsg, tt.wantErrMessage) {
+				if errMsg, ok := resp["message"].(string); !ok || !containsStr(errMsg, tt.wantErrMessage) {
 					t.Errorf("Error message = %v, want to contain %s", errMsg, tt.wantErrMessage)
 				}
 			}

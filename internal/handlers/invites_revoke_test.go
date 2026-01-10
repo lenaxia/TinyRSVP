@@ -467,7 +467,7 @@ func TestRevokeInviteHandlers_RevokeInvite(t *testing.T) {
 				if err := json.NewDecoder(w.Body).Decode(&response); err != nil {
 					t.Fatalf("failed to decode response: %v", err)
 				}
-				if errMsg, ok := response["error"].(string); !ok || !strings.Contains(errMsg, tt.wantErrMessage) {
+				if errMsg, ok := response["message"].(string); !ok || !strings.Contains(errMsg, tt.wantErrMessage) {
 					t.Errorf("RevokeInvite() error = %v, want error containing %q", errMsg, tt.wantErrMessage)
 				}
 			}
