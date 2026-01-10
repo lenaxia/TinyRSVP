@@ -276,8 +276,18 @@ const FormValidator = {
                     rsvpDeadlineField.addEventListener('blur', () => {
                         this.validateRSVPDeadline(form);
                     });
+                    rsvpDeadlineField.addEventListener('input', () => {
+                        if (rsvpDeadlineField.classList.contains('error')) {
+                            this.validateRSVPDeadline(form);
+                        }
+                    });
                     startTimeField.addEventListener('blur', () => {
                         if (rsvpDeadlineField.value) {
+                            this.validateRSVPDeadline(form);
+                        }
+                    });
+                    startTimeField.addEventListener('input', () => {
+                        if (rsvpDeadlineField.value && rsvpDeadlineField.classList.contains('error')) {
                             this.validateRSVPDeadline(form);
                         }
                     });

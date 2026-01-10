@@ -98,7 +98,7 @@
 
         <section class="event-cards" aria-label="Event list">
             {{range .Events}}
-            <article class="event-card" tabindex="0" role="article">
+            <article class="event-card" tabindex="0" role="article" onclick="window.location.href='/events/{{.ID}}'" style="cursor: pointer;">
                 <header class="event-card-header">
                     <h2 class="event-card-title">{{.Title}}</h2>
                     <span class="event-card-status {{.Status}}" aria-label="Status: {{.Status}}">
@@ -129,9 +129,8 @@
 
                 <footer class="event-card-footer">
                     <div class="event-actions">
-                        <a href="/events/{{.ID}}" class="event-action-btn" aria-label="View event details">View</a>
-                        <a href="/events/{{.ID}}/edit" class="event-action-btn" aria-label="Edit event">Edit</a>
-                        <a href="/events/{{.ID}}/invites" class="event-action-btn" aria-label="View invites">Invites</a>
+                        <a href="/events/{{.ID}}/edit" class="event-action-btn" aria-label="Edit event" onclick="event.stopPropagation()">Edit</a>
+                        <a href="/events/{{.ID}}/invites" class="event-action-btn" aria-label="View invites" onclick="event.stopPropagation()">Invites</a>
                     </div>
                 </footer>
             </article>
