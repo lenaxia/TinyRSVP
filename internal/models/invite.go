@@ -21,6 +21,7 @@ type Invite struct {
 	EventID          int64        `db:"event_id" json:"event_id"`
 	Name             *string      `db:"name" json:"name,omitempty"`
 	Email            *string      `db:"email" json:"email,omitempty"`
+	Token            *string      `db:"token" json:"token,omitempty"`
 	TokenHash        string       `db:"token_hash" json:"-"`
 	MaxPlusOnes      int          `db:"max_plus_ones" json:"max_plus_ones"`
 	Status           InviteStatus `db:"status" json:"status"`

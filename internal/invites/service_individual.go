@@ -111,6 +111,7 @@ func (s *individualInviteService) CreateIndividualInvite(
 		EventID:     req.EventID,
 		Name:        req.Name,
 		Email:       emailPtr,
+		Token:       &plainToken,
 		TokenHash:   tokenHash,
 		MaxPlusOnes: maxPlusOnes,
 		Status:      models.InviteStatusDraft,

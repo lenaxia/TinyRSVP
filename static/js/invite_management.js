@@ -165,16 +165,16 @@
     }
 
     function handleCopyLink(inviteId) {
-        fetch(`/api/invites/${inviteId}/regenerate`, {
-            method: 'POST',
+        fetch(`/api/invites/${inviteId}`, {
+            method: 'GET',
             headers: {
-                'X-CSRF-Token': getCSRFToken(),
+                'Accept': 'application/json',
             },
         })
         .then(response => {
             if (!response.ok) {
                 return response.json().then(data => {
-                    throw new Error(data.error || 'Failed to get invite link');
+                    throw new Error(data.error || 'Failed to get invite details');
                 });
             }
             return response.json();
@@ -182,7 +182,7 @@
         .then(data => {
             const token = data.token;
             if (!token) {
-                throw new Error('No token available');
+                throw new Error('No token available for this invite');
             }
             const baseURL = window.location.origin;
             const inviteURL = `${baseURL}/rsvp/${token}`;

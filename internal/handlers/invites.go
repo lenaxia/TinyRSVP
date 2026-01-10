@@ -65,6 +65,7 @@ type InviteResponse struct {
 	EventID     int64               `json:"event_id"`
 	Email       *string             `json:"email,omitempty"`
 	Name        *string             `json:"name,omitempty"`
+	Token       *string             `json:"token,omitempty"`
 	MaxPlusOnes int                 `json:"max_plus_ones"`
 	Status      models.InviteStatus `json:"status"`
 	ExpiresAt   string              `json:"expires_at"`
@@ -133,6 +134,7 @@ func toInviteResponse(invite *models.Invite) *InviteResponse {
 		EventID:     invite.EventID,
 		Email:       invite.Email,
 		Name:        invite.Name,
+		Token:       invite.Token,
 		MaxPlusOnes: invite.MaxPlusOnes,
 		Status:      invite.Status,
 		ExpiresAt:   invite.ExpiresAt.Format("2006-01-02T15:04:05Z07:00"),
