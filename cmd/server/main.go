@@ -208,11 +208,12 @@ func main() {
 	var authenticator auth.Authenticator
 	if cfg.OIDC.Enabled {
 		oidcCfg := &auth.OIDCConfig{
-			IssuerURL:    cfg.OIDC.IssuerURL,
-			ClientID:     cfg.OIDC.ClientID,
-			ClientSecret: cfg.OIDC.ClientSecret,
-			RedirectURL:  cfg.OIDC.RedirectURL,
-			Scopes:       []string{"openid", "email", "profile"},
+			IssuerURL:     cfg.OIDC.IssuerURL,
+			ClientID:      cfg.OIDC.ClientID,
+			ClientSecret:  cfg.OIDC.ClientSecret,
+			RedirectURL:   cfg.OIDC.RedirectURL,
+			Scopes:        []string{"openid", "email", "profile"},
+			SkipTLSVerify: cfg.OIDC.SkipTLSVerify,
 		}
 		oidcAuth, err := auth.NewOIDCAuthenticator(oidcCfg, userService, sessionMgr)
 		if err != nil {
@@ -357,7 +358,7 @@ func main() {
 	dashboardHandler.SetTemplates(dashboardTemplates)
 	logger.Info("Dashboard templates loaded successfully")
 
-	eventWebTemplates, err := template.New("events").ParseFiles(
+	eventWebTemplates, err := template.New("events").Funcs(funcMap).ParseFiles(
 		"templates/web/event_list.html",
 		"templates/web/event_form.html",
 		"templates/web/event_detail.html",
