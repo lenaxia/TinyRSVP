@@ -61,6 +61,8 @@
             if (this.timezoneInput && this.timezoneInput.value) {
                 this.selectedTimezone = this.timezoneInput.value;
             }
+
+            this.updateDisplayField();
         }
 
         createModal() {
@@ -184,16 +186,24 @@
         }
 
         attachEventListeners() {
-            this.startInput.addEventListener('click', () => {
-                this.currentMode = 'start';
-                this.openModal();
-            });
-
-            if (this.endInput) {
-                this.endInput.addEventListener('click', () => {
-                    this.currentMode = 'end';
+            const displayInput = document.getElementById('datetime_display');
+            console.log('DateTimePicker: Looking for datetime_display element:', displayInput);
+            if (displayInput) {
+                console.log('DateTimePicker: Attaching click listener to datetime_display');
+                displayInput.addEventListener('click', (e) => {
+                    console.log('DateTimePicker: Display input clicked!');
+                    e.preventDefault();
                     this.openModal();
                 });
+                displayInput.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        console.log('DateTimePicker: Display input keyboard activated!');
+                        this.openModal();
+                    }
+                });
+            } else {
+                console.error('DateTimePicker: datetime_display element not found!');
             }
 
             this.modalElement.querySelectorAll('.datetime-toggle-btn').forEach(btn => {
@@ -226,10 +236,15 @@
         }
 
         openModal() {
+            console.log('DateTimePicker: openModal called');
+            if (!this.selectedStartDate && !this.selectedStartTime) {
+                this.currentMode = 'start';
+            }
             this.switchMode(this.currentMode);
             this.renderCalendar();
             this.renderTimePicker();
             this.updateTimezoneDisplay();
+            console.log('DateTimePicker: About to open modal, modal object:', this.modal);
             this.modal.open();
         }
 
@@ -438,23 +453,64 @@
         }
 
         saveDateTime() {
-            if (this.currentMode === 'start') {
-                if (this.selectedStartDate && this.selectedStartTime) {
-                    const dateTime = this.combineDateAndTime(this.selectedStartDate, this.selectedStartTime);
-                    this.startInput.value = this.formatForInput(dateTime);
-                }
+            if (this.selectedStartDate && this.selectedStartTime) {
+                const dateTime = this.combineDateAndTime(this.selectedStartDate, this.selectedStartTime);
+                this.startInput.value = this.formatForInput(dateTime);
+            }
+
+            if (this.selectedEndDate && this.selectedEndTime) {
+                const dateTime = this.combineDateAndTime(this.selectedEndDate, this.selectedEndTime);
+                this.endInput.value = this.formatForInput(dateTime);
             } else {
-                if (this.selectedEndDate && this.selectedEndTime) {
-                    const dateTime = this.combineDateAndTime(this.selectedEndDate, this.selectedEndTime);
-                    this.endInput.value = this.formatForInput(dateTime);
-                }
+                this.endInput.value = '';
             }
 
             if (this.timezoneInput) {
                 this.timezoneInput.value = this.selectedTimezone;
             }
 
+            this.updateDisplayField();
             this.modal.close();
+        }
+
+        updateDisplayField() {
+            const displayInput = document.getElementById('datetime_display');
+            if (!displayInput) return;
+
+            if (!this.selectedStartDate || !this.selectedStartTime) {
+                displayInput.textContent = 'Click to select date and time';
+                displayInput.classList.add('empty');
+                displayInput.classList.remove('has-value');
+                return;
+            }
+
+            const startDateTime = this.combineDateAndTime(this.selectedStartDate, this.selectedStartTime);
+            const tzName = this.getTimezoneName(this.selectedTimezone);
+            
+            let displayText = this.formatDisplayDateTime(startDateTime);
+
+            if (this.selectedEndDate && this.selectedEndTime) {
+                const endDateTime = this.combineDateAndTime(this.selectedEndDate, this.selectedEndTime);
+                displayText += ' - ' + this.formatDisplayDateTime(endDateTime);
+            }
+
+            displayText += ' (' + tzName + ')';
+
+            displayInput.textContent = displayText;
+            displayInput.classList.remove('empty');
+            displayInput.classList.add('has-value');
+        }
+
+        formatDisplayDateTime(date) {
+            const options = { 
+                weekday: 'short', 
+                month: 'short', 
+                day: 'numeric', 
+                year: 'numeric',
+                hour: 'numeric',
+                minute: '2-digit'
+            };
+            return date.toLocaleString('en-US', options);
         }
 
         combineDateAndTime(date, timeStr) {

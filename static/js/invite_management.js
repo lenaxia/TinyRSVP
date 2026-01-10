@@ -195,13 +195,13 @@
         });
     }
 
-    function handleRegenerateWithConfirm(inviteId) {
-        if (!confirm('Are you sure you want to regenerate this invite token? The old link will no longer work.')) {
+    function handleDeleteWithConfirm(inviteId) {
+        if (!confirm('Are you sure you want to delete this invite? This action cannot be undone.')) {
             return;
         }
 
-        fetch(`/api/invites/${inviteId}/regenerate`, {
-            method: 'POST',
+        fetch(`/api/invites/${inviteId}`, {
+            method: 'DELETE',
             headers: {
                 'X-CSRF-Token': getCSRFToken(),
             },
@@ -209,49 +209,19 @@
         .then(response => {
             if (!response.ok) {
                 return response.json().then(data => {
-                    throw new Error(data.error || 'Failed to regenerate token');
+                    throw new Error(data.error || 'Failed to delete invite');
                 });
             }
             return response.json();
         })
         .then(() => {
-            showFeedback('Token regenerated successfully', 'success');
+            showFeedback('Invite deleted successfully', 'success');
             setTimeout(() => {
                 window.location.reload();
             }, 1000);
         })
         .catch(error => {
-            showFeedback(error.message || 'Failed to regenerate token', 'error');
-        });
-    }
-
-    function handleRevokeWithConfirm(inviteId) {
-        if (!confirm('Are you sure you want to revoke this invite? The guest will no longer be able to RSVP.')) {
-            return;
-        }
-
-        fetch(`/api/invites/${inviteId}/revoke`, {
-            method: 'POST',
-            headers: {
-                'X-CSRF-Token': getCSRFToken(),
-            },
-        })
-        .then(response => {
-            if (!response.ok) {
-                return response.json().then(data => {
-                    throw new Error(data.error || 'Failed to revoke invite');
-                });
-            }
-            return response.json();
-        })
-        .then(() => {
-            showFeedback('Invite revoked successfully', 'success');
-            setTimeout(() => {
-                window.location.reload();
-            }, 1000);
-        })
-        .catch(error => {
-            showFeedback(error.message || 'Failed to revoke invite', 'error');
+            showFeedback(error.message || 'Failed to delete invite', 'error');
         });
     }
 
@@ -266,11 +236,8 @@
             case 'copy-link':
                 handleCopyLink(inviteId);
                 break;
-            case 'regenerate':
-                handleRegenerateWithConfirm(inviteId);
-                break;
-            case 'revoke':
-                handleRevokeWithConfirm(inviteId);
+            case 'delete':
+                handleDeleteWithConfirm(inviteId);
                 break;
         }
     }
