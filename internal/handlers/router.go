@@ -60,6 +60,9 @@ type RouterHandlers struct {
 	TemplateHandlers TemplateHandlerInterface
 	AssetHandler     AssetHandlerInterface
 	
+	AdminDashboardHandler AdminDashboardHandlerInterface
+	UserManagementHandler UserManagementHandlerInterface
+	
 	CleanupHandler http.Handler
 	EmailHealthHandler http.Handler
 	MetricsHandler http.Handler
@@ -172,6 +175,14 @@ type TemplateHandlerInterface interface {
 
 type AssetHandlerInterface interface {
 	ServeAsset(w http.ResponseWriter, r *http.Request)
+}
+
+type AdminDashboardHandlerInterface interface {
+	AdminDashboard(w http.ResponseWriter, r *http.Request)
+}
+
+type UserManagementHandlerInterface interface {
+	UserManagementPage(w http.ResponseWriter, r *http.Request)
 }
 
 type AuthMiddlewareInterface interface {
@@ -303,6 +314,22 @@ func NewRouter(handlers *RouterHandlers) *Router {
 		r.Get("/", func(w http.ResponseWriter, r *http.Request) {
 			w.WriteHeader(http.StatusOK)
 		})
+	}
+
+	if handlers.AdminDashboardHandler != nil && handlers.AuthMiddleware != nil {
+		r.Handle("/admin", handlers.AuthMiddleware.RequireAuth(
+			handlers.AuthMiddleware.RequireAdmin(
+				http.HandlerFunc(handlers.AdminDashboardHandler.AdminDashboard),
+			),
+		))
+	}
+
+	if handlers.UserManagementHandler != nil && handlers.AuthMiddleware != nil {
+		r.Handle("/admin/users", handlers.AuthMiddleware.RequireAuth(
+			handlers.AuthMiddleware.RequireAdmin(
+				http.HandlerFunc(handlers.UserManagementHandler.UserManagementPage),
+			),
+		))
 	}
 
 	if handlers.EventWebHandlers != nil && handlers.AuthMiddleware != nil {

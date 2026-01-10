@@ -498,3 +498,8 @@ func createMultipartRequestHelper(csvContent string, filename string) (*http.Req
 
 	return req, nil
 }
+
+
+func (m *mockEventRepository) CountEvents(ctx context.Context) (int, error) {
+	return 0, errors.New("not implemented")
+}

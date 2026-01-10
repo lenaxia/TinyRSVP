@@ -360,3 +360,7 @@ func TestDeleteInvite_CannotDeleteRespondedInvite(t *testing.T) {
 		t.Errorf("Expected status %d, got %d", http.StatusBadRequest, w.Code)
 	}
 }
+
+func (m *mockDeleteInviteEventRepo) CountEvents(ctx context.Context) (int, error) {
+	return 0, errors.New("not implemented")
+}

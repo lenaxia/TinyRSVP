@@ -13,6 +13,7 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/lenaxia/tinyrsvp/internal/admin"
 	"github.com/lenaxia/tinyrsvp/internal/assets"
 	"github.com/lenaxia/tinyrsvp/internal/auth"
 	"github.com/lenaxia/tinyrsvp/internal/config"
@@ -246,6 +247,11 @@ func main() {
 
 	userHandler := handlers.NewUserHandler(userService, authChecker)
 
+	adminService := admin.NewAdminService(userRepo, eventRepo, inviteRepo)
+	adminDashboardHandler := handlers.NewAdminDashboardHandler(adminService)
+	userManagementHandler := handlers.NewUserManagementHandler(userService)
+	logger.Info("Initialized admin services and handlers")
+
 	requireAuth := middleware.RequireAuth(sessionMgr, userService)
 	requireAdmin := middleware.RequireAdmin(authChecker)
 	middlewareAdapter := handlers.NewMiddlewareAdapter(requireAuth, requireAdmin)
@@ -374,6 +380,22 @@ func main() {
 	inviteWebHandlers := handlers.NewInviteWebHandlers(inviteService, eventRepo)
 	inviteWebHandlers.SetTemplates(inviteListTemplates)
 
+	adminDashboardTemplates, err := template.New("admin_dashboard.html").ParseFiles("templates/web/admin_dashboard.html")
+	if err != nil {
+		logger.Error("Failed to load admin dashboard templates", "error", err)
+		os.Exit(1)
+	}
+	adminDashboardHandler.SetTemplates(adminDashboardTemplates)
+	logger.Info("Admin dashboard templates loaded successfully")
+
+	userManagementTemplates, err := template.New("user_management.html").ParseFiles("templates/web/user_management.html")
+	if err != nil {
+		logger.Error("Failed to load user management templates", "error", err)
+		os.Exit(1)
+	}
+	userManagementHandler.SetTemplates(userManagementTemplates)
+	logger.Info("User management templates loaded successfully")
+
 	icsGenerator := ics.NewGenerator()
 	emailService := email.NewConfirmationService(templateRenderer, emailQueueRepo, icsGenerator)
 	logger.Info("Initialized email confirmation service")
@@ -454,6 +476,8 @@ func main() {
 		RSVPHandler:              rsvpHandler,
 		RSVPSummaryHandler:       rsvpSummaryHandler,
 		UserHandler:              userHandler,
+		AdminDashboardHandler:    adminDashboardHandler,
+		UserManagementHandler:    userManagementHandler,
 		TemplateHandlers:         templateHandlers,
 		AssetHandler:             assetHandler,
 		CleanupHandler:           cleanupHandler,
@@ -480,6 +504,8 @@ func main() {
 	logger.Info("Registered image management endpoints", "path", "/api/events/{event_id}/images", "protection", "authenticated")
 	logger.Info("Registered template management endpoints", "path", "/api/templates", "protection", "authenticated")
 	logger.Info("Registered user management endpoints", "path", "/api/users", "protection", "admin")
+	logger.Info("Registered admin dashboard endpoint", "path", "/admin", "method", "GET", "protection", "admin")
+	logger.Info("Registered user management UI endpoint", "path", "/admin/users", "method", "GET", "protection", "admin")
 	logger.Info("Registered invite cleanup endpoint", "path", "/api/invites/cleanup", "method", "POST", "protection", "admin")
 	logger.Info("Registered email health endpoint", "path", "/api/email/health", "method", "GET", "protection", "admin")
 	logger.Info("Registered RSVP endpoints", "path", "/rsvp/{token}", "methods", "GET,POST,PUT", "protection", "none")

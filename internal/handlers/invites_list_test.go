@@ -754,3 +754,16 @@ func TestListInvitesHandler_LimitBoundaryValues(t *testing.T) {
 		})
 	}
 }
+
+
+func (m *mockListInviteEventRepo) CountEvents(ctx context.Context) (int, error) {
+	return 0, errors.New("not implemented")
+}
+
+func (m *mockListEventRepository) CountEvents(ctx context.Context) (int, error) {
+	return 0, errors.New("not implemented")
+}
+
+func (m *mockListEventRepository) CountEvents(ctx context.Context) (int, error) {
+	return 0, errors.New("not implemented")
+}

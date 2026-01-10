@@ -492,3 +492,8 @@ func TestUpdateInvite_CannotUpdateRevokedInvite(t *testing.T) {
 		t.Errorf("Expected status %d, got %d", http.StatusBadRequest, w.Code)
 	}
 }
+
+
+func (m *mockUpdateInviteEventRepo) CountEvents(ctx context.Context) (int, error) {
+	return 0, errors.New("not implemented")
+}

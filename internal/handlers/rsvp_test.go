@@ -1096,3 +1096,12 @@ func TestRSVPHandler_UpdateRSVP_EmptyToken(t *testing.T) {
 	}
 }
 
+
+
+func (m *mockRSVPEventRepo) CountEvents(ctx context.Context) (int, error) {
+	return 0, errors.New("not implemented")
+}
+
+func (m *mockRSVPEventRepository) CountEvents(ctx context.Context) (int, error) {
+	return 0, errors.New("not implemented")
+}

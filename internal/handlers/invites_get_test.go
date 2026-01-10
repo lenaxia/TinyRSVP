@@ -289,3 +289,6 @@ func TestGetInvite_PermissionDenied(t *testing.T) {
 	}
 }
 
+func (m *mockGetInviteEventRepo) CountEvents(ctx context.Context) (int, error) {
+	return 0, errors.New("not implemented")
+}
