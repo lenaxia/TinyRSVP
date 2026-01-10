@@ -1,0 +1,9 @@
+# Git attributes for TinyRSVP
+
+# Mark test configuration files as safe (not production secrets)
+test/authelia/configuration.yml linguist-generated=false linguist-documentation=false
+test/authelia/users_database.yml linguist-generated=false linguist-documentation=false
+docker-compose.test.yml linguist-generated=false linguist-documentation=false
+
+# These files contain test-only secrets that are safe to commit
+test/authelia/** -diff

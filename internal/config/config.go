@@ -40,11 +40,12 @@ type DatabaseConfig struct {
 }
 
 type OIDCConfig struct {
-	Enabled      bool
-	IssuerURL    string
-	ClientID     string
-	ClientSecret string
-	RedirectURL  string
+	Enabled       bool
+	IssuerURL     string
+	ClientID      string
+	ClientSecret  string
+	RedirectURL   string
+	SkipTLSVerify bool
 }
 
 type ForwardAuthConfig struct {
@@ -158,6 +159,11 @@ func (c *Config) loadFromEnv() error {
 	c.OIDC.ClientID = getEnvString("OIDC_CLIENT_ID", "")
 	c.OIDC.ClientSecret = getEnvString("OIDC_CLIENT_SECRET", "")
 	c.OIDC.RedirectURL = getEnvString("OIDC_REDIRECT_URL", "")
+	
+	c.OIDC.SkipTLSVerify, err = getEnvBool("OIDC_SKIP_VERIFY", false)
+	if err != nil {
+		return fmt.Errorf("OIDC_SKIP_VERIFY: %w", err)
+	}
 
 	if err := c.loadForwardAuthFromEnv(); err != nil {
 		return err
@@ -330,6 +336,7 @@ func (c *Config) validateOIDC() error {
 		return fmt.Errorf("invalid issuer URL: %w", err)
 	}
 
+	// HTTPS is required (self-signed certs OK with OIDC_SKIP_VERIFY=true)
 	if !strings.HasPrefix(c.OIDC.IssuerURL, "https://") {
 		return fmt.Errorf("issuer URL must use HTTPS")
 	}

@@ -19,6 +19,12 @@ func (h *LoginHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Authentication failed", http.StatusInternalServerError)
 		return
 	}
+	
+	returnURL := r.URL.Query().Get("return")
+	if returnURL == "" {
+		returnURL = "/"
+	}
+	http.Redirect(w, r, returnURL, http.StatusFound)
 }
 
 type CallbackHandler struct {
@@ -67,7 +73,11 @@ func (h *CallbackHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	http.Redirect(w, r, "/dashboard", http.StatusFound)
+	returnURL := r.URL.Query().Get("return")
+	if returnURL == "" {
+		returnURL = "/"
+	}
+	http.Redirect(w, r, returnURL, http.StatusFound)
 }
 
 type LogoutHandler struct {

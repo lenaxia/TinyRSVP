@@ -2,6 +2,10 @@
 ###############################################################################
 #                   Authelia Test Configuration                              #
 ###############################################################################
+# ⚠️  SAFE TO COMMIT - TEST ENVIRONMENT ONLY
+# All secrets in this file are intentionally public and only work locally.
+# See test/SECURITY_NOTICE.md for details.
+###############################################################################
 
 theme: light
 default_2fa_method: ""
@@ -14,8 +18,8 @@ server:
   enable_expvars: false
   disable_healthcheck: false
   tls:
-    key: ""
-    certificate: ""
+    key: /config/certs/key.pem
+    certificate: /config/certs/cert.pem
 
 log:
   level: debug
@@ -53,12 +57,12 @@ authentication_backend:
       parallelism: 2
 
 access_control:
-  default_policy: bypass
+  default_policy: one_factor
   rules: []
 
 session:
   name: authelia_session
-  domain: localhost
+  domain: 127.0.0.1
   same_site: lax
   secret: insecure_session_secret_for_testing_only
   expiration: 1h
@@ -84,30 +88,34 @@ identity_providers:
   oidc:
     hmac_secret: insecure_hmac_secret_for_testing_only_must_be_very_long_string
     issuer_private_key: |
-      -----BEGIN RSA PRIVATE KEY-----
-      MIIEpAIBAAKCAQEA3xGFQ0Aq8xJPXxqPxqj7W8nFjKxJZXqPxqj7W8nFjKxJZXqP
-      xqj7W8nFjKxJZXqPxqj7W8nFjKxJZXqPxqj7W8nFjKxJZXqPxqj7W8nFjKxJZXqP
-      xqj7W8nFjKxJZXqPxqj7W8nFjKxJZXqPxqj7W8nFjKxJZXqPxqj7W8nFjKxJZXqP
-      xqj7W8nFjKxJZXqPxqj7W8nFjKxJZXqPxqj7W8nFjKxJZXqPxqj7W8nFjKxJZXqP
-      xqj7W8nFjKxJZXqPxqj7W8nFjKxJZXqPxqj7W8nFjKxJZXqPxqj7W8nFjKxJZXqP
-      xqj7W8nFjKxJZXqPxqj7W8nFjKxJZXqPxqj7W8nFjKxJZXqPxqj7W8nFjKxJZXqP
-      xqj7W8nFjKxJZXqPxqj7W8nFjKxJZXqPxqj7W8nFjKxJZXqPxqj7W8nFjKxJZXqP
-      xqj7W8nFjKxJZXqPxqj7W8nFjKxJZXqPxqj7W8nFjKxJZXqPxqj7W8nFjKxJZXqP
-      AgMBAAECggEABqj7W8nFjKxJZXqPxqj7W8nFjKxJZXqPxqj7W8nFjKxJZXqPxqj7
-      W8nFjKxJZXqPxqj7W8nFjKxJZXqPxqj7W8nFjKxJZXqPxqj7W8nFjKxJZXqPxqj7
-      W8nFjKxJZXqPxqj7W8nFjKxJZXqPxqj7W8nFjKxJZXqPxqj7W8nFjKxJZXqPxqj7
-      W8nFjKxJZXqPxqj7W8nFjKxJZXqPxqj7W8nFjKxJZXqPxqj7W8nFjKxJZXqPxqj7
-      W8nFjKxJZXqPxqj7W8nFjKxJZXqPxqj7W8nFjKxJZXqPxqj7W8nFjKxJZXqPxqj7
-      W8nFjKxJZXqPxqj7W8nFjKxJZXqPxqj7W8nFjKxJZXqPxqj7W8nFjKxJZXqPxqj7
-      W8nFjKxJZXqPxqj7W8nFjKxJZXqPxqj7W8nFjKxJZXqPxqj7W8nFjKxJZXqPxqj7
-      W8nFjKxJZXqPxqj7W8nFjKxJZXqPxqj7W8nFjKxJZXqPxqj7W8nFjKxJZXqPxqj7
-      QKBgQD7W8nFjKxJZXqPxqj7W8nFjKxJZXqPxqj7W8nFjKxJZXqPxqj7W8nFjKxJ
-      ZXqPxqj7W8nFjKxJZXqPxqj7W8nFjKxJZXqPxqj7W8nFjKxJZXqPxqj7W8nFjKxJ
-      ZXqPxqj7W8nFjKxJZXqPxqj7W8nFjKxJZXqPxqj7W8nFjKxJZXqPxqj7W8nFjKxJ
-      ZXqPxqj7W8nFjKxJZXqPxqj7W8nFjKxJZXqPxqj7W8nFjKxJZXqPxqj7W8nFjKxJ
-      ZXqPxqj7W8nFjKxJZXqPxqj7W8nFjKxJZXqPxqj7W8nFjKxJZXqPxqj7W8nFjKxJ
-      ZXqPxqj7W8nFjKxJZXqPxqj7W8nFjKxJZXqPxqj7W8nFjKxJZXqPxqj7W8nFjKxJ
-      -----END RSA PRIVATE KEY-----
+      -----BEGIN PRIVATE KEY-----
+      MIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQCU9kI9A/2GuIoP
+      OHeU4Zb0DIVRVXE83czpzh9ZbZ5AryW7rrQtjTDWGuOZPqGutK3Sgy+113JWoz/M
+      ANRRHkYnVG+LKhfRSDt2jyuapmyNgQzuoNDy5r91XuFCdjPXEs4HQCHt32kQfAP/
+      r+HSomyNy8vx3LfC9BOd+8vsANcaS2xvaZJF0ioVslxFFFloAI1ZY+03gQXky4sW
+      Dnb7w+f/IgQ+cTJTahbEnVgQKAQMUvYYtn/dEm3CP/jZ9ImMVGjiZDK2Si3VIXKW
+      JOm9XsEghEXadpKrhJSH4jouKF2tDRfw8HUwQsMf5rukpjDFXvGYbxfNr6SxvIw1
+      LVYLsYvlAgMBAAECggEANHaEvquMm2mcCh9HknJfMWXFgG84ugid9kxnox3lyf9F
+      qVOu1oovBIEk3qB93iN5QrZ8U61k8hl9yxIRtN4WNBzbSiaRi95GPwvOfiGWAsJM
+      NTEDVkEpdiNr73Xk7R8M2+Xc7UOtY6Zh3CfsPzyAQfJgSjcDq1A+Jnp7iAuFtpcG
+      2XYv48253XeOIh7NLyaMLeY4rKRhOmeIU76mkaXpMW5yGPFNuGcQKK3pEtI8qfwk
+      hezNYbKD2U5WhvyFCYVTFGrqbbycG5mUxSZ3PXO/O8axZaPKMolhq1HWPZvqYHrT
+      rcu29ygXxBC2t6EK/jElIrw595b8TbvFiR+ajMG4YwKBgQDR1lFJiIBH9lmiU194
+      DNt/J2UgHU+IHo3BMgarRSfK5l0p5d0cK8vqkveBC+Khn2FAHhmPTvXzJiTFL+1i
+      h9TXewmZEbjJ/VEcLlabXf8iA5GRB4svuO8sivxBq5Cb1wB4jS2R8fYZAH2Rvht6
+      CT3TjE095W0gzF8wV2TIW0e3UwKBgQC1u4yPR3yCm+gM52Xodd8u5elHLD/EXFn2
+      jTnXTNyTvByxwl3mJP3dwqLJe6Ff30Sn4w1HQpODlw1bO9ZGBbsgUkZ3RnhnRf21
+      Df4o+WKY8jb51EmDYrKNKcMLSbt8x0HMG5erDTLIxAf64xFDuQch/G8ruRnRRr/i
+      SsNqllRg5wKBgGQjz280QWQWYPhiqXD1UdsAxfXphwcC7cuBQEWEH1VpUpSoKjlD
+      fXFY6d0f+uv+z751nuURXbbIQUwJb1RSVnTvNslh97oNtiOoyZQj65oj8dgwrW/8
+      5cdwHKqKYdy9YnAlj9XSjwunfEWNYDeBKYxHrKUZVFcOsW60hlhHl5YZAoGBAKi/
+      K7dnU7AbgI9q1m/R85kil0glSFjWwBp17H2Eu1Ta2XId3v7y3l/qeSnJiIDzWlbi
+      N9Qxd7Q6sIZEu6RtceKDQzdB0k9i6EAUbCoz11/ZmT7F5jT/kngNjTSQFG26v9f8
+      zwpfyQYvMJHAAqn1xy/BrKDW0ahHn6lKbsYsLNGFAoGBAJTdxKRTtjQc25QkaUJz
+      cS6juKRoBEEVHH+GxuxJTJmLxQRTOjIqOfc6Y9C0QwNY/rC3JJHsFpdXijn67Y2f
+      TiXk4P0c2LQcvcfvqeDII0VnFrhbTnEYOH1erdTeL5wAQqpni83fr6sJZzhDU0wT
+      Jof9wDjDi0dqU7ziGDVHAhgC
+      -----END PRIVATE KEY-----
     access_token_lifespan: 1h
     authorize_code_lifespan: 1m
     id_token_lifespan: 1h
@@ -126,7 +134,7 @@ identity_providers:
     clients:
       - id: tinyrsvp
         description: TinyRSVP Test Application
-        secret: '$argon2id$v=19$m=65536,t=1,p=8$insecure_secret_for_testing_only'
+        secret: '$argon2id$v=19$m=65536,t=3,p=4$3IzLp+1bv7Lyo6B0bcdFqA$LgjLZxQbbLZhUlKr8mT6JpZBw1IPCDaGa1vUsvVXp4E'
         public: false
         authorization_policy: one_factor
         redirect_uris:

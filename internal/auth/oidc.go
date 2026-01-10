@@ -3,6 +3,7 @@ package auth
 import (
 	"context"
 	"crypto/rand"
+	"crypto/tls"
 	"encoding/base64"
 	"fmt"
 	"net/http"
@@ -13,11 +14,12 @@ import (
 )
 
 type OIDCConfig struct {
-	IssuerURL    string
-	ClientID     string
-	ClientSecret string
-	RedirectURL  string
-	Scopes       []string
+	IssuerURL      string
+	ClientID       string
+	ClientSecret   string
+	RedirectURL    string
+	Scopes         []string
+	SkipTLSVerify  bool
 }
 
 type Authenticator interface {
@@ -81,6 +83,19 @@ func NewOIDCAuthenticatorWithContext(ctx context.Context, cfg *OIDCConfig, userS
 
 	if cfg.RedirectURL == "" {
 		return nil, fmt.Errorf("redirect URL is required")
+	}
+
+	// Create HTTP client with optional TLS skip verify for testing
+	httpClient := http.DefaultClient
+	if cfg.SkipTLSVerify {
+		httpClient = &http.Client{
+			Transport: &http.Transport{
+				TLSClientConfig: &tls.Config{
+					InsecureSkipVerify: true,
+				},
+			},
+		}
+		ctx = oidc.ClientContext(ctx, httpClient)
 	}
 
 	provider, err := oidc.NewProvider(ctx, cfg.IssuerURL)

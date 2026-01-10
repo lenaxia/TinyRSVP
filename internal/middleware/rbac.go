@@ -3,6 +3,7 @@ package middleware
 import (
 	"log/slog"
 	"net/http"
+	"net/url"
 
 	"github.com/lenaxia/tinyrsvp/internal/auth"
 )
@@ -12,22 +13,19 @@ func RequireAuth(sessionMgr auth.SessionManager, userService auth.UserService) f
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			sessionID, err := sessionMgr.GetSessionFromRequest(r)
 			if err != nil {
-				w.Header().Set("WWW-Authenticate", "Cookie")
-				http.Error(w, "Unauthorized", http.StatusUnauthorized)
+				redirectToLogin(w, r)
 				return
 			}
 
 			session, err := sessionMgr.GetSession(r.Context(), sessionID)
 			if err != nil {
-				w.Header().Set("WWW-Authenticate", "Cookie")
-				http.Error(w, "Unauthorized", http.StatusUnauthorized)
+				redirectToLogin(w, r)
 				return
 			}
 
 			user, err := userService.GetUserByID(r.Context(), session.UserID)
 			if err != nil {
-				w.Header().Set("WWW-Authenticate", "Cookie")
-				http.Error(w, "Unauthorized", http.StatusUnauthorized)
+				redirectToLogin(w, r)
 				return
 			}
 
@@ -41,6 +39,15 @@ func RequireAuth(sessionMgr auth.SessionManager, userService auth.UserService) f
 			next.ServeHTTP(w, r.WithContext(ctx))
 		})
 	}
+}
+
+func redirectToLogin(w http.ResponseWriter, r *http.Request) {
+	returnURL := r.URL.Path
+	if r.URL.RawQuery != "" {
+		returnURL += "?" + r.URL.RawQuery
+	}
+	
+	http.Redirect(w, r, "/login?return="+url.QueryEscape(returnURL), http.StatusSeeOther)
 }
 
 func RequireAdmin(authChecker auth.AuthorizationChecker) func(http.Handler) http.Handler {

@@ -1,0 +1,59 @@
+# GitLeaks Configuration for TinyRSVP
+# This file tells secret scanning tools which secrets are safe to commit
+# because they are only used in test/development environments
+
+title = "TinyRSVP GitLeaks Configuration"
+
+# Allow test environment secrets
+[[rules]]
+id = "test-environment-secrets"
+description = "Allow test environment configuration files with known test secrets"
+regex = '''(?i)(password|secret|key|token)'''
+paths = [
+    '''test/authelia/.*\.yml''',
+    '''test/authelia/.*\.yaml''',
+    '''docker-compose\.test\.yml''',
+]
+
+[[rules.allowlist]]
+description = "Test Authelia configuration files"
+paths = [
+    '''test/authelia/configuration\.yml''',
+    '''test/authelia/users_database\.yml''',
+]
+
+[[rules.allowlist]]
+description = "Test docker-compose file"
+paths = [
+    '''docker-compose\.test\.yml''',
+]
+
+[[rules.allowlist]]
+description = "Known test passwords and secrets"
+regexes = [
+    '''admin123''',
+    '''test123''',
+    '''guest123''',
+    '''insecure_secret_for_testing_only''',
+    '''insecure_session_secret_for_testing_only''',
+    '''insecure_encryption_key_for_testing_only_must_be_32_chars!!''',
+    '''insecure_hmac_secret_for_testing_only_must_be_very_long_string''',
+]
+
+# Allow argon2 hashes in test files
+[[rules.allowlist]]
+description = "Argon2 password hashes in test configuration"
+regexes = [
+    '''\$argon2id\$v=19\$m=65536,t=[0-9],p=[0-9]\$[A-Za-z0-9+/=]+\$[A-Za-z0-9+/=]+''',
+]
+
+# Allow RSA private keys in test configuration
+[[rules.allowlist]]
+description = "RSA private keys in test Authelia configuration"
+regexes = [
+    '''-----BEGIN (RSA )?PRIVATE KEY-----''',
+    '''-----END (RSA )?PRIVATE KEY-----''',
+]
+paths = [
+    '''test/authelia/configuration\.yml''',
+]

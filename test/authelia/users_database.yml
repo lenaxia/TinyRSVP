@@ -2,6 +2,10 @@
 ###############################################################################
 #                        Users Database                                      #
 ###############################################################################
+# ⚠️  SAFE TO COMMIT - TEST ENVIRONMENT ONLY
+# These credentials are intentionally public and only work in local Docker.
+# See test/SECURITY_NOTICE.md for details.
+###############################################################################
 
 # This file contains the users for the test environment.
 # Passwords are hashed using argon2id.
@@ -9,11 +13,12 @@
 # Default test users:
 # - admin / admin123
 # - testuser / test123
+# - guest / guest123
 
 users:
   admin:
     displayname: "Admin User"
-    password: "$argon2id$v=19$m=65536,t=1,p=8$YWRtaW4xMjM$8Z7qJ5K9L0M1N2O3P4Q5R6S7T8U9V0W1X2Y3Z4A5B6C"
+    password: "$argon2id$v=19$m=65536,t=3,p=4$3aKm5oy/Y3VQFMvLf82hXQ$PNGT9tJkBu7LcVOxA55H58jS2hVnba1kq868so3ye/E"
     email: admin@tinyrsvp.test
     groups:
       - admins
@@ -21,14 +26,14 @@ users:
 
   testuser:
     displayname: "Test User"
-    password: "$argon2id$v=19$m=65536,t=1,p=8$dGVzdDEyMw$1A2B3C4D5E6F7G8H9I0J1K2L3M4N5O6P7Q8R9S0T1U2V"
+    password: "$argon2id$v=19$m=65536,t=3,p=4$3S+1r+1137l3Mm6/74zuFQ$SlTvauGREQTrJJa39W45dRnzmft5FZhfUzEL9TvCiQ8"
     email: testuser@tinyrsvp.test
     groups:
       - users
 
   guest:
     displayname: "Guest User"
-    password: "$argon2id$v=19$m=65536,t=1,p=8$Z3Vlc3QxMjM$9X8Y7Z6A5B4C3D2E1F0G9H8I7J6K5L4M3N2O1P0Q9R8S"
+    password: "$argon2id$v=19$m=65536,t=3,p=4$gxcQ9JpYWyO3RmaQrvFOjA$N1z67Sx3NH14whmGavTFMGp0pfH+c/XiHUMcYeqT27s"
     email: guest@tinyrsvp.test
     groups:
       - guests

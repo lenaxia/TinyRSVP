@@ -4,7 +4,6 @@ http:
       basicAuth:
         users:
           - "admin:$apr1$ojrLB8kc$NGSVUaecNdicnJyY/ekVQ."
-        headerField: "X-WebAuth-User"
     
     forward-auth-headers:
       headers:
@@ -13,6 +12,16 @@ http:
           X-Forwarded-Email: "admin@tinyrsvp.test"
 
   routers:
+    tinyrsvp-login:
+      rule: "Path(`/login`)"
+      service: tinyrsvp
+      middlewares:
+        - basic-auth
+        - forward-auth-headers
+      entryPoints:
+        - web
+      priority: 100
+
     tinyrsvp:
       rule: "PathPrefix(`/`)"
       service: tinyrsvp

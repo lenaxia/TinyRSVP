@@ -25,10 +25,9 @@
             <nav class="nav" role="navigation" aria-label="Main navigation">
                 <a href="/" class="logo">TinyRSVP</a>
                 <ul class="nav-menu">
-                    <li><a href="/dashboard" class="nav-link active">Dashboard</a></li>
+                    <li><a href="/" class="nav-link active">Dashboard</a></li>
                     <li><a href="/events" class="nav-link">Events</a></li>
-                    <li><a href="/invites" class="nav-link">Invites</a></li>
-                    <li><a href="/settings" class="nav-link">Settings</a></li>
+                    <li><a href="/admin" class="nav-link">Admin</a></li>
                 </ul>
             </nav>
         </aside>
@@ -45,7 +44,7 @@
             <div class="error-state" role="alert">
                 <h2 class="error-state-title">Error Loading Dashboard</h2>
                 <p class="error-state-description">{{.Error}}</p>
-                <a href="/dashboard" class="btn btn-primary">Retry</a>
+                <a href="/" class="btn btn-primary">Retry</a>
             </div>
             {{else if .Loading}}
             <div class="loading-state" aria-live="polite" aria-busy="true">

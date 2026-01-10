@@ -24,3 +24,29 @@ function fetchWithCSRF(url, options = {}) {
     options.headers = addCSRFHeader(options.headers);
     return fetch(url, options);
 }
+
+function syncCSRFTokenInForms() {
+    const currentToken = getCSRFToken();
+    if (!currentToken) {
+        return;
+    }
+
+    const csrfInputs = document.querySelectorAll('input[name="csrf_token"]');
+    csrfInputs.forEach(input => {
+        if (input.value !== currentToken) {
+            input.value = currentToken;
+        }
+    });
+}
+
+if (typeof document !== 'undefined') {
+    document.addEventListener('DOMContentLoaded', () => {
+        syncCSRFTokenInForms();
+    });
+
+    window.addEventListener('pageshow', (event) => {
+        if (event.persisted) {
+            syncCSRFTokenInForms();
+        }
+    });
+}

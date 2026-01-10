@@ -6,6 +6,7 @@ import (
 	"crypto/subtle"
 	"encoding/base64"
 	"fmt"
+	"log/slog"
 	"net/http"
 )
 
@@ -39,6 +40,25 @@ func CSRF(tokenLength int) Middleware {
 
 			if !isSafeMethod(r.Method) {
 				if !validateCSRFToken(r, token) {
+					submittedToken := getSubmittedToken(r)
+					cookieToken, _ := r.Cookie(CSRFCookieName)
+					cookieValue := ""
+					if cookieToken != nil {
+						cookieValue = cookieToken.Value
+					}
+					
+					slog.Error("CSRF validation failed",
+						"method", r.Method,
+						"path", r.URL.Path,
+						"expected_token", token,
+						"submitted_token", submittedToken,
+						"cookie_token", cookieValue,
+						"submitted_empty", submittedToken == "",
+						"cookie_empty", cookieValue == "",
+						"tokens_match", submittedToken == token,
+						"cookie_matches", cookieValue == token,
+					)
+					
 					http.Error(w, "Invalid or missing CSRF token", http.StatusForbidden)
 					return
 				}
@@ -115,8 +135,10 @@ func validateCSRFToken(r *http.Request, expectedToken string) bool {
 		return false
 	}
 
-	return subtle.ConstantTimeCompare([]byte(submittedToken), []byte(expectedToken)) == 1 &&
-		subtle.ConstantTimeCompare([]byte(cookieToken.Value), []byte(expectedToken)) == 1
+	submittedMatch := subtle.ConstantTimeCompare([]byte(submittedToken), []byte(expectedToken)) == 1
+	cookieMatch := subtle.ConstantTimeCompare([]byte(cookieToken.Value), []byte(expectedToken)) == 1
+	
+	return submittedMatch && cookieMatch
 }
 
 func getSubmittedToken(r *http.Request) string {
