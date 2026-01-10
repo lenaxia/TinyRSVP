@@ -1,16 +1,5 @@
 /* DateTime Picker - Evite-style date and time selection modal */
 
-/* Override modal-slide-right width for datetime picker */
-#datetime-picker-modal .modal-slide-right {
-    width: 500px;
-    max-width: 95vw;
-}
-
-#timezone-modal .modal-slide-right {
-    width: 400px;
-    max-width: 95vw;
-}
-
 /* DateTime Picker Toggle Buttons */
 .datetime-toggle-group {
     display: flex;
@@ -282,28 +271,11 @@
 
 /* DateTime Display Input */
 .datetime-display-input {
-    width: 100%;
-    padding: var(--spacing-3) var(--spacing-4);
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-base);
-    font-size: var(--font-size-base);
-    background: var(--color-background);
     cursor: pointer;
-    transition: all var(--transition-fast);
-}
-
-.datetime-display-input:hover {
-    border-color: var(--color-primary);
-}
-
-.datetime-display-input:focus {
-    outline: 2px solid var(--color-border-focus);
-    outline-offset: 2px;
 }
 
 .datetime-display-input.has-value {
     font-weight: var(--font-weight-medium);
-    color: var(--color-text-primary);
 }
 
 .datetime-display-input.empty {

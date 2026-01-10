@@ -115,9 +115,9 @@ func TestButtonsSecondaryVariant(t *testing.T) {
 		t.Error("Missing .btn-secondary variant")
 	}
 
-	pattern := regexp.MustCompile(`\.btn-secondary\s*\{[^}]*background-color:\s*var\(--color-gray-200\)`)
+	pattern := regexp.MustCompile(`\.btn-secondary\s*\{[^}]*background-color:\s*var\(--color-gray-300\)`)
 	if !pattern.MatchString(cssContent) {
-		t.Error(".btn-secondary should use var(--color-gray-200) for background")
+		t.Error(".btn-secondary should use var(--color-gray-300) for background")
 	}
 
 	if !strings.Contains(cssContent, ".btn-secondary:hover") {

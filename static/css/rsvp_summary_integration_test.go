@@ -162,12 +162,12 @@ func TestRSVPSummaryResponsiveBreakpoints(t *testing.T) {
 }
 
 func TestRSVPSummaryAccessibilityFeatures(t *testing.T) {
-	content, err := os.ReadFile("rsvp_summary.css")
+	formsContent, err := os.ReadFile("forms.css")
 	if err != nil {
-		t.Fatalf("Failed to read rsvp_summary.css: %v", err)
+		t.Fatalf("Failed to read forms.css: %v", err)
 	}
 
-	css := string(content)
+	forms := string(formsContent)
 
 	accessibilityFeatures := []string{
 		":focus",
@@ -176,8 +176,8 @@ func TestRSVPSummaryAccessibilityFeatures(t *testing.T) {
 	}
 
 	for _, feature := range accessibilityFeatures {
-		if !strings.Contains(css, feature) {
-			t.Errorf("Missing accessibility feature: %s", feature)
+		if !strings.Contains(forms, feature) {
+			t.Errorf("forms.css missing accessibility feature: %s", feature)
 		}
 	}
 }

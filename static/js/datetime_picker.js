@@ -70,11 +70,11 @@
             modal.id = this.options.modalId;
             modal.className = 'modal-container';
             modal.innerHTML = `
-                <div class="modal-overlay"></div>
-                <div class="modal-slide modal-slide-right">
+                <div class="modal-overlay" aria-hidden="true"></div>
+                <div class="modal-center modal-md" role="dialog" aria-modal="true" aria-labelledby="datetime-modal-title" aria-hidden="true">
                     <div class="modal-header">
-                        <h3 class="modal-title">Select Date & Time</h3>
-                        <button type="button" class="modal-close" data-modal-close aria-label="Close">&times;</button>
+                        <h3 class="modal-title" id="datetime-modal-title">Select Date & Time</h3>
+                        <button type="button" class="modal-close" data-modal-close aria-label="Close modal">&times;</button>
                     </div>
                     <div class="modal-body">
                         <div class="datetime-toggle-group">
@@ -167,11 +167,11 @@
             `).join('');
 
             modal.innerHTML = `
-                <div class="modal-overlay" style="z-index: 1060;"></div>
-                <div class="modal-slide modal-slide-right" style="z-index: 1070;">
+                <div class="modal-overlay" style="z-index: 1060;" aria-hidden="true"></div>
+                <div class="modal-center modal-sm" style="z-index: 1070;" role="dialog" aria-modal="true" aria-labelledby="timezone-modal-title" aria-hidden="true">
                     <div class="modal-header">
-                        <h3 class="modal-title">Select Timezone</h3>
-                        <button type="button" class="modal-close" data-modal-close aria-label="Close">&times;</button>
+                        <h3 class="modal-title" id="timezone-modal-title">Select Timezone</h3>
+                        <button type="button" class="modal-close" data-modal-close aria-label="Close modal">&times;</button>
                     </div>
                     <div class="modal-body">
                         <div class="timezone-list">

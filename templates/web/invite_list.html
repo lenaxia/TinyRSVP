@@ -201,7 +201,7 @@
                         </td>
                         <td class="invite-table-actions invite-actions">
                             <button
-                                class="invite-action-btn btn-sm"
+                                class="btn btn-ghost btn-sm invite-action-btn"
                                 data-action="copy-link"
                                 data-invite-id="{{.ID}}"
                                 aria-label="Copy invite link for {{if .Name}}{{.Name}}{{else if .Email}}{{.Email}}{{else}}guest{{end}}"
@@ -209,7 +209,7 @@
                                 Copy
                             </button>
                             <button
-                                class="invite-action-btn invite-action-delete btn-sm"
+                                class="btn btn-ghost btn-sm invite-action-btn invite-action-delete"
                                 data-action="delete"
                                 data-invite-id="{{.ID}}"
                                 aria-label="Delete invite for {{if .Name}}{{.Name}}{{else if .Email}}{{.Email}}{{else}}guest{{end}}"
@@ -271,14 +271,14 @@
                     
                     <div class="invite-card-footer invite-actions">
                         <button
-                            class="invite-action-btn btn-sm"
+                            class="btn btn-ghost btn-sm invite-action-btn"
                             data-action="copy-link"
                             data-invite-id="{{.ID}}"
                         >
                             Copy
                         </button>
                         <button
-                            class="invite-action-btn invite-action-delete btn-sm"
+                            class="btn btn-ghost btn-sm invite-action-btn invite-action-delete"
                             data-action="delete"
                             data-invite-id="{{.ID}}"
                         >
