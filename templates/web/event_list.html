@@ -21,6 +21,11 @@
 </head>
 <body>
     <a href="#main-content" class="skip-link">Skip to main content</a>
+    <nav class="top-nav" role="navigation" aria-label="Main navigation">
+        <a href="/" class="nav-link">Dashboard</a>
+        <a href="/events" class="nav-link active">Events</a>
+        <a href="/admin" class="nav-link">Admin</a>
+    </nav>
     <main class="event-list" role="main" aria-label="Main content" id="main-content">
         <header class="event-list-header">
             <div class="event-list-title-section">
@@ -102,13 +107,17 @@
                 </header>
 
                 <div class="event-card-body">
+                    {{if .Description}}
                     <p class="event-card-description">{{.Description}}</p>
+                    {{end}}
                     
                     <div class="event-card-meta">
+                        {{if .Location}}
                         <div class="event-card-meta-item">
                             <span class="event-card-meta-icon" aria-hidden="true">📍</span>
                             <span>{{.Location}}</span>
                         </div>
+                        {{end}}
                         <div class="event-card-meta-item">
                             <span class="event-card-meta-icon" aria-hidden="true">📅</span>
                             <time datetime="{{.StartTime.Format "2006-01-02T15:04:05Z07:00"}}">

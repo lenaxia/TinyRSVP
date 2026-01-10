@@ -55,6 +55,33 @@
     background-color: var(--color-gray-400);
 }
 
+.btn-success {
+    background-color: var(--color-success);
+    color: white;
+}
+
+.btn-success:hover {
+    background-color: var(--color-success-dark);
+}
+
+.btn-success:active {
+    background-color: var(--color-success-dark);
+    filter: brightness(0.9);
+}
+
+.btn-warning {
+    background-color: var(--color-warning);
+    color: white;
+}
+
+.btn-warning:hover {
+    background-color: var(--color-warning-dark);
+}
+
+.btn-warning:active {
+    background-color: var(--color-warning-darker);
+}
+
 .btn-danger {
     background-color: var(--color-error);
     color: white;
