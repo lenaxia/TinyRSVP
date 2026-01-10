@@ -20,6 +20,7 @@ import (
 type RSVPInviteService interface {
 	GetInviteByToken(ctx context.Context, token string) (*models.Invite, error)
 	MarkInviteViewed(ctx context.Context, inviteID int64) error
+	UnsubscribeFromReminders(ctx context.Context, token string) error
 }
 
 type RSVPService interface {
@@ -592,5 +593,111 @@ func (h *RSVPHandler) renderConfirmationPage(w http.ResponseWriter, status int, 
 			return fmt.Sprintf("<p>Thank you for your RSVP to %s! Your response: %s</p>", data.Event.Title, data.RSVP.Response)
 		}
 		return "<p>Loading...</p>"
+	}())
+}
+
+type UnsubscribePageData struct {
+	Event        *models.Event
+	Invite       *models.Invite
+	ErrorMessage string
+	Success      bool
+}
+
+func (h *RSVPHandler) Unsubscribe(w http.ResponseWriter, r *http.Request) {
+	token := chi.URLParam(r, "token")
+	if token == "" {
+		h.renderUnsubscribeError(w, http.StatusNotFound, "Invalid unsubscribe link")
+		return
+	}
+
+	invite, err := h.inviteService.GetInviteByToken(r.Context(), token)
+	if err != nil {
+		h.handleUnsubscribeInviteError(w, err)
+		return
+	}
+
+	event, err := h.eventRepo.GetByID(r.Context(), invite.EventID)
+	if err != nil {
+		var notFoundErr *models.NotFoundError
+		if errors.As(err, &notFoundErr) {
+			h.renderUnsubscribeError(w, http.StatusNotFound, "Event not found")
+			return
+		}
+		h.renderUnsubscribeError(w, http.StatusInternalServerError, "Failed to load event")
+		return
+	}
+
+	if err := h.inviteService.UnsubscribeFromReminders(r.Context(), token); err != nil {
+		h.renderUnsubscribeError(w, http.StatusInternalServerError, "Failed to unsubscribe")
+		return
+	}
+
+	data := &UnsubscribePageData{
+		Event:   event,
+		Invite:  invite,
+		Success: true,
+	}
+
+	h.renderUnsubscribePage(w, http.StatusOK, data)
+}
+
+func (h *RSVPHandler) handleUnsubscribeInviteError(w http.ResponseWriter, err error) {
+	errMsg := err.Error()
+	if strings.Contains(errMsg, "expired") {
+		h.renderUnsubscribeError(w, http.StatusGone, "This invite has expired")
+		return
+	}
+	if strings.Contains(errMsg, "revoked") {
+		h.renderUnsubscribeError(w, http.StatusForbidden, "This invite has been revoked")
+		return
+	}
+
+	var notFoundErr *models.NotFoundError
+	if errors.As(err, &notFoundErr) {
+		h.renderUnsubscribeError(w, http.StatusNotFound, "Invite not found")
+		return
+	}
+
+	h.renderUnsubscribeError(w, http.StatusNotFound, "Invite not found or has been revoked")
+}
+
+func (h *RSVPHandler) renderUnsubscribeError(w http.ResponseWriter, status int, message string) {
+	data := &UnsubscribePageData{
+		ErrorMessage: message,
+		Success:      false,
+	}
+	h.renderUnsubscribePage(w, status, data)
+}
+
+func (h *RSVPHandler) renderUnsubscribePage(w http.ResponseWriter, status int, data *UnsubscribePageData) {
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+	w.WriteHeader(status)
+
+	if h.templates != nil {
+		if err := h.templates.ExecuteTemplate(w, "unsubscribe.html", data); err != nil {
+			http.Error(w, "Failed to render page", http.StatusInternalServerError)
+		}
+		return
+	}
+
+	fmt.Fprintf(w, `<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Unsubscribe</title>
+</head>
+<body>
+    <h1>Unsubscribe from Reminders</h1>
+    %s
+</body>
+</html>`, func() string {
+		if data.ErrorMessage != "" {
+			return fmt.Sprintf("<p>Error: %s</p>", data.ErrorMessage)
+		}
+		if data.Success && data.Event != nil {
+			return fmt.Sprintf("<p>You have been unsubscribed from reminders for %s.</p>", data.Event.Title)
+		}
+		return "<p>Processing...</p>"
 	}())
 }

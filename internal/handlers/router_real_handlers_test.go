@@ -72,10 +72,11 @@ func (m *mockEventHandlers) DeleteEvent(w http.ResponseWriter, r *http.Request) 
 }
 
 type mockRSVPHandler struct {
-	getPageCalled        bool
-	submitCalled         bool
-	updateCalled         bool
+	getPageCalled         bool
+	submitCalled          bool
+	updateCalled          bool
 	getConfirmationCalled bool
+	unsubscribeCalled     bool
 }
 
 func (m *mockRSVPHandler) GetRSVPPage(w http.ResponseWriter, r *http.Request) {
@@ -98,6 +99,12 @@ func (m *mockRSVPHandler) GetConfirmationPage(w http.ResponseWriter, r *http.Req
 	m.getConfirmationCalled = true
 	w.WriteHeader(http.StatusOK)
 	w.Write([]byte("Confirmation page"))
+}
+
+func (m *mockRSVPHandler) Unsubscribe(w http.ResponseWriter, r *http.Request) {
+	m.unsubscribeCalled = true
+	w.WriteHeader(http.StatusOK)
+	w.Write([]byte("Unsubscribed"))
 }
 
 type mockUserHandler struct {

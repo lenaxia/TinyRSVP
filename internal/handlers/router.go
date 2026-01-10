@@ -151,6 +151,7 @@ type RSVPHandlerInterface interface {
 	SubmitRSVP(w http.ResponseWriter, r *http.Request)
 	UpdateRSVP(w http.ResponseWriter, r *http.Request)
 	GetConfirmationPage(w http.ResponseWriter, r *http.Request)
+	Unsubscribe(w http.ResponseWriter, r *http.Request)
 }
 
 type RSVPSummaryHandlerInterface interface {
@@ -494,6 +495,7 @@ func NewRouter(handlers *RouterHandlers) *Router {
 			r.Put("/", handlers.RSVPHandler.UpdateRSVP)
 			r.Get("/confirmation", handlers.RSVPHandler.GetConfirmationPage)
 		})
+		r.Get("/unsubscribe/{token}", handlers.RSVPHandler.Unsubscribe)
 	} else {
 		r.Route("/rsvp/{token}", func(r chi.Router) {
 			r.Get("/", func(w http.ResponseWriter, r *http.Request) {
@@ -508,6 +510,9 @@ func NewRouter(handlers *RouterHandlers) *Router {
 			r.Get("/confirmation", func(w http.ResponseWriter, r *http.Request) {
 				w.WriteHeader(http.StatusOK)
 			})
+		})
+		r.Get("/unsubscribe/{token}", func(w http.ResponseWriter, r *http.Request) {
+			w.WriteHeader(http.StatusOK)
 		})
 	}
 

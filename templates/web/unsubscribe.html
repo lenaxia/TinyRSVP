@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{if .Success}}Unsubscribed{{else}}Unsubscribe Error{{end}} - TinyRSVP</title>
+    <link rel="stylesheet" href="/static/css/variables.css">
+    <link rel="stylesheet" href="/static/css/typography.css">
+    <link rel="stylesheet" href="/static/css/colors.css">
+    <link rel="stylesheet" href="/static/css/spacing.css">
+    <link rel="stylesheet" href="/static/css/grid.css">
+    <link rel="stylesheet" href="/static/css/buttons.css">
+    <link rel="stylesheet" href="/static/css/confirmation.css">
+    <link rel="stylesheet" href="/static/css/mobile_optimization.css">
+    <link rel="stylesheet" href="/static/css/error_display.css">
+    <link rel="stylesheet" href="/static/css/keyboard_navigation.css">
+    <link rel="stylesheet" href="/static/css/focus_management.css">
+</head>
+<body>
+    <a href="#main-content" class="skip-link">Skip to main content</a>
+    <main class="confirmation" role="main" aria-label="Main content" id="main-content">
+        {{if .ErrorMessage}}
+        <section class="error-display" role="alert" aria-live="assertive">
+            <span class="error-icon" aria-hidden="true">⚠</span>
+            <div>
+                <h2 class="error-title">Unable to Unsubscribe</h2>
+                <p class="error-message">{{.ErrorMessage}}</p>
+            </div>
+        </section>
+        {{else if .Success}}
+        <section class="confirmation-success" role="status" aria-live="polite">
+            <span class="confirmation-success-icon" aria-hidden="true">✓</span>
+            <div>
+                <h2 class="confirmation-success-title">Unsubscribed Successfully</h2>
+                <p class="confirmation-success-message">You will no longer receive reminder emails.</p>
+            </div>
+        </section>
+
+        {{if .Event}}
+        <h1 class="confirmation-title">{{.Event.Title}}</h1>
+
+        <section class="confirmation-details" aria-labelledby="details-title">
+            <h2 id="details-title" class="confirmation-details-title">About This Event</h2>
+            <p class="confirmation-details-text">
+                You have been unsubscribed from reminder emails for this event. 
+                You can still RSVP using your original invite link if you change your mind.
+            </p>
+            {{if .Event.Description}}
+            <div class="confirmation-details-item">
+                <p class="confirmation-details-value">{{.Event.Description}}</p>
+            </div>
+            {{end}}
+        </section>
+        {{end}}
+        {{end}}
+
+        <div class="confirmation-footer">
+            <p class="confirmation-footer-text">
+                If you unsubscribed by mistake or have questions, please contact the event organizer.
+            </p>
+        </div>
+    </main>
+    <script src="/static/js/keyboard_navigation.js"></script>
+    <script src="/static/js/focus_management.js"></script>
+</body>
+</html>

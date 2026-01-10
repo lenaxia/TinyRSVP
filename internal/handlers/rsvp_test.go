@@ -17,8 +17,9 @@ import (
 )
 
 type mockRSVPInviteService struct {
-	getInviteByTokenFunc func(ctx context.Context, token string) (*models.Invite, error)
-	markViewedFunc       func(ctx context.Context, inviteID int64) error
+	getInviteByTokenFunc     func(ctx context.Context, token string) (*models.Invite, error)
+	markViewedFunc           func(ctx context.Context, inviteID int64) error
+	unsubscribeFunc          func(ctx context.Context, token string) error
 }
 
 func (m *mockRSVPInviteService) GetInviteByToken(ctx context.Context, token string) (*models.Invite, error) {
@@ -31,6 +32,13 @@ func (m *mockRSVPInviteService) GetInviteByToken(ctx context.Context, token stri
 func (m *mockRSVPInviteService) MarkInviteViewed(ctx context.Context, inviteID int64) error {
 	if m.markViewedFunc != nil {
 		return m.markViewedFunc(ctx, inviteID)
+	}
+	return nil
+}
+
+func (m *mockRSVPInviteService) UnsubscribeFromReminders(ctx context.Context, token string) error {
+	if m.unsubscribeFunc != nil {
+		return m.unsubscribeFunc(ctx, token)
 	}
 	return nil
 }

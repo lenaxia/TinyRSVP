@@ -14,32 +14,9 @@ import (
 	"github.com/lenaxia/tinyrsvp/internal/models"
 )
 
-type mockUnsubscribeInviteService struct {
-	getInviteByTokenFunc     func(ctx context.Context, token string) (*models.Invite, error)
-	unsubscribeFunc          func(ctx context.Context, token string) error
-}
-
-func (m *mockUnsubscribeInviteService) GetInviteByToken(ctx context.Context, token string) (*models.Invite, error) {
-	if m.getInviteByTokenFunc != nil {
-		return m.getInviteByTokenFunc(ctx, token)
-	}
-	return nil, errors.New("not implemented")
-}
-
-func (m *mockUnsubscribeInviteService) MarkInviteViewed(ctx context.Context, inviteID int64) error {
-	return nil
-}
-
-func (m *mockUnsubscribeInviteService) UnsubscribeFromReminders(ctx context.Context, token string) error {
-	if m.unsubscribeFunc != nil {
-		return m.unsubscribeFunc(ctx, token)
-	}
-	return nil
-}
-
 func TestUnsubscribeHandler_Success(t *testing.T) {
 	unsubscribeCalled := false
-	mockInviteSvc := &mockUnsubscribeInviteService{
+	mockInviteSvc := &mockRSVPInviteService{
 		getInviteByTokenFunc: func(ctx context.Context, token string) (*models.Invite, error) {
 			email := "test@example.com"
 			name := "Test User"
@@ -71,7 +48,10 @@ func TestUnsubscribeHandler_Success(t *testing.T) {
 		},
 	}
 
-	handler := NewUnsubscribeHandler(mockInviteSvc, mockEventRepo)
+	mockRSVPRepo := &mockRSVPRSVPRepository{}
+	mockQuestionRepo := &mockRSVPQuestionRepository{}
+
+	handler := NewRSVPHandler(mockInviteSvc, mockEventRepo, mockRSVPRepo, mockQuestionRepo)
 
 	r := chi.NewRouter()
 	r.Get("/unsubscribe/{token}", handler.Unsubscribe)
@@ -100,7 +80,7 @@ func TestUnsubscribeHandler_Success(t *testing.T) {
 }
 
 func TestUnsubscribeHandler_InvalidToken(t *testing.T) {
-	mockInviteSvc := &mockUnsubscribeInviteService{
+	mockInviteSvc := &mockRSVPInviteService{
 		getInviteByTokenFunc: func(ctx context.Context, token string) (*models.Invite, error) {
 			return nil, &models.NotFoundError{
 				Resource: "invite",
@@ -110,8 +90,10 @@ func TestUnsubscribeHandler_InvalidToken(t *testing.T) {
 	}
 
 	mockEventRepo := &mockRSVPEventRepository{}
+	mockRSVPRepo := &mockRSVPRSVPRepository{}
+	mockQuestionRepo := &mockRSVPQuestionRepository{}
 
-	handler := NewUnsubscribeHandler(mockInviteSvc, mockEventRepo)
+	handler := NewRSVPHandler(mockInviteSvc, mockEventRepo, mockRSVPRepo, mockQuestionRepo)
 
 	r := chi.NewRouter()
 	r.Get("/unsubscribe/{token}", handler.Unsubscribe)
@@ -127,15 +109,17 @@ func TestUnsubscribeHandler_InvalidToken(t *testing.T) {
 }
 
 func TestUnsubscribeHandler_ExpiredToken(t *testing.T) {
-	mockInviteSvc := &mockUnsubscribeInviteService{
+	mockInviteSvc := &mockRSVPInviteService{
 		getInviteByTokenFunc: func(ctx context.Context, token string) (*models.Invite, error) {
 			return nil, errors.New("invite has expired")
 		},
 	}
 
 	mockEventRepo := &mockRSVPEventRepository{}
+	mockRSVPRepo := &mockRSVPRSVPRepository{}
+	mockQuestionRepo := &mockRSVPQuestionRepository{}
 
-	handler := NewUnsubscribeHandler(mockInviteSvc, mockEventRepo)
+	handler := NewRSVPHandler(mockInviteSvc, mockEventRepo, mockRSVPRepo, mockQuestionRepo)
 
 	r := chi.NewRouter()
 	r.Get("/unsubscribe/{token}", handler.Unsubscribe)
@@ -151,15 +135,17 @@ func TestUnsubscribeHandler_ExpiredToken(t *testing.T) {
 }
 
 func TestUnsubscribeHandler_RevokedInvite(t *testing.T) {
-	mockInviteSvc := &mockUnsubscribeInviteService{
+	mockInviteSvc := &mockRSVPInviteService{
 		getInviteByTokenFunc: func(ctx context.Context, token string) (*models.Invite, error) {
 			return nil, errors.New("invite has been revoked")
 		},
 	}
 
 	mockEventRepo := &mockRSVPEventRepository{}
+	mockRSVPRepo := &mockRSVPRSVPRepository{}
+	mockQuestionRepo := &mockRSVPQuestionRepository{}
 
-	handler := NewUnsubscribeHandler(mockInviteSvc, mockEventRepo)
+	handler := NewRSVPHandler(mockInviteSvc, mockEventRepo, mockRSVPRepo, mockQuestionRepo)
 
 	r := chi.NewRouter()
 	r.Get("/unsubscribe/{token}", handler.Unsubscribe)
@@ -175,7 +161,7 @@ func TestUnsubscribeHandler_RevokedInvite(t *testing.T) {
 }
 
 func TestUnsubscribeHandler_AlreadyUnsubscribed(t *testing.T) {
-	mockInviteSvc := &mockUnsubscribeInviteService{
+	mockInviteSvc := &mockRSVPInviteService{
 		getInviteByTokenFunc: func(ctx context.Context, token string) (*models.Invite, error) {
 			email := "test@example.com"
 			return &models.Invite{
@@ -204,7 +190,10 @@ func TestUnsubscribeHandler_AlreadyUnsubscribed(t *testing.T) {
 		},
 	}
 
-	handler := NewUnsubscribeHandler(mockInviteSvc, mockEventRepo)
+	mockRSVPRepo := &mockRSVPRSVPRepository{}
+	mockQuestionRepo := &mockRSVPQuestionRepository{}
+
+	handler := NewRSVPHandler(mockInviteSvc, mockEventRepo, mockRSVPRepo, mockQuestionRepo)
 
 	r := chi.NewRouter()
 	r.Get("/unsubscribe/{token}", handler.Unsubscribe)
@@ -220,7 +209,7 @@ func TestUnsubscribeHandler_AlreadyUnsubscribed(t *testing.T) {
 }
 
 func TestUnsubscribeHandler_UnsubscribeError(t *testing.T) {
-	mockInviteSvc := &mockUnsubscribeInviteService{
+	mockInviteSvc := &mockRSVPInviteService{
 		getInviteByTokenFunc: func(ctx context.Context, token string) (*models.Invite, error) {
 			email := "test@example.com"
 			return &models.Invite{
@@ -249,7 +238,10 @@ func TestUnsubscribeHandler_UnsubscribeError(t *testing.T) {
 		},
 	}
 
-	handler := NewUnsubscribeHandler(mockInviteSvc, mockEventRepo)
+	mockRSVPRepo := &mockRSVPRSVPRepository{}
+	mockQuestionRepo := &mockRSVPQuestionRepository{}
+
+	handler := NewRSVPHandler(mockInviteSvc, mockEventRepo, mockRSVPRepo, mockQuestionRepo)
 
 	r := chi.NewRouter()
 	r.Get("/unsubscribe/{token}", handler.Unsubscribe)
@@ -265,10 +257,12 @@ func TestUnsubscribeHandler_UnsubscribeError(t *testing.T) {
 }
 
 func TestUnsubscribeHandler_EmptyToken(t *testing.T) {
-	mockInviteSvc := &mockUnsubscribeInviteService{}
+	mockInviteSvc := &mockRSVPInviteService{}
 	mockEventRepo := &mockRSVPEventRepository{}
+	mockRSVPRepo := &mockRSVPRSVPRepository{}
+	mockQuestionRepo := &mockRSVPQuestionRepository{}
 
-	handler := NewUnsubscribeHandler(mockInviteSvc, mockEventRepo)
+	handler := NewRSVPHandler(mockInviteSvc, mockEventRepo, mockRSVPRepo, mockQuestionRepo)
 
 	r := chi.NewRouter()
 	r.Get("/unsubscribe/{token}", handler.Unsubscribe)
@@ -284,7 +278,7 @@ func TestUnsubscribeHandler_EmptyToken(t *testing.T) {
 }
 
 func TestUnsubscribeHandler_EventNotFound(t *testing.T) {
-	mockInviteSvc := &mockUnsubscribeInviteService{
+	mockInviteSvc := &mockRSVPInviteService{
 		getInviteByTokenFunc: func(ctx context.Context, token string) (*models.Invite, error) {
 			email := "test@example.com"
 			return &models.Invite{
@@ -303,7 +297,10 @@ func TestUnsubscribeHandler_EventNotFound(t *testing.T) {
 		},
 	}
 
-	handler := NewUnsubscribeHandler(mockInviteSvc, mockEventRepo)
+	mockRSVPRepo := &mockRSVPRSVPRepository{}
+	mockQuestionRepo := &mockRSVPQuestionRepository{}
+
+	handler := NewRSVPHandler(mockInviteSvc, mockEventRepo, mockRSVPRepo, mockQuestionRepo)
 
 	r := chi.NewRouter()
 	r.Get("/unsubscribe/{token}", handler.Unsubscribe)
@@ -319,7 +316,7 @@ func TestUnsubscribeHandler_EventNotFound(t *testing.T) {
 }
 
 func TestUnsubscribeHandler_WithTemplate(t *testing.T) {
-	mockInviteSvc := &mockUnsubscribeInviteService{
+	mockInviteSvc := &mockRSVPInviteService{
 		getInviteByTokenFunc: func(ctx context.Context, token string) (*models.Invite, error) {
 			email := "test@example.com"
 			name := "Test User"
@@ -350,7 +347,10 @@ func TestUnsubscribeHandler_WithTemplate(t *testing.T) {
 		},
 	}
 
-	handler := NewUnsubscribeHandler(mockInviteSvc, mockEventRepo)
+	mockRSVPRepo := &mockRSVPRSVPRepository{}
+	mockQuestionRepo := &mockRSVPQuestionRepository{}
+
+	handler := NewRSVPHandler(mockInviteSvc, mockEventRepo, mockRSVPRepo, mockQuestionRepo)
 
 	tmpl := template.Must(template.New("unsubscribe.html").Parse(`Unsubscribed from {{.Event.Title}}`))
 	handler.SetTemplates(tmpl)
