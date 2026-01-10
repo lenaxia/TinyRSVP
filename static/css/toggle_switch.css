@@ -1,0 +1,84 @@
+/* Toggle Switch Component */
+
+.toggle-switch {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--spacing-3);
+    cursor: pointer;
+    user-select: none;
+}
+
+.toggle-input {
+    position: absolute;
+    opacity: 0;
+    width: 0;
+    height: 0;
+    pointer-events: none;
+}
+
+.toggle-slider {
+    position: relative;
+    display: inline-block;
+    width: 48px;
+    height: 24px;
+    background-color: var(--color-border);
+    border-radius: var(--radius-full);
+    transition: background-color 0.3s ease;
+    cursor: pointer;
+}
+
+.toggle-slider::before {
+    content: '';
+    position: absolute;
+    width: 18px;
+    height: 18px;
+    left: 3px;
+    top: 3px;
+    background-color: var(--color-background);
+    border-radius: 50%;
+    transition: transform 0.3s ease;
+}
+
+.toggle-input:checked + .toggle-slider {
+    background-color: var(--color-primary-600);
+}
+
+.toggle-input:checked + .toggle-slider::before {
+    transform: translateX(24px);
+}
+
+.toggle-input:focus + .toggle-slider {
+    outline: 2px solid var(--color-border-focus);
+    outline-offset: 2px;
+}
+
+.toggle-input:disabled + .toggle-slider {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.toggle-label {
+    font-size: var(--font-size-base);
+    color: var(--color-text-primary);
+    cursor: pointer;
+}
+
+.toggle-input:disabled ~ .toggle-label {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.toggle-switch:hover .toggle-slider:not(:has(.toggle-input:disabled)) {
+    background-color: var(--color-text-tertiary);
+}
+
+.toggle-input:checked:hover + .toggle-slider {
+    background-color: var(--color-primary-700);
+}
+
+@media (min-width: 768px) {
+    .toggle-slider {
+        width: 48px;
+        height: 24px;
+    }
+}
