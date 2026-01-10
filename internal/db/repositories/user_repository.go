@@ -103,7 +103,7 @@ func (r *userRepository) CreateWithBootstrapCheck(ctx context.Context, user *mod
 
 	txErr := r.db.WithTransaction(ctx, func(tx *sql.Tx) error {
 		var count int
-		err := tx.QueryRowContext(ctx, "SELECT COUNT(*) FROM users").Scan(&count)
+		err := tx.QueryRowContext(ctx, "SELECT COUNT(*) FROM users WHERE email != 'system@tinyrsvp.local'").Scan(&count)
 		if err != nil {
 			return fmt.Errorf("failed to count users: %w", err)
 		}
