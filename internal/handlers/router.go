@@ -160,9 +160,14 @@ func NewRouter(handlers *RouterHandlers) *Router {
 	r.Use(func(next http.Handler) http.Handler {
 		return customMiddleware.Timeout(30 * time.Second)(next)
 	})
+	r.Use(func(next http.Handler) http.Handler {
+		return customMiddleware.SecurityHeaders(nil)(next)
+	})
 
 	r.NotFound(NotFoundHandler)
 	r.MethodNotAllowed(MethodNotAllowedHandler)
+
+	r.Handle("/api/csp-report", customMiddleware.CSPReportHandler(logger))
 
 	if handlers.HealthHandler != nil {
 		r.Handle("/health", handlers.HealthHandler)

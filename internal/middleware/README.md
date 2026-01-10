@@ -142,6 +142,79 @@ Then unwinds in reverse order.
 
 **Performance:** ~5µs total overhead for full chain
 
+### Security Headers
+
+Sets comprehensive security headers on all responses to protect against common web vulnerabilities.
+
+**Usage:**
+```go
+mux.Use(middleware.SecurityHeaders(nil))
+```
+
+**Behavior:**
+- Sets Content-Security-Policy (CSP) header
+- Sets Strict-Transport-Security (HSTS) header
+- Sets X-Content-Type-Options header
+- Sets X-Frame-Options header
+- Sets X-XSS-Protection header
+- Sets Referrer-Policy header
+- Sets Permissions-Policy header
+- Fully configurable via SecurityHeadersConfig
+- Supports CSP report-only mode
+- Supports CSP violation reporting
+
+**Default Headers:**
+```
+Strict-Transport-Security: max-age=31536000; includeSubDomains
+Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self'; connect-src 'self'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'
+X-Content-Type-Options: nosniff
+X-Frame-Options: DENY
+X-XSS-Protection: 1; mode=block
+Referrer-Policy: strict-origin-when-cross-origin
+Permissions-Policy: geolocation=(), microphone=(), camera=()
+```
+
+**Custom Configuration:**
+```go
+config := &middleware.SecurityHeadersConfig{
+    HSTSMaxAge:            intPtr(63072000),
+    HSTSIncludeSubDomains: true,
+    HSTSPreload:           true,
+    CSPScriptSrc:          []string{"'self'", "'nonce-abc123'"},
+    CSPReportURI:          "/api/csp-report",
+    XFrameOptions:         "SAMEORIGIN",
+}
+mux.Use(middleware.SecurityHeaders(config))
+```
+
+**Performance:** ~1.7µs overhead per request
+
+### CSP Violation Reporting
+
+Endpoint for receiving and logging Content Security Policy violation reports.
+
+**Usage:**
+```go
+mux.Handle("/api/csp-report", middleware.CSPReportHandler(logger))
+```
+
+**Behavior:**
+- Accepts POST requests only
+- Validates Content-Type (application/csp-report or application/json)
+- Limits request body to 10KB
+- Parses CSP violation reports
+- Logs violations with request ID and client IP
+- Returns 204 No Content on success
+
+**CSP Configuration with Reporting:**
+```go
+config := &middleware.SecurityHeadersConfig{
+    CSPReportURI: "/api/csp-report",
+}
+```
+
+**Performance:** Minimal overhead, async logging
+
 ## Recommended Middleware Order
 
 ```
@@ -262,9 +335,10 @@ Measured on Intel Core Ultra 7 165U:
 | RealIP | 663 ns/op | 8 allocs | 608 B |
 | Logging | 306 ns/op | 7 allocs | 272 B |
 | Timeout | 1,754 ns/op | 13 allocs | 1,120 B |
-| **Full Chain** | **4,798 ns/op** | **33 allocs** | **2,824 B** |
+| Security Headers | 1,694 ns/op | 15 allocs | 1,152 B |
+| **Full Chain** | **~6.5µs** | **~48 allocs** | **~4 KB** |
 
-Full chain overhead: ~5µs per request (well within acceptable range)
+Full chain overhead: ~6.5µs per request (well within acceptable range)
 
 ## Testing
 

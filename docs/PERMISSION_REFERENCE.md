@@ -400,7 +400,7 @@ func NewUserHandler(userService UserService, authChecker auth.AuthorizationCheck
 func (h *UserHandler) DeleteUser(w http.ResponseWriter, r *http.Request, userIDStr string) {
     currentUser, _ := auth.UserFromContext(r.Context())
     if !h.authChecker.CanManageUsers(r.Context(), currentUser) {
-        respondError(w, http.StatusForbidden, "insufficient permissions")
+        HandleError(w, r, NewPermissionDeniedError("insufficient permissions"))
         return
     }
     

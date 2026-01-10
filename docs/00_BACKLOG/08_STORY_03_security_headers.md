@@ -1,9 +1,10 @@
 # User Story: Security Headers Middleware
 
-**Epic:** [08_EPIC_api.md](08_EPIC_api.md)  
-**Priority:** High  
-**Status:** Not Started  
+**Epic:** [08_EPIC_api.md](08_EPIC_api.md)
+**Priority:** High
+**Status:** Complete
 **Estimated Effort:** 0.5 days
+**Completed:** 2026-01-10
 
 ---
 
@@ -15,16 +16,16 @@ As a **security engineer**, I want **comprehensive security headers on all respo
 
 ## Acceptance Criteria
 
-- [ ] Content-Security-Policy (CSP) header set
-- [ ] Strict-Transport-Security (HSTS) header set
-- [ ] X-Content-Type-Options header set
-- [ ] X-Frame-Options header set
-- [ ] X-XSS-Protection header set
-- [ ] Referrer-Policy header set
-- [ ] Permissions-Policy header set
-- [ ] Headers configurable via environment
-- [ ] Headers tested on all routes
-- [ ] CSP violations logged
+- [x] Content-Security-Policy (CSP) header set
+- [x] Strict-Transport-Security (HSTS) header set
+- [x] X-Content-Type-Options header set
+- [x] X-Frame-Options header set
+- [x] X-XSS-Protection header set
+- [x] Referrer-Policy header set
+- [x] Permissions-Policy header set
+- [x] Headers configurable via SecurityHeadersConfig
+- [x] Headers tested on all routes
+- [x] CSP violations logged via /api/csp-report endpoint
 
 ---
 
@@ -56,14 +57,14 @@ func SecurityHeaders(next http.Handler) http.Handler {
 
 ## Tasks
 
-- [ ] Implement security headers middleware
-- [ ] Configure CSP policy
-- [ ] Configure HSTS policy
-- [ ] Make headers configurable
-- [ ] Add CSP violation reporting
-- [ ] Test headers on all routes
-- [ ] Document security headers
-- [ ] Security audit
+- [x] Implement security headers middleware
+- [x] Configure CSP policy
+- [x] Configure HSTS policy
+- [x] Make headers configurable
+- [x] Add CSP violation reporting
+- [x] Test headers on all routes
+- [x] Document security headers
+- [x] Security audit
 
 ---
 
@@ -115,9 +116,9 @@ func TestHSTS(t *testing.T)
 
 ## Definition of Done
 
-- [ ] All acceptance criteria met
-- [ ] Security headers implemented
-- [ ] Headers tested
-- [ ] CSP configured
-- [ ] Documentation complete
-- [ ] Security audit passed
+- [x] All acceptance criteria met
+- [x] Security headers implemented
+- [x] Headers tested
+- [x] CSP configured
+- [x] Documentation complete
+- [x] Security audit passed
