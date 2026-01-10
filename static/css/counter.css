@@ -19,7 +19,6 @@
 
 .counter-btn {
     width: 44px;
-    height: 44px;
     padding: 0;
     font-size: var(--font-size-lg);
     user-select: none;
