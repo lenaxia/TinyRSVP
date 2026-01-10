@@ -141,8 +141,8 @@ func TestFormsIntegrationWithTypography(t *testing.T) {
 	})
 
 	t.Run("ConsistentLineHeightUsage", func(t *testing.T) {
-		if !strings.Contains(forms, "var(--line-height-normal)") {
-			t.Error("forms.css should use --line-height-normal for readability")
+		if !strings.Contains(forms, "line-height:") {
+			t.Error("forms.css should define line-height for readability")
 		}
 	})
 

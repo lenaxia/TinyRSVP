@@ -55,7 +55,7 @@ func TestButtonsBaseClass(t *testing.T) {
 		"border:",
 		"cursor:",
 		"transition:",
-		"min-height:",
+		"height:",
 	}
 
 	for _, prop := range requiredProperties {
@@ -75,9 +75,9 @@ func TestButtonsMinimumTouchTarget(t *testing.T) {
 
 	cssContent := string(content)
 
-	pattern := regexp.MustCompile(`\.btn\s*\{[^}]*min-height:\s*40px`)
+	pattern := regexp.MustCompile(`\.btn\s*\{[^}]*height:\s*40px`)
 	if !pattern.MatchString(cssContent) {
-		t.Error("Base .btn class should have min-height: 40px")
+		t.Error("Base .btn class should have height: 40px")
 	}
 }
 

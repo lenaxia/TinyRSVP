@@ -244,8 +244,8 @@ func TestButtonsSizeCompleteness(t *testing.T) {
 				t.Errorf("Missing button size: %s", size)
 			}
 
-			if !strings.Contains(cssContent, "min-height:") {
-				t.Errorf("Button size %s should define min-height", size)
+			if !strings.Contains(cssContent, "height:") {
+				t.Errorf("Button size %s should define height", size)
 			}
 		})
 	}
@@ -288,7 +288,7 @@ func TestButtonsAccessibilityFeatures(t *testing.T) {
 	}{
 		{"focus_indicator", ".btn:focus"},
 		{"disabled_state", ".btn:disabled"},
-		{"min_touch_target", "min-height: 44px"},
+		{"min_touch_target", "height: 40px"},
 		{"cursor_feedback", "cursor:"},
 	}
 

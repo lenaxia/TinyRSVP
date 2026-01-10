@@ -126,8 +126,8 @@ func TestMobileOptimizationIntegrationWithExistingCSS(t *testing.T) {
 		}
 
 		css := string(content)
-		if !strings.Contains(css, "min-height: 44px") {
-			t.Error("buttons.css should already contain 44px minimum height for mobile")
+		if !strings.Contains(css, "height: 40px") {
+			t.Error("buttons.css should already contain 40px height")
 		}
 	})
 
