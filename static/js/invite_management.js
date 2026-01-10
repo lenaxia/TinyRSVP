@@ -104,29 +104,31 @@
 
         const form = e.target;
         const nameInput = form.querySelector('input[name="name"]');
-        const maxPlusOnesInput = form.querySelector('input[name="max_plus_ones"]');
+        const emailInput = form.querySelector('input[name="email"]');
         const submitBtn = form.querySelector('button[type="submit"]');
 
         const name = nameInput.value.trim();
-        const maxPlusOnes = parseInt(maxPlusOnesInput.value, 10) || 0;
+        const email = emailInput.value.trim();
 
-        if (maxPlusOnes < 0 || maxPlusOnes > 10) {
-            showFeedback('Plus ones must be between 0 and 10', 'error');
+        if (!name) {
+            showFeedback('Guest name is required', 'error');
+            return;
+        }
+
+        if (!email) {
+            showFeedback('Email is required', 'error');
             return;
         }
 
         const requestBody = {
-            max_plus_ones: maxPlusOnes,
+            name: name,
+            email: email,
         };
 
-        if (name) {
-            requestBody.name = name;
-        }
-
         submitBtn.disabled = true;
-        submitBtn.textContent = 'Creating...';
+        submitBtn.textContent = 'Adding...';
 
-        fetch(`/api/events/${currentEventId}/invites/manual`, {
+        fetch(`/api/events/${currentEventId}/invites`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -137,14 +139,14 @@
         .then(response => {
             if (!response.ok) {
                 return response.json().then(data => {
-                    throw new Error(data.error || 'Creation failed');
+                    throw new Error(data.error || 'Failed to add guest');
                 });
             }
             return response.json();
         })
         .then(data => {
             const guestName = data.invite?.name || 'Guest';
-            showFeedback(`Successfully created invite for ${guestName}`, 'success');
+            showFeedback(`Successfully added ${guestName}`, 'success');
             form.reset();
             if (createModal) {
                 createModal.close();
@@ -154,12 +156,106 @@
             }, 1000);
         })
         .catch(error => {
-            showFeedback(error.message || 'Failed to create invite', 'error');
+            showFeedback(error.message || 'Failed to add guest', 'error');
         })
         .finally(() => {
             submitBtn.disabled = false;
-            submitBtn.textContent = 'Create';
+            submitBtn.textContent = 'Add Guest';
         });
+    }
+
+    function handleCopyLink(inviteId, token) {
+        const baseURL = window.location.origin;
+        const inviteURL = `${baseURL}/rsvp/${token}`;
+
+        navigator.clipboard.writeText(inviteURL)
+            .then(() => {
+                showFeedback('Invite link copied to clipboard', 'success');
+            })
+            .catch(() => {
+                showFeedback('Failed to copy link', 'error');
+            });
+    }
+
+    function handleRegenerateWithConfirm(inviteId) {
+        if (!confirm('Are you sure you want to regenerate this invite token? The old link will no longer work.')) {
+            return;
+        }
+
+        fetch(`/api/invites/${inviteId}/regenerate`, {
+            method: 'POST',
+            headers: {
+                'X-CSRF-Token': getCSRFToken(),
+            },
+        })
+        .then(response => {
+            if (!response.ok) {
+                return response.json().then(data => {
+                    throw new Error(data.error || 'Failed to regenerate token');
+                });
+            }
+            return response.json();
+        })
+        .then(() => {
+            showFeedback('Token regenerated successfully', 'success');
+            setTimeout(() => {
+                window.location.reload();
+            }, 1000);
+        })
+        .catch(error => {
+            showFeedback(error.message || 'Failed to regenerate token', 'error');
+        });
+    }
+
+    function handleRevokeWithConfirm(inviteId) {
+        if (!confirm('Are you sure you want to revoke this invite? The guest will no longer be able to RSVP.')) {
+            return;
+        }
+
+        fetch(`/api/invites/${inviteId}/revoke`, {
+            method: 'POST',
+            headers: {
+                'X-CSRF-Token': getCSRFToken(),
+            },
+        })
+        .then(response => {
+            if (!response.ok) {
+                return response.json().then(data => {
+                    throw new Error(data.error || 'Failed to revoke invite');
+                });
+            }
+            return response.json();
+        })
+        .then(() => {
+            showFeedback('Invite revoked successfully', 'success');
+            setTimeout(() => {
+                window.location.reload();
+            }, 1000);
+        })
+        .catch(error => {
+            showFeedback(error.message || 'Failed to revoke invite', 'error');
+        });
+    }
+
+    function handleActionClick(e) {
+        const btn = e.target.closest('[data-action]');
+        if (!btn) return;
+
+        const action = btn.getAttribute('data-action');
+        const inviteId = btn.getAttribute('data-invite-id');
+        const token = btn.getAttribute('data-invite-token');
+
+        switch (action) {
+            case 'copy-link':
+                handleCopyLink(inviteId, token);
+                break;
+            case 'regenerate':
+                handleRegenerateWithConfirm(inviteId);
+                break;
+            case 'revoke':
+                handleRevokeWithConfirm(inviteId);
+                break;
+        }
     }
 
     function initInviteManagement() {
@@ -186,6 +282,8 @@
                 createForm.addEventListener('submit', handleCreateSubmit);
             }
         }
+
+        document.addEventListener('click', handleActionClick);
     }
 
     if (document.readyState === 'loading') {

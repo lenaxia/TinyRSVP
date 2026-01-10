@@ -117,8 +117,8 @@
                 </div>
                 <div class="invite-actions-right">
                     <button class="btn btn-secondary export-btn" aria-label="Export invites">Export</button>
-                    <button class="btn btn-primary create-btn" data-modal-trigger="create-modal" aria-label="Create invite">Create Invite</button>
-                    <button class="btn btn-primary import-btn" data-modal-trigger="import-modal" aria-label="Import invites">Import Invites</button>
+                    <button class="btn btn-primary create-btn" data-modal-trigger="create-modal" aria-label="Add guest">Add Guest</button>
+                    <button class="btn btn-primary import-btn" data-modal-trigger="import-modal" aria-label="Import guest list">Import Guest List</button>
                 </div>
             </div>
         </section>
@@ -200,17 +200,26 @@
                             {{end}}
                         </td>
                         <td class="invite-table-actions invite-actions">
-                            <button 
-                                class="invite-action-btn" 
-                                data-action="regenerate" 
+                            <button
+                                class="invite-action-btn"
+                                data-action="copy-link"
+                                data-invite-id="{{.ID}}"
+                                data-invite-token="{{.Token}}"
+                                aria-label="Copy invite link for {{if .Name}}{{.Name}}{{else if .Email}}{{.Email}}{{else}}guest{{end}}"
+                            >
+                                Copy Link
+                            </button>
+                            <button
+                                class="invite-action-btn"
+                                data-action="regenerate"
                                 data-invite-id="{{.ID}}"
                                 aria-label="Regenerate token for {{if .Name}}{{.Name}}{{else if .Email}}{{.Email}}{{else}}guest{{end}}"
                             >
                                 Regenerate
                             </button>
-                            <button 
-                                class="invite-action-btn invite-action-revoke" 
-                                data-action="revoke" 
+                            <button
+                                class="invite-action-btn invite-action-revoke"
+                                data-action="revoke"
                                 data-invite-id="{{.ID}}"
                                 aria-label="Revoke invite for {{if .Name}}{{.Name}}{{else if .Email}}{{.Email}}{{else}}guest{{end}}"
                             >
@@ -270,16 +279,24 @@
                     </div>
                     
                     <div class="invite-card-footer invite-actions">
-                        <button 
-                            class="invite-action-btn" 
-                            data-action="regenerate" 
+                        <button
+                            class="invite-action-btn"
+                            data-action="copy-link"
+                            data-invite-id="{{.ID}}"
+                            data-invite-token="{{.Token}}"
+                        >
+                            Copy Link
+                        </button>
+                        <button
+                            class="invite-action-btn"
+                            data-action="regenerate"
                             data-invite-id="{{.ID}}"
                         >
                             Regenerate
                         </button>
-                        <button 
-                            class="invite-action-btn invite-action-revoke" 
-                            data-action="revoke" 
+                        <button
+                            class="invite-action-btn invite-action-revoke"
+                            data-action="revoke"
                             data-invite-id="{{.ID}}"
                         >
                             Revoke
@@ -347,7 +364,7 @@
         <div class="modal-overlay" aria-hidden="true"></div>
         <div class="modal-center modal-md" role="dialog" aria-modal="true" aria-labelledby="import-modal-title" aria-hidden="true">
             <div class="modal-header">
-                <h2 class="modal-title" id="import-modal-title">Import Invites</h2>
+                <h2 class="modal-title" id="import-modal-title">Import Guest List</h2>
                 <button type="button" class="modal-close" data-modal-close aria-label="Close modal">×</button>
             </div>
             <div class="modal-body">
@@ -359,7 +376,7 @@
                     </div>
                     <div class="form-actions">
                         <button type="button" class="btn btn-secondary" data-modal-close>Cancel</button>
-                        <button type="submit" class="btn btn-primary">Import</button>
+                        <button type="submit" class="btn btn-primary">Import Guest List</button>
                     </div>
                 </form>
             </div>
@@ -370,23 +387,23 @@
         <div class="modal-overlay" aria-hidden="true"></div>
         <div class="modal-center modal-md" role="dialog" aria-modal="true" aria-labelledby="create-modal-title" aria-hidden="true">
             <div class="modal-header">
-                <h2 class="modal-title" id="create-modal-title">Create Invite</h2>
+                <h2 class="modal-title" id="create-modal-title">Add Guest</h2>
                 <button type="button" class="modal-close" data-modal-close aria-label="Close modal">×</button>
             </div>
             <div class="modal-body">
                 <form id="create-form">
                     <div class="form-group">
-                        <label for="guest-name" class="form-label">Guest Name (Optional)</label>
-                        <input type="text" id="guest-name" name="name" placeholder="John Doe" class="form-input">
+                        <label for="guest-name" class="form-label">Guest Name</label>
+                        <input type="text" id="guest-name" name="name" placeholder="John Doe" required class="form-input">
                     </div>
                     <div class="form-group">
-                        <label for="max-plus-ones" class="form-label">Max Plus Ones</label>
-                        <input type="number" id="max-plus-ones" name="max_plus_ones" min="0" max="10" value="0" required class="form-input">
-                        <p class="form-help">Number of additional guests allowed (0-10)</p>
+                        <label for="guest-email" class="form-label">Email</label>
+                        <input type="email" id="guest-email" name="email" placeholder="john@example.com" required class="form-input">
+                        <p class="form-help">Email address for sending the invite</p>
                     </div>
                     <div class="form-actions">
                         <button type="button" class="btn btn-secondary" data-modal-close>Cancel</button>
-                        <button type="submit" class="btn btn-primary">Create</button>
+                        <button type="submit" class="btn btn-primary">Add Guest</button>
                     </div>
                 </form>
             </div>
