@@ -30,6 +30,7 @@ import (
 	"github.com/lenaxia/tinyrsvp/internal/templates"
 	"github.com/lenaxia/tinyrsvp/pkg/ics"
 	"github.com/lenaxia/tinyrsvp/pkg/token"
+	"github.com/prometheus/client_golang/prometheus"
 )
 
 const appVersion = "0.1.0"
@@ -239,6 +240,10 @@ func main() {
 	healthHandler := handlers.NewHealthHandler(appVersion)
 	readinessHandler := handlers.NewReadinessHandler(appVersion, database, migrator)
 
+	metricsCollector := middleware.NewPrometheusMetricsWithRegistry(prometheus.DefaultRegisterer)
+	metricsHandler := middleware.MetricsHandler(metricsCollector)
+	logger.Info("Prometheus metrics initialized")
+
 	userHandler := handlers.NewUserHandler(userService, authChecker)
 
 	requireAuth := middleware.RequireAuth(sessionMgr, userService)
@@ -429,6 +434,7 @@ func main() {
 		LogoutHandler:            logoutHandler,
 		HealthHandler:            healthHandler,
 		ReadinessHandler:         readinessHandler,
+		MetricsHandler:           metricsHandler,
 		DashboardHandler:         dashboardHandler,
 		EventHandlers:            eventHandlers,
 		EventWebHandlers:         eventWebHandlers,
@@ -459,6 +465,7 @@ func main() {
 	logger.Info("Router initialized with all handlers")
 	logger.Info("Registered auth endpoints", "paths", "/login, /auth/callback, /logout")
 	logger.Info("Registered health endpoints", "paths", "/health, /ready")
+	logger.Info("Registered metrics endpoint", "path", "/metrics", "method", "GET", "protection", "none")
 	logger.Info("Registered dashboard endpoint", "path", "/", "method", "GET", "protection", "authenticated")
 	logger.Info("Registered event management endpoints", "path", "/api/events", "protection", "authenticated")
 	logger.Info("Registered event web UI endpoints", "prefix", "/events", "protection", "authenticated")

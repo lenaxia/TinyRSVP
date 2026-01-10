@@ -62,6 +62,7 @@ type RouterHandlers struct {
 	
 	CleanupHandler http.Handler
 	EmailHealthHandler http.Handler
+	MetricsHandler http.Handler
 	
 	AuthMiddleware AuthMiddlewareInterface
 	
@@ -241,6 +242,10 @@ func NewRouter(handlers *RouterHandlers) *Router {
 
 	if handlers.ReadinessHandler != nil {
 		r.Handle("/ready", handlers.ReadinessHandler)
+	}
+
+	if handlers.MetricsHandler != nil {
+		r.Handle("/metrics", handlers.MetricsHandler)
 	}
 
 	if handlers.AuthHandlers != nil {
