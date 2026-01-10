@@ -185,6 +185,9 @@ func main() {
 
 	logger.Info("Initialized event services")
 
+	dashboardService := events.NewDashboardService(eventRepo, inviteRepo, rsvpRepo)
+	logger.Info("Initialized dashboard service")
+
 	questionValidator := events.NewQuestionValidator()
 	questionService := events.NewQuestionService(eventRepo, questionRepo, questionValidator, authChecker)
 
@@ -241,6 +244,8 @@ func main() {
 	requireAuth := middleware.RequireAuth(sessionMgr, userService)
 	requireAdmin := middleware.RequireAdmin(authChecker)
 	middlewareAdapter := handlers.NewMiddlewareAdapter(requireAuth, requireAdmin)
+
+	dashboardHandler := handlers.NewDashboardHandler(dashboardService)
 
 	eventHandlers := handlers.NewEventHandlers(eventService)
 	questionHandlers := handlers.NewQuestionHandlers(questionService)
@@ -322,6 +327,14 @@ func main() {
 	}
 	logger.Info("RSVP summary templates loaded successfully")
 
+	dashboardTemplates, err := template.New("dashboard.html").ParseFiles("templates/web/dashboard.html")
+	if err != nil {
+		logger.Error("Failed to load dashboard templates", "error", err)
+		os.Exit(1)
+	}
+	dashboardHandler.SetTemplates(dashboardTemplates)
+	logger.Info("Dashboard templates loaded successfully")
+
 	icsGenerator := ics.NewGenerator()
 	emailService := email.NewConfirmationService(templateRenderer, emailQueueRepo, icsGenerator)
 	logger.Info("Initialized email confirmation service")
@@ -382,6 +395,7 @@ func main() {
 		LogoutHandler:            logoutHandler,
 		HealthHandler:            healthHandler,
 		ReadinessHandler:         readinessHandler,
+		DashboardHandler:         dashboardHandler,
 		EventHandlers:            eventHandlers,
 		QuestionHandlers:         questionHandlers,
 		InviteHandlers:           inviteHandlers,
@@ -405,6 +419,7 @@ func main() {
 	logger.Info("Router initialized with all handlers")
 	logger.Info("Registered auth endpoints", "paths", "/login, /auth/callback, /logout")
 	logger.Info("Registered health endpoints", "paths", "/health, /ready")
+	logger.Info("Registered dashboard endpoint", "path", "/", "method", "GET", "protection", "authenticated")
 	logger.Info("Registered event management endpoints", "path", "/api/events", "protection", "authenticated")
 	logger.Info("Registered question management endpoints", "path", "/api/events/{id}/questions", "protection", "authenticated")
 	logger.Info("Registered invite management endpoints", "path", "/api/events/{eventId}/invites", "protection", "authenticated")
