@@ -43,6 +43,7 @@ type RouterHandlers struct {
 	EventWebHandlers EventWebHandlerInterface
 	QuestionHandlers QuestionHandlerInterface
 	InviteHandlers   InviteHandlerInterface
+	InviteWebHandlers InviteWebHandlerInterface
 	ImportInviteHandlers ImportInviteHandlerInterface
 	ManualInviteHandlers ManualInviteHandlerInterface
 	RevokeInviteHandlers RevokeInviteHandlerInterface
@@ -103,6 +104,10 @@ type QuestionHandlerInterface interface {
 
 type InviteHandlerInterface interface {
 	CreateInvite(w http.ResponseWriter, r *http.Request)
+}
+
+type InviteWebHandlerInterface interface {
+	ListInvitesPage(w http.ResponseWriter, r *http.Request)
 }
 
 type ImportInviteHandlerInterface interface {
@@ -312,6 +317,16 @@ func NewRouter(handlers *RouterHandlers) *Router {
 				r.Post("/cancel", handlers.EventWebHandlers.CancelEventAction)
 				r.Post("/delete", handlers.EventWebHandlers.DeleteEventAction)
 			})
+		})
+	}
+
+	if handlers.InviteWebHandlers != nil && handlers.AuthMiddleware != nil {
+		r.Route("/events/{eventId}/invites", func(r chi.Router) {
+			r.Use(func(next http.Handler) http.Handler {
+				return handlers.AuthMiddleware.RequireAuth(next)
+			})
+
+			r.Get("/", handlers.InviteWebHandlers.ListInvitesPage)
 		})
 	}
 

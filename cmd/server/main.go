@@ -315,6 +315,13 @@ func main() {
 			}
 			return a / b
 		},
+		"until": func(count int) []int {
+			result := make([]int, count)
+			for i := 0; i < count; i++ {
+				result[i] = i
+			}
+			return result
+		},
 	}
 
 	rsvpTemplates, err := template.ParseFiles("templates/web/rsvp_page.html")
@@ -351,6 +358,16 @@ func main() {
 	logger.Info("Event web templates loaded successfully")
 
 	eventWebHandlers := handlers.NewEventWebHandlers(eventService, eventWebTemplates)
+
+	inviteListTemplates, err := template.New("invite_list.html").Funcs(funcMap).ParseFiles("templates/web/invite_list.html")
+	if err != nil {
+		logger.Error("Failed to load invite list templates", "error", err)
+		os.Exit(1)
+	}
+	logger.Info("Invite list templates loaded successfully")
+
+	inviteWebHandlers := handlers.NewInviteWebHandlers(inviteService, eventRepo)
+	inviteWebHandlers.SetTemplates(inviteListTemplates)
 
 	icsGenerator := ics.NewGenerator()
 	emailService := email.NewConfirmationService(templateRenderer, emailQueueRepo, icsGenerator)
@@ -417,6 +434,7 @@ func main() {
 		EventWebHandlers:         eventWebHandlers,
 		QuestionHandlers:         questionHandlers,
 		InviteHandlers:           inviteHandlers,
+		InviteWebHandlers:        inviteWebHandlers,
 		ImportInviteHandlers:     importInviteHandlers,
 		ManualInviteHandlers:     manualInviteHandlers,
 		RevokeInviteHandlers:     revokeInviteHandlers,

@@ -16,6 +16,7 @@ type FullMockInviteService struct {
 	GetInviteByIDFunc          func(ctx context.Context, id int64) (*models.Invite, error)
 	UpdateInviteFunc           func(ctx context.Context, req *invites.UpdateInviteRequest) error
 	DeleteInviteFunc           func(ctx context.Context, inviteID int64) error
+	SendInviteFunc             func(ctx context.Context, req *invites.SendInviteRequest, emailRepo repositories.EmailQueueRepository) error
 	RevokeInviteFunc           func(ctx context.Context, req *invites.RevokeInviteRequest) error
 	RegenerateTokenFunc        func(ctx context.Context, inviteID int64) (*invites.RegenerateTokenResponse, error)
 	ListInvitesFunc            func(ctx context.Context, req *invites.ListInvitesRequest) (*invites.ListInvitesResponse, error)
@@ -65,6 +66,13 @@ func (m *FullMockInviteService) UpdateInvite(ctx context.Context, req *invites.U
 func (m *FullMockInviteService) DeleteInvite(ctx context.Context, inviteID int64) error {
 	if m.DeleteInviteFunc != nil {
 		return m.DeleteInviteFunc(ctx, inviteID)
+	}
+	return nil
+}
+
+func (m *FullMockInviteService) SendInvite(ctx context.Context, req *invites.SendInviteRequest, emailRepo repositories.EmailQueueRepository) error {
+	if m.SendInviteFunc != nil {
+		return m.SendInviteFunc(ctx, req, emailRepo)
 	}
 	return nil
 }
