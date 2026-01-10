@@ -1,9 +1,11 @@
 # User Story: RSVP Routes (Guest-Facing)
 
-**Epic:** [08_EPIC_api.md](08_EPIC_api.md)  
-**Priority:** High  
-**Status:** Not Started  
+**Epic:** [08_EPIC_api.md](08_EPIC_api.md)
+**Priority:** High
+**Status:** Mostly Complete (92%) - Missing Unsubscribe Route
 **Estimated Effort:** 1.5 days
+**Validation Date:** 2026-01-10
+**Validation Document:** [2026-01-10_44_story_13_validation.md](../01_WORKLOG/2026-01-10_44_story_13_validation.md)
 
 ---
 
@@ -15,18 +17,20 @@ As a **guest**, I want **to submit my RSVP via a unique token link** so that **I
 
 ## Acceptance Criteria
 
-- [ ] GET /rsvp/{token} - RSVP page (no auth required)
-- [ ] POST /rsvp/{token} - Submit RSVP (no auth required)
-- [ ] GET /rsvp/{token}/confirm - Confirmation page
-- [ ] GET /unsubscribe/{token} - Unsubscribe from reminders
-- [ ] Token validation
-- [ ] Event details displayed
-- [ ] Response options (attending/not attending/maybe)
-- [ ] Plus ones input
-- [ ] Preference questions
-- [ ] Deadline enforcement
-- [ ] Update existing RSVP
-- [ ] Rate limiting
+- [x] GET /rsvp/{token} - RSVP page (no auth required)
+- [x] POST /rsvp/{token} - Submit RSVP (no auth required)
+- [x] GET /rsvp/{token}/confirm - Confirmation page
+- [ ] GET /unsubscribe/{token} - Unsubscribe from reminders **MISSING**
+- [x] Token validation
+- [x] Event details displayed
+- [x] Response options (attending/not attending/maybe)
+- [x] Plus ones input
+- [x] Preference questions
+- [x] Deadline enforcement
+- [x] Update existing RSVP
+- [x] Rate limiting
+
+**Status: 11/12 criteria met (92%)**
 
 ---
 
@@ -49,16 +53,18 @@ r.Get("/unsubscribe/{token}", handlers.Unsubscribe)
 
 ## Tasks
 
-- [ ] Implement RSVP page handler
-- [ ] Implement RSVP submission handler
-- [ ] Implement confirmation page handler
-- [ ] Implement unsubscribe handler
-- [ ] Add token validation
-- [ ] Add deadline checking
-- [ ] Add plus ones validation
-- [ ] Test RSVP flow
-- [ ] Test token expiration
-- [ ] Test deadline enforcement
+- [x] Implement RSVP page handler (internal/handlers/rsvp.go:83-199)
+- [x] Implement RSVP submission handler (internal/handlers/rsvp.go:258-285)
+- [x] Implement confirmation page handler (internal/handlers/rsvp.go:445-596)
+- [ ] Implement unsubscribe handler **MISSING**
+- [x] Add token validation
+- [x] Add deadline checking
+- [x] Add plus ones validation
+- [x] Test RSVP flow
+- [x] Test token expiration
+- [x] Test deadline enforcement
+
+**Status: 9/10 tasks complete (90%)**
 
 ---
 
@@ -170,9 +176,46 @@ func TestUnsubscribe(t *testing.T)
 
 ## Definition of Done
 
-- [ ] All acceptance criteria met
-- [ ] All routes implemented
-- [ ] Token validation working
-- [ ] Deadline enforcement working
-- [ ] Tests passing
-- [ ] Documentation complete
+- [ ] All acceptance criteria met (11/12 - missing unsubscribe)
+- [ ] All routes implemented (4/5 - missing unsubscribe)
+- [x] Token validation working
+- [x] Deadline enforcement working
+- [x] Tests passing (all RSVP tests pass)
+- [x] Documentation complete (validation doc created)
+
+---
+
+## Implementation Status
+
+### Completed ✅
+- RSVP page with full feature set (token validation, event details, questions, deadline checks)
+- RSVP submission with comprehensive error handling
+- RSVP updates for existing responses
+- Confirmation page with answer display
+- CSRF protection integration
+- Rate limiting via middleware
+- Extensive test coverage (integration and unit tests)
+- Template rendering support
+
+### Missing ❌
+- Unsubscribe route and handler
+- Unsubscribe tests
+- Unsubscribe template
+
+### Files
+- **Handler:** internal/handlers/rsvp.go
+- **Tests:** internal/handlers/rsvp_*_test.go
+- **Router:** internal/handlers/router.go (lines 490-512)
+- **Validation:** docs/01_WORKLOG/2026-01-10_44_story_13_validation.md
+
+---
+
+## Next Steps
+
+To complete this story:
+1. Add `Unsubscribe(w http.ResponseWriter, r *http.Request)` to RSVPHandlerInterface
+2. Implement unsubscribe handler in rsvp.go
+3. Add route `r.Get("/unsubscribe/{token}", handlers.RSVPHandler.Unsubscribe)` to router.go
+4. Create unsubscribe template
+5. Write tests for unsubscribe functionality
+6. Update story status to Complete
