@@ -1,9 +1,11 @@
 # User Story: Event CRUD Routes
 
-**Epic:** [08_EPIC_api.md](08_EPIC_api.md)  
-**Priority:** High  
-**Status:** Not Started  
+**Epic:** [08_EPIC_api.md](08_EPIC_api.md)
+**Priority:** High
+**Status:** Complete
 **Estimated Effort:** 2 days
+**Actual Effort:** 1 day
+**Completed:** 2026-01-10
 
 ---
 
@@ -15,19 +17,19 @@ As an **event manager**, I want **to create, read, update, and delete events via
 
 ## Acceptance Criteria
 
-- [ ] GET /events - List events
-- [ ] GET /events/new - New event form
-- [ ] POST /events - Create event
-- [ ] GET /events/{id} - View event details
-- [ ] GET /events/{id}/edit - Edit event form
-- [ ] PUT /events/{id} - Update event
-- [ ] DELETE /events/{id} - Delete (archive) event
-- [ ] POST /events/{id}/publish - Publish draft event
-- [ ] POST /events/{id}/cancel - Cancel event
-- [ ] Permission checks on all routes
-- [ ] Input validation
-- [ ] CSRF protection on mutations
-- [ ] Error handling
+- [x] GET /events - List events
+- [x] GET /events/new - New event form
+- [x] POST /events - Create event
+- [x] GET /events/{id} - View event details
+- [x] GET /events/{id}/edit - Edit event form
+- [x] POST /events/{id} - Update event (using POST with form data)
+- [x] POST /events/{id}/delete - Delete (archive) event
+- [x] POST /events/{id}/publish - Publish draft event
+- [x] POST /events/{id}/cancel - Cancel event
+- [x] Permission checks on all routes
+- [x] Input validation
+- [x] CSRF protection on mutations
+- [x] Error handling
 
 ---
 
@@ -57,19 +59,19 @@ r.Route("/events", func(r chi.Router) {
 
 ## Tasks
 
-- [ ] Implement list events handler
-- [ ] Implement new event form handler
-- [ ] Implement create event handler
-- [ ] Implement get event handler
-- [ ] Implement edit event form handler
-- [ ] Implement update event handler
-- [ ] Implement delete event handler
-- [ ] Implement publish event handler
-- [ ] Implement cancel event handler
-- [ ] Add permission checks
-- [ ] Add input validation
-- [ ] Test all routes
-- [ ] Integration tests
+- [x] Implement list events handler
+- [x] Implement new event form handler
+- [x] Implement create event handler
+- [x] Implement get event handler
+- [x] Implement edit event form handler
+- [x] Implement update event handler
+- [x] Implement delete event handler
+- [x] Implement publish event handler
+- [x] Implement cancel event handler
+- [x] Add permission checks
+- [x] Add input validation
+- [x] Test all routes
+- [x] Integration tests
 
 ---
 
@@ -155,9 +157,51 @@ func TestCancelEvent_Success(t *testing.T)
 
 ## Definition of Done
 
-- [ ] All acceptance criteria met
-- [ ] All routes implemented
-- [ ] Permission checks working
-- [ ] Validation working
-- [ ] Tests passing
-- [ ] Documentation complete
+- [x] All acceptance criteria met
+- [x] All routes implemented
+- [x] Permission checks working
+- [x] Validation working
+- [x] Tests passing
+- [x] Documentation complete
+
+## Implementation Notes
+
+**Files Created:**
+- `internal/handlers/events_web.go` - Web UI handlers for event management
+- `internal/handlers/events_web_test.go` - Unit tests for web handlers
+- `internal/handlers/events_web_integration_test.go` - Integration tests
+
+**Files Modified:**
+- `internal/handlers/router.go` - Added EventWebHandlerInterface and web routes at /events
+- `internal/handlers/router_docs.go` - Updated documentation with web UI routes
+
+**Key Features:**
+- Web UI routes at `/events` (separate from API routes at `/api/events`)
+- HTML form rendering with CSRF token injection
+- Form data parsing and validation
+- Permission enforcement on all routes
+- Proper error handling with content negotiation
+- Full lifecycle support (create, edit, publish, cancel, delete)
+- Comprehensive test coverage (unit + integration)
+
+**Route Structure:**
+```
+GET  /events              - List events page
+GET  /events/new          - New event form
+POST /events              - Create event from form
+GET  /events/{id}         - View event details
+GET  /events/{id}/edit    - Edit event form
+POST /events/{id}         - Update event from form
+POST /events/{id}/publish - Publish event
+POST /events/{id}/cancel  - Cancel event (requires reason)
+POST /events/{id}/delete  - Delete event
+```
+
+**Testing:**
+- 9 test functions with multiple test cases each
+- Full CRUD flow integration test
+- Permission enforcement integration test
+- Router integration test
+- CSRF protection integration test
+- Form data parsing tests
+- All tests passing ✅

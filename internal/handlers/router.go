@@ -40,6 +40,7 @@ type RouterHandlers struct {
 	
 	DashboardHandler DashboardHandlerInterface
 	EventHandlers    EventHandlerInterface
+	EventWebHandlers EventWebHandlerInterface
 	QuestionHandlers QuestionHandlerInterface
 	InviteHandlers   InviteHandlerInterface
 	ImportInviteHandlers ImportInviteHandlerInterface
@@ -78,6 +79,18 @@ type EventHandlerInterface interface {
 	GetEvent(w http.ResponseWriter, r *http.Request)
 	UpdateEvent(w http.ResponseWriter, r *http.Request)
 	DeleteEvent(w http.ResponseWriter, r *http.Request)
+}
+
+type EventWebHandlerInterface interface {
+	ListEventsPage(w http.ResponseWriter, r *http.Request)
+	NewEventForm(w http.ResponseWriter, r *http.Request)
+	EditEventForm(w http.ResponseWriter, r *http.Request)
+	GetEventPage(w http.ResponseWriter, r *http.Request)
+	CreateEventFromForm(w http.ResponseWriter, r *http.Request)
+	UpdateEventFromForm(w http.ResponseWriter, r *http.Request)
+	PublishEventAction(w http.ResponseWriter, r *http.Request)
+	CancelEventAction(w http.ResponseWriter, r *http.Request)
+	DeleteEventAction(w http.ResponseWriter, r *http.Request)
 }
 
 type QuestionHandlerInterface interface {
@@ -258,6 +271,27 @@ func NewRouter(handlers *RouterHandlers) *Router {
 	} else {
 		r.Get("/", func(w http.ResponseWriter, r *http.Request) {
 			w.WriteHeader(http.StatusOK)
+		})
+	}
+
+	if handlers.EventWebHandlers != nil && handlers.AuthMiddleware != nil {
+		r.Route("/events", func(r chi.Router) {
+			r.Use(func(next http.Handler) http.Handler {
+				return handlers.AuthMiddleware.RequireAuth(next)
+			})
+
+			r.Get("/", handlers.EventWebHandlers.ListEventsPage)
+			r.Get("/new", handlers.EventWebHandlers.NewEventForm)
+			r.Post("/", handlers.EventWebHandlers.CreateEventFromForm)
+
+			r.Route("/{id}", func(r chi.Router) {
+				r.Get("/", handlers.EventWebHandlers.GetEventPage)
+				r.Get("/edit", handlers.EventWebHandlers.EditEventForm)
+				r.Post("/", handlers.EventWebHandlers.UpdateEventFromForm)
+				r.Post("/publish", handlers.EventWebHandlers.PublishEventAction)
+				r.Post("/cancel", handlers.EventWebHandlers.CancelEventAction)
+				r.Post("/delete", handlers.EventWebHandlers.DeleteEventAction)
+			})
 		})
 	}
 

@@ -25,9 +25,20 @@ PUBLIC ROUTES (No Authentication Required):
 AUTHENTICATED ROUTES (Requires Auth Middleware):
 - GET  /                                - Dashboard (event statistics and recent activity)
 
+Web UI Event Management (HTML Forms):
+- GET  /events                          - List events page
+- GET  /events/new                      - New event form
+- POST /events                          - Create event from form
+- GET  /events/{id}                     - View event details page
+- GET  /events/{id}/edit                - Edit event form
+- POST /events/{id}                     - Update event from form
+- POST /events/{id}/publish             - Publish event action
+- POST /events/{id}/cancel              - Cancel event action (requires reason)
+- POST /events/{id}/delete              - Delete event action
+
 All routes under /api/* require authentication via AuthMiddleware.RequireAuth
 
-Event Management:
+API Event Management (JSON):
 - GET    /api/events                    - List all events
 - POST   /api/events                    - Create new event
 - GET    /api/events/{id}               - Get event details
