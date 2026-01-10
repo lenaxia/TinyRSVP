@@ -166,11 +166,22 @@ This document tracks all UI/UX issues identified and resolved during testing ses
 
 **Fix**: Added `tzdata` to Alpine package installation in Dockerfile
 
+**Resolution**: Docker image must be rebuilt with `--build` flag for tzdata to be installed. Running `docker compose up -d` without `--build` uses cached image without tzdata.
+
 **Files Modified**:
-- `Dockerfile`
+- `Dockerfile` (line 19: added `tzdata` to apk install)
 
 **Tests Added**:
 - `internal/events/timezone_validator_america_test.go`
+
+**Verification**:
+```bash
+# Rebuild image with tzdata
+docker compose -f docker-compose.test.yml up --build -d
+
+# Verify tzdata installed
+docker exec tinyrsvp-tinyrsvp ls -la /usr/share/zoneinfo/America/Los_Angeles
+```
 
 ---
 
