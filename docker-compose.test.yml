@@ -1,8 +1,10 @@
 # TinyRSVP Test Environment
 # Complete stack with mock SMTP, OIDC, and reverse proxy for testing
 # Usage: docker-compose -f docker-compose.test.yml up
-
-version: '3.8'
+#
+# ⚠️  SAFE TO COMMIT - TEST ENVIRONMENT ONLY
+# All secrets in this file are intentionally public and only work locally.
+# See test/SECURITY_NOTICE.md for details.
 
 services:
   # ============================================================================
@@ -12,7 +14,9 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: tinyrsvp-test
+    container_name: tinyrsvp-tinyrsvp
+    ports:
+      - "8080:8080"
     environment:
       - SERVER_HOST=0.0.0.0
       - SERVER_PORT=8080
@@ -25,15 +29,19 @@ services:
       - SMTP_PORT=1025
       - SMTP_USERNAME=
       - SMTP_PASSWORD=
-      - SMTP_FROM=noreply@tinyrsvp.test
+      - SMTP_FROM_EMAIL=noreply@tinyrsvp.test
+      - SMTP_FROM_NAME=TinyRSVP Test
       - EMAIL_FROM=noreply@tinyrsvp.test
+      - EMAIL_FROM_NAME=TinyRSVP Test
       
       # OIDC Configuration (Authelia)
       - AUTH_MODE=oidc
-      - OIDC_ISSUER_URL=http://authelia:9091
+      - OIDC_ENABLED=true
+      - OIDC_ISSUER_URL=https://authelia:9091
       - OIDC_CLIENT_ID=tinyrsvp
       - OIDC_CLIENT_SECRET=insecure_secret_for_testing_only
       - OIDC_REDIRECT_URL=http://localhost:8080/auth/callback
+      - OIDC_SKIP_VERIFY=true
       
       # Storage
       - STORAGE_TYPE=local
@@ -91,6 +99,7 @@ services:
     volumes:
       - ./test/authelia/configuration.yml:/config/configuration.yml:ro
       - ./test/authelia/users_database.yml:/config/users_database.yml:ro
+      - ./test/authelia/certs:/config/certs:ro
       - authelia-data:/config
     networks:
       - tinyrsvp-test
@@ -114,7 +123,7 @@ services:
       - --entrypoints.web.address=:80
       - --log.level=DEBUG
     ports:
-      - "80:80"      # HTTP
+      - "8081:80"      # HTTP (changed to avoid conflict)
       - "8082:8080"  # Traefik dashboard
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
