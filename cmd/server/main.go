@@ -247,7 +247,7 @@ func main() {
 
 	userHandler := handlers.NewUserHandler(userService, authChecker)
 
-	adminService := admin.NewAdminService(userRepo, eventRepo, inviteRepo)
+	adminService := admin.NewAdminService(userService, eventRepo, inviteRepo)
 	adminDashboardHandler := handlers.NewAdminDashboardHandler(adminService)
 	userManagementHandler := handlers.NewUserManagementHandler(userService)
 	logger.Info("Initialized admin services and handlers")

@@ -57,6 +57,10 @@ func (m *mockEventRepository) GetByCreatorID(ctx context.Context, creatorID int6
 	return nil, nil
 }
 
+func (m *mockEventRepository) CountEvents(ctx context.Context) (int, error) {
+	return 0, nil
+}
+
 func TestCreateIndividualInvite_Success(t *testing.T) {
 	ctx := context.Background()
 	generator := &mockGenerator{}

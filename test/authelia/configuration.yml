@@ -1,0 +1,140 @@
+---
+###############################################################################
+#                   Authelia Test Configuration                              #
+###############################################################################
+
+theme: light
+default_2fa_method: ""
+
+server:
+  host: 0.0.0.0
+  port: 9091
+  path: ""
+  enable_pprof: false
+  enable_expvars: false
+  disable_healthcheck: false
+  tls:
+    key: ""
+    certificate: ""
+
+log:
+  level: debug
+  format: text
+  file_path: ""
+  keep_stdout: true
+
+totp:
+  disable: true
+  issuer: tinyrsvp.test
+  algorithm: sha1
+  digits: 6
+  period: 30
+  skew: 1
+  secret_size: 32
+
+webauthn:
+  disable: true
+
+duo_api:
+  disable: true
+
+authentication_backend:
+  password_reset:
+    disable: true
+  refresh_interval: 5m
+  file:
+    path: /config/users_database.yml
+    password:
+      algorithm: argon2id
+      iterations: 1
+      key_length: 32
+      salt_length: 16
+      memory: 64
+      parallelism: 2
+
+access_control:
+  default_policy: bypass
+  rules: []
+
+session:
+  name: authelia_session
+  domain: localhost
+  same_site: lax
+  secret: insecure_session_secret_for_testing_only
+  expiration: 1h
+  inactivity: 5m
+  remember_me_duration: 1M
+
+regulation:
+  max_retries: 3
+  find_time: 2m
+  ban_time: 5m
+
+storage:
+  encryption_key: insecure_encryption_key_for_testing_only_must_be_32_chars!!
+  local:
+    path: /config/db.sqlite3
+
+notifier:
+  disable_startup_check: true
+  filesystem:
+    filename: /config/notification.txt
+
+identity_providers:
+  oidc:
+    hmac_secret: insecure_hmac_secret_for_testing_only_must_be_very_long_string
+    issuer_private_key: |
+      -----BEGIN RSA PRIVATE KEY-----
+      MIIEpAIBAAKCAQEA3xGFQ0Aq8xJPXxqPxqj7W8nFjKxJZXqPxqj7W8nFjKxJZXqP
+      xqj7W8nFjKxJZXqPxqj7W8nFjKxJZXqPxqj7W8nFjKxJZXqPxqj7W8nFjKxJZXqP
+      xqj7W8nFjKxJZXqPxqj7W8nFjKxJZXqPxqj7W8nFjKxJZXqPxqj7W8nFjKxJZXqP
+      xqj7W8nFjKxJZXqPxqj7W8nFjKxJZXqPxqj7W8nFjKxJZXqPxqj7W8nFjKxJZXqP
+      xqj7W8nFjKxJZXqPxqj7W8nFjKxJZXqPxqj7W8nFjKxJZXqPxqj7W8nFjKxJZXqP
+      xqj7W8nFjKxJZXqPxqj7W8nFjKxJZXqPxqj7W8nFjKxJZXqPxqj7W8nFjKxJZXqP
+      xqj7W8nFjKxJZXqPxqj7W8nFjKxJZXqPxqj7W8nFjKxJZXqPxqj7W8nFjKxJZXqP
+      xqj7W8nFjKxJZXqPxqj7W8nFjKxJZXqPxqj7W8nFjKxJZXqPxqj7W8nFjKxJZXqP
+      AgMBAAECggEABqj7W8nFjKxJZXqPxqj7W8nFjKxJZXqPxqj7W8nFjKxJZXqPxqj7
+      W8nFjKxJZXqPxqj7W8nFjKxJZXqPxqj7W8nFjKxJZXqPxqj7W8nFjKxJZXqPxqj7
+      W8nFjKxJZXqPxqj7W8nFjKxJZXqPxqj7W8nFjKxJZXqPxqj7W8nFjKxJZXqPxqj7
+      W8nFjKxJZXqPxqj7W8nFjKxJZXqPxqj7W8nFjKxJZXqPxqj7W8nFjKxJZXqPxqj7
+      W8nFjKxJZXqPxqj7W8nFjKxJZXqPxqj7W8nFjKxJZXqPxqj7W8nFjKxJZXqPxqj7
+      W8nFjKxJZXqPxqj7W8nFjKxJZXqPxqj7W8nFjKxJZXqPxqj7W8nFjKxJZXqPxqj7
+      W8nFjKxJZXqPxqj7W8nFjKxJZXqPxqj7W8nFjKxJZXqPxqj7W8nFjKxJZXqPxqj7
+      W8nFjKxJZXqPxqj7W8nFjKxJZXqPxqj7W8nFjKxJZXqPxqj7W8nFjKxJZXqPxqj7
+      QKBgQD7W8nFjKxJZXqPxqj7W8nFjKxJZXqPxqj7W8nFjKxJZXqPxqj7W8nFjKxJ
+      ZXqPxqj7W8nFjKxJZXqPxqj7W8nFjKxJZXqPxqj7W8nFjKxJZXqPxqj7W8nFjKxJ
+      ZXqPxqj7W8nFjKxJZXqPxqj7W8nFjKxJZXqPxqj7W8nFjKxJZXqPxqj7W8nFjKxJ
+      ZXqPxqj7W8nFjKxJZXqPxqj7W8nFjKxJZXqPxqj7W8nFjKxJZXqPxqj7W8nFjKxJ
+      ZXqPxqj7W8nFjKxJZXqPxqj7W8nFjKxJZXqPxqj7W8nFjKxJZXqPxqj7W8nFjKxJ
+      ZXqPxqj7W8nFjKxJZXqPxqj7W8nFjKxJZXqPxqj7W8nFjKxJZXqPxqj7W8nFjKxJ
+      -----END RSA PRIVATE KEY-----
+    access_token_lifespan: 1h
+    authorize_code_lifespan: 1m
+    id_token_lifespan: 1h
+    refresh_token_lifespan: 90m
+    enable_client_debug_messages: true
+    enforce_pkce: public_clients_only
+    cors:
+      endpoints:
+        - authorization
+        - token
+        - revocation
+        - introspection
+      allowed_origins:
+        - http://localhost:8080
+      allowed_origins_from_client_redirect_uris: false
+    clients:
+      - id: tinyrsvp
+        description: TinyRSVP Test Application
+        secret: '$argon2id$v=19$m=65536,t=1,p=8$insecure_secret_for_testing_only'
+        public: false
+        authorization_policy: one_factor
+        redirect_uris:
+          - http://localhost:8080/auth/callback
+        scopes:
+          - openid
+          - profile
+          - email
+          - groups
+        userinfo_signing_algorithm: none
+        token_endpoint_auth_method: client_secret_basic

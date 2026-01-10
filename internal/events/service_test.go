@@ -94,6 +94,10 @@ func (m *mockEventRepository) GetByCreatorID(ctx context.Context, creatorID int6
 	return nil, nil
 }
 
+func (m *mockEventRepository) CountEvents(ctx context.Context) (int, error) {
+	return 0, nil
+}
+
 type mockValidator struct {
 	ValidateCreateFunc          func(ctx context.Context, event *models.Event) error
 	ValidateUpdateFunc          func(ctx context.Context, event *models.Event) error

@@ -73,6 +73,10 @@ func (m *mockSendInviteRepo) GetByEventIDs(ctx context.Context, eventIDs []int64
 	return nil, nil
 }
 
+func (m *mockSendInviteRepo) CountInvites(ctx context.Context) (int, error) {
+	return 0, nil
+}
+
 type mockEmailQueueRepo struct {
 	createFunc func(ctx context.Context, email *models.EmailQueue) error
 }

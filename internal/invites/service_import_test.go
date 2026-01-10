@@ -76,6 +76,10 @@ func (m *mockInviteRepo) GetByEventIDs(ctx context.Context, eventIDs []int64) ([
 	return []*models.Invite{}, nil
 }
 
+func (m *mockInviteRepo) CountInvites(ctx context.Context) (int, error) {
+	return 0, nil
+}
+
 func TestImportCSV_Success(t *testing.T) {
 	csvData := `email,name,max_plus_ones
 john@example.com,John Doe,2

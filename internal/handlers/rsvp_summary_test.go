@@ -476,10 +476,6 @@ func TestRSVPSummaryHandler_SetTemplates(t *testing.T) {
 
 
 
-func (m *mockRSVPSummaryEventRepo) CountEvents(ctx context.Context) (int, error) {
-	return 0, errors.New("not implemented")
-}
-
 func (m *mockRSVPSummaryEventRepository) CountEvents(ctx context.Context) (int, error) {
-	return 0, errors.New("not implemented")
+	return 0, nil
 }

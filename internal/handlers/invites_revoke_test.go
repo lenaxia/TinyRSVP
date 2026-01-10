@@ -552,10 +552,7 @@ func TestRevokeInviteHandlers_RevokeInvite(t *testing.T) {
 }
 
 
-func (m *mockRevokeInviteEventRepo) CountEvents(ctx context.Context) (int, error) {
-	return 0, errors.New("not implemented")
-}
 
 func (m *mockRevokeEventRepository) CountEvents(ctx context.Context) (int, error) {
-	return 0, errors.New("not implemented")
+	return 0, nil
 }

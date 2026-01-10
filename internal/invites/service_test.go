@@ -197,6 +197,10 @@ func (m *mockInviteRepository) GetByEventIDs(ctx context.Context, eventIDs []int
 	return result, nil
 }
 
+func (m *mockInviteRepository) CountInvites(ctx context.Context) (int, error) {
+	return 0, nil
+}
+
 type mockInviteRepositoryWithDeleteExpired struct {
 	mockInviteRepository
 	deleteExpiredFunc func(ctx context.Context, before time.Time) (int64, error)

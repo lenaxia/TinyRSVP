@@ -474,10 +474,6 @@ func TestRegenerateInviteTokenHandlers_RegenerateInviteToken(t *testing.T) {
 }
 
 
-func (m *mockRegenerateInviteEventRepo) CountEvents(ctx context.Context) (int, error) {
-	return 0, errors.New("not implemented")
-}
-
 func (m *mockRegenerateEventRepository) CountEvents(ctx context.Context) (int, error) {
-	return 0, errors.New("not implemented")
+	return 0, nil
 }
