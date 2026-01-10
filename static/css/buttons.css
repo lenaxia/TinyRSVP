@@ -41,18 +41,18 @@
 }
 
 .btn-secondary {
-    background-color: var(--color-gray-200);
+    background-color: var(--color-gray-300);
     color: var(--color-text-primary);
-    border: 1px solid var(--color-border);
+    border: 1px solid var(--color-gray-400);
 }
 
 .btn-secondary:hover {
-    background-color: var(--color-gray-300);
-    border-color: var(--color-gray-400);
+    background-color: var(--color-gray-400);
+    border-color: var(--color-gray-500);
 }
 
 .btn-secondary:active {
-    background-color: var(--color-gray-400);
+    background-color: var(--color-gray-500);
 }
 
 .btn-success {
