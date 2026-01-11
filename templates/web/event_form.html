@@ -220,68 +220,59 @@
                     <h2 class="form-section-title">Date & Time</h2>
                     
                     <div class="form-group">
-                        <label for="start_time" class="form-label">
-                            Start Date & Time<span class="form-required" aria-label="required">*</span>
+                        <label for="event_datetime_trigger" class="form-label">
+                            Event Date & Time<span class="form-required" aria-label="required">*</span>
                         </label>
-                        <input
-                            type="datetime-local"
-                            id="start_time"
-                            name="start_time"
-                            class="form-input{{if .Errors.StartTime}} error{{end}}"
-                            value="{{if not .Event.StartTime.IsZero}}{{.Event.StartTime.Format "2006-01-02T15:04"}}{{end}}"
-                            required
-                            aria-describedby="start_time-help{{if .Errors.StartTime}} start_time-error{{end}}"
+                        <button
+                            type="button"
+                            id="event_datetime_trigger"
+                            class="form-input datetime-trigger-btn{{if or .Errors.StartTime .Errors.EndTime .Errors.Timezone}} error{{end}}"
+                            data-datetime-picker
+                            data-mode="datetime-range"
+                            data-end-input="end_time"
+                            data-timezone-input="timezone"
+                            data-show-timezone="true"
+                            data-title="Select Event Date & Time"
+                            aria-describedby="event_datetime-help{{if or .Errors.StartTime .Errors.EndTime .Errors.Timezone}} event_datetime-error{{end}}"
                         >
-                        <span class="form-help-text" id="start_time-help">When does your event start?</span>
+                            <span class="datetime-trigger-icon">📅</span>
+                            <span class="datetime-trigger-text" id="event_datetime_display">
+                                {{if and (not .Event.StartTime.IsZero) .Event.Timezone}}
+                                    {{.Event.StartTime.Format "Jan 2, 2006 at 3:04 PM"}}{{if .Event.EndTime}} - {{.Event.EndTime.Format "3:04 PM"}}{{end}} ({{.Event.Timezone}})
+                                {{else}}
+                                    Click to select date, time, and timezone
+                                {{end}}
+                            </span>
+                        </button>
+                        <span class="form-help-text" id="event_datetime-help">Select start time, end time, and timezone for your event</span>
                         {{if .Errors.StartTime}}
-                        <span class="form-error" id="start_time-error">{{.Errors.StartTime}}</span>
+                        <span class="form-error" id="event_datetime-error">{{.Errors.StartTime}}</span>
+                        {{else if .Errors.EndTime}}
+                        <span class="form-error" id="event_datetime-error">{{.Errors.EndTime}}</span>
+                        {{else if .Errors.Timezone}}
+                        <span class="form-error" id="event_datetime-error">{{.Errors.Timezone}}</span>
                         {{end}}
                     </div>
 
-                    <div class="form-group">
-                        <label for="end_time" class="form-label">End Date & Time</label>
-                        <input 
-                            type="datetime-local" 
-                            id="end_time" 
-                            name="end_time" 
-                            class="form-input{{if .Errors.EndTime}} error{{end}}"
-                            value="{{if .Event.EndTime}}{{.Event.EndTime.Format "2006-01-02T15:04"}}{{end}}"
-                            aria-describedby="end_time-help{{if .Errors.EndTime}} end_time-error{{end}}"
-                        >
-                        <span class="form-help-text" id="end_time-help">When does your event end?</span>
-                        {{if .Errors.EndTime}}
-                        <span class="form-error" id="end_time-error">{{.Errors.EndTime}}</span>
-                        {{end}}
-                    </div>
-
-                    <div class="form-group">
-                        <label for="timezone" class="form-label">
-                            Timezone<span class="form-required" aria-label="required">*</span>
-                        </label>
-                        <select 
-                            id="timezone" 
-                            name="timezone" 
-                            class="form-select{{if .Errors.Timezone}} error{{end}}" 
-                            required
-                            aria-describedby="timezone-help{{if .Errors.Timezone}} timezone-error{{end}}"
-                        >
-                            <option value="">Select timezone...</option>
-                            {{$currentTZ := .Event.Timezone}}
-                            <option value="America/Los_Angeles"{{if eq $currentTZ "America/Los_Angeles"}} selected{{end}}>Pacific Time (PT)</option>
-                            <option value="America/Denver"{{if eq $currentTZ "America/Denver"}} selected{{end}}>Mountain Time (MT)</option>
-                            <option value="America/Chicago"{{if eq $currentTZ "America/Chicago"}} selected{{end}}>Central Time (CT)</option>
-                            <option value="America/New_York"{{if eq $currentTZ "America/New_York"}} selected{{end}}>Eastern Time (ET)</option>
-                            <option value="UTC"{{if eq $currentTZ "UTC"}} selected{{end}}>UTC</option>
-                            <option value="Europe/London"{{if eq $currentTZ "Europe/London"}} selected{{end}}>London (GMT)</option>
-                            <option value="Europe/Paris"{{if eq $currentTZ "Europe/Paris"}} selected{{end}}>Paris (CET)</option>
-                            <option value="Asia/Tokyo"{{if eq $currentTZ "Asia/Tokyo"}} selected{{end}}>Tokyo (JST)</option>
-                            <option value="Australia/Sydney"{{if eq $currentTZ "Australia/Sydney"}} selected{{end}}>Sydney (AEDT)</option>
-                        </select>
-                        <span class="form-help-text" id="timezone-help">Event timezone</span>
-                        {{if .Errors.Timezone}}
-                        <span class="form-error" id="timezone-error">{{.Errors.Timezone}}</span>
-                        {{end}}
-                    </div>
+                    <!-- Hidden fields for form submission -->
+                    <input 
+                        type="hidden" 
+                        id="start_time" 
+                        name="start_time" 
+                        value="{{if not .Event.StartTime.IsZero}}{{.Event.StartTime.Format "2006-01-02T15:04"}}{{end}}"
+                    >
+                    <input 
+                        type="hidden" 
+                        id="end_time" 
+                        name="end_time" 
+                        value="{{if .Event.EndTime}}{{.Event.EndTime.Format "2006-01-02T15:04"}}{{end}}"
+                    >
+                    <input 
+                        type="hidden" 
+                        id="timezone" 
+                        name="timezone" 
+                        value="{{.Event.Timezone}}"
+                    >
                 </section>
 
                 <section class="form-section">
@@ -296,6 +287,10 @@
                             class="form-input{{if .Errors.RSVPDeadline}} error{{end}}"
                             value="{{if .Event.RSVPDeadline}}{{.Event.RSVPDeadline.Format "2006-01-02T15:04"}}{{end}}"
                             aria-describedby="rsvp_deadline-help{{if .Errors.RSVPDeadline}} rsvp_deadline-error{{end}}"
+                            data-datetime-picker
+                            data-mode="datetime-single"
+                            data-show-timezone="false"
+                            data-title="Select RSVP Deadline"
                         >
                         <span class="form-help-text" id="rsvp_deadline-help">Last date guests can respond</span>
                         {{if .Errors.RSVPDeadline}}

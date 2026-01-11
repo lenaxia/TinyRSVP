@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"html/template"
 	"net/http"
+	"strconv"
 	"strings"
 	"time"
 
@@ -256,6 +257,37 @@ func (h *RSVPHandler) SetTemplates(tmpl *template.Template) {
 	h.templates = tmpl
 }
 
+func (h *RSVPHandler) parseRSVPRequest(r *http.Request) (*rsvp.SubmitRSVPRequest, error) {
+	contentType := r.Header.Get("Content-Type")
+	
+	if strings.Contains(contentType, "application/json") {
+		var req rsvp.SubmitRSVPRequest
+		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+			return nil, err
+		}
+		return &req, nil
+	}
+	
+	if err := r.ParseForm(); err != nil {
+		return nil, err
+	}
+	
+	req := &rsvp.SubmitRSVPRequest{
+		Response: r.FormValue("response"),
+		Answers:  []rsvp.AnswerRequest{},
+	}
+	
+	if plusOnesStr := r.FormValue("plus_ones"); plusOnesStr != "" {
+		plusOnes, err := strconv.Atoi(plusOnesStr)
+		if err != nil {
+			return nil, fmt.Errorf("invalid plus_ones value")
+		}
+		req.PlusOnes = plusOnes
+	}
+	
+	return req, nil
+}
+
 func (h *RSVPHandler) SubmitRSVP(w http.ResponseWriter, r *http.Request) {
 	token := chi.URLParam(r, "token")
 	if token == "" {
@@ -265,15 +297,15 @@ func (h *RSVPHandler) SubmitRSVP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var req rsvp.SubmitRSVPRequest
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+	req, err := h.parseRSVPRequest(r)
+	if err != nil {
 		h.respondJSON(w, http.StatusBadRequest, map[string]string{
 			"error": "invalid request body",
 		})
 		return
 	}
 
-	result, err := h.rsvpService.SubmitRSVP(r.Context(), token, &req)
+	result, err := h.rsvpService.SubmitRSVP(r.Context(), token, req)
 	if err != nil {
 		h.handleSubmitError(w, err)
 		return
@@ -352,15 +384,15 @@ func (h *RSVPHandler) UpdateRSVP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var req rsvp.SubmitRSVPRequest
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+	req, err := h.parseRSVPRequest(r)
+	if err != nil {
 		h.respondJSON(w, http.StatusBadRequest, map[string]string{
 			"error": "invalid request body",
 		})
 		return
 	}
 
-	result, err := h.rsvpService.UpdateRSVP(r.Context(), token, &req)
+	result, err := h.rsvpService.UpdateRSVP(r.Context(), token, req)
 	if err != nil {
 		h.handleUpdateError(w, err)
 		return

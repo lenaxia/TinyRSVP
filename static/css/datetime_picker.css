@@ -1,5 +1,50 @@
 /* DateTime Picker - Slide-out panel for date and time selection */
 
+.datetime-trigger-btn {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-2);
+    width: 100%;
+    padding: var(--spacing-3);
+    text-align: left;
+    background: var(--color-background);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-base);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    font-size: var(--font-size-base);
+    color: var(--color-text-primary);
+}
+
+.datetime-trigger-btn:hover {
+    border-color: var(--color-primary);
+    background: var(--color-surface);
+}
+
+.datetime-trigger-btn:focus {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 2px;
+}
+
+.datetime-trigger-btn.error {
+    border-color: var(--color-error);
+}
+
+.datetime-trigger-icon {
+    font-size: var(--font-size-xl);
+    flex-shrink: 0;
+}
+
+.datetime-trigger-text {
+    flex: 1;
+    color: var(--color-text-secondary);
+}
+
+.datetime-trigger-btn:not(:has(.datetime-trigger-text:empty)) .datetime-trigger-text {
+    color: var(--color-text-primary);
+    font-weight: var(--font-weight-medium);
+}
+
 .datetime-picker-overlay {
     display: none;
     position: fixed;

@@ -694,6 +694,50 @@ func TestRSVPHandler_SubmitRSVP_InternalError(t *testing.T) {
 	}
 }
 
+func TestRSVPHandler_SubmitRSVP_FormDataSuccess(t *testing.T) {
+	mockService := &mockRSVPService{
+		submitRSVPFunc: func(ctx context.Context, token string, req *rsvp.SubmitRSVPRequest) (*models.RSVP, error) {
+			if req.Response != "yes" {
+				t.Errorf("Expected response 'yes', got %s", req.Response)
+			}
+			if req.PlusOnes != 2 {
+				t.Errorf("Expected plus_ones 2, got %d", req.PlusOnes)
+			}
+			return &models.RSVP{
+				ID:        1,
+				InviteID:  1,
+				Response:  models.RSVPResponseYes,
+				PlusOnes:  2,
+				CreatedAt: time.Now(),
+				UpdatedAt: time.Now(),
+			}, nil
+		},
+	}
+
+	handler := &RSVPHandler{rsvpService: mockService}
+
+	body := "response=yes&plus_ones=2"
+	req := httptest.NewRequest("POST", "/rsvp/validtoken", strings.NewReader(body))
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	req.Header.Set("Accept", "application/json")
+	
+	rctx := chi.NewRouteContext()
+	rctx.URLParams.Add("token", "validtoken")
+	req = req.WithContext(context.WithValue(req.Context(), chi.RouteCtxKey, rctx))
+
+	w := httptest.NewRecorder()
+
+	handler.SubmitRSVP(w, req)
+
+	if w.Code != http.StatusCreated {
+		t.Errorf("Expected status 201, got %d. Body: %s", w.Code, w.Body.String())
+	}
+
+	if w.Header().Get("Content-Type") != "application/json" {
+		t.Errorf("Expected Content-Type application/json, got %s", w.Header().Get("Content-Type"))
+	}
+}
+
 func TestRSVPHandler_GetRSVPPage_EmptyToken(t *testing.T) {
 	mockInviteSvc := &mockRSVPInviteService{}
 	mockEventRepo := &mockRSVPEventRepository{}

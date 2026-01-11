@@ -38,34 +38,56 @@ const DateDefaults = {
     },
 
     setTimezoneDefault() {
-        const timezoneSelect = document.getElementById('timezone');
-        if (!timezoneSelect || timezoneSelect.value) {
+        const timezoneInput = document.getElementById('timezone');
+        if (!timezoneInput || timezoneInput.value) {
             return;
         }
 
         const detectedTimezone = this.detectTimezone();
         
-        const options = Array.from(timezoneSelect.options);
-        const matchingOption = options.find(opt => opt.value === detectedTimezone);
-        
-        if (matchingOption) {
-            timezoneSelect.value = detectedTimezone;
-        } else {
-            const fallbackMap = {
-                'America/Los_Angeles': 'America/Los_Angeles',
-                'America/Denver': 'America/Denver',
-                'America/Chicago': 'America/Chicago',
-                'America/New_York': 'America/New_York',
-            };
+        // Handle both select elements and hidden inputs
+        if (timezoneInput.tagName === 'SELECT') {
+            const options = Array.from(timezoneInput.options);
+            const matchingOption = options.find(opt => opt.value === detectedTimezone);
             
-            for (const [pattern, value] of Object.entries(fallbackMap)) {
-                if (detectedTimezone.includes(pattern.split('/')[1])) {
-                    timezoneSelect.value = value;
-                    return;
+            if (matchingOption) {
+                timezoneInput.value = detectedTimezone;
+            } else {
+                const fallbackMap = {
+                    'America/Los_Angeles': 'America/Los_Angeles',
+                    'America/Denver': 'America/Denver',
+                    'America/Chicago': 'America/Chicago',
+                    'America/New_York': 'America/New_York',
+                };
+                
+                for (const [pattern, value] of Object.entries(fallbackMap)) {
+                    if (detectedTimezone.includes(pattern.split('/')[1])) {
+                        timezoneInput.value = value;
+                        return;
+                    }
                 }
+                
+                timezoneInput.value = 'America/Los_Angeles';
             }
+        } else {
+            // For hidden inputs, just set the detected timezone directly
+            const validTimezones = [
+                'America/Los_Angeles',
+                'America/Denver',
+                'America/Chicago',
+                'America/New_York',
+                'UTC',
+                'Europe/London',
+                'Europe/Paris',
+                'Asia/Tokyo',
+                'Australia/Sydney'
+            ];
             
-            timezoneSelect.value = 'America/Los_Angeles';
+            if (validTimezones.includes(detectedTimezone)) {
+                timezoneInput.value = detectedTimezone;
+            } else {
+                timezoneInput.value = 'America/Los_Angeles';
+            }
         }
     },
 
