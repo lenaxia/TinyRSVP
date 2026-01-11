@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
+	"time"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/lenaxia/tinyrsvp/internal/auth"
@@ -37,6 +38,8 @@ func (h *TemplateHandlers) RegisterRoutes(r chi.Router) {
 			r.Post("/set-default", h.SetDefault)
 		})
 	})
+	
+	r.Get("/api/themes/preview", h.HandleThemePreview)
 }
 
 type CreateTemplateRequest struct {
@@ -410,4 +413,132 @@ func (h *TemplateHandlers) PreviewTemplate(w http.ResponseWriter, r *http.Reques
 	}
 
 	respondJSON(w, http.StatusOK, resp)
+}
+
+func (h *TemplateHandlers) HandleThemePreview(w http.ResponseWriter, r *http.Request) {
+	themeIDStr := r.URL.Query().Get("theme_id")
+	if themeIDStr == "" {
+		http.Error(w, "theme_id parameter is required", http.StatusBadRequest)
+		return
+	}
+
+	themeID, err := strconv.ParseInt(themeIDStr, 10, 64)
+	if err != nil {
+		http.Error(w, "Invalid theme ID", http.StatusBadRequest)
+		return
+	}
+
+	template, err := h.service.GetTemplate(r.Context(), themeID)
+	if err != nil {
+		HandleError(w, r, err)
+		return
+	}
+
+	title := r.URL.Query().Get("title")
+	if title == "" {
+		title = "Sample Event Title"
+	}
+
+	location := r.URL.Query().Get("location")
+	if location == "" {
+		location = "Sample Location"
+	}
+
+	description := r.URL.Query().Get("description")
+	if description == "" {
+		description = "This is a sample event description to show how your theme will look."
+	}
+
+	startTimeStr := r.URL.Query().Get("start_time")
+	var startTime time.Time
+	if startTimeStr != "" {
+		startTime, err = time.Parse(time.RFC3339, startTimeStr)
+		if err != nil {
+			startTime = time.Now().Add(7 * 24 * time.Hour)
+		}
+	} else {
+		startTime = time.Now().Add(7 * 24 * time.Hour)
+	}
+
+	themeMode := r.URL.Query().Get("theme_mode")
+	if themeMode == "" {
+		themeMode = "light"
+	}
+
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+
+	dataTheme := themeMode
+	eventTheme := template.Category
+	if eventTheme == "" {
+		eventTheme = "modern"
+	}
+
+	fmt.Fprintf(w, `<!DOCTYPE html>
+<html lang="en" data-theme="%s" data-event-theme="%s">
+<head>
+	   <meta charset="UTF-8">
+	   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+	   <title>Theme Preview</title>
+	   <link rel="stylesheet" href="/static/css/variables.css">
+	   <link rel="stylesheet" href="/static/css/typography.css">
+	   <link rel="stylesheet" href="/static/css/colors.css">
+	   <link rel="stylesheet" href="/static/css/buttons.css">
+	   <link rel="stylesheet" href="/static/css/forms.css">
+	   <link rel="stylesheet" href="/static/css/rsvp_page.css">
+</head>
+<body>
+	   <div class="rsvp-page">
+	       <div class="rsvp-container">
+	           <article class="event-details">
+	               <header>
+	                   <h1 class="event-title">%s</h1>
+	               </header>
+	               <section class="event-info">
+	                   <div class="event-info-item">
+	                       <div class="event-info-content">
+	                           <div class="event-info-label">Date & Time</div>
+	                           <time>%s</time>
+	                       </div>
+	                   </div>
+	                   <div class="event-info-item">
+	                       <div class="event-info-content">
+	                           <div class="event-info-label">Location</div>
+	                           <address class="event-location">%s</address>
+	                       </div>
+	                   </div>
+	               </section>
+	               <section class="event-description">
+	                   <h2>About This Event</h2>
+	                   <p>%s</p>
+	               </section>
+	           </article>
+	           <form class="rsvp-form">
+	               <h2 class="rsvp-form-title">Please Respond</h2>
+	               <div class="form-group">
+	                   <fieldset>
+	                       <legend class="form-label">Will you attend?</legend>
+	                       <div class="response-options">
+	                           <div class="response-option">
+	                               <input type="radio" name="response" value="yes" id="response_yes">
+	                               <label for="response_yes">Yes, I'll be there</label>
+	                           </div>
+	                           <div class="response-option">
+	                               <input type="radio" name="response" value="maybe" id="response_maybe">
+	                               <label for="response_maybe">Maybe</label>
+	                           </div>
+	                           <div class="response-option">
+	                               <input type="radio" name="response" value="no" id="response_no">
+	                               <label for="response_no">No, I can't make it</label>
+	                           </div>
+	                       </div>
+	                   </fieldset>
+	               </div>
+	               <div class="rsvp-actions">
+	                   <button type="button" class="btn btn-primary" disabled>Submit RSVP (Preview Only)</button>
+	               </div>
+	           </form>
+	       </div>
+	   </div>
+</body>
+</html>`, dataTheme, eventTheme, title, startTime.Format("Monday, January 2, 2006 at 3:04 PM MST"), location, description)
 }

@@ -1,6 +1,7 @@
-<div id="theme-preview-modal" 
-     class="modal" 
-     role="dialog" 
+{{define "theme-preview-modal"}}
+<div id="theme-preview-modal"
+     class="modal"
+     role="dialog"
      aria-labelledby="preview-modal-title"
      aria-modal="true"
      hidden>
@@ -22,6 +23,7 @@
                 </button>
             </div>
         </div>
+        {{end}}
         <div class="modal-body">
             <iframe id="theme-preview-frame" 
                     title="Theme preview"

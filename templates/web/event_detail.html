@@ -1,187 +1,161 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{.Event.Title}} - TinyRSVP</title>
-    <link rel="stylesheet" href="/static/css/variables.css">
-    <link rel="stylesheet" href="/static/css/typography.css">
-    <link rel="stylesheet" href="/static/css/colors.css">
-    <link rel="stylesheet" href="/static/css/spacing.css">
-    <link rel="stylesheet" href="/static/css/grid.css">
-    <link rel="stylesheet" href="/static/css/buttons.css">
-    <link rel="stylesheet" href="/static/css/forms.css">
-    <link rel="stylesheet" href="/static/css/app_navigation.css">
-    <link rel="stylesheet" href="/static/css/dashboard.css">
+{{template "base" .}}
+
+{{define "title"}}{{.Event.Title}} - TinyRSVP{{end}}
+
+{{define "main-class"}}dashboard-main{{end}}
+
+{{define "css-extra"}}
     <link rel="stylesheet" href="/static/css/event_detail.css">
-    <link rel="stylesheet" href="/static/css/mobile_optimization.css">
-    <link rel="stylesheet" href="/static/css/loading_states.css">
-    <link rel="stylesheet" href="/static/css/error_display.css">
-    <link rel="stylesheet" href="/static/css/keyboard_navigation.css">
-    <link rel="stylesheet" href="/static/css/focus_management.css">
-    <link rel="stylesheet" href="/static/css/theme_toggle.css">
-</head>
-<body>
-    {{template "navigation" .}}
-    <div class="dashboard">
-        <main class="dashboard-main">
-            <header class="dashboard-header">
-                <div>
-                    <h1>{{.Event.Title}}</h1>
-                    <span class="event-status-badge {{.Event.Status}}" aria-label="Status: {{.Event.Status}}">
-                        {{if eq .Event.Status "draft"}}Draft{{else if eq .Event.Status "published"}}Published{{else if eq .Event.Status "cancelled"}}Cancelled{{else if eq .Event.Status "archived"}}Archived{{else}}{{.Event.Status}}{{end}}
-                    </span>
-                </div>
-                <div class="dashboard-actions">
-                    <a href="/events" class="btn btn-secondary">Back to Events</a>
-                </div>
-            </header>
+{{end}}
 
-            {{if .Error}}
-            <div class="alert alert-error" role="alert">
-                <strong>Error:</strong> {{.Error}}
-            </div>
-            {{end}}
+{{define "content"}}
+    <header class="dashboard-header">
+        <div>
+            <h1>{{.Event.Title}}</h1>
+            <span class="event-status-badge {{.Event.Status}}" aria-label="Status: {{.Event.Status}}">
+                {{if eq .Event.Status "draft"}}Draft{{else if eq .Event.Status "published"}}Published{{else if eq .Event.Status "cancelled"}}Cancelled{{else if eq .Event.Status "archived"}}Archived{{else}}{{.Event.Status}}{{end}}
+            </span>
+        </div>
+        <div class="dashboard-actions">
+            <a href="/events" class="btn btn-secondary">Back to Events</a>
+        </div>
+    </header>
 
-            <div class="event-detail-container">
-                <section class="event-detail-section">
-                    <h2>Event Details</h2>
-                    <dl class="event-detail-list">
-                        {{if .Event.Description}}
-                        <div class="event-detail-item">
-                            <dt>Description</dt>
-                            <dd>{{.Event.Description}}</dd>
-                        </div>
-                        {{end}}
-
-                        {{if .Event.Location}}
-                        <div class="event-detail-item">
-                            <dt>Location</dt>
-                            <dd>📍 {{.Event.Location}}</dd>
-                        </div>
-                        {{end}}
-
-                        <div class="event-detail-item">
-                            <dt>Start Time</dt>
-                            <dd>
-                                <time datetime="{{.Event.StartTime.Format "2006-01-02T15:04:05Z07:00"}}">
-                                    {{.Event.StartTime.Format "Monday, January 2, 2006 at 3:04 PM"}}
-                                </time>
-                            </dd>
-                        </div>
-
-                        {{if .Event.EndTime}}
-                        <div class="event-detail-item">
-                            <dt>End Time</dt>
-                            <dd>
-                                <time datetime="{{.Event.EndTime.Format "2006-01-02T15:04:05Z07:00"}}">
-                                    {{.Event.EndTime.Format "Monday, January 2, 2006 at 3:04 PM"}}
-                                </time>
-                            </dd>
-                        </div>
-                        {{end}}
-
-                        <div class="event-detail-item">
-                            <dt>Timezone</dt>
-                            <dd>{{.Event.Timezone}}</dd>
-                        </div>
-
-                        {{if .Event.RSVPDeadline}}
-                        <div class="event-detail-item">
-                            <dt>RSVP Deadline</dt>
-                            <dd>
-                                <time datetime="{{.Event.RSVPDeadline.Format "2006-01-02T15:04:05Z07:00"}}">
-                                    {{.Event.RSVPDeadline.Format "Monday, January 2, 2006 at 3:04 PM"}}
-                                </time>
-                            </dd>
-                        </div>
-                        {{end}}
-
-                        <div class="event-detail-item">
-                            <dt>Maximum Plus Ones</dt>
-                            <dd>{{.Event.MaxPlusOnes}}</dd>
-                        </div>
-                    </dl>
-                </section>
-
-                <section class="event-detail-actions">
-                    <h2>Actions</h2>
-                    <div class="action-buttons">
-                        <a href="/events/{{.Event.ID}}/edit" class="btn btn-primary">Edit Event</a>
-                        
-                        {{if eq .Event.Status "draft"}}
-                        <form method="POST" action="/events/{{.Event.ID}}/publish">
-                            <input type="hidden" name="csrf_token" value="{{.CSRFToken}}">
-                            <button type="submit" class="btn btn-success">Publish Event</button>
-                        </form>
-                        <form method="POST" action="/events/{{.Event.ID}}/delete">
-                            <input type="hidden" name="csrf_token" value="{{.CSRFToken}}">
-                            <button type="submit" class="btn btn-danger" onclick="return confirm('Are you sure you want to delete this event?')">Delete Event</button>
-                        </form>
-                        {{end}}
-
-                        {{if eq .Event.Status "published"}}
-                        <form method="POST" action="/events/{{.Event.ID}}/cancel">
-                            <input type="hidden" name="csrf_token" value="{{.CSRFToken}}">
-                            <div class="form-group">
-                                <label for="cancel_reason">Cancellation Reason (required)</label>
-                                <textarea 
-                                    id="cancel_reason" 
-                                    name="reason" 
-                                    class="form-textarea"
-                                    required
-                                    minlength="10"
-                                    maxlength="500"
-                                    placeholder="Please provide a reason for cancelling this event..."
-                                ></textarea>
-                            </div>
-                            <button type="submit" class="btn btn-warning">Cancel Event</button>
-                        </form>
-                        {{end}}
-
-                        <a href="/events/{{.Event.ID}}/invites" class="btn btn-primary">Manage Invites</a>
-                        <a href="/api/events/{{.Event.ID}}/rsvp-summary" class="btn btn-primary">View RSVPs</a>
-                    </div>
-                </section>
-
-                <section class="event-detail-metadata">
-                    <h2>Metadata</h2>
-                    <dl class="event-detail-list">
-                        <div class="event-detail-item">
-                            <dt>Event ID</dt>
-                            <dd>{{.Event.ID}}</dd>
-                        </div>
-                        <div class="event-detail-item">
-                            <dt>Version</dt>
-                            <dd>{{.Event.Version}}</dd>
-                        </div>
-                        <div class="event-detail-item">
-                            <dt>Created</dt>
-                            <dd>
-                                <time datetime="{{.Event.CreatedAt.Format "2006-01-02T15:04:05Z07:00"}}">
-                                    {{.Event.CreatedAt.Format "January 2, 2006 at 3:04 PM"}}
-                                </time>
-                            </dd>
-                        </div>
-                        <div class="event-detail-item">
-                            <dt>Last Updated</dt>
-                            <dd>
-                                <time datetime="{{.Event.UpdatedAt.Format "2006-01-02T15:04:05Z07:00"}}">
-                                    {{.Event.UpdatedAt.Format "January 2, 2006 at 3:04 PM"}}
-                                </time>
-                            </dd>
-                        </div>
-                    </dl>
-                </section>
-            </div>
-        </main>
+    {{if .Error}}
+    <div class="alert alert-error" role="alert">
+        <strong>Error:</strong> {{.Error}}
     </div>
-    <script src="/static/js/navigation_toggle.js"></script>
-    <script src="/static/js/csrf.js"></script>
-    <script src="/static/js/form_validation.js"></script>
-    <script src="/static/js/loading_states.js"></script>
-    <script src="/static/js/keyboard_navigation.js"></script>
-    <script src="/static/js/focus_management.js"></script>
-    <script src="/static/js/theme_controller.js"></script>
-</body>
-</html>
+    {{end}}
+
+    <div class="event-detail-container">
+        <section class="event-detail-section">
+            <h2>Event Details</h2>
+            <dl class="event-detail-list">
+                {{if .Event.Description}}
+                <div class="event-detail-item">
+                    <dt>Description</dt>
+                    <dd>{{.Event.Description}}</dd>
+                </div>
+                {{end}}
+
+                {{if .Event.Location}}
+                <div class="event-detail-item">
+                    <dt>Location</dt>
+                    <dd>📍 {{.Event.Location}}</dd>
+                </div>
+                {{end}}
+
+                <div class="event-detail-item">
+                    <dt>Start Time</dt>
+                    <dd>
+                        <time datetime="{{.Event.StartTime.Format "2006-01-02T15:04:05Z07:00"}}">
+                            {{.Event.StartTime.Format "Monday, January 2, 2006 at 3:04 PM"}}
+                        </time>
+                    </dd>
+                </div>
+
+                {{if .Event.EndTime}}
+                <div class="event-detail-item">
+                    <dt>End Time</dt>
+                    <dd>
+                        <time datetime="{{.Event.EndTime.Format "2006-01-02T15:04:05Z07:00"}}">
+                            {{.Event.EndTime.Format "Monday, January 2, 2006 at 3:04 PM"}}
+                        </time>
+                    </dd>
+                </div>
+                {{end}}
+
+                <div class="event-detail-item">
+                    <dt>Timezone</dt>
+                    <dd>{{.Event.Timezone}}</dd>
+                </div>
+
+                {{if .Event.RSVPDeadline}}
+                <div class="event-detail-item">
+                    <dt>RSVP Deadline</dt>
+                    <dd>
+                        <time datetime="{{.Event.RSVPDeadline.Format "2006-01-02T15:04:05Z07:00"}}">
+                            {{.Event.RSVPDeadline.Format "Monday, January 2, 2006 at 3:04 PM"}}
+                        </time>
+                    </dd>
+                </div>
+                {{end}}
+
+                <div class="event-detail-item">
+                    <dt>Maximum Plus Ones</dt>
+                    <dd>{{.Event.MaxPlusOnes}}</dd>
+                </div>
+            </dl>
+        </section>
+
+        <section class="event-detail-actions">
+            <h2>Actions</h2>
+            <div class="action-buttons">
+                <a href="/events/{{.Event.ID}}/edit" class="btn btn-primary">Edit Event</a>
+                
+                {{if eq .Event.Status "draft"}}
+                <form method="POST" action="/events/{{.Event.ID}}/publish">
+                    <input type="hidden" name="csrf_token" value="{{.CSRFToken}}">
+                    <button type="submit" class="btn btn-success">Publish Event</button>
+                </form>
+                <form method="POST" action="/events/{{.Event.ID}}/delete">
+                    <input type="hidden" name="csrf_token" value="{{.CSRFToken}}">
+                    <button type="submit" class="btn btn-danger" onclick="return confirm('Are you sure you want to delete this event?')">Delete Event</button>
+                </form>
+                {{end}}
+
+                {{if eq .Event.Status "published"}}
+                <form method="POST" action="/events/{{.Event.ID}}/cancel">
+                    <input type="hidden" name="csrf_token" value="{{.CSRFToken}}">
+                    <div class="form-group">
+                        <label for="cancel_reason">Cancellation Reason (required)</label>
+                        <textarea 
+                            id="cancel_reason" 
+                            name="reason" 
+                            class="form-textarea"
+                            required
+                            minlength="10"
+                            maxlength="500"
+                            placeholder="Please provide a reason for cancelling this event..."
+                        ></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-warning">Cancel Event</button>
+                </form>
+                {{end}}
+
+                <a href="/events/{{.Event.ID}}/invites" class="btn btn-primary">Manage Invites</a>
+                <a href="/api/events/{{.Event.ID}}/rsvp-summary" class="btn btn-primary">View RSVPs</a>
+            </div>
+        </section>
+
+        <section class="event-detail-metadata">
+            <h2>Metadata</h2>
+            <dl class="event-detail-list">
+                <div class="event-detail-item">
+                    <dt>Event ID</dt>
+                    <dd>{{.Event.ID}}</dd>
+                </div>
+                <div class="event-detail-item">
+                    <dt>Version</dt>
+                    <dd>{{.Event.Version}}</dd>
+                </div>
+                <div class="event-detail-item">
+                    <dt>Created</dt>
+                    <dd>
+                        <time datetime="{{.Event.CreatedAt.Format "2006-01-02T15:04:05Z07:00"}}">
+                            {{.Event.CreatedAt.Format "January 2, 2006 at 3:04 PM"}}
+                        </time>
+                    </dd>
+                </div>
+                <div class="event-detail-item">
+                    <dt>Last Updated</dt>
+                    <dd>
+                        <time datetime="{{.Event.UpdatedAt.Format "2006-01-02T15:04:05Z07:00"}}">
+                            {{.Event.UpdatedAt.Format "January 2, 2006 at 3:04 PM"}}
+                        </time>
+                    </dd>
+                </div>
+            </dl>
+        </section>
+    </div>
+{{end}}

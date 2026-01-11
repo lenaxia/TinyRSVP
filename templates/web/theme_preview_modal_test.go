@@ -184,7 +184,8 @@ func TestThemePreviewModalHTMLNoInlineScripts(t *testing.T) {
 	}
 }
 
-const themePreviewModalHTML = `<div id="theme-preview-modal"
+const themePreviewModalHTML = `{{define "theme-preview-modal"}}
+<div id="theme-preview-modal"
      class="modal"
      role="dialog"
      aria-labelledby="preview-modal-title"
@@ -223,4 +224,5 @@ const themePreviewModalHTML = `<div id="theme-preview-modal"
             </button>
         </div>
     </div>
-</div>`
+</div>
+{{end}}`

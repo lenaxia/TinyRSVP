@@ -376,6 +376,7 @@ func main() {
 	eventWebTemplates, err := template.New("events").Funcs(funcMap).ParseFiles(
 		"templates/web/partials/base.html",
 		"templates/web/partials/navigation.html",
+		"templates/web/partials/datetime_picker_panel.html",
 		"templates/web/partials/theme_picker.html",
 		"templates/web/event_list.html",
 		"templates/web/event_form.html",
