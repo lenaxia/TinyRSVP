@@ -96,12 +96,24 @@ class ThemePreviewModal {
         const form = document.querySelector('form[action*="/events"]');
         if (!form) return {};
         
-        return {
+        const formData = {
             title: form.querySelector('[name="title"]')?.value || 'Sample Event',
             location: form.querySelector('[name="location"]')?.value || 'Sample Location',
             start_time: form.querySelector('[name="start_time"]')?.value || new Date().toISOString(),
             description: form.querySelector('[name="description"]')?.value || 'Sample description'
         };
+
+        const customImageInput = form.querySelector('[name="custom_theme_image_url"]');
+        if (customImageInput && customImageInput.value) {
+            formData.custom_image_url = customImageInput.value;
+        }
+
+        const imagePreview = document.querySelector('.custom-image-preview img');
+        if (imagePreview && imagePreview.src && !formData.custom_image_url) {
+            formData.custom_image_url = imagePreview.src;
+        }
+
+        return formData;
     }
 
     togglePreviewTheme() {

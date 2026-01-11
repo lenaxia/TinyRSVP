@@ -465,12 +465,22 @@ func (h *TemplateHandlers) HandleThemePreview(w http.ResponseWriter, r *http.Req
 		themeMode = "light"
 	}
 
+	customImageURL := r.URL.Query().Get("custom_image_url")
+
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 
 	dataTheme := themeMode
 	eventTheme := template.Category
 	if eventTheme == "" {
 		eventTheme = "modern"
+	}
+
+	headerImageHTML := ""
+	if customImageURL != "" {
+		headerImageHTML = fmt.Sprintf(`
+	               <div class="event-header-image">
+	                   <img src="%s" alt="Event header image" />
+	               </div>`, customImageURL)
 	}
 
 	fmt.Fprintf(w, `<!DOCTYPE html>
@@ -485,11 +495,25 @@ func (h *TemplateHandlers) HandleThemePreview(w http.ResponseWriter, r *http.Req
 	   <link rel="stylesheet" href="/static/css/buttons.css">
 	   <link rel="stylesheet" href="/static/css/forms.css">
 	   <link rel="stylesheet" href="/static/css/rsvp_page.css">
+	   <style>
+	       .event-header-image {
+	           width: 100%%;
+	           max-height: 400px;
+	           overflow: hidden;
+	           margin-bottom: 2rem;
+	           border-radius: 8px;
+	       }
+	       .event-header-image img {
+	           width: 100%%;
+	           height: 100%%;
+	           object-fit: cover;
+	       }
+	   </style>
 </head>
 <body>
 	   <div class="rsvp-page">
 	       <div class="rsvp-container">
-	           <article class="event-details">
+	           <article class="event-details">%s
 	               <header>
 	                   <h1 class="event-title">%s</h1>
 	               </header>
@@ -540,5 +564,5 @@ func (h *TemplateHandlers) HandleThemePreview(w http.ResponseWriter, r *http.Req
 	       </div>
 	   </div>
 </body>
-</html>`, dataTheme, eventTheme, title, startTime.Format("Monday, January 2, 2006 at 3:04 PM MST"), location, description)
+</html>`, dataTheme, eventTheme, headerImageHTML, title, startTime.Format("Monday, January 2, 2006 at 3:04 PM MST"), location, description)
 }
