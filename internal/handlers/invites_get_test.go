@@ -292,3 +292,11 @@ func TestGetInvite_PermissionDenied(t *testing.T) {
 func (m *mockGetInviteEventRepo) CountEvents(ctx context.Context) (int, error) {
 	return 0, errors.New("not implemented")
 }
+func (m *mockGetInviteEventRepo) GetByPublicID(ctx context.Context, publicID string) (*models.Event, error) {
+	return nil, errors.New("not implemented")
+}
+
+func (m *mockGetInviteEventRepo) GetByFriendlyName(ctx context.Context, friendlyName string) (*models.Event, error) {
+	return nil, errors.New("not implemented")
+}
+

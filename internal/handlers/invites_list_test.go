@@ -759,3 +759,11 @@ func TestListInvitesHandler_LimitBoundaryValues(t *testing.T) {
 func (m *mockListEventRepository) CountEvents(ctx context.Context) (int, error) {
 	return 0, nil
 }
+func (m *mockListEventRepository) GetByPublicID(ctx context.Context, publicID string) (*models.Event, error) {
+	return nil, nil
+}
+
+func (m *mockListEventRepository) GetByFriendlyName(ctx context.Context, friendlyName string) (*models.Event, error) {
+	return nil, nil
+}
+

@@ -84,8 +84,8 @@ func TestStaticCSSFileServing(t *testing.T) {
 
 		body := w.Body.String()
 
-		if !strings.Contains(body, "@media (prefers-color-scheme: dark)") {
-			t.Error("Response body should contain dark mode media query")
+		if !strings.Contains(body, "[data-theme=\"dark\"]") {
+			t.Error("Response body should contain [data-theme=\"dark\"] selector for dark mode")
 		}
 	})
 

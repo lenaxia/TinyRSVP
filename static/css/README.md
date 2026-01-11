@@ -10,6 +10,7 @@ Provides a comprehensive design token system using CSS custom properties for con
 
 - [`variables.css`](variables.css) - Core CSS custom properties defining the design system
 - [`variables_test.go`](variables_test.go) - Test suite validating CSS variables
+- [`variables_theme_test.go`](variables_theme_test.go) - Test suite validating theme system structure
 - [`typography.css`](typography.css) - Typography system with heading hierarchy and text utilities
 - [`typography_test.go`](typography_test.go) - Test suite validating typography styles
 - [`typography_integration_test.go`](typography_integration_test.go) - Integration tests for typography system
@@ -27,6 +28,9 @@ Provides a comprehensive design token system using CSS custom properties for con
 - [`buttons.css`](buttons.css) - Button component styles with variants, sizes, and states
 - [`buttons_test.go`](buttons_test.go) - Test suite validating button components
 - [`buttons_integration_test.go`](buttons_integration_test.go) - Integration tests for button system
+- [`theme_toggle.css`](theme_toggle.css) - Theme toggle button component styles
+- [`theme_toggle_test.go`](theme_toggle_test.go) - Test suite validating theme toggle component
+- [`theme_integration_test.go`](theme_integration_test.go) - Integration tests for theme system
 
 ## CSS Variables Reference
 
@@ -199,16 +203,173 @@ Provides a comprehensive design token system using CSS custom properties for con
 }
 ```
 
-## Dark Mode Support
+## Theme System (Light/Dark Mode)
 
-The variables include automatic dark mode support via `prefers-color-scheme` media query. The following functional colors are overridden in dark mode:
+TinyRSVP implements a comprehensive theme switching system that allows users to toggle between light and dark modes with real-time updates and persistence across sessions.
 
-- `--color-background`
-- `--color-surface`
-- `--color-text-primary`
-- `--color-text-secondary`
-- `--color-text-disabled`
-- `--color-border`
+### Architecture
+
+The theme system uses a **data attribute approach** instead of media queries, providing:
+- Manual theme control via toggle button
+- Theme persistence via localStorage
+- System preference detection as fallback
+- Real-time theme switching without page reload
+- Foundation for future multi-theme support (Epic 11)
+
+### Theme Application
+
+Themes are applied via the `data-theme` attribute on the document root:
+
+```html
+<html data-theme="light">  <!-- Light mode (default) -->
+<html data-theme="dark">   <!-- Dark mode -->
+```
+
+The JavaScript [`theme_controller.js`](../js/theme_controller.js) manages theme state and automatically sets this attribute on page load.
+
+### CSS Structure
+
+**Light Theme (Default):**
+```css
+:root {
+    --color-background: #ffffff;
+    --color-surface: #f9fafb;
+    --color-text-primary: #111827;
+    /* ... all variables with light values ... */
+}
+```
+
+**Dark Theme:**
+```css
+[data-theme="dark"] {
+    --color-background: #0f172a;
+    --color-surface: #1e293b;
+    --color-text-primary: #f1f5f9;
+    /* ... all variables with dark values ... */
+}
+```
+
+### Complete Dark Mode Palette
+
+All CSS variables have dark mode equivalents:
+
+**Background & Surface:**
+- `--color-background: #0f172a` (darker slate)
+- `--color-surface: #1e293b` (elevated surfaces)
+- `--color-surface-disabled: #334155` (disabled state)
+
+**Text Colors:**
+- `--color-text-primary: #f1f5f9` (near white)
+- `--color-text-secondary: #cbd5e1` (lighter gray)
+- `--color-text-tertiary: #94a3b8` (muted)
+- `--color-text-muted: #94a3b8`
+- `--color-text-label: #cbd5e1`
+- `--color-text-disabled: #64748b`
+
+**Primary Colors (Inverted Scale):**
+- Dark mode inverts the primary color scale (50→900, 900→50)
+- Mid-tones (500-600) remain similar for consistency
+- Ensures proper contrast on dark backgrounds
+
+**State Colors (Adjusted):**
+- Success: Brighter greens (#22c55e) for visibility
+- Warning: Brighter ambers (#f59e0b) for visibility
+- Error: Brighter reds (#ef4444) for visibility
+- Info: Brighter cyans (#06b6d4) for visibility
+
+**Gray Scale (Inverted):**
+- Complete inversion: gray-50 → slate-800, gray-900 → white
+- Maintains semantic meaning across themes
+
+**Borders & Focus:**
+- `--color-border: #334155` (subtle on dark)
+- `--color-border-focus: #60a5fa` (brighter blue for visibility)
+
+**Shadows (Lighter):**
+- Increased opacity for visibility on dark backgrounds
+- Maintains depth perception in dark mode
+
+### Theme Toggle Component
+
+**Files:**
+- [`theme_toggle.css`](theme_toggle.css) - Theme toggle button styles
+- [`theme_controller.js`](../js/theme_controller.js) - Theme switching logic
+
+**HTML Structure:**
+```html
+<button id="theme-toggle" class="theme-toggle" aria-label="Toggle theme">
+    <span class="theme-icon">🌙</span>
+    <span class="sr-only">Toggle theme</span>
+</button>
+```
+
+**Features:**
+- 44px × 44px touch-friendly button
+- Sun (☀️) icon in dark mode, moon (🌙) icon in light mode
+- Accessible ARIA labels that update with theme
+- Keyboard accessible with visible focus indicator
+- Smooth transitions on theme change
+
+### Theme Persistence
+
+Theme preference is stored in localStorage:
+
+```javascript
+localStorage.setItem('tinyrsvp-theme', 'dark');  // or 'light'
+```
+
+**Priority Order:**
+1. Saved theme in localStorage (user preference)
+2. System preference (`prefers-color-scheme`)
+3. Light mode (default)
+
+### Adding Theme Support to Components
+
+When creating new components, use CSS variables for all colors:
+
+```css
+/* ✅ Good - Uses variables, automatically theme-aware */
+.my-component {
+    background: var(--color-surface);
+    color: var(--color-text-primary);
+    border: 1px solid var(--color-border);
+}
+
+/* ❌ Bad - Hardcoded colors, breaks in dark mode */
+.my-component {
+    background: #f9fafb;
+    color: #111827;
+    border: 1px solid #e5e7eb;
+}
+```
+
+### Testing Theme Support
+
+All components should be visually tested in both themes:
+
+```bash
+# Run theme integration tests
+cd static/css && go test -timeout 30s -run TestTheme -v
+```
+
+### Future: Event Themes (Epic 11)
+
+This system theme (light/dark) is the foundation for Epic 11's two-layer theme system:
+
+1. **System Theme (this story):** User preference affecting all pages
+2. **Event Theme (Epic 11):** Event manager selection affecting RSVP pages only
+
+Event themes will layer on top of the system theme, respecting both light and dark modes.
+
+### Migration from Media Query
+
+Previous implementation used `@media (prefers-color-scheme: dark)` which only supported automatic system preference detection. The new `[data-theme="dark"]` approach provides:
+
+- ✅ Manual user control via toggle button
+- ✅ Theme persistence across sessions
+- ✅ Programmatic theme switching
+- ✅ Foundation for multiple themes (future)
+- ✅ Better testing capabilities
 
 ## Accessibility
 
@@ -928,6 +1089,7 @@ Buttons use a mobile-first approach:
 To use the design system in your HTML templates:
 
 ```html
+<!-- Core Design System -->
 <link rel="stylesheet" href="/static/css/variables.css">
 <link rel="stylesheet" href="/static/css/typography.css">
 <link rel="stylesheet" href="/static/css/colors.css">
@@ -935,9 +1097,17 @@ To use the design system in your HTML templates:
 <link rel="stylesheet" href="/static/css/grid.css">
 <link rel="stylesheet" href="/static/css/forms.css">
 <link rel="stylesheet" href="/static/css/buttons.css">
+
+<!-- Theme System -->
+<link rel="stylesheet" href="/static/css/theme_toggle.css">
+
+<!-- Before closing </body> tag -->
+<script src="/static/js/theme_controller.js"></script>
 ```
 
-Load order matters: variables → typography → colors → spacing → grid → forms → buttons for proper variable resolution.
+Load order matters: variables → typography → colors → spacing → grid → forms → buttons → theme_toggle for proper variable resolution.
+
+The theme controller JavaScript must be loaded on every page to enable theme switching and persistence.
 
 ## Related Stories
 
@@ -950,3 +1120,4 @@ Load order matters: variables → typography → colors → spacing → grid →
 - **Story 06:** [07_STORY_06_forms.md](../../docs/00_BACKLOG/07_STORY_06_forms.md)
 - **Story 07:** [07_STORY_07_buttons.md](../../docs/00_BACKLOG/07_STORY_07_buttons.md)
 - **Blocks:** All other frontend stories (07-21)
+- **Story 10.12:** [10_STORY_12_theme_switching.md](../../docs/00_BACKLOG/10_STORY_12_theme_switching.md) - Light/Dark Theme Switching

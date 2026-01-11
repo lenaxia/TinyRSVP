@@ -360,8 +360,8 @@ func TestCSSVariablesHasDarkModeSupport(t *testing.T) {
 		t.Fatalf("Failed to read variables.css: %v", err)
 	}
 
-	if !strings.Contains(string(content), "@media (prefers-color-scheme: dark)") {
-		t.Error("variables.css should include dark mode support with prefers-color-scheme media query")
+	if !strings.Contains(string(content), "[data-theme=\"dark\"]") {
+		t.Error("variables.css should include dark mode support with [data-theme=\"dark\"] selector")
 	}
 }
 
@@ -372,7 +372,7 @@ func TestCSSVariablesDarkModeOverrides(t *testing.T) {
 	}
 
 	darkModeSection := string(content)
-	if !strings.Contains(darkModeSection, "@media (prefers-color-scheme: dark)") {
+	if !strings.Contains(darkModeSection, "[data-theme=\"dark\"]") {
 		t.Skip("Dark mode not implemented")
 	}
 
@@ -384,9 +384,9 @@ func TestCSSVariablesDarkModeOverrides(t *testing.T) {
 		"--color-border",
 	}
 
-	darkModeStart := strings.Index(darkModeSection, "@media (prefers-color-scheme: dark)")
+	darkModeStart := strings.Index(darkModeSection, "[data-theme=\"dark\"]")
 	if darkModeStart == -1 {
-		t.Fatal("Dark mode media query not found")
+		t.Fatal("Dark mode selector not found")
 	}
 
 	darkModeContent := darkModeSection[darkModeStart:]

@@ -364,3 +364,11 @@ func TestDeleteInvite_CannotDeleteRespondedInvite(t *testing.T) {
 func (m *mockDeleteInviteEventRepo) CountEvents(ctx context.Context) (int, error) {
 	return 0, errors.New("not implemented")
 }
+func (m *mockDeleteInviteEventRepo) GetByPublicID(ctx context.Context, publicID string) (*models.Event, error) {
+	return nil, errors.New("not implemented")
+}
+
+func (m *mockDeleteInviteEventRepo) GetByFriendlyName(ctx context.Context, friendlyName string) (*models.Event, error) {
+	return nil, errors.New("not implemented")
+}
+

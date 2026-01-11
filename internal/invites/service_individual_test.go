@@ -57,6 +57,14 @@ func (m *mockEventRepository) GetByCreatorID(ctx context.Context, creatorID int6
 	return nil, nil
 }
 
+func (m *mockEventRepository) GetByPublicID(ctx context.Context, publicID string) (*models.Event, error) {
+	return nil, nil
+}
+
+func (m *mockEventRepository) GetByFriendlyName(ctx context.Context, friendlyName string) (*models.Event, error) {
+	return nil, nil
+}
+
 func (m *mockEventRepository) CountEvents(ctx context.Context) (int, error) {
 	return 0, nil
 }

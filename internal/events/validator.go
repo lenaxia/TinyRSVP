@@ -58,6 +58,10 @@ func (v *validator) ValidateCreate(ctx context.Context, event *models.Event) err
 		return err
 	}
 
+	if err := v.validateFriendlyName(event.FriendlyName); err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -101,6 +105,10 @@ func (v *validator) ValidateUpdate(ctx context.Context, event *models.Event) err
 	}
 
 	if err := v.validateLocation(event.Location); err != nil {
+		return err
+	}
+
+	if err := v.validateFriendlyName(event.FriendlyName); err != nil {
 		return err
 	}
 
@@ -282,5 +290,61 @@ func (v *validator) validateLocation(location *string) error {
 			Message: "location cannot exceed 500 characters",
 		}
 	}
+	return nil
+}
+
+func (v *validator) validateFriendlyName(friendlyName *string) error {
+	if friendlyName == nil {
+		return nil
+	}
+
+	name := *friendlyName
+
+	if name != strings.TrimSpace(name) {
+		return &models.ValidationError{
+			Field:   "friendly_name",
+			Message: "friendly name cannot have leading or trailing whitespace",
+		}
+	}
+
+	if len(name) < 3 || len(name) > 100 {
+		return &models.ValidationError{
+			Field:   "friendly_name",
+			Message: "friendly name must be between 3 and 100 characters",
+		}
+	}
+
+	if name != strings.ToLower(name) {
+		return &models.ValidationError{
+			Field:   "friendly_name",
+			Message: "friendly name must be lowercase",
+		}
+	}
+
+	for i, c := range name {
+		if !((c >= 'a' && c <= 'z') || (c >= '0' && c <= '9') || c == '-') {
+			return &models.ValidationError{
+				Field:   "friendly_name",
+				Message: "friendly name can only contain lowercase letters, numbers, and hyphens",
+			}
+		}
+
+		if c == '-' {
+			if i == 0 || i == len(name)-1 {
+				return &models.ValidationError{
+					Field:   "friendly_name",
+					Message: "friendly name cannot start or end with a hyphen",
+				}
+			}
+
+			if i > 0 && name[i-1] == '-' {
+				return &models.ValidationError{
+					Field:   "friendly_name",
+					Message: "friendly name cannot contain consecutive hyphens",
+				}
+			}
+		}
+	}
+
 	return nil
 }

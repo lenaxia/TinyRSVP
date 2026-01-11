@@ -442,3 +442,11 @@ func TestSendInvite_NoEmail(t *testing.T) {
 func (m *mockSendInviteEventRepo) CountEvents(ctx context.Context) (int, error) {
 	return 0, errors.New("not implemented")
 }
+func (m *mockSendInviteEventRepo) GetByPublicID(ctx context.Context, publicID string) (*models.Event, error) {
+	return nil, errors.New("not implemented")
+}
+
+func (m *mockSendInviteEventRepo) GetByFriendlyName(ctx context.Context, friendlyName string) (*models.Event, error) {
+	return nil, errors.New("not implemented")
+}
+

@@ -1143,6 +1143,14 @@ func TestRSVPHandler_UpdateRSVP_EmptyToken(t *testing.T) {
 
 
 
+func (m *mockRSVPEventRepository) GetByPublicID(ctx context.Context, publicID string) (*models.Event, error) {
+	return nil, nil
+}
+
+func (m *mockRSVPEventRepository) GetByFriendlyName(ctx context.Context, friendlyName string) (*models.Event, error) {
+	return nil, nil
+}
+
 func (m *mockRSVPEventRepository) CountEvents(ctx context.Context) (int, error) {
 	return 0, nil
 }

@@ -435,8 +435,8 @@ func TestNavigationDarkModeSupport(t *testing.T) {
 		t.Error("navigation should use color variables for dark mode support")
 	}
 
-	if !strings.Contains(vars, "@media (prefers-color-scheme: dark)") {
-		t.Error("variables.css should define dark mode color overrides")
+	if !strings.Contains(vars, "[data-theme=\"dark\"]") {
+		t.Error("variables.css should define dark mode color overrides using [data-theme=\"dark\"]")
 	}
 
 	colorVarsInNav := []string{
@@ -445,7 +445,12 @@ func TestNavigationDarkModeSupport(t *testing.T) {
 		"--color-border",
 	}
 
-	darkModeSection := vars[strings.Index(vars, "@media (prefers-color-scheme: dark)"):]
+	darkModeIdx := strings.Index(vars, "[data-theme=\"dark\"]")
+	if darkModeIdx == -1 {
+		t.Fatal("Could not find [data-theme=\"dark\"] section in variables.css")
+	}
+	
+	darkModeSection := vars[darkModeIdx:]
 
 	for _, colorVar := range colorVarsInNav {
 		if strings.Contains(nav, "var("+colorVar+")") {

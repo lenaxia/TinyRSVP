@@ -1,10 +1,10 @@
 # User Story 10.12: Light/Dark Theme Switching
 
-**Epic:** 10 - Technical Debt & Improvements  
-**Status:** Planned  
-**Priority:** Medium  
-**Effort:** Medium-High  
-**Owner:** Unassigned
+**Epic:** 10 - Technical Debt & Improvements
+**Status:** Complete
+**Priority:** Medium
+**Effort:** Medium-High
+**Owner:** LLM (2026-01-11)
 
 ---
 
@@ -35,46 +35,46 @@ This story implements a complete theme switching system with:
 ## Acceptance Criteria
 
 ### Theme System Architecture
-- [ ] Refactor CSS from media query to data attribute approach (`[data-theme="dark"]`)
-- [ ] Define complete dark mode color palette for all CSS variables
-- [ ] Ensure all UI components respect theme variables
-- [ ] Add smooth transitions for theme changes
+- [x] Refactor CSS from media query to data attribute approach (`[data-theme="dark"]`)
+- [x] Define complete dark mode color palette for all CSS variables
+- [x] Ensure all UI components respect theme variables
+- [x] Add smooth transitions for theme changes
 
 ### Theme Toggle UI
-- [ ] Add theme toggle button to navigation (sun/moon icon)
-- [ ] Position toggle appropriately in mobile and desktop layouts
-- [ ] Include accessible labels and ARIA attributes
-- [ ] Provide visual feedback on hover/focus
+- [x] Add theme toggle button to navigation (sun/moon icon)
+- [x] Position toggle appropriately in mobile and desktop layouts
+- [x] Include accessible labels and ARIA attributes
+- [x] Provide visual feedback on hover/focus
 
 ### Theme Controller JavaScript
-- [ ] Create theme controller module
-- [ ] Implement theme toggle functionality
-- [ ] Persist theme preference to localStorage
-- [ ] Initialize theme on page load (localStorage > system preference > light)
-- [ ] Handle system preference changes (optional enhancement)
+- [x] Create theme controller module
+- [x] Implement theme toggle functionality
+- [x] Persist theme preference to localStorage
+- [x] Initialize theme on page load (localStorage > system preference > light)
+- [x] Handle system preference changes (optional enhancement)
 
 ### Color Palette Completeness
-- [ ] All primary color shades (50-900) have dark mode equivalents
-- [ ] Success/warning/error colors work in both themes
-- [ ] Gray scale properly adjusted for dark mode
-- [ ] Surface variants (disabled, hover states) defined
-- [ ] Border colors appropriate for both themes
-- [ ] Focus states visible in both themes
-- [ ] Shadows adjusted for dark mode (lighter shadows)
+- [x] All primary color shades (50-900) have dark mode equivalents
+- [x] Success/warning/error colors work in both themes
+- [x] Gray scale properly adjusted for dark mode
+- [x] Surface variants (disabled, hover states) defined
+- [x] Border colors appropriate for both themes
+- [x] Focus states visible in both themes
+- [x] Shadows adjusted for dark mode (lighter shadows)
 
 ### Testing
-- [ ] Unit tests for theme controller JavaScript
-- [ ] Integration tests for theme persistence
-- [ ] Visual regression tests for all pages in both themes
-- [ ] Verify all components render correctly in dark mode
-- [ ] Test theme toggle accessibility (keyboard, screen reader)
-- [ ] Test theme initialization edge cases
+- [x] Unit tests for theme controller JavaScript
+- [x] Integration tests for theme persistence
+- [x] Visual regression tests for all pages in both themes
+- [x] Verify all components render correctly in dark mode
+- [x] Test theme toggle accessibility (keyboard, screen reader)
+- [x] Test theme initialization edge cases
 
 ### Documentation
-- [ ] Update CSS README with theme system documentation
-- [ ] Document theme variable naming conventions
-- [ ] Add examples of adding new themed components
-- [ ] Document localStorage key and data structure
+- [x] Update CSS README with theme system documentation
+- [x] Document theme variable naming conventions
+- [x] Add examples of adding new themed components
+- [x] Document localStorage key and data structure
 
 ---
 
@@ -368,43 +368,43 @@ Add theme toggle button after brand or in menu:
 ## Implementation Tasks
 
 ### Phase 1: CSS Foundation
-- [ ] Refactor `variables.css` to use `[data-theme="dark"]` instead of media query
-- [ ] Define complete dark mode color palette
-- [ ] Add smooth transition for theme changes
-- [ ] Test all existing components still work
+- [x] Refactor `variables.css` to use `[data-theme="dark"]` instead of media query
+- [x] Define complete dark mode color palette
+- [x] Add smooth transition for theme changes
+- [x] Test all existing components still work
 
 ### Phase 2: Theme Toggle Component
-- [ ] Create `theme_toggle.css`
-- [ ] Add theme toggle button styles
-- [ ] Ensure accessibility (focus states, ARIA)
-- [ ] Test responsive behavior
+- [x] Create `theme_toggle.css`
+- [x] Add theme toggle button styles
+- [x] Ensure accessibility (focus states, ARIA)
+- [x] Test responsive behavior
 
 ### Phase 3: JavaScript Controller
-- [ ] Create `theme_controller.js`
-- [ ] Implement theme toggle logic
-- [ ] Add localStorage persistence
-- [ ] Handle initialization edge cases
-- [ ] Write unit tests
+- [x] Create `theme_controller.js`
+- [x] Implement theme toggle logic
+- [x] Add localStorage persistence
+- [x] Handle initialization edge cases
+- [x] Write unit tests
 
 ### Phase 4: Template Integration
-- [ ] Update `navigation.html` partial
-- [ ] Add theme toggle button to navigation
-- [ ] Include theme controller script in base template
-- [ ] Test on all pages
+- [x] Update `navigation.html` partial
+- [x] Add theme toggle button to navigation
+- [x] Include theme controller script in base template
+- [x] Test on all pages
 
 ### Phase 5: Testing & Validation
-- [ ] Visual test all pages in dark mode
-- [ ] Test all interactive components
-- [ ] Verify forms, modals, buttons in both themes
-- [ ] Test theme persistence across sessions
-- [ ] Accessibility audit (keyboard, screen reader)
-- [ ] Write integration tests
+- [x] Visual test all pages in dark mode
+- [x] Test all interactive components
+- [x] Verify forms, modals, buttons in both themes
+- [x] Test theme persistence across sessions
+- [x] Accessibility audit (keyboard, screen reader)
+- [x] Write integration tests
 
 ### Phase 6: Documentation
-- [ ] Update `static/css/README.md`
-- [ ] Document theme system architecture
-- [ ] Add examples for themed components
-- [ ] Document localStorage structure
+- [x] Update `static/css/README.md`
+- [x] Document theme system architecture
+- [x] Add examples for themed components
+- [x] Document localStorage structure
 
 ---
 
@@ -455,13 +455,13 @@ Add theme toggle button after brand or in menu:
 
 ## Success Metrics
 
-- [ ] All pages support both light and dark themes
-- [ ] Theme toggle works on all pages without reload
-- [ ] Theme preference persists across sessions
-- [ ] All tests pass (unit, integration, visual)
-- [ ] Accessibility audit passes
-- [ ] No visual regressions in light mode
-- [ ] User can override system preference
+- [x] All pages support both light and dark themes
+- [x] Theme toggle works on all pages without reload
+- [x] Theme preference persists across sessions
+- [x] All tests pass (unit, integration, visual)
+- [x] Accessibility audit passes
+- [x] No visual regressions in light mode
+- [x] User can override system preference
 
 ---
 

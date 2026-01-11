@@ -14,6 +14,8 @@ import (
 type mockEventRepository struct {
 	CreateFunc             func(ctx context.Context, event *models.Event) error
 	GetByIDFunc            func(ctx context.Context, id int64) (*models.Event, error)
+	GetByPublicIDFunc      func(ctx context.Context, publicID string) (*models.Event, error)
+	GetByFriendlyNameFunc  func(ctx context.Context, friendlyName string) (*models.Event, error)
 	UpdateFunc             func(ctx context.Context, event *models.Event) error
 	UpdateWithVersionFunc  func(ctx context.Context, event *models.Event, expectedVersion int) error
 	UpdateStatusFunc       func(ctx context.Context, id int64, status models.EventStatus) error
@@ -34,6 +36,20 @@ func (m *mockEventRepository) Create(ctx context.Context, event *models.Event) e
 func (m *mockEventRepository) GetByID(ctx context.Context, id int64) (*models.Event, error) {
 	if m.GetByIDFunc != nil {
 		return m.GetByIDFunc(ctx, id)
+	}
+	return nil, nil
+}
+
+func (m *mockEventRepository) GetByPublicID(ctx context.Context, publicID string) (*models.Event, error) {
+	if m.GetByPublicIDFunc != nil {
+		return m.GetByPublicIDFunc(ctx, publicID)
+	}
+	return nil, nil
+}
+
+func (m *mockEventRepository) GetByFriendlyName(ctx context.Context, friendlyName string) (*models.Event, error) {
+	if m.GetByFriendlyNameFunc != nil {
+		return m.GetByFriendlyNameFunc(ctx, friendlyName)
 	}
 	return nil, nil
 }

@@ -63,6 +63,14 @@ func (m *mockRSVPSummaryEventRepository) GetByCreatorID(ctx context.Context, cre
 	return nil, nil
 }
 
+func (m *mockRSVPSummaryEventRepository) GetByPublicID(ctx context.Context, publicID string) (*models.Event, error) {
+	return nil, nil
+}
+
+func (m *mockRSVPSummaryEventRepository) GetByFriendlyName(ctx context.Context, friendlyName string) (*models.Event, error) {
+	return nil, nil
+}
+
 type mockRSVPSummaryRSVPRepository struct {
 	stats *repositories.RSVPStats
 	rsvps []*models.RSVP

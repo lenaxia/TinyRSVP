@@ -314,6 +314,12 @@ func (h *EventWebHandlers) UpdateEventFromForm(w http.ResponseWriter, r *http.Re
 		event.RSVPDeadline = nil
 	}
 
+	if friendlyName := strings.TrimSpace(r.FormValue("friendly_name")); friendlyName != "" {
+		event.FriendlyName = &friendlyName
+	} else if r.Form.Has("friendly_name") {
+		event.FriendlyName = nil
+	}
+
 	if err := h.service.UpdateEvent(r.Context(), event); err != nil {
 		HandleError(w, r, err)
 		return
@@ -526,6 +532,10 @@ func parseEventFormData(form url.Values) (*models.Event, error) {
 		if err == nil {
 			event.RSVPDeadline = &deadline
 		}
+	}
+
+	if friendlyName := strings.TrimSpace(form.Get("friendly_name")); friendlyName != "" {
+		event.FriendlyName = &friendlyName
 	}
 
 	return event, nil

@@ -477,3 +477,11 @@ func TestRegenerateInviteTokenHandlers_RegenerateInviteToken(t *testing.T) {
 func (m *mockRegenerateEventRepository) CountEvents(ctx context.Context) (int, error) {
 	return 0, nil
 }
+func (m *mockRegenerateEventRepository) GetByPublicID(ctx context.Context, publicID string) (*models.Event, error) {
+	return nil, errors.New("not implemented")
+}
+
+func (m *mockRegenerateEventRepository) GetByFriendlyName(ctx context.Context, friendlyName string) (*models.Event, error) {
+	return nil, errors.New("not implemented")
+}
+

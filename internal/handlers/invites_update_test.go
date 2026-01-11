@@ -497,3 +497,11 @@ func TestUpdateInvite_CannotUpdateRevokedInvite(t *testing.T) {
 func (m *mockUpdateInviteEventRepo) CountEvents(ctx context.Context) (int, error) {
 	return 0, errors.New("not implemented")
 }
+func (m *mockUpdateInviteEventRepo) GetByPublicID(ctx context.Context, publicID string) (*models.Event, error) {
+	return nil, errors.New("not implemented")
+}
+
+func (m *mockUpdateInviteEventRepo) GetByFriendlyName(ctx context.Context, friendlyName string) (*models.Event, error) {
+	return nil, errors.New("not implemented")
+}
+
