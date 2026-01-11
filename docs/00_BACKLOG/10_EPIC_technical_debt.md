@@ -37,6 +37,7 @@ Epic 10 is reserved for technical debt, improvements, and issues that don't fit 
 - [10_STORY_09_event_filtering_sorting.md](10_STORY_09_event_filtering_sorting.md) - Event list filtering and sorting
 - [10_STORY_10_admin_settings_page.md](10_STORY_10_admin_settings_page.md) - Admin settings page
 - [10_STORY_11_admin_metrics_dashboard.md](10_STORY_11_admin_metrics_dashboard.md) - Admin metrics dashboard
+- [10_STORY_12_theme_switching.md](10_STORY_12_theme_switching.md) - Light/dark theme switching with real-time toggle
 
 ### Analysis Documents
 - [10_ANALYSIS_image_templates_wysiwyg.md](10_ANALYSIS_image_templates_wysiwyg.md) - Image templates & WYSIWYG editor analysis
