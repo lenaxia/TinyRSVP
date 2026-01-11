@@ -54,7 +54,8 @@ func (m *mockImageService) GetImageURL(ctx context.Context, path string) (string
 }
 
 type mockImageEventService struct {
-	GetEventFunc func(ctx context.Context, id int64) (*models.Event, error)
+	GetEventFunc    func(ctx context.Context, id int64) (*models.Event, error)
+	UpdateEventFunc func(ctx context.Context, event *models.Event) error
 }
 
 func (m *mockImageEventService) GetEvent(ctx context.Context, id int64) (*models.Event, error) {
@@ -65,6 +66,13 @@ func (m *mockImageEventService) GetEvent(ctx context.Context, id int64) (*models
 		ID:        id,
 		CreatedBy: 1,
 	}, nil
+}
+
+func (m *mockImageEventService) UpdateEvent(ctx context.Context, event *models.Event) error {
+	if m.UpdateEventFunc != nil {
+		return m.UpdateEventFunc(ctx, event)
+	}
+	return nil
 }
 
 type mockImageAuthz struct {

@@ -13,6 +13,7 @@ import (
 
 type EventServiceForImages interface {
 	GetEvent(ctx context.Context, id int64) (*models.Event, error)
+	UpdateEvent(ctx context.Context, event *models.Event) error
 }
 
 type ImageAuthz interface {
@@ -86,9 +87,47 @@ func (h *ImageHandlers) UploadImage(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if event.CustomThemeImageURL != nil && *event.CustomThemeImageURL != "" {
+		oldPath := extractStoragePathFromURL(*event.CustomThemeImageURL)
+		if oldPath != "" {
+			if err := h.imageService.DeleteImage(r.Context(), oldPath); err != nil {
+			}
+		}
+	}
+
+	event.CustomThemeImageURL = &metadata.PublicURL
+	if err := h.eventService.UpdateEvent(r.Context(), event); err != nil {
+		HandleError(w, r, err)
+		return
+	}
+
 	respondJSON(w, http.StatusCreated, ImageUploadResponse{
 		Image: metadata,
 	})
+}
+
+func extractStoragePathFromURL(url string) string {
+	if url == "" {
+		return ""
+	}
+	
+	parts := []string{"/assets/", "/static/"}
+	for _, part := range parts {
+		if idx := findSubstring(url, part); idx >= 0 {
+			return url[idx+len(part):]
+		}
+	}
+	
+	return ""
+}
+
+func findSubstring(s, substr string) int {
+	for i := 0; i <= len(s)-len(substr); i++ {
+		if s[i:i+len(substr)] == substr {
+			return i
+		}
+	}
+	return -1
 }
 
 func (h *ImageHandlers) DeleteImage(w http.ResponseWriter, r *http.Request) {
