@@ -210,8 +210,13 @@ func TestForwardAuthFlow(t *testing.T) {
 		rec := httptest.NewRecorder()
 		srv.mux.ServeHTTP(rec, req)
 
-		if rec.Code != http.StatusUnauthorized {
-			t.Errorf("Expected status 401, got %d", rec.Code)
+		if rec.Code != http.StatusSeeOther {
+			t.Errorf("Expected status 303 (redirect to login), got %d", rec.Code)
+		}
+
+		location := rec.Header().Get("Location")
+		if location != "/login?return=%2Fapi%2Fusers" {
+			t.Errorf("Expected redirect to /login with return URL, got %s", location)
 		}
 	})
 
@@ -224,8 +229,13 @@ func TestForwardAuthFlow(t *testing.T) {
 		rec := httptest.NewRecorder()
 		srv.mux.ServeHTTP(rec, req)
 
-		if rec.Code != http.StatusUnauthorized {
-			t.Errorf("Expected status 401, got %d", rec.Code)
+		if rec.Code != http.StatusSeeOther {
+			t.Errorf("Expected status 303 (redirect to login), got %d", rec.Code)
+		}
+
+		location := rec.Header().Get("Location")
+		if location != "/login?return=%2Fapi%2Fusers" {
+			t.Errorf("Expected redirect to /login with return URL, got %s", location)
 		}
 	})
 

@@ -226,8 +226,8 @@ func TestMain_RouterIntegration(t *testing.T) {
 			name:           "events list requires auth",
 			method:         http.MethodGet,
 			path:           "/api/events",
-			wantStatusCode: http.StatusUnauthorized,
-			description:    "Events list should require authentication",
+			wantStatusCode: http.StatusSeeOther,
+			description:    "Events list redirects to login when unauthenticated",
 		},
 		{
 			name:           "rsvp page public",
@@ -458,24 +458,24 @@ func TestMain_RouterIntegration_AuthenticatedRoutes(t *testing.T) {
 			method:         http.MethodGet,
 			path:           "/api/events",
 			addAuth:        false,
-			wantStatusCode: http.StatusUnauthorized,
-			description:    "Unauthenticated request should be rejected - middleware is working",
+			wantStatusCode: http.StatusSeeOther,
+			description:    "Unauthenticated request redirects to login - middleware is working",
 		},
 		{
 			name:           "unauthenticated users list",
 			method:         http.MethodGet,
 			path:           "/api/users",
 			addAuth:        false,
-			wantStatusCode: http.StatusUnauthorized,
-			description:    "Unauthenticated request should be rejected - middleware is working",
+			wantStatusCode: http.StatusSeeOther,
+			description:    "Unauthenticated request redirects to login - middleware is working",
 		},
 		{
 			name:           "unauthenticated templates list",
 			method:         http.MethodGet,
 			path:           "/api/templates",
 			addAuth:        false,
-			wantStatusCode: http.StatusUnauthorized,
-			description:    "Unauthenticated request should be rejected - middleware is working",
+			wantStatusCode: http.StatusSeeOther,
+			description:    "Unauthenticated request redirects to login - middleware is working",
 		},
 	}
 
@@ -565,8 +565,13 @@ func TestMain_RouterIntegration_MiddlewareChain(t *testing.T) {
 
 	router.ServeHTTP(w, req)
 
-	if w.Code != http.StatusUnauthorized {
-		t.Errorf("Expected unauthenticated request to be rejected, got status %d. Body: %s", w.Code, w.Body.String())
+	if w.Code != http.StatusSeeOther {
+		t.Errorf("Expected unauthenticated request to redirect to login, got status %d. Body: %s", w.Code, w.Body.String())
+	}
+
+	location := w.Header().Get("Location")
+	if location != "/login?return=%2Fapi%2Fevents" {
+		t.Errorf("Expected redirect to /login?return=%%2Fapi%%2Fevents, got %s", location)
 	}
 
 	_ = session
