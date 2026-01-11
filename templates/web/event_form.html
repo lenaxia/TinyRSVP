@@ -185,6 +185,24 @@
                     </div>
 
                     <div class="form-group">
+                        <label for="friendly_name" class="form-label">Friendly URL Name</label>
+                        <input 
+                            type="text" 
+                            id="friendly_name" 
+                            name="friendly_name" 
+                            class="form-input{{if .Errors.FriendlyName}} error{{end}}"
+                            value="{{if .Event.FriendlyName}}{{.Event.FriendlyName}}{{end}}"
+                            aria-describedby="friendly_name-help{{if .Errors.FriendlyName}} friendly_name-error{{end}}"
+                            pattern="[a-z0-9-]+"
+                            maxlength="100"
+                        >
+                        <span class="form-help-text" id="friendly_name-help">Optional: Create a memorable URL like "summer-party-2026" (lowercase letters, numbers, and hyphens only)</span>
+                        {{if .Errors.FriendlyName}}
+                        <span class="form-error" id="friendly_name-error">{{.Errors.FriendlyName}}</span>
+                        {{end}}
+                    </div>
+
+                    <div class="form-group">
                         <label for="description" class="form-label">Description</label>
                         <textarea 
                             id="description" 

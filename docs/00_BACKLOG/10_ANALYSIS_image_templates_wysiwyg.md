@@ -15,6 +15,8 @@ After reviewing the codebase, I can confirm:
 3. **WYSIWYG Editor**: Feasible but requires significant work (2-3 weeks)
 4. **Recommendation**: Implement image template picker first, defer WYSIWYG to v1+
 
+**NOTE**: BEFORE ANY WORK ON THIS BEGINS WE MUST FLESH OUT THE USER STORY AS THIS IS JUST AN ANALYSIS
+
 ---
 
 ## Current State Analysis

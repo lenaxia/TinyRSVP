@@ -20,14 +20,26 @@ Epic 10 is reserved for technical debt, improvements, and issues that don't fit 
 
 ## Stories
 
-### Completed
-- _(none yet)_
+### Completed ✅
+- [10_STORY_01_consistent_navigation.md](10_STORY_01_consistent_navigation.md) - Consistent navigation across all pages
+- [10_STORY_02_system_user_exclusion.md](10_STORY_02_system_user_exclusion.md) - Exclude system user from user management
+- [10_STORY_03_invite_management_ui.md](10_STORY_03_invite_management_ui.md) - Invite management UI with modals
+- [10_STORY_04_reduce_ui_padding.md](10_STORY_04_reduce_ui_padding.md) - Reduce excessive padding and spacing
+- [10_STORY_05_reusable_datetime_picker.md](10_STORY_05_reusable_datetime_picker.md) - Reusable datetime picker component
 
 ### In Progress
-- _(none yet)_
+- _(none)_
 
 ### Planned
-- [10_STORY_01_oidc_return_url.md](10_STORY_01_oidc_return_url.md) - Return URL preservation in OIDC flow
+- [10_STORY_06_oidc_return_url.md](10_STORY_06_oidc_return_url.md) - Return URL preservation in OIDC flow
+- [10_STORY_07_event_list_stats.md](10_STORY_07_event_list_stats.md) - Event list stats display (invite/RSVP counts)
+- [10_STORY_08_dashboard_clickable_events.md](10_STORY_08_dashboard_clickable_events.md) - Dashboard recent events clickable links
+- [10_STORY_09_event_filtering_sorting.md](10_STORY_09_event_filtering_sorting.md) - Event list filtering and sorting
+- [10_STORY_10_admin_settings_page.md](10_STORY_10_admin_settings_page.md) - Admin settings page
+- [10_STORY_11_admin_metrics_dashboard.md](10_STORY_11_admin_metrics_dashboard.md) - Admin metrics dashboard
+
+### Analysis Documents
+- [10_ANALYSIS_image_templates_wysiwyg.md](10_ANALYSIS_image_templates_wysiwyg.md) - Image templates & WYSIWYG editor analysis
 
 ---
 
