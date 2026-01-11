@@ -429,6 +429,9 @@ func main() {
 		"templates/web/partials/navigation.html",
 		"templates/web/partials/datetime_picker_panel.html",
 		"templates/web/partials/theme_picker.html",
+		"templates/web/partials/theme_preview_modal.html",
+		"templates/web/partials/image_upload.html",
+		"templates/web/partials/color_picker.html",
 		"templates/web/event_form.html",
 	)
 	if err != nil {

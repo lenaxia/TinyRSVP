@@ -3,6 +3,7 @@ package handlers
 import (
 	"encoding/json"
 	"fmt"
+	"html/template"
 	"net/http"
 	"strconv"
 
@@ -14,12 +15,17 @@ import (
 
 type TemplateEditorHandlers struct {
 	editorService templates.EditorService
+	templates     *template.Template
 }
 
 func NewTemplateEditorHandlers(editorService templates.EditorService) *TemplateEditorHandlers {
 	return &TemplateEditorHandlers{
 		editorService: editorService,
 	}
+}
+
+func (h *TemplateEditorHandlers) SetTemplates(tmpl *template.Template) {
+	h.templates = tmpl
 }
 
 func (h *TemplateEditorHandlers) RegisterRoutes(r chi.Router) {
@@ -29,6 +35,8 @@ func (h *TemplateEditorHandlers) RegisterRoutes(r chi.Router) {
 		r.Post("/preview", h.PreviewComponents)
 		r.Get("/validate", h.ValidateComponents)
 	})
+	
+	r.Get("/templates/{id}/edit", h.GetEditorPage)
 }
 
 type UpdateComponentsRequest struct {
@@ -218,6 +226,60 @@ func (h *TemplateEditorHandlers) validateComponentConfiguration(config *models.C
 	}
 
 	return errors
+}
+
+func (h *TemplateEditorHandlers) GetEditorPage(w http.ResponseWriter, r *http.Request) {
+	user, ok := auth.UserFromContext(r.Context())
+	if !ok || user.ID == 0 {
+		HandleError(w, r, NewUnauthorizedError("authentication required"))
+		return
+	}
+
+	id, err := parseTemplateID(chi.URLParam(r, "id"))
+	if err != nil {
+		HandleError(w, r, NewBadRequestError("invalid template ID"))
+		return
+	}
+
+	editable, err := h.editorService.GetEditableTemplate(r.Context(), id)
+	if err != nil {
+		HandleError(w, r, err)
+		return
+	}
+
+	data := struct {
+		Template *models.Template
+		User     *models.User
+	}{
+		Template: editable.Template,
+		User:     user,
+	}
+
+	h.renderPage(w, http.StatusOK, data)
+}
+
+func (h *TemplateEditorHandlers) renderPage(w http.ResponseWriter, status int, data interface{}) {
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+	w.WriteHeader(status)
+
+	if h.templates != nil {
+		if err := h.templates.ExecuteTemplate(w, "template_editor.html", data); err != nil {
+			http.Error(w, "Failed to render page", http.StatusInternalServerError)
+		}
+		return
+	}
+
+	fmt.Fprintf(w, `<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Template Editor - TinyRSVP</title>
+</head>
+<body>
+    <h1>Template Editor</h1>
+    <p>Template engine not initialized</p>
+</body>
+</html>`)
 }
 
 func parseTemplateIDFromPath(idStr string) (int64, error) {

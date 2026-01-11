@@ -1,0 +1,100 @@
+{{template "base" .}}
+
+{{define "title"}}Edit Template - {{.Template.Name}} - TinyRSVP{{end}}
+
+{{define "main-class"}}{{end}}
+
+{{define "css-extra"}}
+    <link rel="stylesheet" href="/static/css/template_editor.css">
+{{end}}
+
+{{define "content"}}
+<div class="template-editor" data-template-id="{{.Template.ID}}">
+    <div class="editor-toolbar" id="editor-toolbar">
+        <div class="editor-toolbar-section">
+            <h1 class="editor-toolbar-title" style="margin: 0; font-size: 1.25rem;">
+                {{.Template.Name}}
+            </h1>
+        </div>
+        
+        <div class="editor-toolbar-section">
+            <button type="button" id="btn-undo" class="btn-icon" aria-label="Undo" title="Undo (Ctrl+Z)">
+                ↶
+            </button>
+            <button type="button" id="btn-redo" class="btn-icon" aria-label="Redo" title="Redo (Ctrl+Shift+Z)">
+                ↷
+            </button>
+            
+            <div class="editor-toolbar-divider"></div>
+            
+            <button type="button" id="btn-zoom-out" class="btn-icon" aria-label="Zoom out" title="Zoom out">
+                −
+            </button>
+            <button type="button" id="btn-zoom-reset" class="btn-icon" aria-label="Reset zoom" title="Reset zoom (100%)">
+                100%
+            </button>
+            <button type="button" id="btn-zoom-in" class="btn-icon" aria-label="Zoom in" title="Zoom in">
+                +
+            </button>
+            
+            <div class="editor-toolbar-divider"></div>
+            
+            <button type="button" id="btn-mode-desktop" class="btn-icon active" aria-label="Desktop view" title="Desktop view">
+                🖥️
+            </button>
+            <button type="button" id="btn-mode-tablet" class="btn-icon" aria-label="Tablet view" title="Tablet view">
+                📱
+            </button>
+            <button type="button" id="btn-mode-mobile" class="btn-icon" aria-label="Mobile view" title="Mobile view">
+                📱
+            </button>
+            
+            <div class="editor-toolbar-divider"></div>
+            
+            <button type="button" id="btn-toggle-grid" class="btn-icon" aria-label="Toggle grid" title="Toggle grid">
+                #
+            </button>
+            <button type="button" id="btn-toggle-snap" class="btn-icon active" aria-label="Toggle snap to grid" title="Toggle snap to grid">
+                🧲
+            </button>
+        </div>
+        
+        <div class="editor-toolbar-section">
+            <button type="button" id="btn-preview" class="btn-icon" aria-label="Preview" title="Preview template">
+                👁️
+            </button>
+            <button type="button" id="btn-save" class="btn btn-primary" aria-label="Save changes" title="Save changes (Ctrl+S)">
+                Save
+            </button>
+        </div>
+    </div>
+    
+    <div id="component-palette" role="region" aria-label="Component palette">
+    </div>
+    
+    <div id="template-canvas" role="region" aria-label="Template canvas">
+    </div>
+    
+    <div id="properties-panel" role="region" aria-label="Component properties">
+    </div>
+    
+    <div class="editor-status-bar">
+        <div id="editor-status" class="editor-status editor-status-info">
+            Ready
+        </div>
+        <div class="editor-status-info">
+            Template ID: {{.Template.ID}}
+        </div>
+    </div>
+</div>
+{{end}}
+
+{{define "js-extra"}}
+    <script src="/static/js/visual_canvas.js"></script>
+    <script src="/static/js/component_palette.js"></script>
+    <script src="/static/js/properties_panel.js"></script>
+    <script src="/static/js/template_editor.js"></script>
+    <script>
+        document.body.dataset.templateId = '{{.Template.ID}}';
+    </script>
+{{end}}

@@ -151,8 +151,9 @@ func (h *EventWebHandlers) NewEventForm(w http.ResponseWriter, r *http.Request) 
 
 	themes, defaultTheme, err := h.loadThemes(r.Context())
 	if err != nil {
-		HandleError(w, r, fmt.Errorf("failed to load themes: %w", err))
-		return
+		// Log the error but continue - themes are optional
+		// The form will still work without themes
+		themes = []*models.Template{}
 	}
 
 	selectedThemeID := int64(0)
@@ -192,8 +193,9 @@ func (h *EventWebHandlers) EditEventForm(w http.ResponseWriter, r *http.Request)
 
 	themes, defaultTheme, err := h.loadThemes(r.Context())
 	if err != nil {
-		HandleError(w, r, fmt.Errorf("failed to load themes: %w", err))
-		return
+		// Log error but continue - themes are optional for form rendering
+		themes = []*models.Template{}
+		defaultTheme = nil
 	}
 
 	selectedThemeID := int64(0)
