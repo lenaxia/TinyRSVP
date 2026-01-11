@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en"{{if .ThemeCategory}} data-event-theme="{{.ThemeCategory}}"{{end}}>
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -17,6 +17,16 @@
     <link rel="stylesheet" href="/static/css/keyboard_navigation.css">
     <link rel="stylesheet" href="/static/css/focus_management.css">
     <link rel="stylesheet" href="/static/css/theme_toggle.css">
+    {{if .ThemeCategory}}
+    <link rel="stylesheet" href="/static/css/themes/{{.ThemeCategory}}.css">
+    {{end}}
+    {{if .ThemeColor}}
+    <style>
+        [data-event-theme] {
+            --theme-primary: {{.ThemeColor}} !important;
+        }
+    </style>
+    {{end}}
 </head>
 <body>
     <a href="#main-content" class="skip-link">Skip to main content</a>
@@ -44,6 +54,11 @@
                 {{end}}
 
                 <article class="event-details" role="main" aria-label="Main content" id="main-content">
+                    {{if .ThemeImageURL}}
+                    <div class="theme-header-image">
+                        <img src="{{.ThemeImageURL}}" alt="Event theme" loading="lazy">
+                    </div>
+                    {{end}}
                     <header>
                         <h1 class="event-title">{{.Event.Title}}</h1>
                     </header>
