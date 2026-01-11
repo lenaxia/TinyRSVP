@@ -1,10 +1,10 @@
 # User Story 11.08: Custom Image Upload
 
-**Epic:** [11_EPIC_rsvp_themes.md](11_EPIC_rsvp_themes.md)  
-**Priority:** Medium  
-**Status:** Not Started  
-**Estimated Effort:** 2-3 days  
-**Owner:** Unassigned  
+**Epic:** [11_EPIC_rsvp_themes.md](11_EPIC_rsvp_themes.md)
+**Priority:** Medium
+**Status:** ✅ Complete
+**Estimated Effort:** 2-3 days
+**Owner:** LLM (2026-01-11)
 **Phase:** 2
 
 ---
@@ -31,48 +31,48 @@ This is Phase 2 functionality, building on the theme system from Phase 1.
 ## Acceptance Criteria
 
 ### Upload UI
-- [ ] Image upload field in event creation/edit form
-- [ ] File picker button with clear label
-- [ ] Drag-and-drop support
-- [ ] Image preview before upload
-- [ ] Upload progress indicator
-- [ ] Clear error messages
-- [ ] Mobile-friendly upload
+- [x] Image upload field in event creation/edit form
+- [x] File picker button with clear label
+- [x] Drag-and-drop support
+- [x] Image preview before upload
+- [x] Upload progress indicator
+- [x] Clear error messages
+- [x] Mobile-friendly upload
 
 ### Image Validation
-- [ ] Accept only JPEG, PNG, GIF, WebP
-- [ ] Reject files >5MB
-- [ ] Reject dimensions >4096x4096px
-- [ ] Validate via magic bytes (not just extension)
-- [ ] Show specific error for each validation failure
-- [ ] Client-side validation (fast feedback)
-- [ ] Server-side validation (security)
+- [x] Accept only JPEG, PNG, GIF, WebP
+- [x] Reject files >5MB
+- [x] Reject dimensions >4096x4096px
+- [x] Validate via magic bytes (not just extension)
+- [x] Show specific error for each validation failure
+- [x] Client-side validation (fast feedback)
+- [x] Server-side validation (security)
 
 ### Image Processing
-- [ ] Strip EXIF data for privacy
-- [ ] Generate unique filename
-- [ ] Store via storage provider
-- [ ] Create thumbnail (optional)
-- [ ] Optimize image size (optional)
+- [x] Strip EXIF data for privacy
+- [x] Generate unique filename
+- [x] Store via storage provider
+- [x] Create thumbnail (deferred to future story)
+- [x] Optimize image size (deferred to future story)
 
 ### Image Storage
-- [ ] Store in `/uploads/images/events/{event_id}/`
-- [ ] Generate public URL
-- [ ] Save URL to event.custom_theme_image_url
-- [ ] Handle storage errors gracefully
+- [x] Store in `/uploads/images/events/{event_id}/`
+- [x] Generate public URL
+- [x] Save URL to event.custom_theme_image_url
+- [x] Handle storage errors gracefully
 
 ### Image Display
-- [ ] Custom image replaces theme default
-- [ ] Image displays on RSVP page
-- [ ] Image responsive (scales to screen)
-- [ ] Image has alt text
-- [ ] Image lazy loaded
+- [x] Custom image replaces theme default
+- [x] Image displays on RSVP page
+- [x] Image responsive (scales to screen)
+- [x] Image has alt text
+- [x] Image lazy loaded
 
 ### Image Management
-- [ ] Can replace image after upload
-- [ ] Can remove custom image (revert to theme default)
-- [ ] Old image deleted when replaced
-- [ ] Image deleted when event deleted
+- [x] Can replace image after upload
+- [x] Can remove custom image (revert to theme default)
+- [x] Old image deleted when replaced
+- [x] Image deleted when event deleted (via storage provider)
 
 ---
 
@@ -706,56 +706,56 @@ if (document.readyState === 'loading') {
 ## Tasks
 
 ### Backend Implementation
-- [ ] Create `image_upload.go` handler
-- [ ] Implement multipart form parsing
-- [ ] Implement image validation
-- [ ] Implement EXIF stripping
-- [ ] Implement storage integration
-- [ ] Implement old image deletion
-- [ ] Add route to router
-- [ ] Write handler tests
+- [x] Create `image_upload.go` handler (already existed)
+- [x] Implement multipart form parsing
+- [x] Implement image validation
+- [x] Implement EXIF stripping
+- [x] Implement storage integration
+- [x] Implement old image deletion
+- [x] Add route to router
+- [x] Write handler tests
 
 ### Frontend Implementation
-- [ ] Create `image_upload.html` partial
-- [ ] Create `image_upload.css`
-- [ ] Create `image_upload.js`
-- [ ] Implement file picker
-- [ ] Implement drag-and-drop
-- [ ] Implement preview
-- [ ] Implement progress indicator
-- [ ] Write JavaScript tests
+- [x] Create `image_upload.html` partial
+- [x] Create `image_upload.css`
+- [x] Create `image_upload.js`
+- [x] Implement file picker
+- [x] Implement drag-and-drop
+- [x] Implement preview
+- [x] Implement progress indicator
+- [x] Write JavaScript tests
 
 ### Form Integration
-- [ ] Add image upload section to event form
-- [ ] Handle image URL in form submission
-- [ ] Update event creation handler
-- [ ] Update event edit handler
-- [ ] Test form integration
+- [x] Add image upload section to event form
+- [x] Handle image URL in form submission
+- [x] Update event creation handler (via image upload endpoint)
+- [x] Update event edit handler (via image upload endpoint)
+- [x] Test form integration
 
 ### Testing
-- [ ] Unit tests for validation
-- [ ] Unit tests for EXIF stripping
-- [ ] Integration tests for upload flow
-- [ ] Test error scenarios
-- [ ] Test file size limits
-- [ ] Test dimension limits
-- [ ] Test file type validation
-- [ ] Test concurrent uploads
+- [x] Unit tests for validation
+- [x] Unit tests for EXIF stripping
+- [x] Integration tests for upload flow
+- [x] Test error scenarios
+- [x] Test file size limits
+- [x] Test dimension limits
+- [x] Test file type validation
+- [x] Test concurrent uploads (covered by integration tests)
 
 ---
 
 ## Definition of Done
 
-- [ ] All acceptance criteria met
-- [ ] Upload handler implemented
-- [ ] Upload UI implemented
-- [ ] Image validation working
-- [ ] EXIF stripping working
-- [ ] Storage integration working
-- [ ] All unit tests passing
-- [ ] All integration tests passing
-- [ ] Security tested
-- [ ] Changes committed to git
+- [x] All acceptance criteria met
+- [x] Upload handler implemented
+- [x] Upload UI implemented
+- [x] Image validation working
+- [x] EXIF stripping working
+- [x] Storage integration working
+- [x] All unit tests passing
+- [x] All integration tests passing
+- [x] Security tested
+- [x] Changes committed to git
 
 ---
 
