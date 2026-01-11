@@ -74,6 +74,10 @@ func (m *mockTemplateRepository) ListThemes(ctx context.Context, templateType mo
 	return nil, nil
 }
 
+func (m *mockTemplateRepository) GetByNameAndType(ctx context.Context, name string, templateType models.TemplateType) (*models.Template, error) {
+	return nil, nil
+}
+
 func TestRSVPHandler_GetRSVPPage_WithEventTheme(t *testing.T) {
 	startTime := time.Now().Add(24 * time.Hour)
 	templateID := int64(5)
