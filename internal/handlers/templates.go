@@ -466,6 +466,7 @@ func (h *TemplateHandlers) HandleThemePreview(w http.ResponseWriter, r *http.Req
 	}
 
 	customImageURL := r.URL.Query().Get("custom_image_url")
+	customColor := r.URL.Query().Get("custom_color")
 
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 
@@ -481,6 +482,18 @@ func (h *TemplateHandlers) HandleThemePreview(w http.ResponseWriter, r *http.Req
 	               <div class="event-header-image">
 	                   <img src="%s" alt="Event header image" />
 	               </div>`, customImageURL)
+	}
+
+	customColorCSS := ""
+	if customColor != "" && isValidHexColor(customColor) {
+		customColorCSS = fmt.Sprintf(`
+	   <style>
+	       :root {
+	           --primary-color: %s;
+	           --primary-color-hover: %s;
+	           --primary-color-alpha: %s33;
+	       }
+	   </style>`, customColor, customColor, customColor)
 	}
 
 	fmt.Fprintf(w, `<!DOCTYPE html>
@@ -508,7 +521,7 @@ func (h *TemplateHandlers) HandleThemePreview(w http.ResponseWriter, r *http.Req
 	           height: 100%%;
 	           object-fit: cover;
 	       }
-	   </style>
+	   </style>%s
 </head>
 <body>
 	   <div class="rsvp-page">
@@ -564,5 +577,21 @@ func (h *TemplateHandlers) HandleThemePreview(w http.ResponseWriter, r *http.Req
 	       </div>
 	   </div>
 </body>
-</html>`, dataTheme, eventTheme, headerImageHTML, title, startTime.Format("Monday, January 2, 2006 at 3:04 PM MST"), location, description)
+</html>`, dataTheme, eventTheme, customColorCSS, headerImageHTML, title, startTime.Format("Monday, January 2, 2006 at 3:04 PM MST"), location, description)
+}
+
+func isValidHexColor(color string) bool {
+	if len(color) != 7 {
+		return false
+	}
+	if color[0] != '#' {
+		return false
+	}
+	for i := 1; i < 7; i++ {
+		c := color[i]
+		if !((c >= '0' && c <= '9') || (c >= 'A' && c <= 'F') || (c >= 'a' && c <= 'f')) {
+			return false
+		}
+	}
+	return true
 }

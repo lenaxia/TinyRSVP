@@ -1,0 +1,55 @@
+{{define "color_picker"}}
+<div class="color-picker-section">
+    <h3 class="color-picker-title">Custom Theme Color (Optional)</h3>
+    <p class="form-help-text" id="color-help">Customize the primary color of your selected theme to match your event's branding</p>
+    
+    <div class="color-picker-container">
+        <div class="color-input-group">
+            <label for="custom-theme-color" class="form-label">
+                Primary Color
+            </label>
+            <div class="color-controls">
+                <input 
+                    type="color" 
+                    id="custom-theme-color" 
+                    class="color-input"
+                    value="{{if .Event.CustomThemeColor}}{{.Event.CustomThemeColor}}{{else}}#007bff{{end}}"
+                    aria-label="Select custom theme color"
+                    aria-describedby="color-help"
+                    required
+                >
+                <input 
+                    type="text" 
+                    id="custom-theme-color-hex" 
+                    class="color-hex-input"
+                    value="{{if .Event.CustomThemeColor}}{{.Event.CustomThemeColor}}{{else}}#007bff{{end}}"
+                    pattern="^#[0-9A-Fa-f]{6}$"
+                    maxlength="7"
+                    placeholder="#007bff"
+                    aria-label="Enter hex color code"
+                    aria-describedby="color-help"
+                >
+                <div class="color-preview" 
+                     style="background-color: {{if .Event.CustomThemeColor}}{{.Event.CustomThemeColor}}{{else}}#007bff{{end}};"
+                     aria-label="Current color preview"
+                     role="img">
+                </div>
+            </div>
+        </div>
+        
+        <div class="color-actions">
+            <button type="button" 
+                    class="btn btn-secondary btn-reset-color" 
+                    id="reset-color-btn"
+                    aria-label="Reset color to theme default">
+                Reset to Theme Default
+            </button>
+        </div>
+    </div>
+    
+    <input type="hidden" 
+           id="custom-theme-color-value" 
+           name="custom_theme_color" 
+           value="{{if .Event.CustomThemeColor}}{{.Event.CustomThemeColor}}{{end}}">
+</div>
+{{end}}

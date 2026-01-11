@@ -9,6 +9,7 @@
     <link rel="stylesheet" href="/static/css/theme_picker.css">
     <link rel="stylesheet" href="/static/css/theme_preview_modal.css">
     <link rel="stylesheet" href="/static/css/image_upload.css">
+    <link rel="stylesheet" href="/static/css/color_picker.css">
 {{end}}
 
 {{define "content"}}
@@ -209,6 +210,7 @@
             <p class="form-help-text">Choose a visual theme for your RSVP page</p>
             {{template "theme_picker" .}}
             {{template "image_upload" .}}
+            {{template "color_picker" .}}
         </section>
 
         <section class="form-section">
@@ -272,4 +274,5 @@
     <script src="/static/js/theme_picker.js"></script>
     <script src="/static/js/theme_preview_modal.js"></script>
     <script src="/static/js/image_upload.js"></script>
+    <script src="/static/js/color_picker.js"></script>
 {{end}}

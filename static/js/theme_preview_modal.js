@@ -15,6 +15,7 @@ class ThemePreviewModal {
         
         this.attachEventListeners();
         this.setupFocusTrap();
+        this.setupColorChangeListener();
     }
 
     attachEventListeners() {
@@ -113,6 +114,11 @@ class ThemePreviewModal {
             formData.custom_image_url = imagePreview.src;
         }
 
+        const customColorInput = document.getElementById('custom-theme-color-value');
+        if (customColorInput && customColorInput.value) {
+            formData.custom_color = customColorInput.value;
+        }
+
         return formData;
     }
 
@@ -157,6 +163,14 @@ class ThemePreviewModal {
                     e.preventDefault();
                     firstElement.focus();
                 }
+            }
+        });
+    }
+
+    setupColorChangeListener() {
+        document.addEventListener('colorChanged', (e) => {
+            if (this.currentThemeId && !this.modal.hidden) {
+                this.loadPreview(this.currentThemeId);
             }
         });
     }
