@@ -12,6 +12,16 @@ const (
 	TemplateTypeConfirmationPage TemplateType = "confirmation_page"
 )
 
+type TemplateCategory string
+
+const (
+	CategoryPlain   TemplateCategory = "plain"
+	CategoryCard    TemplateCategory = "card"
+	CategoryModern  TemplateCategory = "modern"
+	CategoryClassic TemplateCategory = "classic"
+	CategoryFun     TemplateCategory = "fun"
+)
+
 type Template struct {
 	ID          int64        `json:"id"`
 	EventID     *int64       `json:"event_id,omitempty"`
@@ -29,6 +39,12 @@ type Template struct {
 	CreatedBy int64     `json:"created_by"`
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
+
+	Category     TemplateCategory `json:"category"`
+	ThumbnailURL *string          `json:"thumbnail_url,omitempty"`
+	ImageURL     *string          `json:"image_url,omitempty"`
+	Tags         []string         `json:"tags"`
+	SortOrder    int              `json:"sort_order"`
 }
 
 func (t *Template) Validate() error {
@@ -56,6 +72,22 @@ func (t *Template) Validate() error {
 		return &ValidationError{Field: "created_by", Message: "Created by is required"}
 	}
 
+	if t.Category == "" {
+		t.Category = CategoryPlain
+	}
+
+	if !t.Category.IsValid() {
+		return &ValidationError{Field: "category", Message: "Invalid template category"}
+	}
+
+	if len(t.Description) > 500 {
+		return &ValidationError{Field: "description", Message: "Description cannot exceed 500 characters"}
+	}
+
+	if t.SortOrder < 0 {
+		return &ValidationError{Field: "sort_order", Message: "Sort order must be >= 0"}
+	}
+
 	return nil
 }
 
@@ -70,4 +102,17 @@ func (tt TemplateType) IsValid() bool {
 
 func (tt TemplateType) String() string {
 	return string(tt)
+}
+
+func (tc TemplateCategory) IsValid() bool {
+	switch tc {
+	case CategoryPlain, CategoryCard, CategoryModern, CategoryClassic, CategoryFun:
+		return true
+	default:
+		return false
+	}
+}
+
+func (tc TemplateCategory) String() string {
+	return string(tc)
 }

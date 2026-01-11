@@ -137,6 +137,73 @@
             </p>
         </section>
         {{else}}
+        <div class="invite-cards" aria-label="Invite cards">
+            {{range .Invites}}
+            <article class="invite-card" data-invite-id="{{.ID}}">
+                <div class="invite-card-header">
+                    <input 
+                        type="checkbox" 
+                        class="invite-checkbox" 
+                        value="{{.ID}}"
+                        aria-label="Select invite"
+                    >
+                    <span class="invite-status-badge invite-status-{{.Status}}">
+                        {{.Status}}
+                    </span>
+                </div>
+                
+                <div class="invite-card-body">
+                    <div class="invite-card-name">
+                        {{if .Name}}
+                            <strong>{{.Name}}</strong>
+                        {{else}}
+                            <span class="invite-card-empty">No name</span>
+                        {{end}}
+                    </div>
+                    <div class="invite-card-email">
+                        {{if .Email}}
+                            {{.Email}}
+                        {{else}}
+                            <span class="invite-card-empty">No email</span>
+                        {{end}}
+                    </div>
+                    
+                    <div class="invite-card-meta">
+                        <div class="invite-card-meta-item">
+                            <span class="invite-card-meta-label">Plus Ones:</span>
+                            <span>{{.MaxPlusOnes}}</span>
+                        </div>
+                        {{if .SentAt}}
+                        <div class="invite-card-meta-item">
+                            <span class="invite-card-meta-label">Sent:</span>
+                            <time datetime="{{.SentAt.Format "2006-01-02T15:04:05Z07:00"}}">
+                                {{.SentAt.Format "Jan 2, 3:04 PM"}}
+                            </time>
+                        </div>
+                        {{end}}
+                    </div>
+                </div>
+                
+                <div class="invite-card-footer invite-actions">
+                    <button
+                        class="btn btn-ghost btn-sm invite-action-btn"
+                        data-action="copy-link"
+                        data-invite-id="{{.ID}}"
+                    >
+                        Copy
+                    </button>
+                    <button
+                        class="btn btn-ghost btn-sm invite-action-btn invite-action-delete"
+                        data-action="delete"
+                        data-invite-id="{{.ID}}"
+                    >
+                        Delete
+                    </button>
+                </div>
+            </article>
+            {{end}}
+        </div>
+
         <section class="invite-table-container" aria-label="Invite list">
             <table class="invite-table" role="table">
                 <thead>
@@ -222,73 +289,6 @@
                     {{end}}
                 </tbody>
             </table>
-
-            <div class="invite-cards" aria-label="Invite cards">
-                {{range .Invites}}
-                <article class="invite-card" data-invite-id="{{.ID}}">
-                    <div class="invite-card-header">
-                        <input 
-                            type="checkbox" 
-                            class="invite-checkbox" 
-                            value="{{.ID}}"
-                            aria-label="Select invite"
-                        >
-                        <span class="invite-status-badge invite-status-{{.Status}}">
-                            {{.Status}}
-                        </span>
-                    </div>
-                    
-                    <div class="invite-card-body">
-                        <div class="invite-card-name">
-                            {{if .Name}}
-                                <strong>{{.Name}}</strong>
-                            {{else}}
-                                <span class="invite-card-empty">No name</span>
-                            {{end}}
-                        </div>
-                        <div class="invite-card-email">
-                            {{if .Email}}
-                                {{.Email}}
-                            {{else}}
-                                <span class="invite-card-empty">No email</span>
-                            {{end}}
-                        </div>
-                        
-                        <div class="invite-card-meta">
-                            <div class="invite-card-meta-item">
-                                <span class="invite-card-meta-label">Plus Ones:</span>
-                                <span>{{.MaxPlusOnes}}</span>
-                            </div>
-                            {{if .SentAt}}
-                            <div class="invite-card-meta-item">
-                                <span class="invite-card-meta-label">Sent:</span>
-                                <time datetime="{{.SentAt.Format "2006-01-02T15:04:05Z07:00"}}">
-                                    {{.SentAt.Format "Jan 2, 3:04 PM"}}
-                                </time>
-                            </div>
-                            {{end}}
-                        </div>
-                    </div>
-                    
-                    <div class="invite-card-footer invite-actions">
-                        <button
-                            class="btn btn-ghost btn-sm invite-action-btn"
-                            data-action="copy-link"
-                            data-invite-id="{{.ID}}"
-                        >
-                            Copy
-                        </button>
-                        <button
-                            class="btn btn-ghost btn-sm invite-action-btn invite-action-delete"
-                            data-action="delete"
-                            data-invite-id="{{.ID}}"
-                        >
-                            Delete
-                        </button>
-                    </div>
-                </article>
-                {{end}}
-            </div>
         </section>
 
         {{if gt .Total 50}}

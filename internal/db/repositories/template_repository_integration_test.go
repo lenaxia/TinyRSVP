@@ -38,6 +38,7 @@ func TestTemplateRepository_Integration_CRUD(t *testing.T) {
 			IsDefault:   false,
 			IsActive:    true,
 			CreatedBy:   user.ID,
+			Category:    models.CategoryPlain,
 		}
 
 		if err := repo.Create(ctx, template); err != nil {
@@ -112,6 +113,7 @@ func TestTemplateRepository_Integration_EventAssociation(t *testing.T) {
 			IsDefault:   false,
 			IsActive:    true,
 			CreatedBy:   user.ID,
+			Category:    models.CategoryPlain,
 		}
 
 		if err := repo.Create(ctx, template); err != nil {
@@ -156,6 +158,7 @@ func TestTemplateRepository_Integration_DefaultTemplates(t *testing.T) {
 			IsDefault:   true,
 			IsActive:    true,
 			CreatedBy:   user.ID,
+			Category:    models.CategoryPlain,
 		}
 
 		if err := repo.Create(ctx, template); err != nil {
@@ -185,6 +188,7 @@ func TestTemplateRepository_Integration_DefaultTemplates(t *testing.T) {
 			IsDefault:   true,
 			IsActive:    true,
 			CreatedBy:   user.ID,
+			Category:    models.CategoryPlain,
 		}
 
 		if err := repo.Create(ctx, template1); err != nil {
@@ -201,6 +205,7 @@ func TestTemplateRepository_Integration_DefaultTemplates(t *testing.T) {
 			IsDefault:   true,
 			IsActive:    true,
 			CreatedBy:   user.ID,
+			Category:    models.CategoryPlain,
 		}
 
 		if err := repo.Create(ctx, template2); err != nil {
@@ -225,6 +230,7 @@ func TestTemplateRepository_Integration_DefaultTemplates(t *testing.T) {
 			IsDefault:   true,
 			IsActive:    false,
 			CreatedBy:   user.ID,
+			Category:    models.CategoryPlain,
 		}
 
 		if err := repo.Create(ctx, template); err != nil {
@@ -263,6 +269,7 @@ func TestTemplateRepository_Integration_Filtering(t *testing.T) {
 			IsDefault:   false,
 			IsActive:    true,
 			CreatedBy:   user.ID,
+			Category:    models.CategoryPlain,
 		},
 		{
 			Name:        "Default RSVP",
@@ -271,6 +278,7 @@ func TestTemplateRepository_Integration_Filtering(t *testing.T) {
 			IsDefault:   true,
 			IsActive:    true,
 			CreatedBy:   user.ID,
+			Category:    models.CategoryPlain,
 		},
 		{
 			Name:        "Default Email",
@@ -280,6 +288,7 @@ func TestTemplateRepository_Integration_Filtering(t *testing.T) {
 			IsDefault:   true,
 			IsActive:    true,
 			CreatedBy:   user.ID,
+			Category:    models.CategoryPlain,
 		},
 		{
 			Name:        "Inactive Template",
@@ -288,6 +297,7 @@ func TestTemplateRepository_Integration_Filtering(t *testing.T) {
 			IsDefault:   false,
 			IsActive:    false,
 			CreatedBy:   user.ID,
+			Category:    models.CategoryPlain,
 		},
 	}
 
@@ -449,6 +459,7 @@ func TestTemplateRepository_Integration_ForeignKeyConstraints(t *testing.T) {
 			IsDefault:   false,
 			IsActive:    true,
 			CreatedBy:   user.ID,
+			Category:    models.CategoryPlain,
 		}
 
 		err := repo.Create(ctx, template)
@@ -465,6 +476,7 @@ func TestTemplateRepository_Integration_ForeignKeyConstraints(t *testing.T) {
 			IsDefault:   false,
 			IsActive:    true,
 			CreatedBy:   99999,
+			Category:    models.CategoryPlain,
 		}
 
 		err := repo.Create(ctx, template)
@@ -482,6 +494,7 @@ func TestTemplateRepository_Integration_ForeignKeyConstraints(t *testing.T) {
 			IsDefault:   true,
 			IsActive:    true,
 			CreatedBy:   user.ID,
+			Category:    models.CategoryPlain,
 		}
 
 		if err := repo.Create(ctx, template); err != nil {
@@ -518,6 +531,7 @@ func TestTemplateRepository_Integration_ActiveStatusToggle(t *testing.T) {
 			IsDefault:   false,
 			IsActive:    true,
 			CreatedBy:   user.ID,
+			Category:    models.CategoryPlain,
 		}
 
 		if err := repo.Create(ctx, template); err != nil {
@@ -565,6 +579,7 @@ func TestTemplateRepository_Integration_VersionIncrement(t *testing.T) {
 		IsDefault:   false,
 		IsActive:    true,
 		CreatedBy:   user.ID,
+		Category:    models.CategoryPlain,
 	}
 
 	if err := repo.Create(ctx, template); err != nil {
@@ -621,6 +636,7 @@ func TestTemplateRepository_Integration_MultipleTemplatesPerEvent(t *testing.T) 
 			IsDefault:   false,
 			IsActive:    true,
 			CreatedBy:   user.ID,
+			Category:    models.CategoryPlain,
 		},
 		{
 			EventID:     &eventID,
@@ -631,6 +647,7 @@ func TestTemplateRepository_Integration_MultipleTemplatesPerEvent(t *testing.T) 
 			IsDefault:   false,
 			IsActive:    true,
 			CreatedBy:   user.ID,
+			Category:    models.CategoryPlain,
 		},
 		{
 			EventID:     &eventID,
@@ -640,6 +657,7 @@ func TestTemplateRepository_Integration_MultipleTemplatesPerEvent(t *testing.T) 
 			IsDefault:   false,
 			IsActive:    true,
 			CreatedBy:   user.ID,
+			Category:    models.CategoryPlain,
 		},
 	}
 

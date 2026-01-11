@@ -106,6 +106,7 @@ func (s *Seeder) SeedDefaults(ctx context.Context) error {
 			IsActive:    true,
 			Version:     1,
 			CreatedBy:   s.createdBy,
+			Category:    models.CategoryPlain,
 		}
 
 		if err := s.repo.Create(ctx, template); err != nil {

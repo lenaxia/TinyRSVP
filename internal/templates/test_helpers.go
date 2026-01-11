@@ -9,16 +9,18 @@ import (
 )
 
 type mockServiceTemplateRepository struct {
-	CreateFunc            func(ctx context.Context, template *models.Template) error
-	GetByIDFunc           func(ctx context.Context, id int64) (*models.Template, error)
-	GetByEventAndTypeFunc func(ctx context.Context, eventID int64, templateType models.TemplateType) (*models.Template, error)
-	GetDefaultByTypeFunc  func(ctx context.Context, templateType models.TemplateType) (*models.Template, error)
-	ListFunc              func(ctx context.Context, filters *repositories.TemplateFilters) ([]*models.Template, error)
-	UpdateFunc            func(ctx context.Context, template *models.Template) error
-	DeleteFunc            func(ctx context.Context, id int64) error
-	SetActiveFunc         func(ctx context.Context, id int64, active bool) error
-	IsTemplateInUseFunc   func(ctx context.Context, id int64) (bool, error)
-	SetDefaultFunc        func(ctx context.Context, id int64) error
+	CreateFunc                 func(ctx context.Context, template *models.Template) error
+	GetByIDFunc                func(ctx context.Context, id int64) (*models.Template, error)
+	GetByEventAndTypeFunc      func(ctx context.Context, eventID int64, templateType models.TemplateType) (*models.Template, error)
+	GetDefaultByTypeFunc       func(ctx context.Context, templateType models.TemplateType) (*models.Template, error)
+	ListFunc                   func(ctx context.Context, filters *repositories.TemplateFilters) ([]*models.Template, error)
+	UpdateFunc                 func(ctx context.Context, template *models.Template) error
+	DeleteFunc                 func(ctx context.Context, id int64) error
+	SetActiveFunc              func(ctx context.Context, id int64, active bool) error
+	IsTemplateInUseFunc        func(ctx context.Context, id int64) (bool, error)
+	SetDefaultFunc             func(ctx context.Context, id int64) error
+	GetTemplatesByCategoryFunc func(ctx context.Context, category models.TemplateCategory) ([]*models.Template, error)
+	ListThemesFunc             func(ctx context.Context, templateType models.TemplateType, category *models.TemplateCategory) ([]*models.Template, error)
 }
 
 func (m *mockServiceTemplateRepository) Create(ctx context.Context, template *models.Template) error {
@@ -95,6 +97,20 @@ func (m *mockServiceTemplateRepository) SetDefault(ctx context.Context, id int64
 		return m.SetDefaultFunc(ctx, id)
 	}
 	return nil
+}
+
+func (m *mockServiceTemplateRepository) GetTemplatesByCategory(ctx context.Context, category models.TemplateCategory) ([]*models.Template, error) {
+	if m.GetTemplatesByCategoryFunc != nil {
+		return m.GetTemplatesByCategoryFunc(ctx, category)
+	}
+	return []*models.Template{}, nil
+}
+
+func (m *mockServiceTemplateRepository) ListThemes(ctx context.Context, templateType models.TemplateType, category *models.TemplateCategory) ([]*models.Template, error) {
+	if m.ListThemesFunc != nil {
+		return m.ListThemesFunc(ctx, templateType, category)
+	}
+	return []*models.Template{}, nil
 }
 
 type mockServiceValidator struct {

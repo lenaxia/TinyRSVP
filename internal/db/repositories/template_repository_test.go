@@ -33,6 +33,7 @@ func TestTemplateRepository_Create(t *testing.T) {
 				IsDefault:   false,
 				IsActive:    true,
 				CreatedBy:   user.ID,
+				Category:    models.CategoryPlain,
 			},
 			wantErr: false,
 		},
@@ -46,6 +47,7 @@ func TestTemplateRepository_Create(t *testing.T) {
 				IsDefault:   false,
 				IsActive:    true,
 				CreatedBy:   user.ID,
+				Category:    models.CategoryPlain,
 			},
 			wantErr: false,
 		},
@@ -111,6 +113,7 @@ func TestTemplateRepository_GetByID(t *testing.T) {
 		IsDefault:   false,
 		IsActive:    true,
 		CreatedBy:   user.ID,
+		Category:    models.CategoryPlain,
 	}
 
 	err := repo.Create(context.Background(), template)
@@ -175,6 +178,7 @@ func TestTemplateRepository_GetByEventAndType(t *testing.T) {
 		IsDefault:   false,
 		IsActive:    true,
 		CreatedBy:   user.ID,
+		Category:    models.CategoryPlain,
 	}
 
 	err := repo.Create(context.Background(), template)
@@ -240,6 +244,7 @@ func TestTemplateRepository_GetDefaultByType(t *testing.T) {
 		IsDefault:   true,
 		IsActive:    true,
 		CreatedBy:   user.ID,
+		Category:    models.CategoryPlain,
 	}
 
 	err := repo.Create(context.Background(), template)
@@ -302,6 +307,7 @@ func TestTemplateRepository_List(t *testing.T) {
 			IsDefault:   false,
 			IsActive:    true,
 			CreatedBy:   user.ID,
+			Category:    models.CategoryPlain,
 		},
 		{
 			Name:        "Default Template",
@@ -310,6 +316,7 @@ func TestTemplateRepository_List(t *testing.T) {
 			IsDefault:   true,
 			IsActive:    true,
 			CreatedBy:   user.ID,
+			Category:    models.CategoryPlain,
 		},
 		{
 			Name:        "Inactive Template",
@@ -318,6 +325,7 @@ func TestTemplateRepository_List(t *testing.T) {
 			IsDefault:   false,
 			IsActive:    false,
 			CreatedBy:   user.ID,
+			Category:    models.CategoryPlain,
 		},
 	}
 
@@ -411,6 +419,7 @@ func TestTemplateRepository_Update(t *testing.T) {
 		IsDefault:   false,
 		IsActive:    true,
 		CreatedBy:   user.ID,
+		Category:    models.CategoryPlain,
 	}
 
 	err := repo.Create(context.Background(), template)
@@ -462,6 +471,7 @@ func TestTemplateRepository_Delete(t *testing.T) {
 		IsDefault:   false,
 		IsActive:    true,
 		CreatedBy:   user.ID,
+		Category:    models.CategoryPlain,
 	}
 
 	err := repo.Create(context.Background(), template)
@@ -500,6 +510,7 @@ func TestTemplateRepository_SetActive(t *testing.T) {
 		IsDefault:   false,
 		IsActive:    true,
 		CreatedBy:   user.ID,
+		Category:    models.CategoryPlain,
 	}
 
 	err := repo.Create(context.Background(), template)
@@ -557,6 +568,7 @@ func TestTemplateRepository_IsTemplateInUse(t *testing.T) {
 		IsDefault:   false,
 		IsActive:    true,
 		CreatedBy:   user.ID,
+		Category:    models.CategoryPlain,
 	}
 
 	err := repo.Create(context.Background(), template)
@@ -648,6 +660,7 @@ func TestTemplateRepository_SetDefault(t *testing.T) {
 		IsDefault:   true,
 		IsActive:    true,
 		CreatedBy:   user.ID,
+		Category:    models.CategoryPlain,
 	}
 
 	template2 := &models.Template{
@@ -657,6 +670,7 @@ func TestTemplateRepository_SetDefault(t *testing.T) {
 		IsDefault:   false,
 		IsActive:    true,
 		CreatedBy:   user.ID,
+		Category:    models.CategoryPlain,
 	}
 
 	err := repo.Create(context.Background(), template1)

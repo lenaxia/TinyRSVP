@@ -3,6 +3,7 @@ package repositories
 import (
 	"context"
 	"database/sql"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"time"
@@ -22,6 +23,8 @@ type TemplateRepository interface {
 	SetActive(ctx context.Context, id int64, active bool) error
 	IsTemplateInUse(ctx context.Context, id int64) (bool, error)
 	SetDefault(ctx context.Context, id int64) error
+	GetTemplatesByCategory(ctx context.Context, category models.TemplateCategory) ([]*models.Template, error)
+	ListThemes(ctx context.Context, templateType models.TemplateType, category *models.TemplateCategory) ([]*models.Template, error)
 }
 
 type TemplateFilters struct {
@@ -52,13 +55,19 @@ func (r *templateRepository) Create(ctx context.Context, template *models.Templa
 			event_id, name, type, description,
 			html_content, text_content, css_content,
 			is_default, is_active, version,
-			created_by, created_at, updated_at
+			created_by, created_at, updated_at,
+			category, thumbnail_url, image_url, tags, sort_order
 		)
-		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 	`
 
 	now := time.Now()
 	version := 1
+
+	tagsJSON, err := serializeTags(template.Tags)
+	if err != nil {
+		return fmt.Errorf("failed to serialize tags: %w", err)
+	}
 
 	result, err := r.db.Exec(ctx, query,
 		template.EventID,
@@ -74,6 +83,11 @@ func (r *templateRepository) Create(ctx context.Context, template *models.Templa
 		template.CreatedBy,
 		now,
 		now,
+		template.Category,
+		template.ThumbnailURL,
+		template.ImageURL,
+		tagsJSON,
+		template.SortOrder,
 	)
 
 	if err != nil {
@@ -101,12 +115,15 @@ func (r *templateRepository) GetByID(ctx context.Context, id int64) (*models.Tem
 		SELECT id, event_id, name, type, description,
 			html_content, text_content, css_content,
 			is_default, is_active, version,
-			created_by, created_at, updated_at
+			created_by, created_at, updated_at,
+			category, thumbnail_url, image_url, tags, sort_order
 		FROM templates
 		WHERE id = ?
 	`
 
 	template := &models.Template{}
+	var tagsJSON *string
+
 	err := r.db.QueryRow(ctx, query, id).Scan(
 		&template.ID,
 		&template.EventID,
@@ -122,6 +139,11 @@ func (r *templateRepository) GetByID(ctx context.Context, id int64) (*models.Tem
 		&template.CreatedBy,
 		&template.CreatedAt,
 		&template.UpdatedAt,
+		&template.Category,
+		&template.ThumbnailURL,
+		&template.ImageURL,
+		&tagsJSON,
+		&template.SortOrder,
 	)
 
 	if err != nil {
@@ -134,6 +156,10 @@ func (r *templateRepository) GetByID(ctx context.Context, id int64) (*models.Tem
 		return nil, fmt.Errorf("failed to get template by id: %w", err)
 	}
 
+	if err := deserializeTags(tagsJSON, &template.Tags); err != nil {
+		return nil, fmt.Errorf("failed to deserialize tags: %w", err)
+	}
+
 	return template, nil
 }
 
@@ -142,7 +168,8 @@ func (r *templateRepository) GetByEventAndType(ctx context.Context, eventID int6
 		SELECT id, event_id, name, type, description,
 			html_content, text_content, css_content,
 			is_default, is_active, version,
-			created_by, created_at, updated_at
+			created_by, created_at, updated_at,
+			category, thumbnail_url, image_url, tags, sort_order
 		FROM templates
 		WHERE event_id = ? AND type = ? AND is_active = 1
 		ORDER BY created_at DESC
@@ -150,6 +177,8 @@ func (r *templateRepository) GetByEventAndType(ctx context.Context, eventID int6
 	`
 
 	template := &models.Template{}
+	var tagsJSON *string
+
 	err := r.db.QueryRow(ctx, query, eventID, templateType).Scan(
 		&template.ID,
 		&template.EventID,
@@ -165,6 +194,11 @@ func (r *templateRepository) GetByEventAndType(ctx context.Context, eventID int6
 		&template.CreatedBy,
 		&template.CreatedAt,
 		&template.UpdatedAt,
+		&template.Category,
+		&template.ThumbnailURL,
+		&template.ImageURL,
+		&tagsJSON,
+		&template.SortOrder,
 	)
 
 	if err != nil {
@@ -177,6 +211,10 @@ func (r *templateRepository) GetByEventAndType(ctx context.Context, eventID int6
 		return nil, fmt.Errorf("failed to get template by event and type: %w", err)
 	}
 
+	if err := deserializeTags(tagsJSON, &template.Tags); err != nil {
+		return nil, fmt.Errorf("failed to deserialize tags: %w", err)
+	}
+
 	return template, nil
 }
 
@@ -185,7 +223,8 @@ func (r *templateRepository) GetDefaultByType(ctx context.Context, templateType 
 		SELECT id, event_id, name, type, description,
 			html_content, text_content, css_content,
 			is_default, is_active, version,
-			created_by, created_at, updated_at
+			created_by, created_at, updated_at,
+			category, thumbnail_url, image_url, tags, sort_order
 		FROM templates
 		WHERE type = ? AND is_default = 1 AND is_active = 1
 		ORDER BY created_at DESC
@@ -193,6 +232,8 @@ func (r *templateRepository) GetDefaultByType(ctx context.Context, templateType 
 	`
 
 	template := &models.Template{}
+	var tagsJSON *string
+
 	err := r.db.QueryRow(ctx, query, templateType).Scan(
 		&template.ID,
 		&template.EventID,
@@ -208,6 +249,11 @@ func (r *templateRepository) GetDefaultByType(ctx context.Context, templateType 
 		&template.CreatedBy,
 		&template.CreatedAt,
 		&template.UpdatedAt,
+		&template.Category,
+		&template.ThumbnailURL,
+		&template.ImageURL,
+		&tagsJSON,
+		&template.SortOrder,
 	)
 
 	if err != nil {
@@ -220,6 +266,10 @@ func (r *templateRepository) GetDefaultByType(ctx context.Context, templateType 
 		return nil, fmt.Errorf("failed to get default template by type: %w", err)
 	}
 
+	if err := deserializeTags(tagsJSON, &template.Tags); err != nil {
+		return nil, fmt.Errorf("failed to deserialize tags: %w", err)
+	}
+
 	return template, nil
 }
 
@@ -228,7 +278,8 @@ func (r *templateRepository) List(ctx context.Context, filters *TemplateFilters)
 		SELECT id, event_id, name, type, description,
 			html_content, text_content, css_content,
 			is_default, is_active, version,
-			created_by, created_at, updated_at
+			created_by, created_at, updated_at,
+			category, thumbnail_url, image_url, tags, sort_order
 		FROM templates
 		WHERE 1=1
 	`
@@ -282,25 +333,9 @@ func (r *templateRepository) List(ctx context.Context, filters *TemplateFilters)
 
 	var templates []*models.Template
 	for rows.Next() {
-		template := &models.Template{}
-		err := rows.Scan(
-			&template.ID,
-			&template.EventID,
-			&template.Name,
-			&template.Type,
-			&template.Description,
-			&template.HTMLContent,
-			&template.TextContent,
-			&template.CSSContent,
-			&template.IsDefault,
-			&template.IsActive,
-			&template.Version,
-			&template.CreatedBy,
-			&template.CreatedAt,
-			&template.UpdatedAt,
-		)
+		template, err := r.scanTemplate(rows)
 		if err != nil {
-			return nil, fmt.Errorf("failed to scan template: %w", err)
+			return nil, err
 		}
 		templates = append(templates, template)
 	}
@@ -321,17 +356,29 @@ func (r *templateRepository) Update(ctx context.Context, template *models.Templa
 		UPDATE templates
 		SET name = ?, description = ?,
 			html_content = ?, text_content = ?, css_content = ?,
+			category = ?, thumbnail_url = ?, image_url = ?, tags = ?, sort_order = ?,
 			version = version + 1, updated_at = ?
 		WHERE id = ?
 	`
 
 	now := time.Now()
+
+	tagsJSON, err := serializeTags(template.Tags)
+	if err != nil {
+		return fmt.Errorf("failed to serialize tags: %w", err)
+	}
+
 	result, err := r.db.Exec(ctx, query,
 		template.Name,
 		template.Description,
 		template.HTMLContent,
 		template.TextContent,
 		template.CSSContent,
+		template.Category,
+		template.ThumbnailURL,
+		template.ImageURL,
+		tagsJSON,
+		template.SortOrder,
 		now,
 		template.ID,
 	)
@@ -472,6 +519,151 @@ func (r *templateRepository) SetDefault(ctx context.Context, id int64) error {
 
 	if err != nil {
 		return err
+	}
+
+	return nil
+}
+
+func (r *templateRepository) GetTemplatesByCategory(ctx context.Context, category models.TemplateCategory) ([]*models.Template, error) {
+	query := `
+		SELECT id, event_id, name, type, description,
+			html_content, text_content, css_content,
+			is_default, is_active, version,
+			created_by, created_at, updated_at,
+			category, thumbnail_url, image_url, tags, sort_order
+		FROM templates
+		WHERE category = ?
+		ORDER BY sort_order ASC, name ASC
+	`
+
+	rows, err := r.db.Query(ctx, query, category)
+	if err != nil {
+		return nil, fmt.Errorf("failed to query templates by category: %w", err)
+	}
+	defer rows.Close()
+
+	var templates []*models.Template
+	for rows.Next() {
+		template, err := r.scanTemplate(rows)
+		if err != nil {
+			return nil, err
+		}
+		templates = append(templates, template)
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("error iterating templates: %w", err)
+	}
+
+	return templates, nil
+}
+
+func (r *templateRepository) ListThemes(ctx context.Context, templateType models.TemplateType, category *models.TemplateCategory) ([]*models.Template, error) {
+	query := `
+		SELECT id, event_id, name, type, description,
+			html_content, text_content, css_content,
+			is_default, is_active, version,
+			created_by, created_at, updated_at,
+			category, thumbnail_url, image_url, tags, sort_order
+		FROM templates
+		WHERE type = ?
+	`
+
+	args := []interface{}{templateType}
+
+	if category != nil {
+		query += " AND category = ?"
+		args = append(args, *category)
+	}
+
+	query += " ORDER BY sort_order ASC, name ASC"
+
+	rows, err := r.db.Query(ctx, query, args...)
+	if err != nil {
+		return nil, fmt.Errorf("failed to list themes: %w", err)
+	}
+	defer rows.Close()
+
+	var templates []*models.Template
+	for rows.Next() {
+		template, err := r.scanTemplate(rows)
+		if err != nil {
+			return nil, err
+		}
+		templates = append(templates, template)
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("error iterating templates: %w", err)
+	}
+
+	return templates, nil
+}
+
+func (r *templateRepository) scanTemplate(scanner interface{ Scan(...interface{}) error }) (*models.Template, error) {
+	template := &models.Template{}
+	var tagsJSON *string
+
+	err := scanner.Scan(
+		&template.ID,
+		&template.EventID,
+		&template.Name,
+		&template.Type,
+		&template.Description,
+		&template.HTMLContent,
+		&template.TextContent,
+		&template.CSSContent,
+		&template.IsDefault,
+		&template.IsActive,
+		&template.Version,
+		&template.CreatedBy,
+		&template.CreatedAt,
+		&template.UpdatedAt,
+		&template.Category,
+		&template.ThumbnailURL,
+		&template.ImageURL,
+		&tagsJSON,
+		&template.SortOrder,
+	)
+
+	if err != nil {
+		return nil, fmt.Errorf("failed to scan template: %w", err)
+	}
+
+	if err := deserializeTags(tagsJSON, &template.Tags); err != nil {
+		return nil, fmt.Errorf("failed to deserialize tags: %w", err)
+	}
+
+	return template, nil
+}
+
+func serializeTags(tags []string) (*string, error) {
+	if tags == nil || len(tags) == 0 {
+		empty := "[]"
+		return &empty, nil
+	}
+
+	data, err := json.Marshal(tags)
+	if err != nil {
+		return nil, err
+	}
+
+	result := string(data)
+	return &result, nil
+}
+
+func deserializeTags(tagsJSON *string, tags *[]string) error {
+	if tagsJSON == nil || *tagsJSON == "" {
+		*tags = []string{}
+		return nil
+	}
+
+	if err := json.Unmarshal([]byte(*tagsJSON), tags); err != nil {
+		return err
+	}
+
+	if *tags == nil {
+		*tags = []string{}
 	}
 
 	return nil

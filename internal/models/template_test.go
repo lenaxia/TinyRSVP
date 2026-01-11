@@ -103,6 +103,7 @@ func TestTemplate_Validate(t *testing.T) {
 				HTMLContent: "<html>{{.Event.Title}}</html>",
 				TextContent: &textContent,
 				CreatedBy:   1,
+				Category:    CategoryPlain,
 			},
 			wantErr: false,
 		},
@@ -113,6 +114,7 @@ func TestTemplate_Validate(t *testing.T) {
 				Type:        TemplateTypeRSVPPage,
 				HTMLContent: "<html>{{.Event.Title}}</html>",
 				CreatedBy:   1,
+				Category:    CategoryPlain,
 			},
 			wantErr: false,
 		},
@@ -130,6 +132,7 @@ func TestTemplate_Validate(t *testing.T) {
 				IsActive:    true,
 				Version:     1,
 				CreatedBy:   1,
+				Category:    CategoryPlain,
 			},
 			wantErr: false,
 		},
@@ -215,6 +218,7 @@ func TestTemplate_Validate(t *testing.T) {
 				HTMLContent: "<html></html>",
 				TextContent: nil,
 				CreatedBy:   1,
+				Category:    CategoryPlain,
 			},
 			wantErr: false,
 		},
@@ -248,6 +252,7 @@ func TestTemplate_Validate_EdgeCases(t *testing.T) {
 			Type:        TemplateTypeRSVPPage,
 			HTMLContent: "<html></html>",
 			CreatedBy:   1,
+			Category:    CategoryPlain,
 		}
 		if err := template.Validate(); err != nil {
 			t.Errorf("Expected valid template with 3 character name, got error: %v", err)
@@ -264,6 +269,7 @@ func TestTemplate_Validate_EdgeCases(t *testing.T) {
 			Type:        TemplateTypeRSVPPage,
 			HTMLContent: "<html></html>",
 			CreatedBy:   1,
+			Category:    CategoryPlain,
 		}
 		if err := template.Validate(); err != nil {
 			t.Errorf("Expected valid template with 100 character name, got error: %v", err)
@@ -278,6 +284,7 @@ func TestTemplate_Validate_EdgeCases(t *testing.T) {
 			HTMLContent: "<html></html>",
 			TextContent: &textContent,
 			CreatedBy:   1,
+			Category:    CategoryPlain,
 		}
 		if err := template.Validate(); err != nil {
 			t.Errorf("Expected valid confirmation page with text content, got error: %v", err)

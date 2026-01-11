@@ -72,6 +72,14 @@ func (m *mockTemplateRepository) SetDefault(ctx context.Context, id int64) error
 	return nil
 }
 
+func (m *mockTemplateRepository) GetTemplatesByCategory(ctx context.Context, category models.TemplateCategory) ([]*models.Template, error) {
+	return nil, nil
+}
+
+func (m *mockTemplateRepository) ListThemes(ctx context.Context, templateType models.TemplateType, category *models.TemplateCategory) ([]*models.Template, error) {
+	return nil, nil
+}
+
 func TestNewSeeder(t *testing.T) {
 	repo := newMockTemplateRepository()
 	seeder := NewSeeder(repo, 1)
