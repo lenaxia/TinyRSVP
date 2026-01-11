@@ -71,6 +71,11 @@ type Component struct {
 	Style      map[string]interface{} `json:"style,omitempty"`
 	Children   []string               `json:"children,omitempty"`
 	Responsive map[string]interface{} `json:"responsive,omitempty"`
+	Animation  *AnimationConfig       `json:"animation,omitempty"`
+	Visibility *VisibilityRules       `json:"visibility,omitempty"`
+	LayoutMode *LayoutMode            `json:"layoutMode,omitempty"`
+	GridConfig *GridConfig            `json:"gridConfig,omitempty"`
+	FlexConfig *FlexConfig            `json:"flexConfig,omitempty"`
 }
 
 type ConfigMetadata struct {
