@@ -30,6 +30,7 @@ type Event struct {
 	TemplateID          *int64      `db:"template_id" json:"template_id,omitempty"`
 	CustomThemeImageURL *string     `db:"custom_theme_image_url" json:"custom_theme_image_url,omitempty"`
 	CustomThemeColor    *string     `db:"custom_theme_color" json:"custom_theme_color,omitempty"`
+	ComponentOverrides  *string     `db:"component_overrides" json:"component_overrides,omitempty"`
 	CreatedAt           time.Time   `db:"created_at" json:"created_at"`
 	UpdatedAt           time.Time   `db:"updated_at" json:"updated_at"`
 }

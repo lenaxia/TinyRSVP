@@ -45,6 +45,8 @@ type Template struct {
 	ImageURL     *string          `json:"image_url,omitempty"`
 	Tags         []string         `json:"tags"`
 	SortOrder    int              `json:"sort_order"`
+
+	ComponentConfig *string `json:"component_config,omitempty"`
 }
 
 func (t *Template) Validate() error {
