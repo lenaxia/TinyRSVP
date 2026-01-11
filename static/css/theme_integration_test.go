@@ -20,6 +20,12 @@ func TestThemeIntegration(t *testing.T) {
 			t.Skip("No template files found, skipping test")
 		}
 		
+		baseContent, err := os.ReadFile(filepath.Join(templatesDir, "partials", "base.html"))
+		if err != nil {
+			t.Fatalf("Failed to read base.html: %v", err)
+		}
+		baseHTML := string(baseContent)
+		
 		for _, file := range files {
 			content, err := os.ReadFile(file)
 			if err != nil {
@@ -30,12 +36,24 @@ func TestThemeIntegration(t *testing.T) {
 			htmlContent := string(content)
 			filename := filepath.Base(file)
 			
-			if !strings.Contains(htmlContent, "/static/css/variables.css") {
-				t.Errorf("%s should include variables.css for theme support", filename)
-			}
+			usesBase := strings.Contains(htmlContent, `{{template "base"`)
+			hasVariablesCSS := strings.Contains(htmlContent, "/static/css/variables.css")
+			hasThemeToggleCSS := strings.Contains(htmlContent, "/static/css/theme_toggle.css")
 			
-			if !strings.Contains(htmlContent, "/static/css/theme_toggle.css") {
-				t.Errorf("%s should include theme_toggle.css", filename)
+			if usesBase {
+				if !strings.Contains(baseHTML, "/static/css/variables.css") {
+					t.Errorf("%s uses base template, but base.html doesn't include variables.css", filename)
+				}
+				if !strings.Contains(baseHTML, "/static/css/theme_toggle.css") {
+					t.Errorf("%s uses base template, but base.html doesn't include theme_toggle.css", filename)
+				}
+			} else {
+				if !hasVariablesCSS {
+					t.Errorf("%s should include variables.css for theme support (either directly or via base template)", filename)
+				}
+				if !hasThemeToggleCSS {
+					t.Errorf("%s should include theme_toggle.css (either directly or via base template)", filename)
+				}
 			}
 		}
 	})
@@ -52,6 +70,12 @@ func TestThemeIntegration(t *testing.T) {
 			t.Skip("No template files found, skipping test")
 		}
 		
+		baseContent, err := os.ReadFile(filepath.Join(templatesDir, "partials", "base.html"))
+		if err != nil {
+			t.Fatalf("Failed to read base.html: %v", err)
+		}
+		baseHTML := string(baseContent)
+		
 		for _, file := range files {
 			content, err := os.ReadFile(file)
 			if err != nil {
@@ -62,8 +86,17 @@ func TestThemeIntegration(t *testing.T) {
 			htmlContent := string(content)
 			filename := filepath.Base(file)
 			
-			if !strings.Contains(htmlContent, "/static/js/theme_controller.js") {
-				t.Errorf("%s should include theme_controller.js", filename)
+			usesBase := strings.Contains(htmlContent, `{{template "base"`)
+			hasThemeControllerJS := strings.Contains(htmlContent, "/static/js/theme_controller.js")
+			
+			if usesBase {
+				if !strings.Contains(baseHTML, "/static/js/theme_controller.js") {
+					t.Errorf("%s uses base template, but base.html doesn't include theme_controller.js", filename)
+				}
+			} else {
+				if !hasThemeControllerJS {
+					t.Errorf("%s should include theme_controller.js (either directly or via base template)", filename)
+				}
 			}
 		}
 	})
@@ -95,6 +128,32 @@ func TestThemeIntegration(t *testing.T) {
 		
 		if !strings.Contains(htmlContent, `aria-label`) {
 			t.Error("navigation.html theme toggle should have aria-label for accessibility")
+		}
+	})
+	
+	t.Run("base template includes theme assets", func(t *testing.T) {
+		basePath := "../../templates/web/partials/base.html"
+		content, err := os.ReadFile(basePath)
+		if err != nil {
+			t.Fatalf("Failed to read base.html: %v", err)
+		}
+		
+		htmlContent := string(content)
+		
+		if !strings.Contains(htmlContent, "/static/css/variables.css") {
+			t.Error("base.html should include variables.css")
+		}
+		
+		if !strings.Contains(htmlContent, "/static/css/theme_toggle.css") {
+			t.Error("base.html should include theme_toggle.css")
+		}
+		
+		if !strings.Contains(htmlContent, "/static/js/theme_controller.js") {
+			t.Error("base.html should include theme_controller.js")
+		}
+		
+		if !strings.Contains(htmlContent, `{{template "navigation"`) {
+			t.Error("base.html should include navigation partial")
 		}
 	})
 }
