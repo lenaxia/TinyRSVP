@@ -1,5 +1,5 @@
 {{define "component_textbox"}}
-<div id="{{.ID}}" 
+<div id="{{.ID}}"
      class="component-textbox component-{{.Position.Mode}}{{if .ClassName}} {{.ClassName}}{{end}}"
      style="
         {{if .Visible}}display: block;{{else}}display: none;{{end}}
@@ -27,6 +27,6 @@
         {{if .Content.textShadow}}text-shadow: {{.Content.textShadow}};{{end}}
         {{if .Content.fontStyle}}font-style: {{.Content.fontStyle}};{{end}}
      ">
-    {{.Content.text}}
+    {{if .Content.isEvaluated}}{{.Content.evaluatedText}}{{else}}{{.Content.text}}{{end}}
 </div>
 {{end}}

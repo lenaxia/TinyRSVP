@@ -50,18 +50,25 @@ func TestComponentXSS_TextBoxScriptTag(t *testing.T) {
 
 	var buf bytes.Buffer
 	err := renderer.Render(&buf, event, template)
-
 	if err != nil {
-		t.Logf("Render error (expected for missing templates): %v", err)
+		t.Fatalf("Render failed: %v", err)
 	}
 
 	output := buf.String()
-	if strings.Contains(output, "<script>") && !strings.Contains(output, "&lt;script&gt;") {
+
+	if strings.Contains(output, "<script>alert") {
 		t.Error("Script tag was not escaped - XSS vulnerability detected")
+	}
+
+	if !strings.Contains(output, "&lt;script&gt;") && !strings.Contains(output, "&amp;lt;script&amp;gt;") {
+		t.Errorf("Script tag should be escaped. Output:\n%s", output)
 	}
 }
 
 func TestComponentXSS_ImageJavaScriptURL(t *testing.T) {
+	engine := NewEngine()
+	renderer := NewComponentRenderer(engine)
+
 	configJSON := `{
 		"version": "1.0",
 		"metadata": {"name": "Test", "category": "card", "description": "Test"},
@@ -80,19 +87,37 @@ func TestComponentXSS_ImageJavaScriptURL(t *testing.T) {
 		}]
 	}`
 
-	renderer := &ComponentRenderer{}
-	config, err := renderer.ParseComponentConfig(&configJSON)
-	if err != nil {
-		t.Fatalf("Failed to parse config: %v", err)
+	template := &models.Template{
+		ID:              1,
+		Name:            "Test Template",
+		Type:            models.TemplateTypeRSVPPage,
+		HTMLContent:     "test",
+		ComponentConfig: &configJSON,
 	}
 
-	if len(config.Components) > 0 {
-		comp := config.Components[0]
-		if src, ok := comp.Content["src"].(string); ok {
-			if strings.HasPrefix(src, "javascript:") {
-				t.Log("Detected javascript: URL - should be sanitized during rendering")
-			}
-		}
+	event := &models.Event{
+		ID:        1,
+		Title:     "Test Event",
+		StartTime: time.Now(),
+		Timezone:  "UTC",
+		Status:    models.EventStatusPublished,
+		CreatedBy: 1,
+	}
+
+	var buf bytes.Buffer
+	err := renderer.Render(&buf, event, template)
+	if err != nil {
+		t.Fatalf("Render failed: %v", err)
+	}
+
+	output := buf.String()
+
+	if strings.Contains(output, `src="javascript:`) {
+		t.Error("javascript: URL was not sanitized - XSS vulnerability detected")
+	}
+
+	if strings.Contains(output, "javascript:alert") && !strings.Contains(output, "javascript%3A") {
+		t.Logf("Note: javascript: URL present but may be escaped. Output contains: %v", strings.Contains(output, "javascript"))
 	}
 }
 
@@ -132,6 +157,9 @@ func TestComponentXSS_InlineStyleInjection(t *testing.T) {
 }
 
 func TestComponentXSS_EventHandlerAttributes(t *testing.T) {
+	engine := NewEngine()
+	renderer := NewComponentRenderer(engine)
+
 	configJSON := `{
 		"version": "1.0",
 		"metadata": {"name": "Test", "category": "card", "description": "Test"},
@@ -150,19 +178,37 @@ func TestComponentXSS_EventHandlerAttributes(t *testing.T) {
 		}]
 	}`
 
-	renderer := &ComponentRenderer{}
-	config, err := renderer.ParseComponentConfig(&configJSON)
-	if err != nil {
-		t.Fatalf("Failed to parse config: %v", err)
+	template := &models.Template{
+		ID:              1,
+		Name:            "Test Template",
+		Type:            models.TemplateTypeRSVPPage,
+		HTMLContent:     "test",
+		ComponentConfig: &configJSON,
 	}
 
-	if len(config.Components) > 0 {
-		comp := config.Components[0]
-		if text, ok := comp.Content["text"].(string); ok {
-			if strings.Contains(text, "onclick") {
-				t.Log("Detected event handler - Go html/template should auto-escape this")
-			}
-		}
+	event := &models.Event{
+		ID:        1,
+		Title:     "Test Event",
+		StartTime: time.Now(),
+		Timezone:  "UTC",
+		Status:    models.EventStatusPublished,
+		CreatedBy: 1,
+	}
+
+	var buf bytes.Buffer
+	err := renderer.Render(&buf, event, template)
+	if err != nil {
+		t.Fatalf("Render failed: %v", err)
+	}
+
+	output := buf.String()
+
+	if strings.Contains(output, `onclick='alert`) || strings.Contains(output, `onclick="alert`) {
+		t.Error("Event handler was not escaped - XSS vulnerability detected")
+	}
+
+	if !strings.Contains(output, "&lt;div") && !strings.Contains(output, "&amp;lt;div") {
+		t.Errorf("HTML tags should be escaped. Output:\n%s", output)
 	}
 }
 

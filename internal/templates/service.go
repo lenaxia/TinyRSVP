@@ -3,6 +3,7 @@ package templates
 import (
 	"context"
 	"fmt"
+	"io"
 	"time"
 
 	"github.com/lenaxia/tinyrsvp/internal/auth"
@@ -22,6 +23,7 @@ type Service interface {
 	ListTemplates(ctx context.Context, filters *repositories.TemplateFilters) ([]*models.Template, error)
 	PreviewTemplate(ctx context.Context, req *PreviewRequest) (*PreviewResponse, error)
 	GetComponentRenderer() *ComponentRenderer
+	RenderRSVPPage(w io.Writer, event *models.Event, template *models.Template) error
 }
 
 type service struct {
@@ -302,4 +304,39 @@ func (s *service) PreviewTemplate(ctx context.Context, req *PreviewRequest) (*Pr
 	}
 
 	return response, nil
+}
+
+func (s *service) RenderRSVPPage(w io.Writer, event *models.Event, template *models.Template) error {
+	if template == nil {
+		return fmt.Errorf("template cannot be nil")
+	}
+
+	if event == nil {
+		return fmt.Errorf("event cannot be nil")
+	}
+
+	if template.ComponentConfig != nil && *template.ComponentConfig != "" {
+		return s.componentRenderer.Render(w, event, template)
+	}
+
+	return s.renderLegacyHTML(w, event, template)
+}
+
+func (s *service) renderLegacyHTML(w io.Writer, event *models.Event, template *models.Template) error {
+	data := map[string]interface{}{
+		"Event":    event,
+		"Template": template,
+	}
+
+	tmpl, err := NewEngine().Parse(template.HTMLContent)
+	if err != nil {
+		return fmt.Errorf("failed to parse legacy template: %w", err)
+	}
+
+	engine := NewEngine()
+	if err := engine.Execute(w, tmpl, data); err != nil {
+		return fmt.Errorf("failed to execute legacy template: %w", err)
+	}
+
+	return nil
 }

@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -28,6 +29,7 @@ type mockTemplateService struct {
 	ListTemplatesFunc         func(ctx context.Context, filters *repositories.TemplateFilters) ([]*models.Template, error)
 	PreviewTemplateFunc       func(ctx context.Context, req *templates.PreviewRequest) (*templates.PreviewResponse, error)
 	GetComponentRendererFunc  func() *templates.ComponentRenderer
+	RenderRSVPPageFunc        func(w io.Writer, event *models.Event, template *models.Template) error
 }
 
 func (m *mockTemplateService) CreateTemplate(ctx context.Context, template *models.Template) error {
@@ -104,6 +106,13 @@ func (m *mockTemplateService) PreviewTemplate(ctx context.Context, req *template
 func (m *mockTemplateService) GetComponentRenderer() *templates.ComponentRenderer {
 	if m.GetComponentRendererFunc != nil {
 		return m.GetComponentRendererFunc()
+	}
+	return nil
+}
+
+func (m *mockTemplateService) RenderRSVPPage(w io.Writer, event *models.Event, template *models.Template) error {
+	if m.RenderRSVPPageFunc != nil {
+		return m.RenderRSVPPageFunc(w, event, template)
 	}
 	return nil
 }

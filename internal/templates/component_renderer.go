@@ -3,8 +3,12 @@ package templates
 import (
 	"encoding/json"
 	"fmt"
+	"html/template"
 	"io"
+	"os"
+	"path/filepath"
 	"sort"
+	"strings"
 
 	"github.com/lenaxia/tinyrsvp/internal/models"
 )
@@ -235,6 +239,10 @@ func (r *ComponentRenderer) Render(w io.Writer, event *models.Event, template *m
 		return fmt.Errorf("failed to merge configurations: %w", err)
 	}
 
+	if err := r.evaluateComponentTemplates(finalConfig, event, template); err != nil {
+		return fmt.Errorf("failed to evaluate component templates: %w", err)
+	}
+
 	data := map[string]interface{}{
 		"Event":         event,
 		"Template":      template,
@@ -246,10 +254,96 @@ func (r *ComponentRenderer) Render(w io.Writer, event *models.Event, template *m
 		return fmt.Errorf("template engine not initialized")
 	}
 
-	tmpl, err := r.engine.Parse("{{/* Component rendering will be implemented with HTML templates */}}")
+	tmpl, err := r.loadComponentTemplates()
 	if err != nil {
-		return fmt.Errorf("failed to parse component template: %w", err)
+		return fmt.Errorf("failed to load component templates: %w", err)
 	}
 
 	return r.engine.Execute(w, tmpl, data)
+}
+
+func (r *ComponentRenderer) evaluateComponentTemplates(config *models.ComponentConfiguration, event *models.Event, tmpl *models.Template) error {
+	templateData := map[string]interface{}{
+		"Event":    event,
+		"Template": tmpl,
+	}
+
+	for i := range config.Components {
+		comp := &config.Components[i]
+		if comp.Content == nil {
+			continue
+		}
+
+		if textVal, ok := comp.Content["text"].(string); ok {
+			if strings.Contains(textVal, "{{") {
+				parsedTmpl, err := r.engine.Parse(textVal)
+				if err != nil {
+					return fmt.Errorf("failed to parse template in component %s: %w", comp.ID, err)
+				}
+
+				evaluated, err := r.engine.ExecuteToString(parsedTmpl, templateData)
+				if err != nil {
+					return fmt.Errorf("failed to evaluate template in component %s: %w", comp.ID, err)
+				}
+
+				comp.Content["evaluatedText"] = evaluated
+				comp.Content["isEvaluated"] = true
+			}
+		}
+	}
+
+	return nil
+}
+
+func (r *ComponentRenderer) loadComponentTemplates() (*template.Template, error) {
+	projectRoot, err := findProjectRoot()
+	if err != nil {
+		return nil, fmt.Errorf("failed to find project root: %w", err)
+	}
+
+	tmpl := template.New("base_component.html").Funcs(r.engine.funcMap)
+
+	baseTemplate := filepath.Join(projectRoot, "templates/web/rsvp_themes/base_component.html")
+	tmpl, err = tmpl.ParseFiles(baseTemplate)
+	if err != nil {
+		return nil, fmt.Errorf("failed to parse base component template: %w", err)
+	}
+
+	partials := []string{
+		"templates/web/partials/component_textbox.html",
+		"templates/web/partials/component_image.html",
+		"templates/web/partials/component_background.html",
+		"templates/web/partials/component_overlay.html",
+		"templates/web/partials/component_container.html",
+		"templates/web/partials/component_divider.html",
+	}
+
+	for _, partial := range partials {
+		fullPath := filepath.Join(projectRoot, partial)
+		tmpl, err = tmpl.ParseFiles(fullPath)
+		if err != nil {
+			return nil, fmt.Errorf("failed to parse partial %s: %w", partial, err)
+		}
+	}
+
+	return tmpl, nil
+}
+
+func findProjectRoot() (string, error) {
+	dir, err := os.Getwd()
+	if err != nil {
+		return "", err
+	}
+
+	for {
+		if _, err := os.Stat(filepath.Join(dir, "go.mod")); err == nil {
+			return dir, nil
+		}
+
+		parent := filepath.Dir(dir)
+		if parent == dir {
+			return "", fmt.Errorf("could not find project root (go.mod not found)")
+		}
+		dir = parent
+	}
 }

@@ -72,9 +72,35 @@ func TestComponentIntegration_RenderWithoutOverrides(t *testing.T) {
 
 	var buf bytes.Buffer
 	err := renderer.Render(&buf, event, template)
-
 	if err != nil {
-		t.Logf("Render error (expected for missing template files): %v", err)
+		t.Fatalf("Render failed: %v", err)
+	}
+
+	output := buf.String()
+
+	if !strings.Contains(output, "John") && !strings.Contains(output, "Jane") && !strings.Contains(output, "Wedding") {
+		t.Errorf("Output missing event title. Output:\n%s", output)
+	}
+	if !strings.Contains(output, "page-background") {
+		t.Error("Output missing page-background component ID")
+	}
+	if !strings.Contains(output, "title-text") {
+		t.Error("Output missing title-text component ID")
+	}
+	if !strings.Contains(output, "z-index: 0") {
+		t.Error("Output missing background z-index")
+	}
+	if !strings.Contains(output, "z-index: 10") {
+		t.Error("Output missing title z-index")
+	}
+
+	bgPos := strings.Index(output, "page-background")
+	titlePos := strings.Index(output, "title-text")
+	if bgPos == -1 || titlePos == -1 {
+		t.Fatal("Component IDs not found")
+	}
+	if bgPos > titlePos {
+		t.Error("Components not ordered by zIndex (background should appear before title in DOM)")
 	}
 }
 
@@ -583,10 +609,28 @@ func TestComponentIntegration_HTMLOutputStructure(t *testing.T) {
 
 	var buf bytes.Buffer
 	err := renderer.Render(&buf, event, template)
-
 	if err != nil {
-		if !strings.Contains(err.Error(), "template") {
-			t.Errorf("Unexpected error: %v", err)
-		}
+		t.Fatalf("Render failed: %v", err)
+	}
+
+	output := buf.String()
+
+	if !strings.Contains(output, "<!DOCTYPE html>") {
+		t.Error("Output missing DOCTYPE")
+	}
+	if !strings.Contains(output, "component-canvas") {
+		t.Error("Output missing component-canvas div")
+	}
+	if !strings.Contains(output, "test-text") {
+		t.Error("Output missing test-text component ID")
+	}
+	if !strings.Contains(output, "Test Content") {
+		t.Error("Output missing component content")
+	}
+	if !strings.Contains(output, "z-index: 10") {
+		t.Error("Output missing z-index style")
+	}
+	if !strings.Contains(output, "background-color: #f0f0f0") {
+		t.Error("Output missing background color from layout")
 	}
 }

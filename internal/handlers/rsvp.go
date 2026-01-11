@@ -1,11 +1,13 @@
 package handlers
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"html/template"
+	"io"
 	"net/http"
 	"strconv"
 	"strings"
@@ -37,8 +39,13 @@ type RSVPHandler struct {
 	answerRepo            repositories.AnswerRepository
 	rsvpService           RSVPService
 	templateRepo          repositories.TemplateRepository
+	templateService       TemplateService
 	templates             *template.Template
 	confirmationTemplates *template.Template
+}
+
+type TemplateService interface {
+	RenderRSVPPage(w io.Writer, event *models.Event, template *models.Template) error
 }
 
 func NewRSVPHandler(
@@ -65,6 +72,10 @@ func (h *RSVPHandler) SetAnswerRepository(repo repositories.AnswerRepository) {
 
 func (h *RSVPHandler) SetTemplateRepository(repo repositories.TemplateRepository) {
 	h.templateRepo = repo
+}
+
+func (h *RSVPHandler) SetTemplateService(service TemplateService) {
+	h.templateService = service
 }
 
 type QuestionWithOptions struct {
@@ -246,6 +257,17 @@ func (h *RSVPHandler) renderError(w http.ResponseWriter, status int, message str
 func (h *RSVPHandler) renderPage(w http.ResponseWriter, status int, data *RSVPPageData) {
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 	w.WriteHeader(status)
+
+	if h.templateService != nil && data.Event != nil && h.templateRepo != nil {
+		theme, err := h.getEventTheme(context.Background(), data.Event)
+		if err == nil && theme != nil {
+			var buf bytes.Buffer
+			if err := h.templateService.RenderRSVPPage(&buf, data.Event, theme); err == nil {
+				w.Write(buf.Bytes())
+				return
+			}
+		}
+	}
 
 	if h.templates != nil {
 		if err := h.templates.ExecuteTemplate(w, "rsvp_page.html", data); err != nil {
