@@ -487,3 +487,15 @@ func TestRSVPSummaryHandler_SetTemplates(t *testing.T) {
 func (m *mockRSVPSummaryEventRepository) CountEvents(ctx context.Context) (int, error) {
 	return 0, nil
 }
+
+func (m *mockRSVPSummaryEventRepository) GetComponentOverrides(ctx context.Context, eventID int64) (*models.ComponentOverrides, error) {
+	return nil, nil
+}
+
+func (m *mockRSVPSummaryEventRepository) UpdateComponentOverrides(ctx context.Context, eventID int64, overrides *models.ComponentOverrides) error {
+	return nil
+}
+
+func (m *mockRSVPSummaryEventRepository) DeleteComponentOverrides(ctx context.Context, eventID int64) error {
+	return nil
+}

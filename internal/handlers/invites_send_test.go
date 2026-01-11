@@ -442,6 +442,18 @@ func TestSendInvite_NoEmail(t *testing.T) {
 func (m *mockSendInviteEventRepo) CountEvents(ctx context.Context) (int, error) {
 	return 0, errors.New("not implemented")
 }
+
+func (m *mockSendInviteEventRepo) GetComponentOverrides(ctx context.Context, eventID int64) (*models.ComponentOverrides, error) {
+	return nil, nil
+}
+
+func (m *mockSendInviteEventRepo) UpdateComponentOverrides(ctx context.Context, eventID int64, overrides *models.ComponentOverrides) error {
+	return nil
+}
+
+func (m *mockSendInviteEventRepo) DeleteComponentOverrides(ctx context.Context, eventID int64) error {
+	return nil
+}
 func (m *mockSendInviteEventRepo) GetByPublicID(ctx context.Context, publicID string) (*models.Event, error) {
 	return nil, errors.New("not implemented")
 }

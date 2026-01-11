@@ -556,6 +556,18 @@ func TestRevokeInviteHandlers_RevokeInvite(t *testing.T) {
 func (m *mockRevokeEventRepository) CountEvents(ctx context.Context) (int, error) {
 	return 0, nil
 }
+
+func (m *mockRevokeEventRepository) GetComponentOverrides(ctx context.Context, eventID int64) (*models.ComponentOverrides, error) {
+	return nil, nil
+}
+
+func (m *mockRevokeEventRepository) UpdateComponentOverrides(ctx context.Context, eventID int64, overrides *models.ComponentOverrides) error {
+	return nil
+}
+
+func (m *mockRevokeEventRepository) DeleteComponentOverrides(ctx context.Context, eventID int64) error {
+	return nil
+}
 func (m *mockRevokeEventRepository) GetByPublicID(ctx context.Context, publicID string) (*models.Event, error) {
 	return nil, errors.New("not implemented")
 }

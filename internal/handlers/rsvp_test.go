@@ -1154,3 +1154,15 @@ func (m *mockRSVPEventRepository) GetByFriendlyName(ctx context.Context, friendl
 func (m *mockRSVPEventRepository) CountEvents(ctx context.Context) (int, error) {
 	return 0, nil
 }
+
+func (m *mockRSVPEventRepository) GetComponentOverrides(ctx context.Context, eventID int64) (*models.ComponentOverrides, error) {
+	return nil, nil
+}
+
+func (m *mockRSVPEventRepository) UpdateComponentOverrides(ctx context.Context, eventID int64, overrides *models.ComponentOverrides) error {
+	return nil
+}
+
+func (m *mockRSVPEventRepository) DeleteComponentOverrides(ctx context.Context, eventID int64) error {
+	return nil
+}

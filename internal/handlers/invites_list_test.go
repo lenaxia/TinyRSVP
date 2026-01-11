@@ -759,6 +759,18 @@ func TestListInvitesHandler_LimitBoundaryValues(t *testing.T) {
 func (m *mockListEventRepository) CountEvents(ctx context.Context) (int, error) {
 	return 0, nil
 }
+
+func (m *mockListEventRepository) GetComponentOverrides(ctx context.Context, eventID int64) (*models.ComponentOverrides, error) {
+	return nil, nil
+}
+
+func (m *mockListEventRepository) UpdateComponentOverrides(ctx context.Context, eventID int64, overrides *models.ComponentOverrides) error {
+	return nil
+}
+
+func (m *mockListEventRepository) DeleteComponentOverrides(ctx context.Context, eventID int64) error {
+	return nil
+}
 func (m *mockListEventRepository) GetByPublicID(ctx context.Context, publicID string) (*models.Event, error) {
 	return nil, nil
 }

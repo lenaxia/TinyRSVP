@@ -503,6 +503,18 @@ func createMultipartRequestHelper(csvContent string, filename string) (*http.Req
 func (m *mockEventRepository) CountEvents(ctx context.Context) (int, error) {
 	return 0, nil
 }
+
+func (m *mockEventRepository) GetComponentOverrides(ctx context.Context, eventID int64) (*models.ComponentOverrides, error) {
+	return nil, nil
+}
+
+func (m *mockEventRepository) UpdateComponentOverrides(ctx context.Context, eventID int64, overrides *models.ComponentOverrides) error {
+	return nil
+}
+
+func (m *mockEventRepository) DeleteComponentOverrides(ctx context.Context, eventID int64) error {
+	return nil
+}
 func (m *mockEventRepository) GetByPublicID(ctx context.Context, publicID string) (*models.Event, error) {
 	return nil, nil
 }

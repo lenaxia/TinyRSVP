@@ -477,6 +477,18 @@ func TestRegenerateInviteTokenHandlers_RegenerateInviteToken(t *testing.T) {
 func (m *mockRegenerateEventRepository) CountEvents(ctx context.Context) (int, error) {
 	return 0, nil
 }
+
+func (m *mockRegenerateEventRepository) GetComponentOverrides(ctx context.Context, eventID int64) (*models.ComponentOverrides, error) {
+	return nil, nil
+}
+
+func (m *mockRegenerateEventRepository) UpdateComponentOverrides(ctx context.Context, eventID int64, overrides *models.ComponentOverrides) error {
+	return nil
+}
+
+func (m *mockRegenerateEventRepository) DeleteComponentOverrides(ctx context.Context, eventID int64) error {
+	return nil
+}
 func (m *mockRegenerateEventRepository) GetByPublicID(ctx context.Context, publicID string) (*models.Event, error) {
 	return nil, errors.New("not implemented")
 }
