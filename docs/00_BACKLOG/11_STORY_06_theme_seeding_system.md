@@ -1,10 +1,11 @@
 # User Story 11.06: Theme Seeding System
 
-**Epic:** [11_EPIC_rsvp_themes.md](11_EPIC_rsvp_themes.md)  
-**Priority:** High  
-**Status:** Not Started  
-**Estimated Effort:** 1 day  
-**Owner:** Unassigned
+**Epic:** [11_EPIC_rsvp_themes.md](11_EPIC_rsvp_themes.md)
+**Priority:** High
+**Status:** Complete
+**Estimated Effort:** 1 day
+**Owner:** LLM
+**Completed:** 2026-01-11
 
 ---
 
@@ -29,41 +30,41 @@ The 7 pre-designed themes need to be inserted into the database when the applica
 ## Acceptance Criteria
 
 ### Seeding Mechanism
-- [ ] Themes seeded on application startup
-- [ ] Seeding is idempotent (safe to run multiple times)
-- [ ] Existing themes not duplicated
-- [ ] Existing themes updated if changed
-- [ ] New themes added automatically
-- [ ] Seeding completes in <5 seconds
+- [x] Themes seeded on application startup
+- [x] Seeding is idempotent (safe to run multiple times)
+- [x] Existing themes not duplicated
+- [x] Existing themes updated if changed
+- [x] New themes added automatically
+- [x] Seeding completes in <5 seconds
 
 ### Theme Data
-- [ ] All 7 themes seeded (1 plain + 6 card)
-- [ ] Theme metadata complete (name, description, category, tags)
-- [ ] Image URLs correct
-- [ ] Sort order set appropriately
-- [ ] One theme marked as default
-- [ ] Created_by is NULL (system themes)
+- [x] All 7 themes seeded (1 plain + 6 card)
+- [x] Theme metadata complete (name, description, category, tags)
+- [x] Image URLs correct
+- [x] Sort order set appropriately
+- [x] One theme marked as default
+- [x] Created_by is NULL (system themes)
 
 ### Validation
-- [ ] Seeded themes pass validation
-- [ ] Image URLs point to existing files
-- [ ] CSS files exist for all themes
-- [ ] HTML templates exist for all themes
-- [ ] No broken references
+- [x] Seeded themes pass validation
+- [x] Image URLs point to existing files
+- [x] CSS files exist for all themes
+- [x] HTML templates exist for all themes
+- [x] No broken references
 
 ### Error Handling
-- [ ] Database errors logged and reported
-- [ ] Missing files logged as warnings
-- [ ] Seeding failure doesn't prevent startup (uses existing themes)
-- [ ] Partial seeding handled gracefully
+- [x] Database errors logged and reported
+- [x] Missing files logged as warnings
+- [x] Seeding failure doesn't prevent startup (uses existing themes)
+- [x] Partial seeding handled gracefully
 
 ### Testing
-- [ ] Unit tests for seeding logic
-- [ ] Integration tests with clean database
-- [ ] Integration tests with existing themes
-- [ ] Test idempotency (run twice)
-- [ ] Test theme updates
-- [ ] Test error scenarios
+- [x] Unit tests for seeding logic
+- [x] Integration tests with clean database
+- [x] Integration tests with existing themes
+- [x] Test idempotency (run twice)
+- [x] Test theme updates
+- [x] Test error scenarios
 
 ---
 
@@ -269,55 +270,55 @@ func main() {
 ## Tasks
 
 ### Seeder Implementation
-- [ ] Create `seeder.go` file
-- [ ] Implement `Seeder` struct
-- [ ] Implement `SeedThemes()` method
-- [ ] Implement `seedTheme()` helper
-- [ ] Implement `getDefaultThemes()` method
-- [ ] Implement file loading helpers
-- [ ] Handle errors gracefully
-- [ ] Write unit tests
+- [x] Create `seeder.go` file
+- [x] Implement `Seeder` struct
+- [x] Implement `SeedThemes()` method
+- [x] Implement `seedTheme()` helper
+- [x] Implement `getDefaultThemes()` method
+- [x] Implement file loading helpers
+- [x] Handle errors gracefully
+- [x] Write unit tests
 
 ### Template Service Extension
-- [ ] Add `GetTemplateByName()` method
-- [ ] Update service interface
-- [ ] Implement in service
-- [ ] Write service tests
+- [x] Add `GetByNameAndType()` method to repository
+- [x] Update repository interface
+- [x] Implement in repository
+- [x] Write repository tests
 
 ### Startup Integration
-- [ ] Update `main.go` to call seeder
-- [ ] Add logging for seeding status
-- [ ] Handle seeding errors
-- [ ] Test startup with clean database
-- [ ] Test startup with existing themes
+- [x] Update `main.go` to call seeder
+- [x] Add logging for seeding status
+- [x] Handle seeding errors
+- [x] Test startup with clean database
+- [x] Test startup with existing themes
 
 ### Idempotency Testing
-- [ ] Test running seeder twice
-- [ ] Verify no duplicates created
-- [ ] Verify existing themes updated
-- [ ] Test with partial existing themes
-- [ ] Write idempotency tests
+- [x] Test running seeder twice
+- [x] Verify no duplicates created
+- [x] Verify existing themes updated
+- [x] Test with partial existing themes
+- [x] Write idempotency tests
 
 ### File Loading
-- [ ] Verify all template files exist
-- [ ] Verify all CSS files exist
-- [ ] Verify all image files exist
-- [ ] Handle missing files gracefully
-- [ ] Write file loading tests
+- [x] Verify all template files exist
+- [x] Verify all CSS files exist
+- [x] Verify all image files exist
+- [x] Handle missing files gracefully
+- [x] Write file loading tests
 
 ---
 
 ## Definition of Done
 
-- [ ] All acceptance criteria met
-- [ ] Seeder implemented
-- [ ] Integrated into startup
-- [ ] All 7 themes seeded correctly
-- [ ] Idempotency verified
-- [ ] All unit tests passing
-- [ ] All integration tests passing
-- [ ] Error handling tested
-- [ ] Changes committed to git
+- [x] All acceptance criteria met
+- [x] Seeder implemented
+- [x] Integrated into startup
+- [x] All 7 themes seeded correctly
+- [x] Idempotency verified
+- [x] All unit tests passing
+- [x] All integration tests passing
+- [x] Error handling tested
+- [x] Changes committed to git
 
 ---
 
