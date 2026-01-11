@@ -68,7 +68,8 @@ type Generator interface {
 }
 
 type generator struct {
-	secret []byte
+	secret         []byte
+	hashingEnabled bool
 }
 
 // NewGenerator creates a new Generator with the provided secret key.
@@ -91,7 +92,10 @@ type generator struct {
 //	}
 //	gen := NewGenerator(secret)
 func NewGenerator(secret []byte) Generator {
-	return &generator{secret: secret}
+	return &generator{
+		secret:         secret,
+		hashingEnabled: len(secret) > 0,
+	}
 }
 
 // Generate creates a cryptographically secure random token.
@@ -122,6 +126,9 @@ func (g *generator) Generate() (string, error) {
 // generate valid hashes. This allows secure token validation by comparing
 // hashes instead of storing plain tokens.
 func (g *generator) Hash(token string) (string, error) {
+	if !g.hashingEnabled {
+		return token, nil
+	}
 	h := hmac.New(sha256.New, g.secret)
 	h.Write([]byte(token))
 	return base64.URLEncoding.WithPadding(base64.NoPadding).EncodeToString(h.Sum(nil)), nil

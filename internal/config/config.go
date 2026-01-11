@@ -81,7 +81,8 @@ type SecurityConfig struct {
 }
 
 type TokenConfig struct {
-	Secret string
+	Secret         string
+	HashingEnabled bool
 }
 
 func Load() (*Config, error) {
@@ -217,6 +218,12 @@ func (c *Config) loadFromEnv() error {
 	c.Security.HMACSecretKey = getEnvString("SECURITY_HMAC_SECRET", "")
 
 	c.Token.Secret = getEnvString("TOKEN_SECRET", "")
+	
+	hashingEnabled, err := getEnvBool("TOKEN_HASHING_ENABLED", true)
+	if err != nil {
+		return fmt.Errorf("TOKEN_HASHING_ENABLED: %w", err)
+	}
+	c.Token.HashingEnabled = hashingEnabled
 
 	return nil
 }
@@ -225,13 +232,25 @@ func (c *Config) setDefaults() {
 	if c.Security.HMACSecretKey == "" {
 		c.Security.HMACSecretKey = generateHMACSecret()
 	}
-	if c.Token.Secret == "" {
-		c.Token.Secret = generateHMACSecret()
-		fmt.Fprintln(os.Stderr, "WARNING: TOKEN_SECRET not set - generating random secret")
-		fmt.Fprintln(os.Stderr, "WARNING: Invite tokens will become invalid after server restart")
-		fmt.Fprintln(os.Stderr, "WARNING: Set TOKEN_SECRET environment variable to persist tokens")
-		fmt.Fprintf(os.Stderr, "WARNING: Generate with: openssl rand -hex 32\n")
+	
+	if c.Token.HashingEnabled {
+		if c.Token.Secret == "" {
+			c.Token.Secret = getHardcodedTokenSecret()
+			fmt.Fprintln(os.Stderr, "WARNING: TOKEN_SECRET not set - using hardcoded fallback")
+			fmt.Fprintln(os.Stderr, "WARNING: Tokens will persist across restarts but use a known secret")
+			fmt.Fprintln(os.Stderr, "WARNING: For production, set TOKEN_SECRET environment variable")
+			fmt.Fprintf(os.Stderr, "WARNING: Generate with: openssl rand -hex 32\n")
+		}
+	} else {
+		c.Token.Secret = ""
+		fmt.Fprintln(os.Stderr, "WARNING: Token hashing disabled (TOKEN_HASHING_ENABLED=false)")
+		fmt.Fprintln(os.Stderr, "WARNING: Invite tokens will be stored in plain text in the database")
+		fmt.Fprintln(os.Stderr, "WARNING: This reduces security but simplifies operations")
 	}
+}
+
+func getHardcodedTokenSecret() string {
+	return "tinyrsvp_default_token_secret_change_in_production_da8f152a3cc3d58054cb988a463344503ad1ad09fba718a8a5e6e9513d16040f"
 }
 
 func (c *Config) Validate() error {
@@ -438,8 +457,8 @@ func (c *Config) validateSecurity() error {
 }
 
 func (c *Config) validateToken() error {
-	if len(c.Token.Secret) < 32 {
-		return fmt.Errorf("token secret must be at least 32 bytes")
+	if c.Token.HashingEnabled && len(c.Token.Secret) < 32 {
+		return fmt.Errorf("token secret must be at least 32 bytes when hashing is enabled")
 	}
 
 	return nil

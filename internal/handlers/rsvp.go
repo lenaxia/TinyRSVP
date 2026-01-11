@@ -285,6 +285,61 @@ func (h *RSVPHandler) parseRSVPRequest(r *http.Request) (*rsvp.SubmitRSVPRequest
 		req.PlusOnes = plusOnes
 	}
 	
+	answerMap := make(map[int64]*rsvp.AnswerRequest)
+	
+	for key, values := range r.Form {
+		if !strings.HasPrefix(key, "answers[") {
+			continue
+		}
+		
+		key = strings.TrimPrefix(key, "answers[")
+		closeBracket := strings.Index(key, "]")
+		if closeBracket == -1 {
+			continue
+		}
+		
+		questionIDStr := key[:closeBracket]
+		questionID, err := strconv.ParseInt(questionIDStr, 10, 64)
+		if err != nil {
+			continue
+		}
+		
+		fieldType := key[closeBracket+1:]
+		fieldType = strings.TrimPrefix(fieldType, "[")
+		fieldType = strings.TrimSuffix(fieldType, "]")
+		fieldType = strings.TrimSuffix(fieldType, "[]")
+		
+		if _, exists := answerMap[questionID]; !exists {
+			answerMap[questionID] = &rsvp.AnswerRequest{
+				QuestionID: questionID,
+			}
+		}
+		
+		answer := answerMap[questionID]
+		
+		switch fieldType {
+		case "text":
+			if len(values) > 0 && values[0] != "" {
+				text := values[0]
+				answer.AnswerText = &text
+			}
+		case "option":
+			if len(values) > 0 && values[0] != "" {
+				option := values[0]
+				answer.AnswerOption = &option
+			}
+		case "options":
+			if len(values) > 0 {
+				combined := strings.Join(values, ", ")
+				answer.AnswerOption = &combined
+			}
+		}
+	}
+	
+	for _, answer := range answerMap {
+		req.Answers = append(req.Answers, *answer)
+	}
+	
 	return req, nil
 }
 

@@ -199,9 +199,13 @@ func main() {
 
 	logger.Info("Initialized question services")
 
-	tokenSecretBytes, err := hex.DecodeString(cfg.Token.Secret)
-	if err != nil {
-		tokenSecretBytes = []byte(cfg.Token.Secret)
+	var tokenSecretBytes []byte
+	if cfg.Token.HashingEnabled {
+		var err error
+		tokenSecretBytes, err = hex.DecodeString(cfg.Token.Secret)
+		if err != nil {
+			tokenSecretBytes = []byte(cfg.Token.Secret)
+		}
 	}
 	tokenGenerator := token.NewGenerator(tokenSecretBytes)
 	inviteService := invites.NewInviteService(tokenGenerator, inviteRepo)
