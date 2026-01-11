@@ -1,9 +1,10 @@
 # Story 10.15: Auth Test Expectations Fix
 
-**Epic:** 10 - Technical Debt & Improvements  
-**Priority:** Low  
-**Status:** Not Started  
+**Epic:** 10 - Technical Debt & Improvements
+**Priority:** Low
+**Status:** Complete
 **Identified:** 2026-01-11 (Epic 11 Phase 1 Validation)
+**Completed:** 2026-01-11
 
 ---
 
@@ -57,10 +58,10 @@ During Epic 11 Phase 1 validation, several auth-related tests fail because they 
 
 ## Acceptance Criteria
 
-- [ ] All auth tests pass
-- [ ] Test expectations match actual behavior
-- [ ] Decision documented: 303 redirect vs 401 response
-- [ ] Consistent behavior across all endpoints
+- [x] All auth tests pass
+- [x] Test expectations match actual behavior
+- [x] Decision documented: 303 redirect vs 401 response
+- [x] Consistent behavior across all endpoints
 
 ---
 
@@ -118,12 +119,12 @@ The current 303 redirect behavior is correct and user-friendly. Tests should be 
 
 ## Tasks
 
-- [ ] Review all failing auth tests
-- [ ] Update test expectations to accept 303
-- [ ] Verify redirect URLs are correct
-- [ ] Verify return URL preservation works
-- [ ] Run all auth tests
-- [ ] Document decision in test comments
+- [x] Review all failing auth tests
+- [x] Update test expectations to accept 303
+- [x] Verify redirect URLs are correct
+- [x] Verify return URL preservation works
+- [x] Run all auth tests
+- [x] Document decision in test comments
 
 ---
 
