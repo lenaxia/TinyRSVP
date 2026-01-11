@@ -24,6 +24,9 @@ services:
       - DATABASE_TYPE=sqlite
       - DATABASE_PATH=/data/tinyrsvp.db
       
+      # Token Secret (REQUIRED - must persist across restarts)
+      - TOKEN_SECRET=da8f152a3cc3d58054cb988a463344503ad1ad09fba718a8a5e6e9513d16040f
+      
       # SMTP Configuration (MailHog)
       - SMTP_HOST=mailhog
       - SMTP_PORT=1025

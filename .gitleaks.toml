@@ -13,6 +13,7 @@ paths = [
     '''test/authelia/.*\.yml''',
     '''test/authelia/.*\.yaml''',
     '''docker-compose\.test\.yml''',
+    '''docker-compose\.yml''',
 ]
 
 [[rules.allowlist]]
@@ -23,9 +24,10 @@ paths = [
 ]
 
 [[rules.allowlist]]
-description = "Test docker-compose file"
+description = "Test docker-compose files"
 paths = [
     '''docker-compose\.test\.yml''',
+    '''docker-compose\.yml''',
 ]
 
 [[rules.allowlist]]
@@ -38,6 +40,7 @@ regexes = [
     '''insecure_session_secret_for_testing_only''',
     '''insecure_encryption_key_for_testing_only_must_be_32_chars!!''',
     '''insecure_hmac_secret_for_testing_only_must_be_very_long_string''',
+    '''da8f152a3cc3d58054cb988a463344503ad1ad09fba718a8a5e6e9513d16040f''',
 ]
 
 # Allow argon2 hashes in test files
