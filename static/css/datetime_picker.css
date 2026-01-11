@@ -93,7 +93,7 @@
     display: flex;
     gap: var(--spacing-2);
     margin-bottom: var(--spacing-3);
-    padding-top: var(--spacing-2);
+    padding-top: var(--spacing-3);
     border-bottom: 1px solid var(--color-border);
     position: sticky;
     top: 0;
@@ -155,8 +155,8 @@
 
 .datetime-picker-layout {
     display: grid;
-    grid-template-columns: 240px 120px;
-    gap: var(--spacing-3);
+    grid-template-columns: 260px 120px;
+    gap: var(--spacing-4);
     margin-bottom: var(--spacing-3);
     align-items: start;
 }
@@ -251,6 +251,8 @@
 
 .calendar-day.today {
     border-color: var(--color-primary);
+    border-width: 1px;
+    opacity: 0.7;
 }
 
 .calendar-day.selected {
@@ -381,6 +383,6 @@
 
 @media (max-width: 767px) {
     .datetime-picker-layout {
-        grid-template-columns: 240px 120px;
+        grid-template-columns: 260px 120px;
     }
 }

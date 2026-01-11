@@ -99,6 +99,7 @@ func setupTestDB(t *testing.T) db.Database {
 		event_id INTEGER NOT NULL REFERENCES events(id) ON DELETE CASCADE,
 		name TEXT,
 		email TEXT,
+		token TEXT,
 		token_hash TEXT NOT NULL UNIQUE,
 		max_plus_ones INTEGER NOT NULL,
 		status TEXT NOT NULL DEFAULT 'draft',
@@ -115,6 +116,7 @@ func setupTestDB(t *testing.T) db.Database {
 	);
 
 	CREATE INDEX idx_invites_event_id ON invites(event_id);
+	CREATE INDEX idx_invites_token ON invites(token);
 	CREATE INDEX idx_invites_token_hash ON invites(token_hash);
 	CREATE INDEX idx_invites_email ON invites(email);
 	CREATE INDEX idx_invites_status ON invites(status);

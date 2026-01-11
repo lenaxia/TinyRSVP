@@ -64,11 +64,11 @@ func (r *inviteRepository) Create(ctx context.Context, invite *models.Invite) er
 
 	query := `
 		INSERT INTO invites (
-			event_id, name, email, token_hash, max_plus_ones, status,
+			event_id, name, email, token, token_hash, max_plus_ones, status,
 			sent_at, viewed_at, unsubscribed, email_invalid,
 			created_at, updated_at, expires_at
 		)
-		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 	`
 
 	now := time.Now()
@@ -77,6 +77,7 @@ func (r *inviteRepository) Create(ctx context.Context, invite *models.Invite) er
 		invite.EventID,
 		invite.Name,
 		invite.Email,
+		invite.Token,
 		invite.TokenHash,
 		invite.MaxPlusOnes,
 		invite.Status,
@@ -138,11 +139,11 @@ func (r *inviteRepository) CreateBatch(ctx context.Context, invites []*models.In
 	return r.db.WithTransaction(ctx, func(tx *sql.Tx) error {
 		query := `
 			INSERT INTO invites (
-				event_id, name, email, token_hash, max_plus_ones, status,
+				event_id, name, email, token, token_hash, max_plus_ones, status,
 				sent_at, viewed_at, unsubscribed, email_invalid,
 				created_at, updated_at, expires_at
 			)
-			VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+			VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 		`
 
 		for _, invite := range invites {
@@ -150,6 +151,7 @@ func (r *inviteRepository) CreateBatch(ctx context.Context, invites []*models.In
 				invite.EventID,
 				invite.Name,
 				invite.Email,
+				invite.Token,
 				invite.TokenHash,
 				invite.MaxPlusOnes,
 				invite.Status,
@@ -192,7 +194,7 @@ func (r *inviteRepository) CreateBatch(ctx context.Context, invites []*models.In
 
 func (r *inviteRepository) GetByID(ctx context.Context, id int64) (*models.Invite, error) {
 	query := `
-		SELECT id, event_id, name, email, token_hash, max_plus_ones, status,
+		SELECT id, event_id, name, email, token, token_hash, max_plus_ones, status,
 			sent_at, viewed_at, unsubscribed, email_invalid,
 			created_at, updated_at, expires_at
 		FROM invites
@@ -205,6 +207,7 @@ func (r *inviteRepository) GetByID(ctx context.Context, id int64) (*models.Invit
 		&invite.EventID,
 		&invite.Name,
 		&invite.Email,
+		&invite.Token,
 		&invite.TokenHash,
 		&invite.MaxPlusOnes,
 		&invite.Status,
@@ -232,7 +235,7 @@ func (r *inviteRepository) GetByID(ctx context.Context, id int64) (*models.Invit
 
 func (r *inviteRepository) GetByTokenHash(ctx context.Context, tokenHash string) (*models.Invite, error) {
 	query := `
-		SELECT id, event_id, name, email, token_hash, max_plus_ones, status,
+		SELECT id, event_id, name, email, token, token_hash, max_plus_ones, status,
 			sent_at, viewed_at, unsubscribed, email_invalid,
 			created_at, updated_at, expires_at
 		FROM invites
@@ -245,6 +248,7 @@ func (r *inviteRepository) GetByTokenHash(ctx context.Context, tokenHash string)
 		&invite.EventID,
 		&invite.Name,
 		&invite.Email,
+		&invite.Token,
 		&invite.TokenHash,
 		&invite.MaxPlusOnes,
 		&invite.Status,
@@ -277,7 +281,7 @@ func (r *inviteRepository) Update(ctx context.Context, invite *models.Invite) er
 
 	query := `
 		UPDATE invites
-		SET name = ?, email = ?, token_hash = ?, max_plus_ones = ?, status = ?,
+		SET name = ?, email = ?, token = ?, token_hash = ?, max_plus_ones = ?, status = ?,
 			sent_at = ?, viewed_at = ?, revocation_reason = ?, unsubscribed = ?, email_invalid = ?,
 			updated_at = ?, expires_at = ?
 		WHERE id = ?
@@ -287,6 +291,7 @@ func (r *inviteRepository) Update(ctx context.Context, invite *models.Invite) er
 	result, err := r.db.Exec(ctx, query,
 		invite.Name,
 		invite.Email,
+		invite.Token,
 		invite.TokenHash,
 		invite.MaxPlusOnes,
 		invite.Status,
@@ -346,7 +351,7 @@ func (r *inviteRepository) Delete(ctx context.Context, id int64) error {
 
 func (r *inviteRepository) ListByEventID(ctx context.Context, eventID int64, filters InviteFilters) ([]*models.Invite, error) {
 	query := `
-		SELECT id, event_id, name, email, token_hash, max_plus_ones, status,
+		SELECT id, event_id, name, email, token, token_hash, max_plus_ones, status,
 			sent_at, viewed_at, unsubscribed, email_invalid,
 			created_at, updated_at, expires_at
 		FROM invites
@@ -417,6 +422,7 @@ func (r *inviteRepository) ListByEventID(ctx context.Context, eventID int64, fil
 			&invite.EventID,
 			&invite.Name,
 			&invite.Email,
+			&invite.Token,
 			&invite.TokenHash,
 			&invite.MaxPlusOnes,
 			&invite.Status,
@@ -586,7 +592,7 @@ func (r *inviteRepository) GetByEventIDs(ctx context.Context, eventIDs []int64) 
 	}
 
 	query := fmt.Sprintf(`
-		SELECT id, event_id, name, email, token_hash, max_plus_ones, status,
+		SELECT id, event_id, name, email, token, token_hash, max_plus_ones, status,
 			sent_at, viewed_at, unsubscribed, email_invalid,
 			created_at, updated_at, expires_at
 		FROM invites
@@ -608,6 +614,7 @@ func (r *inviteRepository) GetByEventIDs(ctx context.Context, eventIDs []int64) 
 			&invite.EventID,
 			&invite.Name,
 			&invite.Email,
+			&invite.Token,
 			&invite.TokenHash,
 			&invite.MaxPlusOnes,
 			&invite.Status,
