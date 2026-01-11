@@ -33,7 +33,7 @@
             <div class="error-state" role="alert">
                 <h2 class="error-state-title">Error Loading Dashboard</h2>
                 <p class="error-state-description">{{.Error}}</p>
-                <a href="/admin" class="btn btn-primary">Retry</a>
+                <button class="btn btn-primary" onclick="window.location.reload()">Retry</button>
             </div>
             {{else if .Loading}}
             <div class="loading-state" aria-live="polite" aria-busy="true">

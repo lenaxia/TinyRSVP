@@ -16,7 +16,12 @@
 }
 
 a.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
     line-height: 1.2;
+    height: 40px;
+    box-sizing: border-box;
 }
 
 .btn:focus {

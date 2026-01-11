@@ -30,8 +30,14 @@
         </div>
         <div class="datetime-picker-body">
             <div class="datetime-toggle-group">
-                <button type="button" class="datetime-toggle-btn active" data-mode="start">Start Time</button>
-                <button type="button" class="datetime-toggle-btn" data-mode="end">End Time (Optional)</button>
+                <button type="button" class="datetime-toggle-btn active" data-mode="start">
+                    <span class="datetime-toggle-label">Start Time</span>
+                    <span class="datetime-toggle-value" id="start-time-display">Not set</span>
+                </button>
+                <button type="button" class="datetime-toggle-btn" data-mode="end">
+                    <span class="datetime-toggle-label">End Time (Optional)</span>
+                    <span class="datetime-toggle-value" id="end-time-display">Not set</span>
+                </button>
             </div>
 
             <div class="datetime-picker-content active" data-content="start">

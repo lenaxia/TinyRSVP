@@ -93,6 +93,7 @@
     display: flex;
     gap: var(--spacing-2);
     margin-bottom: var(--spacing-3);
+    padding-top: var(--spacing-2);
     border-bottom: 1px solid var(--color-border);
     position: sticky;
     top: 0;
@@ -111,6 +112,10 @@
     font-weight: var(--font-weight-medium);
     cursor: pointer;
     transition: all var(--transition-fast);
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--spacing-1);
 }
 
 .datetime-toggle-btn:hover {
@@ -124,6 +129,22 @@
     font-weight: var(--font-weight-semibold);
 }
 
+.datetime-toggle-label {
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-medium);
+}
+
+.datetime-toggle-value {
+    font-size: var(--font-size-xs);
+    color: var(--color-text-tertiary);
+    font-weight: var(--font-weight-normal);
+}
+
+.datetime-toggle-btn.active .datetime-toggle-value {
+    color: var(--color-primary);
+    font-weight: var(--font-weight-medium);
+}
+
 .datetime-picker-content {
     display: none;
 }
@@ -134,7 +155,7 @@
 
 .datetime-picker-layout {
     display: grid;
-    grid-template-columns: 200px 120px;
+    grid-template-columns: 240px 120px;
     gap: var(--spacing-3);
     margin-bottom: var(--spacing-3);
     align-items: start;
@@ -236,6 +257,8 @@
     background: var(--color-primary);
     color: white;
     font-weight: var(--font-weight-semibold);
+    border: 2px solid white;
+    box-shadow: 0 0 0 2px var(--color-primary);
 }
 
 .time-picker-container {
@@ -278,6 +301,8 @@
     background: var(--color-primary);
     color: white;
     font-weight: var(--font-weight-medium);
+    border: 2px solid white;
+    box-shadow: 0 0 0 2px var(--color-primary);
 }
 
 .timezone-display {
@@ -356,6 +381,6 @@
 
 @media (max-width: 767px) {
     .datetime-picker-layout {
-        grid-template-columns: 200px 120px;
+        grid-template-columns: 240px 120px;
     }
 }

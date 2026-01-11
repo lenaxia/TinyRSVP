@@ -139,6 +139,7 @@
             this.renderCalendar();
             this.renderTimePicker();
             this.updateTimezoneDisplay();
+            this.updateToggleDisplays();
         }
 
         closePanel() {
@@ -286,6 +287,7 @@
             }
             this.renderCalendar();
             this.renderTimePicker();
+            this.updateToggleDisplays();
         }
 
         renderTimePicker() {
@@ -342,6 +344,7 @@
             
             // Re-render to update selected state
             this.renderTimePicker();
+            this.updateToggleDisplays();
         }
 
         updateTimezoneDisplay() {
@@ -420,6 +423,37 @@
             const hour = date.getHours().toString().padStart(2, '0');
             const minute = date.getMinutes().toString().padStart(2, '0');
             return `${year}-${month}-${day}T${hour}:${minute}`;
+        }
+
+        updateToggleDisplays() {
+            const startDisplay = document.getElementById('start-time-display');
+            const endDisplay = document.getElementById('end-time-display');
+
+            if (startDisplay) {
+                if (this.selectedStartDate && this.selectedStartTime) {
+                    const dateStr = this.selectedStartDate.toLocaleDateString('en-US', { 
+                        month: 'short', 
+                        day: 'numeric',
+                        year: 'numeric'
+                    });
+                    startDisplay.textContent = `${dateStr} at ${this.selectedStartTime}`;
+                } else {
+                    startDisplay.textContent = 'Not set';
+                }
+            }
+
+            if (endDisplay) {
+                if (this.selectedEndDate && this.selectedEndTime) {
+                    const dateStr = this.selectedEndDate.toLocaleDateString('en-US', { 
+                        month: 'short', 
+                        day: 'numeric',
+                        year: 'numeric'
+                    });
+                    endDisplay.textContent = `${dateStr} at ${this.selectedEndTime}`;
+                } else {
+                    endDisplay.textContent = 'Not set';
+                }
+            }
         }
     }
 
