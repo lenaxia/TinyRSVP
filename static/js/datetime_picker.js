@@ -1,4 +1,4 @@
-ou(function() {
+(function() {
     'use strict';
 
     class DateTimePicker {
@@ -258,8 +258,11 @@ ou(function() {
             }
 
             if (!isOtherMonth && dayDate >= this.today) {
-                day.addEventListener('click', () => {
-                    this.selectDate(dayDate);
+                day.style.cursor = 'pointer';
+                day.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    this.selectDate(new Date(dayDate));
                 });
             }
 
@@ -267,12 +270,22 @@ ou(function() {
         }
 
         selectDate(date) {
+            const newDate = new Date(date);
+            newDate.setHours(0, 0, 0, 0);
+            
             if (this.currentMode === 'start') {
-                this.selectedStartDate = date;
+                this.selectedStartDate = newDate;
+                if (!this.selectedStartTime) {
+                    this.selectedStartTime = '12:00 PM';
+                }
             } else {
-                this.selectedEndDate = date;
+                this.selectedEndDate = newDate;
+                if (!this.selectedEndTime) {
+                    this.selectedEndTime = '12:00 PM';
+                }
             }
             this.renderCalendar();
+            this.renderTimePicker();
         }
 
         renderTimePicker() {
