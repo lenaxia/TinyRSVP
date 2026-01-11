@@ -70,6 +70,10 @@ func (v *ImageValidator) Validate(data []byte) (*ValidationResult, error) {
 		}
 	}
 
+	if err := detectMaliciousPatterns(data); err != nil {
+		return nil, err
+	}
+
 	config, format, err := image.DecodeConfig(bytes.NewReader(data))
 	if err != nil {
 		return nil, &ValidationError{
@@ -116,6 +120,36 @@ func detectContentType(data []byte) string {
 	}
 
 	return ""
+}
+
+func detectMaliciousPatterns(data []byte) error {
+	dataLower := bytes.ToLower(data)
+	
+	maliciousPatterns := []struct {
+		pattern []byte
+		message string
+	}{
+		{[]byte("<script"), "File contains script tags"},
+		{[]byte("javascript:"), "File contains javascript protocol"},
+		{[]byte("data:text/html"), "File contains data URI with HTML"},
+		{[]byte("onerror="), "File contains event handler"},
+		{[]byte("onload="), "File contains event handler"},
+		{[]byte("onclick="), "File contains event handler"},
+		{[]byte("onmouseover="), "File contains event handler"},
+		{[]byte("<?php"), "File contains PHP code"},
+		{[]byte("#!/"), "File contains shell script"},
+	}
+	
+	for _, mp := range maliciousPatterns {
+		if bytes.Contains(dataLower, mp.pattern) {
+			return &ValidationError{
+				Field:   "file",
+				Message: mp.message,
+			}
+		}
+	}
+	
+	return nil
 }
 
 func stripEXIF(data []byte, format string) ([]byte, error) {
