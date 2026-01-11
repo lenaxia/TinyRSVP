@@ -8,6 +8,7 @@
     <link rel="stylesheet" href="/static/css/datetime_picker.css">
     <link rel="stylesheet" href="/static/css/theme_picker.css">
     <link rel="stylesheet" href="/static/css/theme_preview_modal.css">
+    <link rel="stylesheet" href="/static/css/image_upload.css">
 {{end}}
 
 {{define "content"}}
@@ -207,6 +208,7 @@
             <h2 class="form-section-title">RSVP Page Theme</h2>
             <p class="form-help-text">Choose a visual theme for your RSVP page</p>
             {{template "theme_picker" .}}
+            {{template "image_upload" .}}
         </section>
 
         <section class="form-section">
@@ -269,4 +271,5 @@
     <script src="/static/js/datetime_picker.js"></script>
     <script src="/static/js/theme_picker.js"></script>
     <script src="/static/js/theme_preview_modal.js"></script>
+    <script src="/static/js/image_upload.js"></script>
 {{end}}
