@@ -48,9 +48,196 @@
     margin: 0;
 }
 
+/* Animation Support */
+.animated {
+    animation-fill-mode: both;
+}
+
+/* Animation Keyframes */
+@keyframes fade {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes slide {
+    from {
+        transform: translateY(-20px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+@keyframes scale {
+    from {
+        transform: scale(0.8);
+        opacity: 0;
+    }
+    to {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+@keyframes rotate {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+@keyframes bounce {
+    0%, 100% {
+        transform: translateY(0);
+    }
+    50% {
+        transform: translateY(-20px);
+    }
+}
+
+/* Grid Layout Utilities */
+.layout-grid {
+    display: grid;
+}
+
+.grid-cols-1 { grid-template-columns: repeat(1, 1fr); }
+.grid-cols-2 { grid-template-columns: repeat(2, 1fr); }
+.grid-cols-3 { grid-template-columns: repeat(3, 1fr); }
+.grid-cols-4 { grid-template-columns: repeat(4, 1fr); }
+
+.grid-gap-sm { gap: 10px; }
+.grid-gap-md { gap: 20px; }
+.grid-gap-lg { gap: 30px; }
+
+.grid-flow-row { grid-auto-flow: row; }
+.grid-flow-col { grid-auto-flow: column; }
+.grid-flow-dense { grid-auto-flow: dense; }
+
+/* Flexbox Layout Utilities */
+.layout-flex {
+    display: flex;
+}
+
+.flex-row { flex-direction: row; }
+.flex-col { flex-direction: column; }
+.flex-row-reverse { flex-direction: row-reverse; }
+.flex-col-reverse { flex-direction: column-reverse; }
+
+.flex-wrap { flex-wrap: wrap; }
+.flex-nowrap { flex-wrap: nowrap; }
+.flex-wrap-reverse { flex-wrap: wrap-reverse; }
+
+.justify-start { justify-content: flex-start; }
+.justify-center { justify-content: center; }
+.justify-end { justify-content: flex-end; }
+.justify-between { justify-content: space-between; }
+.justify-around { justify-content: space-around; }
+.justify-evenly { justify-content: space-evenly; }
+
+.items-start { align-items: flex-start; }
+.items-center { align-items: center; }
+.items-end { align-items: flex-end; }
+.items-stretch { align-items: stretch; }
+.items-baseline { align-items: baseline; }
+
+.flex-gap-sm { gap: 10px; }
+.flex-gap-md { gap: 20px; }
+.flex-gap-lg { gap: 30px; }
+
+/* Image Effect Utilities */
+.img-filter-blur { filter: blur(5px); }
+.img-filter-brightness { filter: brightness(1.2); }
+.img-filter-contrast { filter: contrast(1.2); }
+.img-filter-grayscale { filter: grayscale(100%); }
+.img-filter-sepia { filter: sepia(100%); }
+
+.img-blend-multiply { mix-blend-mode: multiply; }
+.img-blend-screen { mix-blend-mode: screen; }
+.img-blend-overlay { mix-blend-mode: overlay; }
+
+.img-clip-circle { clip-path: circle(50%); }
+.img-clip-rounded { clip-path: inset(0 round 10px); }
+
+/* Text Effect Utilities */
+.text-gradient {
+    background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.text-stroke {
+    -webkit-text-stroke: 1px currentColor;
+}
+
+.text-shadow-sm { text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1); }
+.text-shadow-md { text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2); }
+.text-shadow-lg { text-shadow: 4px 4px 8px rgba(0, 0, 0, 0.3); }
+
+/* Responsive Visibility Utilities */
+.hide-mobile {
+    display: none;
+}
+
+.hide-tablet {
+    display: initial;
+}
+
+.hide-desktop {
+    display: initial;
+}
+
+@media (min-width: 768px) {
+    .hide-mobile {
+        display: initial;
+    }
+    .hide-tablet {
+        display: none;
+    }
+}
+
+@media (min-width: 1024px) {
+    .hide-tablet {
+        display: initial;
+    }
+    .hide-desktop {
+        display: none;
+    }
+}
+
+/* Performance Optimizations */
+.component-image,
+.component-background {
+    will-change: transform;
+}
+
+.animated {
+    will-change: transform, opacity;
+}
+
+/* GPU Acceleration */
+.component-absolute,
+.component-overlay {
+    transform: translateZ(0);
+    backface-visibility: hidden;
+}
+
+/* Responsive Breakpoints */
 @media (max-width: 767px) {
     .component-canvas {
         padding: 10px;
+    }
+    
+    .component-textbox {
+        font-size: clamp(14px, 4vw, 18px);
     }
 }
 
@@ -63,5 +250,24 @@
 @media (min-width: 1024px) {
     .component-canvas {
         padding: 30px;
+    }
+}
+
+/* Accessibility */
+@media (prefers-reduced-motion: reduce) {
+    .animated {
+        animation: none !important;
+        transition: none !important;
+    }
+}
+
+/* Print Styles */
+@media print {
+    .component-canvas {
+        overflow: visible;
+    }
+    
+    .animated {
+        animation: none !important;
     }
 }
