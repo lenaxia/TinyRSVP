@@ -304,9 +304,14 @@
                     const selectedTime = this.currentMode === 'start' ? this.selectedStartTime : this.selectedEndTime;
                     if (selectedTime === timeStr) {
                         timeOption.classList.add('selected');
+                        setTimeout(() => {
+                            timeOption.scrollIntoView({ block: 'center', behavior: 'smooth' });
+                        }, 100);
                     }
 
-                    timeOption.addEventListener('click', () => {
+                    timeOption.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
                         this.selectTime(timeStr);
                     });
 
@@ -334,6 +339,8 @@
             } else {
                 this.selectedEndTime = timeStr;
             }
+            
+            // Re-render to update selected state
             this.renderTimePicker();
         }
 

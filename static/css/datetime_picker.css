@@ -137,10 +137,14 @@
     grid-template-columns: 200px 120px;
     gap: var(--spacing-3);
     margin-bottom: var(--spacing-3);
+    align-items: start;
 }
 
 .calendar-container {
     padding: 0;
+    height: 280px;
+    display: flex;
+    flex-direction: column;
 }
 
 .calendar-header {
@@ -185,6 +189,7 @@
     display: grid;
     grid-template-columns: repeat(7, 1fr);
     gap: 2px;
+    flex: 1;
 }
 
 .calendar-day-header {
@@ -235,6 +240,9 @@
 
 .time-picker-container {
     padding: 0;
+    height: 280px;
+    display: flex;
+    flex-direction: column;
 }
 
 .time-picker-label {
@@ -243,10 +251,11 @@
     color: var(--color-text-secondary);
     margin-bottom: var(--spacing-2);
     display: block;
+    flex-shrink: 0;
 }
 
 .time-picker-scroll {
-    max-height: 280px;
+    flex: 1;
     overflow-y: auto;
     border: 1px solid var(--color-border);
     border-radius: var(--radius-base);
@@ -348,9 +357,5 @@
 @media (max-width: 767px) {
     .datetime-picker-layout {
         grid-template-columns: 200px 120px;
-    }
-    
-    .time-picker-scroll {
-        max-height: 280px;
     }
 }
