@@ -1,10 +1,11 @@
 # User Story 11.04: Theme Preview Modal
 
-**Epic:** [11_EPIC_rsvp_themes.md](11_EPIC_rsvp_themes.md)  
-**Priority:** High  
-**Status:** Not Started  
-**Estimated Effort:** 2 days  
-**Owner:** Unassigned
+**Epic:** [11_EPIC_rsvp_themes.md](11_EPIC_rsvp_themes.md)
+**Priority:** High
+**Status:** Complete
+**Estimated Effort:** 2 days
+**Owner:** LLM
+**Completed:** 2026-01-11
 
 ---
 
@@ -30,46 +31,46 @@ Event managers need to see how themes will look with their actual event data bef
 ## Acceptance Criteria
 
 ### Modal Component
-- [ ] Modal opens when "Preview" button clicked
-- [ ] Modal displays full-size preview of RSVP page
-- [ ] Modal has close button (X in corner)
-- [ ] Modal closes on Escape key
-- [ ] Modal closes on backdrop click
-- [ ] Modal traps focus while open
-- [ ] Modal prevents body scroll when open
+- [x] Modal opens when "Preview" button clicked
+- [x] Modal displays full-size preview of RSVP page
+- [x] Modal has close button (X in corner)
+- [x] Modal closes on Escape key
+- [x] Modal closes on backdrop click
+- [x] Modal traps focus while open
+- [x] Modal prevents body scroll when open
 
 ### Preview Content
-- [ ] Preview shows RSVP page with selected theme
-- [ ] Preview uses current event form data (title, date, location)
-- [ ] Preview shows placeholder data if form incomplete
-- [ ] Preview updates if event data changes
-- [ ] Preview shows theme in current light/dark mode
-- [ ] Preview includes theme toggle button
+- [x] Preview shows RSVP page with selected theme
+- [x] Preview uses current event form data (title, date, location)
+- [x] Preview shows placeholder data if form incomplete
+- [x] Preview updates if event data changes
+- [x] Preview shows theme in current light/dark mode
+- [x] Preview includes theme toggle button
 
 ### Theme Toggle in Preview
-- [ ] Preview has light/dark toggle button
-- [ ] Toggle switches preview between light/dark
-- [ ] Toggle state independent of main page theme
-- [ ] Toggle allows testing theme in both modes
+- [x] Preview has light/dark toggle button
+- [x] Toggle switches preview between light/dark
+- [x] Toggle state independent of main page theme
+- [x] Toggle allows testing theme in both modes
 
 ### Performance
-- [ ] Preview loads in <1 second
-- [ ] Preview uses iframe for isolation
-- [ ] Preview doesn't affect main page
-- [ ] Multiple previews don't cause memory leaks
+- [x] Preview loads in <1 second
+- [x] Preview uses iframe for isolation
+- [x] Preview doesn't affect main page
+- [x] Multiple previews don't cause memory leaks
 
 ### Mobile Experience
-- [ ] Modal full-screen on mobile
-- [ ] Preview scrollable on mobile
-- [ ] Close button accessible on mobile
-- [ ] Touch gestures work (swipe to close optional)
+- [x] Modal full-screen on mobile
+- [x] Preview scrollable on mobile
+- [x] Close button accessible on mobile
+- [x] Touch gestures work (swipe to close optional)
 
 ### Accessibility
-- [ ] Focus trapped in modal when open
-- [ ] Focus returns to trigger button on close
-- [ ] Screen reader announces modal open/close
-- [ ] Keyboard navigation works (Tab, Shift+Tab, Escape)
-- [ ] ARIA attributes correct
+- [x] Focus trapped in modal when open
+- [x] Focus returns to trigger button on close
+- [x] Screen reader announces modal open/close
+- [x] Keyboard navigation works (Tab, Shift+Tab, Escape)
+- [x] ARIA attributes correct
 
 ---
 
@@ -549,66 +550,66 @@ func (h *Handler) HandleThemePreview(w http.ResponseWriter, r *http.Request) {
 ## Tasks
 
 ### Modal Component
-- [ ] Create `theme_preview_modal.html` partial
-- [ ] Add modal structure (backdrop, container, header, body, footer)
-- [ ] Add close button
-- [ ] Add theme toggle button
-- [ ] Add select button
-- [ ] Add ARIA attributes
-- [ ] Test HTML structure
+- [x] Create `theme_preview_modal.html` partial
+- [x] Add modal structure (backdrop, container, header, body, footer)
+- [x] Add close button
+- [x] Add theme toggle button
+- [x] Add select button
+- [x] Add ARIA attributes
+- [x] Test HTML structure
 
 ### Modal CSS
-- [ ] Create `theme_preview_modal.css`
-- [ ] Style modal backdrop
-- [ ] Style modal container
-- [ ] Style modal header/body/footer
-- [ ] Style iframe
-- [ ] Add responsive styles
-- [ ] Add animations (fade in/out)
-- [ ] Test on mobile/tablet/desktop
+- [x] Create `theme_preview_modal.css`
+- [x] Style modal backdrop
+- [x] Style modal container
+- [x] Style modal header/body/footer
+- [x] Style iframe
+- [x] Add responsive styles
+- [x] Add animations (fade in/out)
+- [x] Test on mobile/tablet/desktop
 
 ### Modal JavaScript
-- [ ] Create `theme_preview_modal.js`
-- [ ] Implement open/close functionality
-- [ ] Implement focus trap
-- [ ] Implement keyboard navigation
-- [ ] Implement theme toggle in preview
-- [ ] Handle preview loading
-- [ ] Handle select button
-- [ ] Write unit tests
+- [x] Create `theme_preview_modal.js`
+- [x] Implement open/close functionality
+- [x] Implement focus trap
+- [x] Implement keyboard navigation
+- [x] Implement theme toggle in preview
+- [x] Handle preview loading
+- [x] Handle select button
+- [x] Write unit tests
 
 ### Preview Endpoint
-- [ ] Create `theme_preview.go` handler
-- [ ] Implement preview rendering
-- [ ] Handle query parameters
-- [ ] Provide default preview data
-- [ ] Support light/dark mode parameter
-- [ ] Add route to router
-- [ ] Write handler tests
+- [x] Create `HandleThemePreview` handler method
+- [x] Implement preview rendering
+- [x] Handle query parameters
+- [x] Provide default preview data
+- [x] Support light/dark mode parameter
+- [x] Add route to router
+- [x] Write handler tests
 
 ### Integration
-- [ ] Connect theme picker to modal
-- [ ] Connect modal to theme selection
-- [ ] Test full flow (pick → preview → select)
-- [ ] Test with incomplete form data
-- [ ] Test with complete form data
-- [ ] Write integration tests
+- [x] Connect theme picker to modal
+- [x] Connect modal to theme selection
+- [x] Test full flow (pick → preview → select)
+- [x] Test with incomplete form data
+- [x] Test with complete form data
+- [x] Write integration tests
 
 ---
 
 ## Definition of Done
 
-- [ ] All acceptance criteria met
-- [ ] Modal component created
-- [ ] Modal CSS implemented
-- [ ] Modal JavaScript implemented
-- [ ] Preview endpoint implemented
-- [ ] Integrated with theme picker
-- [ ] All unit tests passing
-- [ ] All integration tests passing
-- [ ] Mobile-responsive
-- [ ] Accessibility audit passed
-- [ ] Changes committed to git
+- [x] All acceptance criteria met
+- [x] Modal component created
+- [x] Modal CSS implemented
+- [x] Modal JavaScript implemented
+- [x] Preview endpoint implemented
+- [x] Integrated with theme picker
+- [x] All unit tests passing
+- [x] All integration tests passing
+- [x] Mobile-responsive
+- [x] Accessibility audit passed
+- [x] Changes committed to git
 
 ---
 
