@@ -374,6 +374,7 @@ func main() {
 
 	eventWebTemplates, err := template.New("events").Funcs(funcMap).ParseFiles(
 		"templates/web/partials/navigation.html",
+		"templates/web/partials/theme_picker.html",
 		"templates/web/event_list.html",
 		"templates/web/event_form.html",
 		"templates/web/event_detail.html",
@@ -384,7 +385,7 @@ func main() {
 	}
 	logger.Info("Event web templates loaded successfully")
 
-	eventWebHandlers := handlers.NewEventWebHandlers(eventService, eventWebTemplates)
+	eventWebHandlers := handlers.NewEventWebHandlers(eventService, templateService, eventWebTemplates)
 
 	inviteListTemplates, err := template.New("invite_list.html").Funcs(funcMap).ParseFiles(
 		"templates/web/partials/navigation.html",

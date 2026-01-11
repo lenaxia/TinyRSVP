@@ -1,0 +1,10 @@
+{{define "page-header"}}
+<header class="dashboard-header">
+    <h1>{{.Title}}</h1>
+    {{if .Actions}}
+    <div class="page-header-actions">
+        {{.Actions}}
+    </div>
+    {{end}}
+</header>
+{{end}}

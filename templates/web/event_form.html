@@ -21,6 +21,7 @@
     <link rel="stylesheet" href="/static/css/focus_management.css">
     <link rel="stylesheet" href="/static/css/datetime_picker.css">
     <link rel="stylesheet" href="/static/css/theme_toggle.css">
+    <link rel="stylesheet" href="/static/css/theme_picker.css">
 </head>
 <body>
     <div class="datetime-picker-overlay"></div>
@@ -337,6 +338,12 @@
                 </section>
 
                 <section class="form-section">
+                    <h2 class="form-section-title">RSVP Page Theme</h2>
+                    <p class="form-help-text">Choose a visual theme for your RSVP page</p>
+                    {{template "theme_picker" .}}
+                </section>
+
+                <section class="form-section">
                     <h2 class="form-section-title">Preference Questions</h2>
                     <p class="form-help-text">Ask guests about dietary restrictions, meal preferences, etc.</p>
                     
@@ -398,5 +405,6 @@
     <script src="/static/js/focus_management.js"></script>
     <script src="/static/js/datetime_picker.js"></script>
     <script src="/static/js/theme_controller.js"></script>
+    <script src="/static/js/theme_picker.js"></script>
 </body>
 </html>

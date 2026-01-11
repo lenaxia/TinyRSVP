@@ -27,6 +27,7 @@ type Event struct {
 	ICSSequence  int         `db:"ics_sequence" json:"ics_sequence"`
 	MaxPlusOnes  int         `db:"max_plus_ones" json:"max_plus_ones"`
 	RSVPDeadline *time.Time  `db:"rsvp_deadline" json:"rsvp_deadline,omitempty"`
+	TemplateID   *int64      `db:"template_id" json:"template_id,omitempty"`
 	CreatedAt    time.Time   `db:"created_at" json:"created_at"`
 	UpdatedAt    time.Time   `db:"updated_at" json:"updated_at"`
 }

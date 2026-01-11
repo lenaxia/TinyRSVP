@@ -1,0 +1,70 @@
+<div class="theme-picker">
+    <div class="theme-picker-header">
+        <h3>Select Theme</h3>
+        <div class="theme-filter">
+            <label for="theme-category-filter">Category:</label>
+            <select id="theme-category-filter" class="theme-category-select">
+                <option value="">All Themes</option>
+                <option value="plain">Plain Text</option>
+                <option value="card">Card Designs</option>
+                <option value="modern">Modern</option>
+                <option value="classic">Classic</option>
+                <option value="fun">Fun</option>
+            </select>
+        </div>
+    </div>
+    
+    <div class="theme-gallery" role="radiogroup" aria-label="Select theme">
+        {{range .Themes}}
+        <div class="theme-card {{if eq .ID $.SelectedThemeID}}selected{{end}}" 
+             data-theme-id="{{.ID}}"
+             data-category="{{.Category}}"
+             role="radio"
+             aria-checked="{{if eq .ID $.SelectedThemeID}}true{{else}}false{{end}}"
+             tabindex="{{if eq .ID $.SelectedThemeID}}0{{else}}-1{{end}}">
+            
+            <div class="theme-thumbnail">
+                {{if .ThumbnailURL}}
+                <img src="{{.ThumbnailURL}}" 
+                     alt="{{.Name}} theme preview"
+                     loading="lazy">
+                {{else}}
+                <img src="/static/images/themes/default-thumbnail.svg" 
+                     alt="{{.Name}} theme preview"
+                     loading="lazy">
+                {{end}}
+            </div>
+            
+            <div class="theme-info">
+                <h4 class="theme-name">{{.Name}}</h4>
+                <p class="theme-description">{{.Description}}</p>
+                
+                {{if .Tags}}
+                <div class="theme-tags">
+                    {{range .Tags}}
+                    <span class="theme-tag">{{.}}</span>
+                    {{end}}
+                </div>
+                {{end}}
+            </div>
+            
+            <div class="theme-actions">
+                <button type="button" 
+                        class="btn-preview" 
+                        data-theme-id="{{.ID}}"
+                        aria-label="Preview {{.Name}} theme">
+                    Preview
+                </button>
+                <button type="button" 
+                        class="btn-select" 
+                        data-theme-id="{{.ID}}"
+                        aria-label="Select {{.Name}} theme">
+                    Select
+                </button>
+            </div>
+        </div>
+        {{end}}
+    </div>
+    
+    <input type="hidden" id="selected-theme-id" name="template_id" value="{{.SelectedThemeID}}">
+</div>

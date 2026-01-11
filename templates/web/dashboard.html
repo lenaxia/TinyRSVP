@@ -1,118 +1,89 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard - TinyRSVP</title>
-    <link rel="stylesheet" href="/static/css/variables.css">
-    <link rel="stylesheet" href="/static/css/typography.css">
-    <link rel="stylesheet" href="/static/css/colors.css">
-    <link rel="stylesheet" href="/static/css/spacing.css">
-    <link rel="stylesheet" href="/static/css/grid.css">
-    <link rel="stylesheet" href="/static/css/buttons.css">
-    <link rel="stylesheet" href="/static/css/layout.css">
-    <link rel="stylesheet" href="/static/css/app_navigation.css">
-    <link rel="stylesheet" href="/static/css/dashboard.css">
-    <link rel="stylesheet" href="/static/css/mobile_optimization.css">
-    <link rel="stylesheet" href="/static/css/loading_states.css">
-    <link rel="stylesheet" href="/static/css/error_display.css">
-    <link rel="stylesheet" href="/static/css/keyboard_navigation.css">
-    <link rel="stylesheet" href="/static/css/focus_management.css">
-    <link rel="stylesheet" href="/static/css/theme_toggle.css">
-</head>
-<body>
-    {{template "navigation" .}}
+{{template "base" .}}
 
-    <main class="dashboard-main" role="main" aria-label="Main content" id="main-content">
-            <header class="dashboard-header">
-                <h1>Dashboard</h1>
-                <div class="quick-actions">
-                    <a href="/events/new" class="btn btn-primary">Create Event</a>
-                </div>
-            </header>
+{{define "title"}}Dashboard - TinyRSVP{{end}}
 
-            {{if .Error}}
-            <div class="error-state" role="alert">
-                <h2 class="error-state-title">Error Loading Dashboard</h2>
-                <p class="error-state-description">{{.Error}}</p>
-                <a href="/" class="btn btn-primary">Retry</a>
+{{define "content"}}
+    <header class="dashboard-header">
+        <h1>Dashboard</h1>
+        <div class="quick-actions">
+            <a href="/events/new" class="btn btn-primary">Create Event</a>
+        </div>
+    </header>
+
+    {{if .Error}}
+    <div class="error-state" role="alert">
+        <h2 class="error-state-title">Error Loading Dashboard</h2>
+        <p class="error-state-description">{{.Error}}</p>
+        <a href="/" class="btn btn-primary">Retry</a>
+    </div>
+    {{else if .Loading}}
+    <div class="loading-state" aria-live="polite" aria-busy="true">
+        <div class="loading-spinner" role="status"></div>
+        <p class="loading-state-text">Loading dashboard...</p>
+    </div>
+    {{else}}
+    
+    <section class="stats-grid">
+        <div class="stats-card">
+            <h2 class="stats-card-title">Total Events</h2>
+            <div class="stats-card-value">{{.Stats.TotalEvents}}</div>
+            <p class="stats-card-subtitle">
+                {{.Stats.DraftEvents}} draft, {{.Stats.PublishedEvents}} published
+            </p>
+        </div>
+
+        <div class="stats-card">
+            <h2 class="stats-card-title">Invites Sent</h2>
+            <div class="stats-card-value">{{.Stats.TotalInvites}}</div>
+            <p class="stats-card-subtitle">
+                {{.Stats.PendingInvites}} pending
+            </p>
+        </div>
+
+        <div class="stats-card">
+            <h2 class="stats-card-title">RSVPs Received</h2>
+            <div class="stats-card-value">{{.Stats.TotalRSVPs}}</div>
+            <p class="stats-card-subtitle">
+                {{.Stats.AcceptedRSVPs}} accepted, {{.Stats.DeclinedRSVPs}} declined
+            </p>
+        </div>
+
+        <div class="stats-card">
+            <h2 class="stats-card-title">Response Rate</h2>
+            <div class="stats-card-value">{{.Stats.ResponseRate}}%</div>
+            <p class="stats-card-subtitle">
+                {{.Stats.TotalRSVPs}} of {{.Stats.TotalInvites}} responded
+            </p>
+        </div>
+    </section>
+
+    <section class="activity-feed">
+        <h2 class="activity-feed-title">Recent Activity</h2>
+        
+        {{if .Activities}}
+        {{range .Activities}}
+        <div class="activity-item">
+            <div class="activity-item-icon">
+                {{.Icon}}
             </div>
-            {{else if .Loading}}
-            <div class="loading-state" aria-live="polite" aria-busy="true">
-                <div class="loading-spinner" role="status"></div>
-                <p class="loading-state-text">Loading dashboard...</p>
+            <div class="activity-item-content">
+                <h3 class="activity-item-title">{{.Title}}</h3>
+                <p class="activity-item-description">{{.Description}}</p>
+                <time class="activity-item-time">{{.Time}}</time>
             </div>
-            {{else}}
-            
-            <section class="stats-grid">
-                <div class="stats-card">
-                    <h2 class="stats-card-title">Total Events</h2>
-                    <div class="stats-card-value">{{.Stats.TotalEvents}}</div>
-                    <p class="stats-card-subtitle">
-                        {{.Stats.DraftEvents}} draft, {{.Stats.PublishedEvents}} published
-                    </p>
-                </div>
+        </div>
+        {{end}}
+        {{else}}
+        <div class="empty-state">
+            <div class="empty-state-icon">📭</div>
+            <h3 class="empty-state-title">No Recent Activity</h3>
+            <p class="empty-state-description">
+                Create your first event to get started
+            </p>
+            <a href="/events/new" class="btn btn-primary">Create Event</a>
+        </div>
+        {{end}}
+    </section>
 
-                <div class="stats-card">
-                    <h2 class="stats-card-title">Invites Sent</h2>
-                    <div class="stats-card-value">{{.Stats.TotalInvites}}</div>
-                    <p class="stats-card-subtitle">
-                        {{.Stats.PendingInvites}} pending
-                    </p>
-                </div>
-
-                <div class="stats-card">
-                    <h2 class="stats-card-title">RSVPs Received</h2>
-                    <div class="stats-card-value">{{.Stats.TotalRSVPs}}</div>
-                    <p class="stats-card-subtitle">
-                        {{.Stats.AcceptedRSVPs}} accepted, {{.Stats.DeclinedRSVPs}} declined
-                    </p>
-                </div>
-
-                <div class="stats-card">
-                    <h2 class="stats-card-title">Response Rate</h2>
-                    <div class="stats-card-value">{{.Stats.ResponseRate}}%</div>
-                    <p class="stats-card-subtitle">
-                        {{.Stats.TotalRSVPs}} of {{.Stats.TotalInvites}} responded
-                    </p>
-                </div>
-            </section>
-
-            <section class="activity-feed">
-                <h2 class="activity-feed-title">Recent Activity</h2>
-                
-                {{if .Activities}}
-                {{range .Activities}}
-                <div class="activity-item">
-                    <div class="activity-item-icon">
-                        {{.Icon}}
-                    </div>
-                    <div class="activity-item-content">
-                        <h3 class="activity-item-title">{{.Title}}</h3>
-                        <p class="activity-item-description">{{.Description}}</p>
-                        <time class="activity-item-time">{{.Time}}</time>
-                    </div>
-                </div>
-                {{end}}
-                {{else}}
-                <div class="empty-state">
-                    <div class="empty-state-icon">📭</div>
-                    <h3 class="empty-state-title">No Recent Activity</h3>
-                    <p class="empty-state-description">
-                        Create your first event to get started
-                    </p>
-                    <a href="/events/new" class="btn btn-primary">Create Event</a>
-                </div>
-                {{end}}
-            </section>
-
-            {{end}}
-    </main>
-    <script src="/static/js/navigation_toggle.js"></script>
-    <script src="/static/js/loading_states.js"></script>
-    <script src="/static/js/keyboard_navigation.js"></script>
-    <script src="/static/js/screen_reader.js"></script>
-    <script src="/static/js/focus_management.js"></script>
-    <script src="/static/js/theme_controller.js"></script>
-</body>
-</html>
+    {{end}}
+{{end}}

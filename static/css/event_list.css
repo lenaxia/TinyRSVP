@@ -8,6 +8,7 @@
     max-width: 1200px;
     margin: 0 auto;
     width: 100%;
+    box-sizing: border-box;
 }
 
 .event-list-header {
@@ -348,7 +349,7 @@
 /* Tablet Styles */
 @media (min-width: 768px) {
     .event-list {
-        padding: var(--spacing-6) var(--spacing-6);
+        padding: var(--spacing-6);
     }
 
     .event-filters {
@@ -381,7 +382,7 @@
 /* Desktop Styles */
 @media (min-width: 1024px) {
     .event-list {
-        padding: var(--spacing-6) var(--spacing-6);
+        padding: var(--spacing-6);
     }
 
     .event-cards {

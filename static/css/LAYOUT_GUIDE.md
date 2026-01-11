@@ -85,6 +85,38 @@ The navigation bar (`app_navigation.css`) uses the same max-width and padding pa
 }
 ```
 
+## Page Header Pattern
+
+All pages should use the standardized `.dashboard-header` class for consistent title and action button spacing:
+
+### HTML Structure
+```html
+<header class="dashboard-header">
+    <h1>Page Title</h1>
+    <a href="/action" class="btn btn-primary">Action Button</a>
+</header>
+```
+
+### CSS (already defined in dashboard.css)
+```css
+.dashboard-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--spacing-6);
+    gap: var(--spacing-4);
+    flex-wrap: wrap;
+}
+
+.dashboard-header h1 {
+    font-size: var(--font-size-2xl);
+    font-weight: var(--font-weight-bold);
+    color: var(--color-text-primary);
+    margin: 0;
+    line-height: 1.2;
+}
+```
+
 ## Creating New Pages
 
 When creating a new page, follow these steps:
@@ -93,6 +125,10 @@ When creating a new page, follow these steps:
 
 ```html
 <main class="your-page-name" role="main" aria-label="Main content" id="main-content">
+    <header class="dashboard-header">
+        <h1>Your Page Title</h1>
+        <!-- Optional action buttons -->
+    </header>
     <!-- Your page content here -->
 </main>
 ```
@@ -123,19 +159,22 @@ When creating a new page, follow these steps:
 
 ### 3. Include Necessary CSS Files
 
-Always include `layout.css` (if using the shared class) or implement the pattern directly:
+Always include `base.css` first, then other CSS files:
 
 ```html
+<link rel="stylesheet" href="/static/css/base.css">
 <link rel="stylesheet" href="/static/css/variables.css">
 <link rel="stylesheet" href="/static/css/typography.css">
 <link rel="stylesheet" href="/static/css/colors.css">
 <link rel="stylesheet" href="/static/css/spacing.css">
 <link rel="stylesheet" href="/static/css/grid.css">
 <link rel="stylesheet" href="/static/css/buttons.css">
-<link rel="stylesheet" href="/static/css/layout.css">  <!-- Optional shared layout -->
 <link rel="stylesheet" href="/static/css/app_navigation.css">
+<link rel="stylesheet" href="/static/css/dashboard.css">  <!-- For dashboard-header -->
 <link rel="stylesheet" href="/static/css/your-page.css">
 ```
+
+Note: Include `dashboard.css` if using `.dashboard-header` for page titles.
 
 ## Benefits
 

@@ -14,11 +14,12 @@
 
 .dashboard-main {
     flex: 1;
+    overflow-y: auto;
     padding: var(--spacing-4);
     max-width: 1200px;
     margin: 0 auto;
     width: 100%;
-    overflow-y: auto;
+    box-sizing: border-box;
 }
 
 .dashboard-header {
@@ -26,6 +27,8 @@
     justify-content: space-between;
     align-items: center;
     margin-bottom: var(--spacing-6);
+    gap: var(--spacing-4);
+    flex-wrap: wrap;
 }
 
 .dashboard-header h1 {
@@ -33,6 +36,7 @@
     font-weight: var(--font-weight-bold);
     color: var(--color-text-primary);
     margin: 0;
+    line-height: 1.2;
 }
 
 .stats-grid {
@@ -221,7 +225,7 @@
     }
 
     .dashboard-main {
-        padding: var(--spacing-6) var(--spacing-6);
+        padding: var(--spacing-6);
     }
 
     .stats-grid {
@@ -240,7 +244,7 @@
     }
 
     .dashboard-main {
-        padding: var(--spacing-6) var(--spacing-6);
+        padding: var(--spacing-6);
     }
 
     .stats-grid {

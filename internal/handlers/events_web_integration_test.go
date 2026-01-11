@@ -65,7 +65,7 @@ func TestEventWebHandlers_FullWebUIFlow_Integration(t *testing.T) {
 		{{end}}
 	`))
 
-	handlers := NewEventWebHandlers(eventService, tmpl)
+	handlers := NewEventWebHandlers(eventService, nil, tmpl)
 
 	ctx := context.Background()
 
@@ -308,7 +308,7 @@ func TestEventWebHandlers_PermissionEnforcement_Integration(t *testing.T) {
 		{{end}}
 	`))
 
-	handlers := NewEventWebHandlers(eventService, tmpl)
+	handlers := NewEventWebHandlers(eventService, nil, tmpl)
 
 	ctx := context.Background()
 
@@ -407,7 +407,7 @@ func TestEventWebHandlers_RouterIntegration(t *testing.T) {
 		{{define "event_detail.html"}}<html><body>Detail</body></html>{{end}}
 	`))
 
-	eventWebHandlers := NewEventWebHandlers(eventService, tmpl)
+	eventWebHandlers := NewEventWebHandlers(eventService, nil, tmpl)
 
 	authMiddleware := &mockAuthMiddleware{}
 
@@ -501,7 +501,7 @@ func TestEventWebHandlers_CSRFProtection_Integration(t *testing.T) {
 	eventService := events.NewService(eventRepo, validator, authChecker)
 
 	tmpl := template.New("test")
-	handlers := NewEventWebHandlers(eventService, tmpl)
+	handlers := NewEventWebHandlers(eventService, nil, tmpl)
 
 	ctx := context.Background()
 

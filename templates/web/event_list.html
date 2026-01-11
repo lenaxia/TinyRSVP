@@ -1,195 +1,171 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Events - TinyRSVP</title>
-    <link rel="stylesheet" href="/static/css/variables.css">
-    <link rel="stylesheet" href="/static/css/typography.css">
-    <link rel="stylesheet" href="/static/css/colors.css">
-    <link rel="stylesheet" href="/static/css/spacing.css">
-    <link rel="stylesheet" href="/static/css/grid.css">
-    <link rel="stylesheet" href="/static/css/buttons.css">
+{{template "base" .}}
+
+{{define "title"}}Events - TinyRSVP{{end}}
+
+{{define "main-class"}}event-list{{end}}
+
+{{define "css-extra"}}
     <link rel="stylesheet" href="/static/css/forms.css">
-    <link rel="stylesheet" href="/static/css/app_navigation.css">
     <link rel="stylesheet" href="/static/css/event_list.css">
-    <link rel="stylesheet" href="/static/css/mobile_optimization.css">
-    <link rel="stylesheet" href="/static/css/loading_states.css">
-    <link rel="stylesheet" href="/static/css/error_display.css">
-    <link rel="stylesheet" href="/static/css/keyboard_navigation.css">
-    <link rel="stylesheet" href="/static/css/focus_management.css">
-    <link rel="stylesheet" href="/static/css/theme_toggle.css">
-</head>
-<body>
-    {{template "navigation" .}}
+{{end}}
 
-    <main class="event-list" role="main" aria-label="Main content" id="main-content">
-        <header class="event-list-header">
-            <div class="event-list-title-section">
-                <h1 class="event-list-title">Events</h1>
-                <a href="/events/new" class="btn btn-primary">Create Event</a>
-            </div>
-        </header>
+{{define "content"}}
+    <header class="dashboard-header">
+        <h1>Events</h1>
+        <a href="/events/new" class="btn btn-primary">Create Event</a>
+    </header>
 
-        {{if .Error}}
-        <section class="event-empty" role="alert">
-            <div class="event-empty-icon">⚠️</div>
-            <h2 class="event-empty-title">Error Loading Events</h2>
-            <p class="event-empty-description">{{.Error}}</p>
-            <div class="event-empty-action">
-                <button class="btn btn-primary" onclick="window.location.reload()">Retry</button>
-            </div>
-        </section>
-        {{else if .Loading}}
-        <section class="event-list-loading loading-state" aria-live="polite" aria-busy="true">
-            <div class="loading-spinner" role="status"></div>
-            <p class="loading-text">Loading events...</p>
-        </section>
-        {{else if eq (len .Events) 0}}
-        <section class="event-empty">
-            <div class="event-empty-icon">📅</div>
-            <h2 class="event-empty-title">No Events Found</h2>
-            <p class="event-empty-description">
-                {{if .Filter}}
-                No events match your current filter. Try adjusting your search criteria.
-                {{else}}
-                Get started by creating your first event.
+    {{if .Error}}
+    <section class="event-empty" role="alert">
+        <div class="event-empty-icon">⚠️</div>
+        <h2 class="event-empty-title">Error Loading Events</h2>
+        <p class="event-empty-description">{{.Error}}</p>
+        <div class="event-empty-action">
+            <button class="btn btn-primary" onclick="window.location.reload()">Retry</button>
+        </div>
+    </section>
+    {{else if .Loading}}
+    <section class="event-list-loading loading-state" aria-live="polite" aria-busy="true">
+        <div class="loading-spinner" role="status"></div>
+        <p class="loading-text">Loading events...</p>
+    </section>
+    {{else if eq (len .Events) 0}}
+    <section class="event-empty">
+        <div class="event-empty-icon">📅</div>
+        <h2 class="event-empty-title">No Events Found</h2>
+        <p class="event-empty-description">
+            {{if .Filter}}
+            No events match your current filter. Try adjusting your search criteria.
+            {{else}}
+            Get started by creating your first event.
+            {{end}}
+        </p>
+        <div class="event-empty-action">
+            <a href="/events/new" class="btn btn-primary">Create Event</a>
+        </div>
+    </section>
+    {{else}}
+    <section class="event-filters">
+        <div class="filter-group">
+            <label for="status-filter" class="filter-label">Status</label>
+            <select id="status-filter" class="form-select filter-select" name="status" aria-label="Filter by status">
+                <option value="all" {{if eq .Filter "all"}}selected{{end}}>All Events</option>
+                <option value="draft" {{if eq .Filter "draft"}}selected{{end}}>Draft</option>
+                <option value="published" {{if eq .Filter "published"}}selected{{end}}>Published</option>
+                <option value="archived" {{if eq .Filter "archived"}}selected{{end}}>Archived</option>
+            </select>
+        </div>
+
+        <div class="event-search">
+            <span class="search-icon" aria-hidden="true">🔍</span>
+            <input
+                type="search"
+                class="form-input search-input"
+                placeholder="Search events..."
+                aria-label="Search events"
+                name="search"
+            >
+        </div>
+
+        <div class="event-sort">
+            <label for="sort-select" class="filter-label">Sort by</label>
+            <select id="sort-select" class="form-select sort-select" name="sort" aria-label="Sort events">
+                <option value="date" {{if eq .Sort "date"}}selected{{end}}>Date</option>
+                <option value="name" {{if eq .Sort "name"}}selected{{end}}>Name</option>
+                <option value="rsvp" {{if eq .Sort "rsvp"}}selected{{end}}>RSVP Count</option>
+            </select>
+        </div>
+    </section>
+
+    <section class="event-cards" aria-label="Event list">
+        {{range .Events}}
+        <article class="event-card" tabindex="0" role="article" onclick="window.location.href='/events/{{.ID}}'" style="cursor: pointer;">
+            <header class="event-card-header">
+                <h2 class="event-card-title">{{.Title}}</h2>
+                <span class="event-card-status {{.Status}}" aria-label="Status: {{.Status}}">
+                    {{.Status}}
+                </span>
+            </header>
+
+            <div class="event-card-body">
+                {{if .Description}}
+                <p class="event-card-description">{{.Description}}</p>
                 {{end}}
-            </p>
-            <div class="event-empty-action">
-                <a href="/events/new" class="btn btn-primary">Create Event</a>
-            </div>
-        </section>
-        {{else}}
-        <section class="event-filters">
-            <div class="filter-group">
-                <label for="status-filter" class="filter-label">Status</label>
-                <select id="status-filter" class="form-select filter-select" name="status" aria-label="Filter by status">
-                    <option value="all" {{if eq .Filter "all"}}selected{{end}}>All Events</option>
-                    <option value="draft" {{if eq .Filter "draft"}}selected{{end}}>Draft</option>
-                    <option value="published" {{if eq .Filter "published"}}selected{{end}}>Published</option>
-                    <option value="archived" {{if eq .Filter "archived"}}selected{{end}}>Archived</option>
-                </select>
-            </div>
-
-            <div class="event-search">
-                <span class="search-icon" aria-hidden="true">🔍</span>
-                <input
-                    type="search"
-                    class="form-input search-input"
-                    placeholder="Search events..."
-                    aria-label="Search events"
-                    name="search"
-                >
-            </div>
-
-            <div class="event-sort">
-                <label for="sort-select" class="filter-label">Sort by</label>
-                <select id="sort-select" class="form-select sort-select" name="sort" aria-label="Sort events">
-                    <option value="date" {{if eq .Sort "date"}}selected{{end}}>Date</option>
-                    <option value="name" {{if eq .Sort "name"}}selected{{end}}>Name</option>
-                    <option value="rsvp" {{if eq .Sort "rsvp"}}selected{{end}}>RSVP Count</option>
-                </select>
-            </div>
-        </section>
-
-        <section class="event-cards" aria-label="Event list">
-            {{range .Events}}
-            <article class="event-card" tabindex="0" role="article" onclick="window.location.href='/events/{{.ID}}'" style="cursor: pointer;">
-                <header class="event-card-header">
-                    <h2 class="event-card-title">{{.Title}}</h2>
-                    <span class="event-card-status {{.Status}}" aria-label="Status: {{.Status}}">
-                        {{.Status}}
-                    </span>
-                </header>
-
-                <div class="event-card-body">
-                    {{if .Description}}
-                    <p class="event-card-description">{{.Description}}</p>
+                
+                <div class="event-card-meta">
+                    {{if .Location}}
+                    <div class="event-card-meta-item">
+                        <span class="event-card-meta-icon" aria-hidden="true">📍</span>
+                        <span>{{.Location}}</span>
+                    </div>
                     {{end}}
-                    
-                    <div class="event-card-meta">
-                        {{if .Location}}
-                        <div class="event-card-meta-item">
-                            <span class="event-card-meta-icon" aria-hidden="true">📍</span>
-                            <span>{{.Location}}</span>
-                        </div>
-                        {{end}}
-                        <div class="event-card-meta-item">
-                            <span class="event-card-meta-icon" aria-hidden="true">📅</span>
-                            <time datetime="{{.StartTime.Format "2006-01-02T15:04:05Z07:00"}}">
-                                {{.StartTime.Format "Jan 2, 2006 at 3:04 PM"}}
-                            </time>
-                        </div>
+                    <div class="event-card-meta-item">
+                        <span class="event-card-meta-icon" aria-hidden="true">📅</span>
+                        <time datetime="{{.StartTime.Format "2006-01-02T15:04:05Z07:00"}}">
+                            {{.StartTime.Format "Jan 2, 2006 at 3:04 PM"}}
+                        </time>
                     </div>
                 </div>
+            </div>
 
-                <footer class="event-card-footer">
-                    <div class="event-actions">
-                        <a href="/events/{{.ID}}/edit" class="btn btn-ghost btn-sm event-action-btn" aria-label="Edit event" onclick="event.stopPropagation()">Edit</a>
-                        <a href="/events/{{.ID}}/invites" class="btn btn-ghost btn-sm event-action-btn" aria-label="View invites" onclick="event.stopPropagation()">Invites</a>
-                    </div>
-                </footer>
-            </article>
+            <footer class="event-card-footer">
+                <div class="event-actions">
+                    <a href="/events/{{.ID}}/edit" class="btn btn-ghost btn-sm event-action-btn" aria-label="Edit event" onclick="event.stopPropagation()">Edit</a>
+                    <a href="/events/{{.ID}}/invites" class="btn btn-ghost btn-sm event-action-btn" aria-label="View invites" onclick="event.stopPropagation()">Invites</a>
+                </div>
+            </footer>
+        </article>
+        {{end}}
+    </section>
+
+    {{if gt .Total 10}}
+    <nav class="event-pagination" aria-label="Pagination">
+        <ul class="pagination">
+            {{if gt .Page 1}}
+            <li>
+                <a href="?page={{sub .Page 1}}" class="pagination-item pagination-prev" aria-label="Previous page">
+                    Previous
+                </a>
+            </li>
+            {{else}}
+            <li>
+                <span class="pagination-item pagination-prev disabled" aria-disabled="true">Previous</span>
+            </li>
             {{end}}
-        </section>
 
-        {{if gt .Total 10}}
-        <nav class="event-pagination" aria-label="Pagination">
-            <ul class="pagination">
-                {{if gt .Page 1}}
-                <li>
-                    <a href="?page={{sub .Page 1}}" class="pagination-item pagination-prev" aria-label="Previous page">
-                        Previous
-                    </a>
-                </li>
-                {{else}}
-                <li>
-                    <span class="pagination-item pagination-prev disabled" aria-disabled="true">Previous</span>
-                </li>
-                {{end}}
+            {{$currentPage := .Page}}
+            {{$totalPages := div (add .Total 9) 10}}
+            
+            {{range $i := until $totalPages}}
+            {{$pageNum := add $i 1}}
+            {{if eq $pageNum $currentPage}}
+            <li>
+                <span class="pagination-item active" aria-current="page" aria-label="Page {{$pageNum}}">
+                    {{$pageNum}}
+                </span>
+            </li>
+            {{else}}
+            <li>
+                <a href="?page={{$pageNum}}" class="pagination-item" aria-label="Go to page {{$pageNum}}">
+                    {{$pageNum}}
+                </a>
+            </li>
+            {{end}}
+            {{end}}
 
-                {{$currentPage := .Page}}
-                {{$totalPages := div (add .Total 9) 10}}
-                
-                {{range $i := until $totalPages}}
-                {{$pageNum := add $i 1}}
-                {{if eq $pageNum $currentPage}}
-                <li>
-                    <span class="pagination-item active" aria-current="page" aria-label="Page {{$pageNum}}">
-                        {{$pageNum}}
-                    </span>
-                </li>
-                {{else}}
-                <li>
-                    <a href="?page={{$pageNum}}" class="pagination-item" aria-label="Go to page {{$pageNum}}">
-                        {{$pageNum}}
-                    </a>
-                </li>
-                {{end}}
-                {{end}}
-
-                {{if lt .Page $totalPages}}
-                <li>
-                    <a href="?page={{add .Page 1}}" class="pagination-item pagination-next" aria-label="Next page">
-                        Next
-                    </a>
-                </li>
-                {{else}}
-                <li>
-                    <span class="pagination-item pagination-next disabled" aria-disabled="true">Next</span>
-                </li>
-                {{end}}
-            </ul>
-        </nav>
-        {{end}}
-        {{end}}
-    </main>
-    <script src="/static/js/navigation_toggle.js"></script>
-    <script src="/static/js/loading_states.js"></script>
-    <script src="/static/js/keyboard_navigation.js"></script>
-    <script src="/static/js/screen_reader.js"></script>
-    <script src="/static/js/focus_management.js"></script>
-    <script src="/static/js/theme_controller.js"></script>
-</body>
-</html>
+            {{if lt .Page $totalPages}}
+            <li>
+                <a href="?page={{add .Page 1}}" class="pagination-item pagination-next" aria-label="Next page">
+                    Next
+                </a>
+            </li>
+            {{else}}
+            <li>
+                <span class="pagination-item pagination-next disabled" aria-disabled="true">Next</span>
+            </li>
+            {{end}}
+        </ul>
+    </nav>
+    {{end}}
+    {{end}}
+{{end}}

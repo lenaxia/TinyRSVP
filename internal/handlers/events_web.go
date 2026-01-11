@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"context"
 	"fmt"
 	"html/template"
 	"net/http"
@@ -11,14 +12,17 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	"github.com/lenaxia/tinyrsvp/internal/auth"
+	"github.com/lenaxia/tinyrsvp/internal/db/repositories"
 	"github.com/lenaxia/tinyrsvp/internal/events"
 	"github.com/lenaxia/tinyrsvp/internal/middleware"
 	"github.com/lenaxia/tinyrsvp/internal/models"
+	"github.com/lenaxia/tinyrsvp/internal/templates"
 )
 
 type EventWebHandlers struct {
-	service   events.Service
-	templates *template.Template
+	service         events.Service
+	templateService templates.Service
+	templates       *template.Template
 }
 
 type EventListPageData struct {
@@ -33,12 +37,14 @@ type EventListPageData struct {
 }
 
 type EventFormPageData struct {
-	ActivePage string
-	Event      *models.Event
-	Questions  []*models.PreferenceQuestion
-	Errors     map[string]string
-	Error      string
-	CSRFToken  string
+	ActivePage      string
+	Event           *models.Event
+	Questions       []*models.PreferenceQuestion
+	Themes          []*models.Template
+	SelectedThemeID int64
+	Errors          map[string]string
+	Error           string
+	CSRFToken       string
 }
 
 type EventDetailPageData struct {
@@ -48,10 +54,11 @@ type EventDetailPageData struct {
 	Error      string
 }
 
-func NewEventWebHandlers(service events.Service, templates *template.Template) *EventWebHandlers {
+func NewEventWebHandlers(service events.Service, templateService templates.Service, tmpl *template.Template) *EventWebHandlers {
 	return &EventWebHandlers{
-		service:   service,
-		templates: templates,
+		service:         service,
+		templateService: templateService,
+		templates:       tmpl,
 	}
 }
 
@@ -138,14 +145,27 @@ func (h *EventWebHandlers) NewEventForm(w http.ResponseWriter, r *http.Request) 
 
 	csrfToken := middleware.GetCSRFToken(r.Context())
 
+	themes, defaultTheme, err := h.loadThemes(r.Context())
+	if err != nil {
+		HandleError(w, r, fmt.Errorf("failed to load themes: %w", err))
+		return
+	}
+
+	selectedThemeID := int64(0)
+	if defaultTheme != nil {
+		selectedThemeID = defaultTheme.ID
+	}
+
 	data := &EventFormPageData{
 		ActivePage: "events",
 		Event: &models.Event{
 			MaxPlusOnes: 0,
 		},
-		Questions: []*models.PreferenceQuestion{},
-		Errors:    make(map[string]string),
-		CSRFToken: csrfToken,
+		Questions:       []*models.PreferenceQuestion{},
+		Themes:          themes,
+		SelectedThemeID: selectedThemeID,
+		Errors:          make(map[string]string),
+		CSRFToken:       csrfToken,
 	}
 
 	h.renderFormPage(w, http.StatusOK, data)
@@ -166,12 +186,27 @@ func (h *EventWebHandlers) EditEventForm(w http.ResponseWriter, r *http.Request)
 
 	csrfToken := middleware.GetCSRFToken(r.Context())
 
+	themes, defaultTheme, err := h.loadThemes(r.Context())
+	if err != nil {
+		HandleError(w, r, fmt.Errorf("failed to load themes: %w", err))
+		return
+	}
+
+	selectedThemeID := int64(0)
+	if event.TemplateID != nil {
+		selectedThemeID = *event.TemplateID
+	} else if defaultTheme != nil {
+		selectedThemeID = defaultTheme.ID
+	}
+
 	data := &EventFormPageData{
-		ActivePage: "events",
-		Event:      event,
-		Questions:  []*models.PreferenceQuestion{},
-		Errors:     make(map[string]string),
-		CSRFToken:  csrfToken,
+		ActivePage:      "events",
+		Event:           event,
+		Questions:       []*models.PreferenceQuestion{},
+		Themes:          themes,
+		SelectedThemeID: selectedThemeID,
+		Errors:          make(map[string]string),
+		CSRFToken:       csrfToken,
 	}
 
 	h.renderFormPage(w, http.StatusOK, data)
@@ -538,5 +573,40 @@ func parseEventFormData(form url.Values) (*models.Event, error) {
 		event.FriendlyName = &friendlyName
 	}
 
+	if templateIDStr := strings.TrimSpace(form.Get("template_id")); templateIDStr != "" {
+		templateID, err := strconv.ParseInt(templateIDStr, 10, 64)
+		if err != nil {
+			return nil, fmt.Errorf("invalid template_id format")
+		}
+		if templateID <= 0 {
+			return nil, fmt.Errorf("template_id must be positive")
+		}
+		event.TemplateID = &templateID
+	}
+
 	return event, nil
+}
+
+func (h *EventWebHandlers) loadThemes(ctx context.Context) ([]*models.Template, *models.Template, error) {
+	if h.templateService == nil {
+		return nil, nil, nil
+	}
+
+	rsvpPageType := models.TemplateTypeRSVPPage
+	isActive := true
+
+	themes, err := h.templateService.ListTemplates(ctx, &repositories.TemplateFilters{
+		Type:     &rsvpPageType,
+		IsActive: &isActive,
+	})
+	if err != nil {
+		return nil, nil, fmt.Errorf("failed to list themes: %w", err)
+	}
+
+	defaultTheme, err := h.templateService.GetDefaultTemplate(ctx, models.TemplateTypeRSVPPage)
+	if err != nil {
+		return themes, nil, nil
+	}
+
+	return themes, defaultTheme, nil
 }

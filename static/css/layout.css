@@ -5,16 +5,17 @@
     margin: 0 auto;
     width: 100%;
     padding: var(--spacing-4);
+    box-sizing: border-box;
 }
 
 @media (min-width: 768px) {
     .page-container {
-        padding: var(--spacing-6) var(--spacing-6);
+        padding: var(--spacing-6);
     }
 }
 
 @media (min-width: 1024px) {
     .page-container {
-        padding: var(--spacing-6) var(--spacing-6);
+        padding: var(--spacing-6);
     }
 }

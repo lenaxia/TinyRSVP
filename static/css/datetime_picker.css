@@ -280,8 +280,8 @@
 }
 
 .calendar-day:hover:not(.disabled):not(.other-month) {
-    background: var(--color-primary-100);
-    border-color: var(--color-primary-300);
+    background: var(--color-primary-200);
+    border-color: var(--color-primary-400);
 }
 
 .calendar-day.other-month {
@@ -347,7 +347,7 @@
 }
 
 .time-option:hover:not(.selected) {
-    background: var(--color-primary-100);
+    background: var(--color-primary-200);
 }
 
 .time-option.selected {

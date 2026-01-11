@@ -1,0 +1,50 @@
+{{define "base"}}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{block "title" .}}TinyRSVP{{end}}</title>
+    
+    {{template "css-common" .}}
+    {{block "css-extra" .}}{{end}}
+</head>
+<body>
+    {{template "navigation" .}}
+
+    <main class="{{block "main-class" .}}dashboard-main{{end}}" role="main" aria-label="Main content" id="main-content">
+        {{block "content" .}}{{end}}
+    </main>
+
+    {{template "js-common" .}}
+    {{block "js-extra" .}}{{end}}
+</body>
+</html>
+{{end}}
+
+{{define "css-common"}}
+    <link rel="stylesheet" href="/static/css/base.css">
+    <link rel="stylesheet" href="/static/css/variables.css">
+    <link rel="stylesheet" href="/static/css/typography.css">
+    <link rel="stylesheet" href="/static/css/colors.css">
+    <link rel="stylesheet" href="/static/css/spacing.css">
+    <link rel="stylesheet" href="/static/css/grid.css">
+    <link rel="stylesheet" href="/static/css/buttons.css">
+    <link rel="stylesheet" href="/static/css/app_navigation.css">
+    <link rel="stylesheet" href="/static/css/dashboard.css">
+    <link rel="stylesheet" href="/static/css/mobile_optimization.css">
+    <link rel="stylesheet" href="/static/css/loading_states.css">
+    <link rel="stylesheet" href="/static/css/error_display.css">
+    <link rel="stylesheet" href="/static/css/keyboard_navigation.css">
+    <link rel="stylesheet" href="/static/css/focus_management.css">
+    <link rel="stylesheet" href="/static/css/theme_toggle.css">
+{{end}}
+
+{{define "js-common"}}
+    <script src="/static/js/navigation_toggle.js"></script>
+    <script src="/static/js/loading_states.js"></script>
+    <script src="/static/js/keyboard_navigation.js"></script>
+    <script src="/static/js/screen_reader.js"></script>
+    <script src="/static/js/focus_management.js"></script>
+    <script src="/static/js/theme_controller.js"></script>
+{{end}}

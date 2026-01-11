@@ -20,7 +20,7 @@ import (
 func TestNewEventWebHandlers(t *testing.T) {
 	mockService := &mockEventService{}
 	tmpl := template.New("test")
-	handlers := NewEventWebHandlers(mockService, tmpl)
+	handlers := NewEventWebHandlers(mockService, nil, tmpl)
 
 	if handlers == nil {
 		t.Fatal("NewEventWebHandlers returned nil")
@@ -147,7 +147,7 @@ func TestEventWebHandlers_ListEventsPage(t *testing.T) {
 				</html>
 			`))
 
-			handlers := NewEventWebHandlers(mockService, tmpl)
+			handlers := NewEventWebHandlers(mockService, nil, tmpl)
 
 			req := httptest.NewRequest("GET", "/events"+tt.query, nil)
 			ctx := auth.WithUser(req.Context(), tt.user)
@@ -210,7 +210,7 @@ func TestEventWebHandlers_NewEventForm(t *testing.T) {
 				</html>
 			`))
 
-			handlers := NewEventWebHandlers(mockService, tmpl)
+			handlers := NewEventWebHandlers(mockService, nil, tmpl)
 
 			req := httptest.NewRequest("GET", "/events/new", nil)
 			ctx := auth.WithUser(req.Context(), tt.user)
@@ -336,7 +336,7 @@ func TestEventWebHandlers_EditEventForm(t *testing.T) {
 				</html>
 			`))
 
-			handlers := NewEventWebHandlers(mockService, tmpl)
+			handlers := NewEventWebHandlers(mockService, nil, tmpl)
 
 			req := httptest.NewRequest("GET", "/events/"+tt.eventID+"/edit", nil)
 			rctx := chi.NewRouteContext()
@@ -462,7 +462,7 @@ func TestEventWebHandlers_GetEventPage(t *testing.T) {
 				</html>
 			`))
 
-			handlers := NewEventWebHandlers(mockService, tmpl)
+			handlers := NewEventWebHandlers(mockService, nil, tmpl)
 
 			req := httptest.NewRequest("GET", "/events/"+tt.eventID, nil)
 			rctx := chi.NewRouteContext()
@@ -583,7 +583,7 @@ func TestEventWebHandlers_CreateEventFromForm(t *testing.T) {
 			}
 
 			tmpl := template.New("test")
-			handlers := NewEventWebHandlers(mockService, tmpl)
+			handlers := NewEventWebHandlers(mockService, nil, tmpl)
 
 			req := httptest.NewRequest("POST", "/events", strings.NewReader(tt.formData.Encode()))
 			req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
@@ -737,7 +737,7 @@ func TestEventWebHandlers_UpdateEventFromForm(t *testing.T) {
 			}
 
 			tmpl := template.New("test")
-			handlers := NewEventWebHandlers(mockService, tmpl)
+			handlers := NewEventWebHandlers(mockService, nil, tmpl)
 
 			req := httptest.NewRequest("POST", "/events/"+tt.eventID, strings.NewReader(tt.formData.Encode()))
 			req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
@@ -851,7 +851,7 @@ func TestEventWebHandlers_PublishEventAction(t *testing.T) {
 			}
 
 			tmpl := template.New("test")
-			handlers := NewEventWebHandlers(mockService, tmpl)
+			handlers := NewEventWebHandlers(mockService, nil, tmpl)
 
 			formData := url.Values{
 				"csrf_token": []string{"test-csrf-token"},
@@ -991,7 +991,7 @@ func TestEventWebHandlers_CancelEventAction(t *testing.T) {
 			}
 
 			tmpl := template.New("test")
-			handlers := NewEventWebHandlers(mockService, tmpl)
+			handlers := NewEventWebHandlers(mockService, nil, tmpl)
 
 			req := httptest.NewRequest("POST", "/events/"+tt.eventID+"/cancel", strings.NewReader(tt.formData.Encode()))
 			req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
@@ -1105,7 +1105,7 @@ func TestEventWebHandlers_DeleteEventAction(t *testing.T) {
 			}
 
 			tmpl := template.New("test")
-			handlers := NewEventWebHandlers(mockService, tmpl)
+			handlers := NewEventWebHandlers(mockService, nil, tmpl)
 
 			formData := url.Values{
 				"csrf_token": []string{"test-csrf-token"},
