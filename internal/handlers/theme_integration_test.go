@@ -479,7 +479,7 @@ func TestThemeSystem_CustomOverrides_Integration(t *testing.T) {
 	inviteService := invites.NewInviteService(tokenGenerator, inviteRepo)
 
 	customImageURL := "/uploads/custom-header.jpg"
-	customColor := "#ff6b9d"
+	customColor := "#007BFF"
 
 	startTime := time.Now().Add(30 * 24 * time.Hour)
 	description := "Testing custom overrides"
@@ -543,8 +543,8 @@ func TestThemeSystem_CustomOverrides_Integration(t *testing.T) {
 		t.Error("Custom image URL should override default theme image")
 	}
 
-	if !strings.Contains(body, customColor) {
-		t.Error("Custom color should be applied to theme")
+	if !strings.Contains(body, "--theme-primary: "+customColor) {
+		t.Error("Custom color CSS should be applied to theme")
 	}
 
 	if cardTheme.ImageURL != nil && strings.Contains(body, *cardTheme.ImageURL) {

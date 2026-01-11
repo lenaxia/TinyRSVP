@@ -40,7 +40,14 @@ func TestRSVPPage_TemplateRendersThemeData(t *testing.T) {
 		LocalStartTime: "Monday, January 13, 2026 at 6:00 PM PST",
 		ThemeCategory:  "card",
 		ThemeImageURL:  "/static/images/themes/wedding-elegance-header.svg",
-		ThemeColor:     "#f4c2c2",
+		ThemeColor:     template.HTML(`<style>
+[data-event-theme] {
+		  --theme-primary: #f4c2c2 !important;
+}
+[data-theme="dark"][data-event-theme] {
+		  --theme-primary: #f4c2c2 !important;
+}
+</style>`),
 		CSRFToken:      "test-csrf-token",
 	}
 
@@ -252,7 +259,14 @@ func TestRSVPPage_TemplateRendersCustomColorOnly(t *testing.T) {
 		LocalStartTime: "Monday, January 13, 2026 at 6:00 PM PST",
 		ThemeCategory:  "card",
 		ThemeImageURL:  "",
-		ThemeColor:     "#123456",
+		ThemeColor:     template.HTML(`<style>
+[data-event-theme] {
+		  --theme-primary: #123456 !important;
+}
+[data-theme="dark"][data-event-theme] {
+		  --theme-primary: #123456 !important;
+}
+</style>`),
 		CSRFToken:      "test-csrf-token",
 	}
 

@@ -20,13 +20,7 @@
     {{if .ThemeCategory}}
     <link rel="stylesheet" href="/static/css/themes/{{.ThemeCategory}}.css">
     {{end}}
-    {{if .ThemeColor}}
-    <style>
-        [data-event-theme] {
-            --theme-primary: {{.ThemeColor}} !important;
-        }
-    </style>
-    {{end}}
+    {{.ThemeColor}}
 </head>
 <body>
     <a href="#main-content" class="skip-link">Skip to main content</a>

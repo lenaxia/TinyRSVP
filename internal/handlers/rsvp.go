@@ -87,7 +87,7 @@ type RSVPPageData struct {
 	CSRFToken      string
 	ThemeCategory  string
 	ThemeImageURL  string
-	ThemeColor     string
+	ThemeColor     template.HTML
 }
 
 func (h *RSVPHandler) GetRSVPPage(w http.ResponseWriter, r *http.Request) {
@@ -306,9 +306,17 @@ func (h *RSVPHandler) getThemeImageURL(event *models.Event, theme *models.Templa
 	return ""
 }
 
-func (h *RSVPHandler) getThemeColor(event *models.Event) string {
+func (h *RSVPHandler) getThemeColor(event *models.Event) template.HTML {
 	if event.CustomThemeColor != nil && *event.CustomThemeColor != "" {
-		return *event.CustomThemeColor
+		color := *event.CustomThemeColor
+		if !isValidHexColor(color) {
+			return ""
+		}
+		valid, _ := validateCustomColorContrast(color)
+		if !valid {
+			return ""
+		}
+		return template.HTML(generateColorOverrideCSS(color))
 	}
 
 	return ""

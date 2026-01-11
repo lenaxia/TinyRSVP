@@ -424,7 +424,7 @@ func TestRSVPHandler_GetRSVPPage_WithCustomThemeImage(t *testing.T) {
 func TestRSVPHandler_GetRSVPPage_WithCustomThemeColor(t *testing.T) {
 	startTime := time.Now().Add(24 * time.Hour)
 	templateID := int64(5)
-	customColor := "#ff6b9d"
+	customColor := "#007BFF"
 
 	mockInviteSvc := &mockRSVPInviteService{
 		getInviteByTokenFunc: func(ctx context.Context, token string) (*models.Invite, error) {
@@ -499,8 +499,8 @@ func TestRSVPHandler_GetRSVPPage_WithCustomThemeColor(t *testing.T) {
 	}
 
 	body := w.Body.String()
-	if !strings.Contains(body, "ThemeColor:#ff6b9d") {
-		t.Errorf("Expected custom theme color, got: %s", body)
+	if !strings.Contains(body, "--theme-primary: #007BFF") {
+		t.Errorf("Expected custom theme color CSS, got: %s", body)
 	}
 }
 
@@ -576,7 +576,7 @@ func TestRSVPHandler_GetRSVPPage_WithBothCustomOverrides(t *testing.T) {
 	startTime := time.Now().Add(24 * time.Hour)
 	templateID := int64(5)
 	customImageURL := "/uploads/custom-header.jpg"
-	customColor := "#123456"
+	customColor := "#16A34A"
 	defaultImageURL := "/static/images/themes/default-header.svg"
 
 	mockInviteSvc := &mockRSVPInviteService{
@@ -657,8 +657,8 @@ func TestRSVPHandler_GetRSVPPage_WithBothCustomOverrides(t *testing.T) {
 	if !strings.Contains(body, "ThemeImageURL:/uploads/custom-header.jpg") {
 		t.Errorf("Expected custom image URL, got: %s", body)
 	}
-	if !strings.Contains(body, "ThemeColor:#123456") {
-		t.Errorf("Expected custom color, got: %s", body)
+	if !strings.Contains(body, "--theme-primary: #16A34A") {
+		t.Errorf("Expected custom color CSS, got: %s", body)
 	}
 }
 
@@ -746,8 +746,8 @@ func TestRSVPHandler_GetRSVPPage_EmptyCustomOverrides(t *testing.T) {
 	if !strings.Contains(body, "ThemeImageURL:/static/images/themes/wedding-elegance-header.svg") {
 		t.Errorf("Expected default image URL when custom is empty, got: %s", body)
 	}
-	if strings.Contains(body, "ThemeColor:#") {
-		t.Errorf("Expected empty theme color when custom is empty, got: %s", body)
+	if strings.Contains(body, "--theme-primary:") {
+		t.Errorf("Expected no theme color CSS when custom is empty, got: %s", body)
 	}
 }
 
