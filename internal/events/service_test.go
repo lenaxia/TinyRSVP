@@ -12,18 +12,21 @@ import (
 )
 
 type mockEventRepository struct {
-	CreateFunc             func(ctx context.Context, event *models.Event) error
-	GetByIDFunc            func(ctx context.Context, id int64) (*models.Event, error)
-	GetByPublicIDFunc      func(ctx context.Context, publicID string) (*models.Event, error)
-	GetByFriendlyNameFunc  func(ctx context.Context, friendlyName string) (*models.Event, error)
-	UpdateFunc             func(ctx context.Context, event *models.Event) error
-	UpdateWithVersionFunc  func(ctx context.Context, event *models.Event, expectedVersion int) error
-	UpdateStatusFunc       func(ctx context.Context, id int64, status models.EventStatus) error
-	DeleteFunc             func(ctx context.Context, id int64) error
-	ListFunc               func(ctx context.Context, filters repositories.ListFilters) ([]*models.Event, error)
-	GetByStatusFunc        func(ctx context.Context, status models.EventStatus) ([]*models.Event, error)
-	GetEventsToArchiveFunc func(ctx context.Context, daysAfterEvent int) ([]*models.Event, error)
-	GetByCreatorIDFunc     func(ctx context.Context, creatorID int64) ([]*models.Event, error)
+	CreateFunc                   func(ctx context.Context, event *models.Event) error
+	GetByIDFunc                  func(ctx context.Context, id int64) (*models.Event, error)
+	GetByPublicIDFunc            func(ctx context.Context, publicID string) (*models.Event, error)
+	GetByFriendlyNameFunc        func(ctx context.Context, friendlyName string) (*models.Event, error)
+	UpdateFunc                   func(ctx context.Context, event *models.Event) error
+	UpdateWithVersionFunc        func(ctx context.Context, event *models.Event, expectedVersion int) error
+	UpdateStatusFunc             func(ctx context.Context, id int64, status models.EventStatus) error
+	DeleteFunc                   func(ctx context.Context, id int64) error
+	ListFunc                     func(ctx context.Context, filters repositories.ListFilters) ([]*models.Event, error)
+	GetByStatusFunc              func(ctx context.Context, status models.EventStatus) ([]*models.Event, error)
+	GetEventsToArchiveFunc       func(ctx context.Context, daysAfterEvent int) ([]*models.Event, error)
+	GetByCreatorIDFunc           func(ctx context.Context, creatorID int64) ([]*models.Event, error)
+	GetComponentOverridesFunc    func(ctx context.Context, eventID int64) (*models.ComponentOverrides, error)
+	UpdateComponentOverridesFunc func(ctx context.Context, eventID int64, overrides *models.ComponentOverrides) error
+	DeleteComponentOverridesFunc func(ctx context.Context, eventID int64) error
 }
 
 func (m *mockEventRepository) Create(ctx context.Context, event *models.Event) error {
@@ -112,6 +115,27 @@ func (m *mockEventRepository) GetByCreatorID(ctx context.Context, creatorID int6
 
 func (m *mockEventRepository) CountEvents(ctx context.Context) (int, error) {
 	return 0, nil
+}
+
+func (m *mockEventRepository) GetComponentOverrides(ctx context.Context, eventID int64) (*models.ComponentOverrides, error) {
+	if m.GetComponentOverridesFunc != nil {
+		return m.GetComponentOverridesFunc(ctx, eventID)
+	}
+	return nil, nil
+}
+
+func (m *mockEventRepository) UpdateComponentOverrides(ctx context.Context, eventID int64, overrides *models.ComponentOverrides) error {
+	if m.UpdateComponentOverridesFunc != nil {
+		return m.UpdateComponentOverridesFunc(ctx, eventID, overrides)
+	}
+	return nil
+}
+
+func (m *mockEventRepository) DeleteComponentOverrides(ctx context.Context, eventID int64) error {
+	if m.DeleteComponentOverridesFunc != nil {
+		return m.DeleteComponentOverridesFunc(ctx, eventID)
+	}
+	return nil
 }
 
 type mockValidator struct {

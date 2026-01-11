@@ -3,6 +3,7 @@ package repositories
 import (
 	"context"
 	"database/sql"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"strings"
@@ -26,6 +27,9 @@ type EventRepository interface {
 	GetEventsToArchive(ctx context.Context, daysAfterEvent int) ([]*models.Event, error)
 	GetByCreatorID(ctx context.Context, creatorID int64) ([]*models.Event, error)
 	CountEvents(ctx context.Context) (int, error)
+	GetComponentOverrides(ctx context.Context, eventID int64) (*models.ComponentOverrides, error)
+	UpdateComponentOverrides(ctx context.Context, eventID int64, overrides *models.ComponentOverrides) error
+	DeleteComponentOverrides(ctx context.Context, eventID int64) error
 }
 
 type ListFilters struct {
@@ -119,7 +123,7 @@ func (r *eventRepository) GetByID(ctx context.Context, id int64) (*models.Event,
 	query := `
 		SELECT id, public_id, friendly_name, title, description, start_time, end_time, timezone, location,
 			status, created_by, version, ics_sequence, max_plus_ones, rsvp_deadline, template_id,
-			custom_theme_image_url, custom_theme_color,
+			custom_theme_image_url, custom_theme_color, component_overrides,
 			created_at, updated_at
 		FROM events
 		WHERE id = ?
@@ -145,6 +149,7 @@ func (r *eventRepository) GetByID(ctx context.Context, id int64) (*models.Event,
 		&event.TemplateID,
 		&event.CustomThemeImageURL,
 		&event.CustomThemeColor,
+		&event.ComponentOverrides,
 		&event.CreatedAt,
 		&event.UpdatedAt,
 	)
@@ -166,7 +171,7 @@ func (r *eventRepository) GetByPublicID(ctx context.Context, publicID string) (*
 	query := `
 		SELECT id, public_id, friendly_name, title, description, start_time, end_time, timezone, location,
 			status, created_by, version, ics_sequence, max_plus_ones, rsvp_deadline, template_id,
-			custom_theme_image_url, custom_theme_color,
+			custom_theme_image_url, custom_theme_color, component_overrides,
 			created_at, updated_at
 		FROM events
 		WHERE public_id = ?
@@ -192,6 +197,7 @@ func (r *eventRepository) GetByPublicID(ctx context.Context, publicID string) (*
 		&event.TemplateID,
 		&event.CustomThemeImageURL,
 		&event.CustomThemeColor,
+		&event.ComponentOverrides,
 		&event.CreatedAt,
 		&event.UpdatedAt,
 	)
@@ -213,7 +219,7 @@ func (r *eventRepository) GetByFriendlyName(ctx context.Context, friendlyName st
 	query := `
 		SELECT id, public_id, friendly_name, title, description, start_time, end_time, timezone, location,
 			status, created_by, version, ics_sequence, max_plus_ones, rsvp_deadline, template_id,
-			custom_theme_image_url, custom_theme_color,
+			custom_theme_image_url, custom_theme_color, component_overrides,
 			created_at, updated_at
 		FROM events
 		WHERE friendly_name = ?
@@ -239,6 +245,7 @@ func (r *eventRepository) GetByFriendlyName(ctx context.Context, friendlyName st
 		&event.TemplateID,
 		&event.CustomThemeImageURL,
 		&event.CustomThemeColor,
+		&event.ComponentOverrides,
 		&event.CreatedAt,
 		&event.UpdatedAt,
 	)
@@ -262,7 +269,7 @@ func (r *eventRepository) Update(ctx context.Context, event *models.Event) error
 		SET title = ?, description = ?, start_time = ?, end_time = ?,
 			timezone = ?, location = ?, max_plus_ones = ?, rsvp_deadline = ?,
 			template_id = ?, custom_theme_image_url = ?, custom_theme_color = ?,
-			updated_at = ?
+			component_overrides = ?, updated_at = ?
 		WHERE id = ?
 	`
 
@@ -279,6 +286,7 @@ func (r *eventRepository) Update(ctx context.Context, event *models.Event) error
 		event.TemplateID,
 		event.CustomThemeImageURL,
 		event.CustomThemeColor,
+		event.ComponentOverrides,
 		now,
 		event.ID,
 	)
@@ -310,7 +318,7 @@ func (r *eventRepository) UpdateWithVersion(ctx context.Context, event *models.E
 		SET title = ?, description = ?, start_time = ?, end_time = ?,
 			timezone = ?, location = ?, max_plus_ones = ?, rsvp_deadline = ?,
 			template_id = ?, custom_theme_image_url = ?, custom_theme_color = ?,
-			version = version + 1, updated_at = ?
+			component_overrides = ?, version = version + 1, updated_at = ?
 		WHERE id = ? AND version = ?
 	`
 
@@ -327,6 +335,7 @@ func (r *eventRepository) UpdateWithVersion(ctx context.Context, event *models.E
 		event.TemplateID,
 		event.CustomThemeImageURL,
 		event.CustomThemeColor,
+		event.ComponentOverrides,
 		now,
 		event.ID,
 		expectedVersion,
@@ -400,7 +409,7 @@ func (r *eventRepository) List(ctx context.Context, filters ListFilters) ([]*mod
 	query := `
 		SELECT id, public_id, friendly_name, title, description, start_time, end_time, timezone, location,
 			status, created_by, version, ics_sequence, max_plus_ones, rsvp_deadline, template_id,
-			custom_theme_image_url, custom_theme_color,
+			custom_theme_image_url, custom_theme_color, component_overrides,
 			created_at, updated_at
 		FROM events
 		WHERE 1=1
@@ -458,6 +467,7 @@ func (r *eventRepository) List(ctx context.Context, filters ListFilters) ([]*mod
 			&event.TemplateID,
 			&event.CustomThemeImageURL,
 			&event.CustomThemeColor,
+			&event.ComponentOverrides,
 			&event.CreatedAt,
 			&event.UpdatedAt,
 		)
@@ -478,7 +488,7 @@ func (r *eventRepository) GetByStatus(ctx context.Context, status models.EventSt
 	query := `
 		SELECT id, public_id, friendly_name, title, description, start_time, end_time, timezone, location,
 			status, created_by, version, ics_sequence, max_plus_ones, rsvp_deadline, template_id,
-			custom_theme_image_url, custom_theme_color,
+			custom_theme_image_url, custom_theme_color, component_overrides,
 			created_at, updated_at
 		FROM events
 		WHERE status = ?
@@ -513,6 +523,7 @@ func (r *eventRepository) GetByStatus(ctx context.Context, status models.EventSt
 			&event.TemplateID,
 			&event.CustomThemeImageURL,
 			&event.CustomThemeColor,
+			&event.ComponentOverrides,
 			&event.CreatedAt,
 			&event.UpdatedAt,
 		)
@@ -533,7 +544,7 @@ func (r *eventRepository) GetEventsToArchive(ctx context.Context, daysAfterEvent
 	query := `
 		SELECT id, public_id, friendly_name, title, description, start_time, end_time, timezone, location,
 			status, created_by, version, ics_sequence, max_plus_ones, rsvp_deadline, template_id,
-			custom_theme_image_url, custom_theme_color,
+			custom_theme_image_url, custom_theme_color, component_overrides,
 			created_at, updated_at
 		FROM events
 		WHERE status IN (?, ?)
@@ -569,6 +580,7 @@ func (r *eventRepository) GetEventsToArchive(ctx context.Context, daysAfterEvent
 			&event.TemplateID,
 			&event.CustomThemeImageURL,
 			&event.CustomThemeColor,
+			&event.ComponentOverrides,
 			&event.CreatedAt,
 			&event.UpdatedAt,
 		)
@@ -589,7 +601,7 @@ func (r *eventRepository) GetByCreatorID(ctx context.Context, creatorID int64) (
 	query := `
 		SELECT id, public_id, friendly_name, title, description, start_time, end_time, timezone, location,
 			status, created_by, version, ics_sequence, max_plus_ones, rsvp_deadline, template_id,
-			custom_theme_image_url, custom_theme_color,
+			custom_theme_image_url, custom_theme_color, component_overrides,
 			created_at, updated_at
 		FROM events
 		WHERE created_by = ?
@@ -624,6 +636,7 @@ func (r *eventRepository) GetByCreatorID(ctx context.Context, creatorID int64) (
 			&event.TemplateID,
 			&event.CustomThemeImageURL,
 			&event.CustomThemeColor,
+			&event.ComponentOverrides,
 			&event.CreatedAt,
 			&event.UpdatedAt,
 		)
@@ -659,4 +672,102 @@ func (r *eventRepository) CountEvents(ctx context.Context) (int, error) {
 	}
 	
 	return count, nil
+}
+
+func (r *eventRepository) GetComponentOverrides(ctx context.Context, eventID int64) (*models.ComponentOverrides, error) {
+	query := `
+		SELECT component_overrides
+		FROM events
+		WHERE id = ?
+	`
+
+	var overridesJSON *string
+	err := r.db.QueryRow(ctx, query, eventID).Scan(&overridesJSON)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, &models.NotFoundError{
+				Resource: "Event",
+				ID:       eventID,
+			}
+		}
+		return nil, fmt.Errorf("failed to get component overrides: %w", err)
+	}
+
+	if overridesJSON == nil || *overridesJSON == "" {
+		return nil, nil
+	}
+
+	var overrides models.ComponentOverrides
+	if err := json.Unmarshal([]byte(*overridesJSON), &overrides); err != nil {
+		return nil, fmt.Errorf("failed to unmarshal component overrides: %w", err)
+	}
+
+	return &overrides, nil
+}
+
+func (r *eventRepository) UpdateComponentOverrides(ctx context.Context, eventID int64, overrides *models.ComponentOverrides) error {
+	if overrides == nil {
+		return fmt.Errorf("overrides cannot be nil")
+	}
+
+	overridesJSON, err := json.Marshal(overrides)
+	if err != nil {
+		return fmt.Errorf("failed to marshal component overrides: %w", err)
+	}
+
+	overridesStr := string(overridesJSON)
+
+	query := `
+		UPDATE events
+		SET component_overrides = ?, updated_at = ?
+		WHERE id = ?
+	`
+
+	now := time.Now()
+	result, err := r.db.Exec(ctx, query, overridesStr, now, eventID)
+	if err != nil {
+		return fmt.Errorf("failed to update component overrides: %w", err)
+	}
+
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		return fmt.Errorf("failed to get rows affected: %w", err)
+	}
+
+	if rowsAffected == 0 {
+		return &models.NotFoundError{
+			Resource: "Event",
+			ID:       eventID,
+		}
+	}
+
+	return nil
+}
+
+func (r *eventRepository) DeleteComponentOverrides(ctx context.Context, eventID int64) error {
+	query := `
+		UPDATE events
+		SET component_overrides = NULL, updated_at = ?
+		WHERE id = ?
+	`
+
+	now := time.Now()
+	result, err := r.db.Exec(ctx, query, now, eventID)
+	if err != nil {
+		return fmt.Errorf("failed to delete component overrides: %w", err)
+	}
+
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		return fmt.Errorf("failed to get rows affected: %w", err)
+	}
+
+	if rowsAffected == 0 {
+		return &models.NotFoundError{
+			Resource: "Event",
+			ID:       eventID,
+		}
+	}
+
+	return nil
 }
