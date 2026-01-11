@@ -30,13 +30,14 @@ type RSVPService interface {
 }
 
 type RSVPHandler struct {
-	inviteService RSVPInviteService
-	eventRepo     repositories.EventRepository
-	rsvpRepo      repositories.RSVPRepository
-	questionRepo  repositories.QuestionRepository
-	answerRepo    repositories.AnswerRepository
-	rsvpService   RSVPService
-	templates     *template.Template
+	inviteService  RSVPInviteService
+	eventRepo      repositories.EventRepository
+	rsvpRepo       repositories.RSVPRepository
+	questionRepo   repositories.QuestionRepository
+	answerRepo     repositories.AnswerRepository
+	rsvpService    RSVPService
+	templateRepo   repositories.TemplateRepository
+	templates      *template.Template
 }
 
 func NewRSVPHandler(
@@ -61,6 +62,10 @@ func (h *RSVPHandler) SetAnswerRepository(repo repositories.AnswerRepository) {
 	h.answerRepo = repo
 }
 
+func (h *RSVPHandler) SetTemplateRepository(repo repositories.TemplateRepository) {
+	h.templateRepo = repo
+}
+
 type QuestionWithOptions struct {
 	*models.PreferenceQuestion
 	ParsedOptions []string
@@ -80,6 +85,9 @@ type RSVPPageData struct {
 	CanUpdate      bool
 	ErrorMessage   string
 	CSRFToken      string
+	ThemeCategory  string
+	ThemeImageURL  string
+	ThemeColor     string
 }
 
 func (h *RSVPHandler) GetRSVPPage(w http.ResponseWriter, r *http.Request) {
@@ -182,6 +190,17 @@ func (h *RSVPHandler) GetRSVPPage(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
+	theme, err := h.getEventTheme(r.Context(), event)
+	if err != nil {
+		h.renderError(w, http.StatusInternalServerError, "Failed to load theme")
+		return
+	}
+
+	themeCategory := ""
+	if theme != nil {
+		themeCategory = string(theme.Category)
+	}
+
 	data := &RSVPPageData{
 		Event:          event,
 		Invite:         invite,
@@ -195,6 +214,9 @@ func (h *RSVPHandler) GetRSVPPage(w http.ResponseWriter, r *http.Request) {
 		TimeUntilEvent: timeUntilEvent,
 		CanUpdate:      canUpdate,
 		CSRFToken:      middleware.GetCSRFToken(r.Context()),
+		ThemeCategory:  themeCategory,
+		ThemeImageURL:  h.getThemeImageURL(event, theme),
+		ThemeColor:     h.getThemeColor(event),
 	}
 
 	h.renderPage(w, http.StatusOK, data)
@@ -255,6 +277,41 @@ func (h *RSVPHandler) renderPage(w http.ResponseWriter, status int, data *RSVPPa
 
 func (h *RSVPHandler) SetTemplates(tmpl *template.Template) {
 	h.templates = tmpl
+}
+
+func (h *RSVPHandler) getEventTheme(ctx context.Context, event *models.Event) (*models.Template, error) {
+	if h.templateRepo == nil {
+		return nil, nil
+	}
+
+	if event.TemplateID != nil {
+		theme, err := h.templateRepo.GetByID(ctx, *event.TemplateID)
+		if err == nil {
+			return theme, nil
+		}
+	}
+
+	return h.templateRepo.GetDefaultByType(ctx, models.TemplateTypeRSVPPage)
+}
+
+func (h *RSVPHandler) getThemeImageURL(event *models.Event, theme *models.Template) string {
+	if event.CustomThemeImageURL != nil && *event.CustomThemeImageURL != "" {
+		return *event.CustomThemeImageURL
+	}
+
+	if theme != nil && theme.ImageURL != nil {
+		return *theme.ImageURL
+	}
+
+	return ""
+}
+
+func (h *RSVPHandler) getThemeColor(event *models.Event) string {
+	if event.CustomThemeColor != nil && *event.CustomThemeColor != "" {
+		return *event.CustomThemeColor
+	}
+
+	return ""
 }
 
 func (h *RSVPHandler) parseRSVPRequest(r *http.Request) (*rsvp.SubmitRSVPRequest, error) {

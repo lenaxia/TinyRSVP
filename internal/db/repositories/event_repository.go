@@ -61,10 +61,11 @@ func (r *eventRepository) Create(ctx context.Context, event *models.Event) error
 	query := `
 		INSERT INTO events (
 			public_id, friendly_name, title, description, start_time, end_time, timezone, location,
-			status, created_by, version, ics_sequence, max_plus_ones, rsvp_deadline,
+			status, created_by, version, ics_sequence, max_plus_ones, rsvp_deadline, template_id,
+			custom_theme_image_url, custom_theme_color,
 			created_at, updated_at
 		)
-		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 	`
 
 	now := time.Now()
@@ -86,6 +87,9 @@ func (r *eventRepository) Create(ctx context.Context, event *models.Event) error
 		icsSequence,
 		event.MaxPlusOnes,
 		event.RSVPDeadline,
+		event.TemplateID,
+		event.CustomThemeImageURL,
+		event.CustomThemeColor,
 		now,
 		now,
 	)
@@ -114,7 +118,8 @@ func (r *eventRepository) Create(ctx context.Context, event *models.Event) error
 func (r *eventRepository) GetByID(ctx context.Context, id int64) (*models.Event, error) {
 	query := `
 		SELECT id, public_id, friendly_name, title, description, start_time, end_time, timezone, location,
-			status, created_by, version, ics_sequence, max_plus_ones, rsvp_deadline,
+			status, created_by, version, ics_sequence, max_plus_ones, rsvp_deadline, template_id,
+			custom_theme_image_url, custom_theme_color,
 			created_at, updated_at
 		FROM events
 		WHERE id = ?
@@ -137,6 +142,9 @@ func (r *eventRepository) GetByID(ctx context.Context, id int64) (*models.Event,
 		&event.ICSSequence,
 		&event.MaxPlusOnes,
 		&event.RSVPDeadline,
+		&event.TemplateID,
+		&event.CustomThemeImageURL,
+		&event.CustomThemeColor,
 		&event.CreatedAt,
 		&event.UpdatedAt,
 	)
@@ -157,7 +165,8 @@ func (r *eventRepository) GetByID(ctx context.Context, id int64) (*models.Event,
 func (r *eventRepository) GetByPublicID(ctx context.Context, publicID string) (*models.Event, error) {
 	query := `
 		SELECT id, public_id, friendly_name, title, description, start_time, end_time, timezone, location,
-			status, created_by, version, ics_sequence, max_plus_ones, rsvp_deadline,
+			status, created_by, version, ics_sequence, max_plus_ones, rsvp_deadline, template_id,
+			custom_theme_image_url, custom_theme_color,
 			created_at, updated_at
 		FROM events
 		WHERE public_id = ?
@@ -180,6 +189,9 @@ func (r *eventRepository) GetByPublicID(ctx context.Context, publicID string) (*
 		&event.ICSSequence,
 		&event.MaxPlusOnes,
 		&event.RSVPDeadline,
+		&event.TemplateID,
+		&event.CustomThemeImageURL,
+		&event.CustomThemeColor,
 		&event.CreatedAt,
 		&event.UpdatedAt,
 	)
@@ -200,7 +212,8 @@ func (r *eventRepository) GetByPublicID(ctx context.Context, publicID string) (*
 func (r *eventRepository) GetByFriendlyName(ctx context.Context, friendlyName string) (*models.Event, error) {
 	query := `
 		SELECT id, public_id, friendly_name, title, description, start_time, end_time, timezone, location,
-			status, created_by, version, ics_sequence, max_plus_ones, rsvp_deadline,
+			status, created_by, version, ics_sequence, max_plus_ones, rsvp_deadline, template_id,
+			custom_theme_image_url, custom_theme_color,
 			created_at, updated_at
 		FROM events
 		WHERE friendly_name = ?
@@ -223,6 +236,9 @@ func (r *eventRepository) GetByFriendlyName(ctx context.Context, friendlyName st
 		&event.ICSSequence,
 		&event.MaxPlusOnes,
 		&event.RSVPDeadline,
+		&event.TemplateID,
+		&event.CustomThemeImageURL,
+		&event.CustomThemeColor,
 		&event.CreatedAt,
 		&event.UpdatedAt,
 	)
@@ -245,6 +261,7 @@ func (r *eventRepository) Update(ctx context.Context, event *models.Event) error
 		UPDATE events
 		SET title = ?, description = ?, start_time = ?, end_time = ?,
 			timezone = ?, location = ?, max_plus_ones = ?, rsvp_deadline = ?,
+			template_id = ?, custom_theme_image_url = ?, custom_theme_color = ?,
 			updated_at = ?
 		WHERE id = ?
 	`
@@ -259,6 +276,9 @@ func (r *eventRepository) Update(ctx context.Context, event *models.Event) error
 		event.Location,
 		event.MaxPlusOnes,
 		event.RSVPDeadline,
+		event.TemplateID,
+		event.CustomThemeImageURL,
+		event.CustomThemeColor,
 		now,
 		event.ID,
 	)
@@ -289,6 +309,7 @@ func (r *eventRepository) UpdateWithVersion(ctx context.Context, event *models.E
 		UPDATE events
 		SET title = ?, description = ?, start_time = ?, end_time = ?,
 			timezone = ?, location = ?, max_plus_ones = ?, rsvp_deadline = ?,
+			template_id = ?, custom_theme_image_url = ?, custom_theme_color = ?,
 			version = version + 1, updated_at = ?
 		WHERE id = ? AND version = ?
 	`
@@ -303,6 +324,9 @@ func (r *eventRepository) UpdateWithVersion(ctx context.Context, event *models.E
 		event.Location,
 		event.MaxPlusOnes,
 		event.RSVPDeadline,
+		event.TemplateID,
+		event.CustomThemeImageURL,
+		event.CustomThemeColor,
 		now,
 		event.ID,
 		expectedVersion,
@@ -375,7 +399,8 @@ func (r *eventRepository) Delete(ctx context.Context, id int64) error {
 func (r *eventRepository) List(ctx context.Context, filters ListFilters) ([]*models.Event, error) {
 	query := `
 		SELECT id, public_id, friendly_name, title, description, start_time, end_time, timezone, location,
-			status, created_by, version, ics_sequence, max_plus_ones, rsvp_deadline,
+			status, created_by, version, ics_sequence, max_plus_ones, rsvp_deadline, template_id,
+			custom_theme_image_url, custom_theme_color,
 			created_at, updated_at
 		FROM events
 		WHERE 1=1
@@ -430,6 +455,9 @@ func (r *eventRepository) List(ctx context.Context, filters ListFilters) ([]*mod
 			&event.ICSSequence,
 			&event.MaxPlusOnes,
 			&event.RSVPDeadline,
+			&event.TemplateID,
+			&event.CustomThemeImageURL,
+			&event.CustomThemeColor,
 			&event.CreatedAt,
 			&event.UpdatedAt,
 		)
@@ -449,7 +477,8 @@ func (r *eventRepository) List(ctx context.Context, filters ListFilters) ([]*mod
 func (r *eventRepository) GetByStatus(ctx context.Context, status models.EventStatus) ([]*models.Event, error) {
 	query := `
 		SELECT id, public_id, friendly_name, title, description, start_time, end_time, timezone, location,
-			status, created_by, version, ics_sequence, max_plus_ones, rsvp_deadline,
+			status, created_by, version, ics_sequence, max_plus_ones, rsvp_deadline, template_id,
+			custom_theme_image_url, custom_theme_color,
 			created_at, updated_at
 		FROM events
 		WHERE status = ?
@@ -481,6 +510,9 @@ func (r *eventRepository) GetByStatus(ctx context.Context, status models.EventSt
 			&event.ICSSequence,
 			&event.MaxPlusOnes,
 			&event.RSVPDeadline,
+			&event.TemplateID,
+			&event.CustomThemeImageURL,
+			&event.CustomThemeColor,
 			&event.CreatedAt,
 			&event.UpdatedAt,
 		)
@@ -500,7 +532,8 @@ func (r *eventRepository) GetByStatus(ctx context.Context, status models.EventSt
 func (r *eventRepository) GetEventsToArchive(ctx context.Context, daysAfterEvent int) ([]*models.Event, error) {
 	query := `
 		SELECT id, public_id, friendly_name, title, description, start_time, end_time, timezone, location,
-			status, created_by, version, ics_sequence, max_plus_ones, rsvp_deadline,
+			status, created_by, version, ics_sequence, max_plus_ones, rsvp_deadline, template_id,
+			custom_theme_image_url, custom_theme_color,
 			created_at, updated_at
 		FROM events
 		WHERE status IN (?, ?)
@@ -533,6 +566,9 @@ func (r *eventRepository) GetEventsToArchive(ctx context.Context, daysAfterEvent
 			&event.ICSSequence,
 			&event.MaxPlusOnes,
 			&event.RSVPDeadline,
+			&event.TemplateID,
+			&event.CustomThemeImageURL,
+			&event.CustomThemeColor,
 			&event.CreatedAt,
 			&event.UpdatedAt,
 		)
@@ -552,7 +588,8 @@ func (r *eventRepository) GetEventsToArchive(ctx context.Context, daysAfterEvent
 func (r *eventRepository) GetByCreatorID(ctx context.Context, creatorID int64) ([]*models.Event, error) {
 	query := `
 		SELECT id, public_id, friendly_name, title, description, start_time, end_time, timezone, location,
-			status, created_by, version, ics_sequence, max_plus_ones, rsvp_deadline,
+			status, created_by, version, ics_sequence, max_plus_ones, rsvp_deadline, template_id,
+			custom_theme_image_url, custom_theme_color,
 			created_at, updated_at
 		FROM events
 		WHERE created_by = ?
@@ -584,6 +621,9 @@ func (r *eventRepository) GetByCreatorID(ctx context.Context, creatorID int64) (
 			&event.ICSSequence,
 			&event.MaxPlusOnes,
 			&event.RSVPDeadline,
+			&event.TemplateID,
+			&event.CustomThemeImageURL,
+			&event.CustomThemeColor,
 			&event.CreatedAt,
 			&event.UpdatedAt,
 		)
