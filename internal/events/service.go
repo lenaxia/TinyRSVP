@@ -7,6 +7,7 @@ import (
 	"github.com/lenaxia/tinyrsvp/internal/auth"
 	"github.com/lenaxia/tinyrsvp/internal/db/repositories"
 	"github.com/lenaxia/tinyrsvp/internal/models"
+	"github.com/lenaxia/tinyrsvp/pkg/eventid"
 )
 
 type Service interface {
@@ -66,6 +67,12 @@ func (s *service) CreateEvent(ctx context.Context, event *models.Event) error {
 		return err
 	}
 
+	publicID, err := eventid.GenerateEventID()
+	if err != nil {
+		return fmt.Errorf("failed to generate event ID: %w", err)
+	}
+
+	event.PublicID = &publicID
 	event.CreatedBy = user.ID
 	event.Status = models.EventStatusDraft
 	event.Version = 1

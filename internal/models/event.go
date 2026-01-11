@@ -13,6 +13,8 @@ const (
 
 type Event struct {
 	ID           int64       `db:"id" json:"id"`
+	PublicID     *string     `db:"public_id" json:"public_id,omitempty"`
+	FriendlyName *string     `db:"friendly_name" json:"friendly_name,omitempty"`
 	Title        string      `db:"title" json:"title"`
 	Description  *string     `db:"description" json:"description,omitempty"`
 	StartTime    time.Time   `db:"start_time" json:"start_time"`

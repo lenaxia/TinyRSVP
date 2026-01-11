@@ -15,6 +15,8 @@ import (
 type EventRepository interface {
 	Create(ctx context.Context, event *models.Event) error
 	GetByID(ctx context.Context, id int64) (*models.Event, error)
+	GetByPublicID(ctx context.Context, publicID string) (*models.Event, error)
+	GetByFriendlyName(ctx context.Context, friendlyName string) (*models.Event, error)
 	Update(ctx context.Context, event *models.Event) error
 	UpdateWithVersion(ctx context.Context, event *models.Event, expectedVersion int) error
 	UpdateStatus(ctx context.Context, id int64, status models.EventStatus) error
@@ -58,11 +60,11 @@ func (r *eventRepository) Create(ctx context.Context, event *models.Event) error
 
 	query := `
 		INSERT INTO events (
-			title, description, start_time, end_time, timezone, location,
+			public_id, friendly_name, title, description, start_time, end_time, timezone, location,
 			status, created_by, version, ics_sequence, max_plus_ones, rsvp_deadline,
 			created_at, updated_at
 		)
-		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 	`
 
 	now := time.Now()
@@ -70,6 +72,8 @@ func (r *eventRepository) Create(ctx context.Context, event *models.Event) error
 	icsSequence := 0
 
 	result, err := r.db.Exec(ctx, query,
+		event.PublicID,
+		event.FriendlyName,
 		event.Title,
 		event.Description,
 		event.StartTime,
@@ -109,7 +113,7 @@ func (r *eventRepository) Create(ctx context.Context, event *models.Event) error
 
 func (r *eventRepository) GetByID(ctx context.Context, id int64) (*models.Event, error) {
 	query := `
-		SELECT id, title, description, start_time, end_time, timezone, location,
+		SELECT id, public_id, friendly_name, title, description, start_time, end_time, timezone, location,
 			status, created_by, version, ics_sequence, max_plus_ones, rsvp_deadline,
 			created_at, updated_at
 		FROM events
@@ -119,6 +123,8 @@ func (r *eventRepository) GetByID(ctx context.Context, id int64) (*models.Event,
 	event := &models.Event{}
 	err := r.db.QueryRow(ctx, query, id).Scan(
 		&event.ID,
+		&event.PublicID,
+		&event.FriendlyName,
 		&event.Title,
 		&event.Description,
 		&event.StartTime,
@@ -143,6 +149,92 @@ func (r *eventRepository) GetByID(ctx context.Context, id int64) (*models.Event,
 			}
 		}
 		return nil, fmt.Errorf("failed to get event by id: %w", err)
+	}
+
+	return event, nil
+}
+
+func (r *eventRepository) GetByPublicID(ctx context.Context, publicID string) (*models.Event, error) {
+	query := `
+		SELECT id, public_id, friendly_name, title, description, start_time, end_time, timezone, location,
+			status, created_by, version, ics_sequence, max_plus_ones, rsvp_deadline,
+			created_at, updated_at
+		FROM events
+		WHERE public_id = ?
+	`
+
+	event := &models.Event{}
+	err := r.db.QueryRow(ctx, query, publicID).Scan(
+		&event.ID,
+		&event.PublicID,
+		&event.FriendlyName,
+		&event.Title,
+		&event.Description,
+		&event.StartTime,
+		&event.EndTime,
+		&event.Timezone,
+		&event.Location,
+		&event.Status,
+		&event.CreatedBy,
+		&event.Version,
+		&event.ICSSequence,
+		&event.MaxPlusOnes,
+		&event.RSVPDeadline,
+		&event.CreatedAt,
+		&event.UpdatedAt,
+	)
+
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, &models.NotFoundError{
+				Resource: "Event",
+				ID:       publicID,
+			}
+		}
+		return nil, fmt.Errorf("failed to get event by public_id: %w", err)
+	}
+
+	return event, nil
+}
+
+func (r *eventRepository) GetByFriendlyName(ctx context.Context, friendlyName string) (*models.Event, error) {
+	query := `
+		SELECT id, public_id, friendly_name, title, description, start_time, end_time, timezone, location,
+			status, created_by, version, ics_sequence, max_plus_ones, rsvp_deadline,
+			created_at, updated_at
+		FROM events
+		WHERE friendly_name = ?
+	`
+
+	event := &models.Event{}
+	err := r.db.QueryRow(ctx, query, friendlyName).Scan(
+		&event.ID,
+		&event.PublicID,
+		&event.FriendlyName,
+		&event.Title,
+		&event.Description,
+		&event.StartTime,
+		&event.EndTime,
+		&event.Timezone,
+		&event.Location,
+		&event.Status,
+		&event.CreatedBy,
+		&event.Version,
+		&event.ICSSequence,
+		&event.MaxPlusOnes,
+		&event.RSVPDeadline,
+		&event.CreatedAt,
+		&event.UpdatedAt,
+	)
+
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, &models.NotFoundError{
+				Resource: "Event",
+				ID:       friendlyName,
+			}
+		}
+		return nil, fmt.Errorf("failed to get event by friendly_name: %w", err)
 	}
 
 	return event, nil
@@ -282,7 +374,7 @@ func (r *eventRepository) Delete(ctx context.Context, id int64) error {
 
 func (r *eventRepository) List(ctx context.Context, filters ListFilters) ([]*models.Event, error) {
 	query := `
-		SELECT id, title, description, start_time, end_time, timezone, location,
+		SELECT id, public_id, friendly_name, title, description, start_time, end_time, timezone, location,
 			status, created_by, version, ics_sequence, max_plus_ones, rsvp_deadline,
 			created_at, updated_at
 		FROM events
@@ -324,6 +416,8 @@ func (r *eventRepository) List(ctx context.Context, filters ListFilters) ([]*mod
 		event := &models.Event{}
 		err := rows.Scan(
 			&event.ID,
+			&event.PublicID,
+			&event.FriendlyName,
 			&event.Title,
 			&event.Description,
 			&event.StartTime,
@@ -354,7 +448,7 @@ func (r *eventRepository) List(ctx context.Context, filters ListFilters) ([]*mod
 
 func (r *eventRepository) GetByStatus(ctx context.Context, status models.EventStatus) ([]*models.Event, error) {
 	query := `
-		SELECT id, title, description, start_time, end_time, timezone, location,
+		SELECT id, public_id, friendly_name, title, description, start_time, end_time, timezone, location,
 			status, created_by, version, ics_sequence, max_plus_ones, rsvp_deadline,
 			created_at, updated_at
 		FROM events
@@ -373,6 +467,8 @@ func (r *eventRepository) GetByStatus(ctx context.Context, status models.EventSt
 		event := &models.Event{}
 		err := rows.Scan(
 			&event.ID,
+			&event.PublicID,
+			&event.FriendlyName,
 			&event.Title,
 			&event.Description,
 			&event.StartTime,
@@ -403,7 +499,7 @@ func (r *eventRepository) GetByStatus(ctx context.Context, status models.EventSt
 
 func (r *eventRepository) GetEventsToArchive(ctx context.Context, daysAfterEvent int) ([]*models.Event, error) {
 	query := `
-		SELECT id, title, description, start_time, end_time, timezone, location,
+		SELECT id, public_id, friendly_name, title, description, start_time, end_time, timezone, location,
 			status, created_by, version, ics_sequence, max_plus_ones, rsvp_deadline,
 			created_at, updated_at
 		FROM events
@@ -423,6 +519,8 @@ func (r *eventRepository) GetEventsToArchive(ctx context.Context, daysAfterEvent
 		event := &models.Event{}
 		err := rows.Scan(
 			&event.ID,
+			&event.PublicID,
+			&event.FriendlyName,
 			&event.Title,
 			&event.Description,
 			&event.StartTime,
@@ -453,7 +551,7 @@ func (r *eventRepository) GetEventsToArchive(ctx context.Context, daysAfterEvent
 
 func (r *eventRepository) GetByCreatorID(ctx context.Context, creatorID int64) ([]*models.Event, error) {
 	query := `
-		SELECT id, title, description, start_time, end_time, timezone, location,
+		SELECT id, public_id, friendly_name, title, description, start_time, end_time, timezone, location,
 			status, created_by, version, ics_sequence, max_plus_ones, rsvp_deadline,
 			created_at, updated_at
 		FROM events
@@ -472,6 +570,8 @@ func (r *eventRepository) GetByCreatorID(ctx context.Context, creatorID int64) (
 		event := &models.Event{}
 		err := rows.Scan(
 			&event.ID,
+			&event.PublicID,
+			&event.FriendlyName,
 			&event.Title,
 			&event.Description,
 			&event.StartTime,
