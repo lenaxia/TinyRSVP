@@ -1,0 +1,29 @@
+{{define "component_container"}}
+<div id="{{.ID}}"
+     class="component-container component-{{.Position.Mode}}{{if .ClassName}} {{.ClassName}}{{end}}"
+     style="
+        {{if .Visible}}display: {{if .Layout.display}}{{.Layout.display}}{{else}}block{{end}};{{else}}display: none;{{end}}
+        {{if eq .Position.Mode "absolute"}}
+            position: absolute;
+            {{if .Position.X}}left: {{.Position.X}};{{end}}
+            {{if .Position.Y}}top: {{.Position.Y}};{{end}}
+        {{else if eq .Position.Mode "relative"}}
+            position: relative;
+            {{if .Position.Order}}order: {{.Position.Order}};{{end}}
+        {{else if eq .Position.Mode "flex"}}
+            {{if .Position.Order}}order: {{.Position.Order}};{{end}}
+        {{end}}
+        width: {{.Dimensions.Width}};
+        height: {{.Dimensions.Height}};
+        z-index: {{.ZIndex}};
+        {{if .Layout.flexDirection}}flex-direction: {{.Layout.flexDirection}};{{end}}
+        {{if .Layout.alignItems}}align-items: {{.Layout.alignItems}};{{end}}
+        {{if .Layout.justifyContent}}justify-content: {{.Layout.justifyContent}};{{end}}
+        {{if .Layout.gap}}gap: {{.Layout.gap}};{{end}}
+        {{if .Layout.padding}}padding: {{.Layout.padding}};{{end}}
+        {{if .Layout.backgroundColor}}background-color: {{.Layout.backgroundColor}};{{end}}
+        {{if .Layout.borderRadius}}border-radius: {{.Layout.borderRadius}};{{end}}
+        {{if .Layout.boxShadow}}box-shadow: {{.Layout.boxShadow}};{{end}}
+     ">
+</div>
+{{end}}

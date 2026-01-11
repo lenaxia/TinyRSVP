@@ -1,0 +1,26 @@
+{{define "component_image"}}
+<img id="{{.ID}}"
+     class="component-image component-{{.Position.Mode}}{{if .ClassName}} {{.ClassName}}{{end}}"
+     src="{{.Content.src}}"
+     alt="{{.Content.alt}}"
+     style="
+        {{if .Visible}}display: block;{{else}}display: none;{{end}}
+        {{if eq .Position.Mode "absolute"}}
+            position: absolute;
+            {{if .Position.X}}left: {{.Position.X}};{{end}}
+            {{if .Position.Y}}top: {{.Position.Y}};{{end}}
+        {{else if eq .Position.Mode "relative"}}
+            position: relative;
+            {{if .Position.Order}}order: {{.Position.Order}};{{end}}
+        {{else if eq .Position.Mode "flex"}}
+            {{if .Position.Order}}order: {{.Position.Order}};{{end}}
+        {{end}}
+        width: {{.Dimensions.Width}};
+        height: {{.Dimensions.Height}};
+        z-index: {{.ZIndex}};
+        {{if .Content.objectFit}}object-fit: {{.Content.objectFit}};{{end}}
+        {{if .Content.objectPosition}}object-position: {{.Content.objectPosition}};{{end}}
+        {{if .Content.opacity}}opacity: {{.Content.opacity}};{{end}}
+        {{if .Content.filter}}filter: {{.Content.filter}};{{end}}
+     ">
+{{end}}

@@ -1,0 +1,24 @@
+{{define "component_divider"}}
+<div id="{{.ID}}"
+     class="component-divider component-{{.Position.Mode}}{{if .ClassName}} {{.ClassName}}{{end}}"
+     style="
+        {{if .Visible}}display: block;{{else}}display: none;{{end}}
+        {{if eq .Position.Mode "absolute"}}
+            position: absolute;
+            {{if .Position.X}}left: {{.Position.X}};{{end}}
+            {{if .Position.Y}}top: {{.Position.Y}};{{end}}
+        {{else if eq .Position.Mode "relative"}}
+            position: relative;
+            {{if .Position.Order}}order: {{.Position.Order}};{{end}}
+        {{else if eq .Position.Mode "flex"}}
+            {{if .Position.Order}}order: {{.Position.Order}};{{end}}
+        {{end}}
+        width: {{.Dimensions.Width}};
+        height: {{.Dimensions.Height}};
+        z-index: {{.ZIndex}};
+        {{if .Style.backgroundColor}}background-color: {{.Style.backgroundColor}};{{end}}
+        {{if .Style.margin}}margin: {{.Style.margin}};{{end}}
+        {{if .Style.borderRadius}}border-radius: {{.Style.borderRadius}};{{end}}
+     ">
+</div>
+{{end}}

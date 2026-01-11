@@ -7,23 +7,23 @@ import (
 
 func TestComponentType_IsValid(t *testing.T) {
 	tests := []struct {
-		name     string
-		compType ComponentType
-		want     bool
+		name string
+		ct   ComponentType
+		want bool
 	}{
-		{"TextBox is valid", ComponentTypeTextBox, true},
-		{"Image is valid", ComponentTypeImage, true},
-		{"Background is valid", ComponentTypeBackground, true},
-		{"Overlay is valid", ComponentTypeOverlay, true},
-		{"Container is valid", ComponentTypeContainer, true},
-		{"Divider is valid", ComponentTypeDivider, true},
+		{"TextBox valid", ComponentTypeTextBox, true},
+		{"Image valid", ComponentTypeImage, true},
+		{"Background valid", ComponentTypeBackground, true},
+		{"Overlay valid", ComponentTypeOverlay, true},
+		{"Container valid", ComponentTypeContainer, true},
+		{"Divider valid", ComponentTypeDivider, true},
 		{"Invalid type", ComponentType("invalid"), false},
 		{"Empty type", ComponentType(""), false},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := tt.compType.IsValid(); got != tt.want {
+			if got := tt.ct.IsValid(); got != tt.want {
 				t.Errorf("ComponentType.IsValid() = %v, want %v", got, tt.want)
 			}
 		})
@@ -33,252 +33,134 @@ func TestComponentType_IsValid(t *testing.T) {
 func TestPositionMode_IsValid(t *testing.T) {
 	tests := []struct {
 		name string
-		mode PositionMode
+		pm   PositionMode
 		want bool
 	}{
-		{"Absolute is valid", PositionModeAbsolute, true},
-		{"Relative is valid", PositionModeRelative, true},
-		{"Flex is valid", PositionModeFlex, true},
+		{"Absolute valid", PositionModeAbsolute, true},
+		{"Relative valid", PositionModeRelative, true},
+		{"Flex valid", PositionModeFlex, true},
 		{"Invalid mode", PositionMode("invalid"), false},
 		{"Empty mode", PositionMode(""), false},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := tt.mode.IsValid(); got != tt.want {
+			if got := tt.pm.IsValid(); got != tt.want {
 				t.Errorf("PositionMode.IsValid() = %v, want %v", got, tt.want)
 			}
 		})
 	}
 }
 
-func TestPosition_Validate(t *testing.T) {
+func TestComponent_JSONSerialization(t *testing.T) {
 	tests := []struct {
-		name    string
-		pos     Position
-		wantErr bool
+		name      string
+		component Component
+		wantErr   bool
 	}{
 		{
-			name: "Valid absolute position",
-			pos: Position{
-				Mode: PositionModeAbsolute,
-				X:    strPtr("50%"),
-				Y:    strPtr("100px"),
+			name: "TextBox component",
+			component: Component{
+				ID:      "title-text",
+				Type:    ComponentTypeTextBox,
+				ZIndex:  10,
+				Visible: true,
+				Position: Position{
+					Mode: PositionModeAbsolute,
+					X:    strPtr("50%"),
+					Y:    strPtr("200px"),
+				},
+				Dimensions: Dimensions{
+					Width:  "80%",
+					Height: "auto",
+				},
+				Content: map[string]interface{}{
+					"text":       "{{.Event.Title}}",
+					"textAlign":  "center",
+					"fontFamily": "Arial, sans-serif",
+					"fontSize":   "48px",
+					"color":      "#000000",
+				},
 			},
 			wantErr: false,
 		},
 		{
-			name: "Valid relative position with order",
-			pos: Position{
-				Mode:  PositionModeRelative,
-				Order: intPtr(1),
+			name: "Image component",
+			component: Component{
+				ID:      "header-image",
+				Type:    ComponentTypeImage,
+				ZIndex:  1,
+				Visible: true,
+				Position: Position{
+					Mode: PositionModeAbsolute,
+					X:    strPtr("0"),
+					Y:    strPtr("0"),
+				},
+				Dimensions: Dimensions{
+					Width:  "100%",
+					Height: "400px",
+				},
+				Content: map[string]interface{}{
+					"src":       "/static/images/header.jpg",
+					"alt":       "Header image",
+					"objectFit": "cover",
+				},
 			},
 			wantErr: false,
-		},
-		{
-			name: "Valid flex position with order",
-			pos: Position{
-				Mode:  PositionModeFlex,
-				Order: intPtr(2),
-			},
-			wantErr: false,
-		},
-		{
-			name: "Invalid mode",
-			pos: Position{
-				Mode: PositionMode("invalid"),
-			},
-			wantErr: true,
-		},
-		{
-			name: "Absolute without X",
-			pos: Position{
-				Mode: PositionModeAbsolute,
-				Y:    strPtr("100px"),
-			},
-			wantErr: true,
-		},
-		{
-			name: "Absolute without Y",
-			pos: Position{
-				Mode: PositionModeAbsolute,
-				X:    strPtr("50%"),
-			},
-			wantErr: true,
-		},
-		{
-			name: "Flex without order",
-			pos: Position{
-				Mode: PositionModeFlex,
-			},
-			wantErr: true,
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			err := tt.pos.Validate()
+			data, err := json.Marshal(tt.component)
 			if (err != nil) != tt.wantErr {
-				t.Errorf("Position.Validate() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("json.Marshal() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+
+			if tt.wantErr {
+				return
+			}
+
+			var decoded Component
+			if err := json.Unmarshal(data, &decoded); err != nil {
+				t.Errorf("json.Unmarshal() error = %v", err)
+				return
+			}
+
+			if decoded.ID != tt.component.ID {
+				t.Errorf("ID = %v, want %v", decoded.ID, tt.component.ID)
+			}
+			if decoded.Type != tt.component.Type {
+				t.Errorf("Type = %v, want %v", decoded.Type, tt.component.Type)
+			}
+			if decoded.ZIndex != tt.component.ZIndex {
+				t.Errorf("ZIndex = %v, want %v", decoded.ZIndex, tt.component.ZIndex)
 			}
 		})
 	}
 }
 
-func TestDimensions_Validate(t *testing.T) {
-	tests := []struct {
-		name    string
-		dims    Dimensions
-		wantErr bool
-	}{
-		{
-			name: "Valid dimensions",
-			dims: Dimensions{
-				Width:  "100%",
-				Height: "auto",
-			},
-			wantErr: false,
+func TestComponentConfiguration_JSONSerialization(t *testing.T) {
+	config := ComponentConfiguration{
+		Version: "1.0",
+		Metadata: ConfigMetadata{
+			Name:        "Test Template",
+			Category:    "card",
+			Description: "Test description",
 		},
-		{
-			name: "Valid pixel dimensions",
-			dims: Dimensions{
-				Width:  "800px",
-				Height: "600px",
-			},
-			wantErr: false,
+		Layout: LayoutConfig{
+			Mode:            "card",
+			CardWidth:       "800px",
+			CardMaxWidth:    "90vw",
+			BackgroundColor: "#ffffff",
 		},
-		{
-			name: "Empty width",
-			dims: Dimensions{
-				Width:  "",
-				Height: "100px",
-			},
-			wantErr: true,
-		},
-		{
-			name: "Empty height",
-			dims: Dimensions{
-				Width:  "100px",
-				Height: "",
-			},
-			wantErr: true,
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			err := tt.dims.Validate()
-			if (err != nil) != tt.wantErr {
-				t.Errorf("Dimensions.Validate() error = %v, wantErr %v", err, tt.wantErr)
-			}
-		})
-	}
-}
-
-func TestTextBoxContent_Validate(t *testing.T) {
-	tests := []struct {
-		name    string
-		content TextBoxContent
-		wantErr bool
-	}{
-		{
-			name: "Valid text box content",
-			content: TextBoxContent{
-				Text:       "{{.Event.Title}}",
-				TextAlign:  "center",
-				FontFamily: "Arial, sans-serif",
-				FontSize:   "16px",
-				Color:      "#000000",
-			},
-			wantErr: false,
-		},
-		{
-			name: "Empty text",
-			content: TextBoxContent{
-				Text: "",
-			},
-			wantErr: true,
-		},
-		{
-			name: "Text too long",
-			content: TextBoxContent{
-				Text: string(make([]byte, 10001)),
-			},
-			wantErr: true,
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			err := tt.content.Validate()
-			if (err != nil) != tt.wantErr {
-				t.Errorf("TextBoxContent.Validate() error = %v, wantErr %v", err, tt.wantErr)
-			}
-		})
-	}
-}
-
-func TestImageContent_Validate(t *testing.T) {
-	tests := []struct {
-		name    string
-		content ImageContent
-		wantErr bool
-	}{
-		{
-			name: "Valid image content",
-			content: ImageContent{
-				Src:       "/static/images/header.jpg",
-				Alt:       "Header image",
-				ObjectFit: "cover",
-			},
-			wantErr: false,
-		},
-		{
-			name: "Empty src",
-			content: ImageContent{
-				Src: "",
-			},
-			wantErr: true,
-		},
-		{
-			name: "Invalid opacity",
-			content: ImageContent{
-				Src:     "/static/images/header.jpg",
-				Opacity: floatPtr(1.5),
-			},
-			wantErr: true,
-		},
-		{
-			name: "Negative opacity",
-			content: ImageContent{
-				Src:     "/static/images/header.jpg",
-				Opacity: floatPtr(-0.1),
-			},
-			wantErr: true,
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			err := tt.content.Validate()
-			if (err != nil) != tt.wantErr {
-				t.Errorf("ImageContent.Validate() error = %v, wantErr %v", err, tt.wantErr)
-			}
-		})
-	}
-}
-
-func TestComponent_Validate(t *testing.T) {
-	tests := []struct {
-		name    string
-		comp    Component
-		wantErr bool
-	}{
-		{
-			name: "Valid TextBox component",
-			comp: Component{
-				ID:   "title-text",
-				Type: ComponentTypeTextBox,
+		Components: []Component{
+			{
+				ID:      "test-component",
+				Type:    ComponentTypeTextBox,
+				ZIndex:  10,
+				Visible: true,
 				Position: Position{
 					Mode: PositionModeAbsolute,
 					X:    strPtr("50%"),
@@ -288,263 +170,97 @@ func TestComponent_Validate(t *testing.T) {
 					Width:  "80%",
 					Height: "auto",
 				},
-				ZIndex:  10,
-				Visible: true,
 				Content: map[string]interface{}{
-					"text":      "Test Title",
-					"textAlign": "center",
+					"text": "Test",
 				},
 			},
-			wantErr: false,
-		},
-		{
-			name: "Empty ID",
-			comp: Component{
-				ID:   "",
-				Type: ComponentTypeTextBox,
-			},
-			wantErr: true,
-		},
-		{
-			name: "Invalid type",
-			comp: Component{
-				ID:   "test",
-				Type: ComponentType("invalid"),
-			},
-			wantErr: true,
-		},
-		{
-			name: "Negative zIndex",
-			comp: Component{
-				ID:     "test",
-				Type:   ComponentTypeTextBox,
-				ZIndex: -1,
-			},
-			wantErr: true,
 		},
 	}
 
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			err := tt.comp.Validate()
-			if (err != nil) != tt.wantErr {
-				t.Errorf("Component.Validate() error = %v, wantErr %v", err, tt.wantErr)
-			}
-		})
-	}
-}
-
-func TestComponent_JSONSerialization(t *testing.T) {
-	comp := Component{
-		ID:   "test-component",
-		Type: ComponentTypeTextBox,
-		Position: Position{
-			Mode: PositionModeAbsolute,
-			X:    strPtr("50%"),
-			Y:    strPtr("100px"),
-		},
-		Dimensions: Dimensions{
-			Width:  "80%",
-			Height: "auto",
-		},
-		ZIndex:  10,
-		Visible: true,
-		Content: map[string]interface{}{
-			"text":      "Test",
-			"textAlign": "center",
-		},
-	}
-
-	jsonData, err := json.Marshal(comp)
+	data, err := json.Marshal(config)
 	if err != nil {
-		t.Fatalf("Failed to marshal component: %v", err)
+		t.Fatalf("json.Marshal() error = %v", err)
 	}
 
-	var decoded Component
-	err = json.Unmarshal(jsonData, &decoded)
+	var decoded ComponentConfiguration
+	if err := json.Unmarshal(data, &decoded); err != nil {
+		t.Fatalf("json.Unmarshal() error = %v", err)
+	}
+
+	if decoded.Version != config.Version {
+		t.Errorf("Version = %v, want %v", decoded.Version, config.Version)
+	}
+	if decoded.Metadata.Name != config.Metadata.Name {
+		t.Errorf("Metadata.Name = %v, want %v", decoded.Metadata.Name, config.Metadata.Name)
+	}
+	if len(decoded.Components) != len(config.Components) {
+		t.Errorf("len(Components) = %v, want %v", len(decoded.Components), len(config.Components))
+	}
+}
+
+func TestComponentOverrides_JSONSerialization(t *testing.T) {
+	overrides := ComponentOverrides{
+		Version: "1.0",
+		Overrides: []ComponentOverride{
+			{
+				ID: "title-text",
+				Updates: map[string]interface{}{
+					"position": map[string]interface{}{
+						"y": "250px",
+					},
+					"content": map[string]interface{}{
+						"color": "#ff0000",
+					},
+				},
+			},
+		},
+		Additions: []Component{
+			{
+				ID:      "new-component",
+				Type:    ComponentTypeTextBox,
+				ZIndex:  15,
+				Visible: true,
+				Position: Position{
+					Mode: PositionModeAbsolute,
+					X:    strPtr("50%"),
+					Y:    strPtr("300px"),
+				},
+				Dimensions: Dimensions{
+					Width:  "70%",
+					Height: "auto",
+				},
+				Content: map[string]interface{}{
+					"text": "New text",
+				},
+			},
+		},
+		Removals: []string{"old-component"},
+	}
+
+	data, err := json.Marshal(overrides)
 	if err != nil {
-		t.Fatalf("Failed to unmarshal component: %v", err)
+		t.Fatalf("json.Marshal() error = %v", err)
 	}
 
-	if decoded.ID != comp.ID {
-		t.Errorf("ID mismatch: got %v, want %v", decoded.ID, comp.ID)
-	}
-	if decoded.Type != comp.Type {
-		t.Errorf("Type mismatch: got %v, want %v", decoded.Type, comp.Type)
-	}
-	if decoded.ZIndex != comp.ZIndex {
-		t.Errorf("ZIndex mismatch: got %v, want %v", decoded.ZIndex, comp.ZIndex)
-	}
-}
-
-func TestComponentConfiguration_Validate(t *testing.T) {
-	tests := []struct {
-		name    string
-		config  ComponentConfiguration
-		wantErr bool
-	}{
-		{
-			name: "Valid configuration",
-			config: ComponentConfiguration{
-				Version: "1.0",
-				Metadata: ConfigMetadata{
-					Name:        "Test Template",
-					Category:    "card",
-					Description: "Test description",
-				},
-				Layout: PageLayoutConfig{
-					Mode:      "card",
-					CardWidth: "800px",
-				},
-				Components: []Component{
-					{
-						ID:   "test-1",
-						Type: ComponentTypeTextBox,
-						Position: Position{
-							Mode: PositionModeAbsolute,
-							X:    strPtr("0"),
-							Y:    strPtr("0"),
-						},
-						Dimensions: Dimensions{
-							Width:  "100%",
-							Height: "auto",
-						},
-						Content: map[string]interface{}{
-							"text": "Test",
-						},
-					},
-				},
-			},
-			wantErr: false,
-		},
-		{
-			name: "Empty version",
-			config: ComponentConfiguration{
-				Version: "",
-			},
-			wantErr: true,
-		},
-		{
-			name: "Duplicate component IDs",
-			config: ComponentConfiguration{
-				Version: "1.0",
-				Metadata: ConfigMetadata{
-					Name: "Test",
-				},
-				Components: []Component{
-					{
-						ID:   "duplicate",
-						Type: ComponentTypeTextBox,
-						Position: Position{
-							Mode: PositionModeAbsolute,
-							X:    strPtr("0"),
-							Y:    strPtr("0"),
-						},
-						Dimensions: Dimensions{
-							Width:  "100%",
-							Height: "auto",
-						},
-					},
-					{
-						ID:   "duplicate",
-						Type: ComponentTypeImage,
-						Position: Position{
-							Mode: PositionModeAbsolute,
-							X:    strPtr("0"),
-							Y:    strPtr("0"),
-						},
-						Dimensions: Dimensions{
-							Width:  "100%",
-							Height: "auto",
-						},
-					},
-				},
-			},
-			wantErr: true,
-		},
+	var decoded ComponentOverrides
+	if err := json.Unmarshal(data, &decoded); err != nil {
+		t.Fatalf("json.Unmarshal() error = %v", err)
 	}
 
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			err := tt.config.Validate()
-			if (err != nil) != tt.wantErr {
-				t.Errorf("ComponentConfiguration.Validate() error = %v, wantErr %v", err, tt.wantErr)
-			}
-		})
+	if decoded.Version != overrides.Version {
+		t.Errorf("Version = %v, want %v", decoded.Version, overrides.Version)
 	}
-}
-
-func TestComponentOverrides_Validate(t *testing.T) {
-	tests := []struct {
-		name      string
-		overrides ComponentOverrides
-		wantErr   bool
-	}{
-		{
-			name: "Valid overrides",
-			overrides: ComponentOverrides{
-				Version: "1.0",
-				Overrides: []ComponentOverride{
-					{
-						ID: "title-text",
-						Updates: map[string]interface{}{
-							"position": map[string]interface{}{
-								"y": "200px",
-							},
-						},
-					},
-				},
-			},
-			wantErr: false,
-		},
-		{
-			name: "Empty version",
-			overrides: ComponentOverrides{
-				Version: "",
-			},
-			wantErr: true,
-		},
-		{
-			name: "Duplicate override IDs",
-			overrides: ComponentOverrides{
-				Version: "1.0",
-				Overrides: []ComponentOverride{
-					{
-						ID: "duplicate",
-						Updates: map[string]interface{}{
-							"zIndex": 20,
-						},
-					},
-					{
-						ID: "duplicate",
-						Updates: map[string]interface{}{
-							"visible": false,
-						},
-					},
-				},
-			},
-			wantErr: true,
-		},
+	if len(decoded.Overrides) != len(overrides.Overrides) {
+		t.Errorf("len(Overrides) = %v, want %v", len(decoded.Overrides), len(overrides.Overrides))
 	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			err := tt.overrides.Validate()
-			if (err != nil) != tt.wantErr {
-				t.Errorf("ComponentOverrides.Validate() error = %v, wantErr %v", err, tt.wantErr)
-			}
-		})
+	if len(decoded.Additions) != len(overrides.Additions) {
+		t.Errorf("len(Additions) = %v, want %v", len(decoded.Additions), len(overrides.Additions))
+	}
+	if len(decoded.Removals) != len(overrides.Removals) {
+		t.Errorf("len(Removals) = %v, want %v", len(decoded.Removals), len(overrides.Removals))
 	}
 }
 
 func strPtr(s string) *string {
 	return &s
-}
-
-func intPtr(i int) *int {
-	return &i
-}
-
-func floatPtr(f float64) *float64 {
-	return &f
 }

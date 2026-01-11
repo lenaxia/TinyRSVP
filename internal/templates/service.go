@@ -21,18 +21,26 @@ type Service interface {
 	SetDefault(ctx context.Context, id int64) error
 	ListTemplates(ctx context.Context, filters *repositories.TemplateFilters) ([]*models.Template, error)
 	PreviewTemplate(ctx context.Context, req *PreviewRequest) (*PreviewResponse, error)
+	GetComponentRenderer() *ComponentRenderer
 }
 
 type service struct {
-	repo      repositories.TemplateRepository
-	validator Validator
+	repo              repositories.TemplateRepository
+	validator         Validator
+	componentRenderer *ComponentRenderer
 }
 
 func NewService(repo repositories.TemplateRepository, validator Validator) Service {
+	engine := NewEngine()
 	return &service{
-		repo:      repo,
-		validator: validator,
+		repo:              repo,
+		validator:         validator,
+		componentRenderer: NewComponentRenderer(engine),
 	}
+}
+
+func (s *service) GetComponentRenderer() *ComponentRenderer {
+	return s.componentRenderer
 }
 
 func (s *service) CreateTemplate(ctx context.Context, template *models.Template) error {

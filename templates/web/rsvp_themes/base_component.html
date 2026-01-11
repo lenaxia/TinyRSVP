@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{.Event.Title}}</title>
+    <link rel="stylesheet" href="/static/css/component_renderer.css">
+    <link rel="stylesheet" href="/static/css/variables.css">
+</head>
+<body>
+    <div class="component-canvas" style="{{if .Configuration.Layout.BackgroundColor}}background-color: {{.Configuration.Layout.BackgroundColor}};{{end}}">
+        {{range .Components}}
+            {{if eq .Type "TextBox"}}
+                {{template "component_textbox" .}}
+            {{else if eq .Type "Image"}}
+                {{template "component_image" .}}
+            {{else if eq .Type "Background"}}
+                {{template "component_background" .}}
+            {{else if eq .Type "Overlay"}}
+                {{template "component_overlay" .}}
+            {{else if eq .Type "Container"}}
+                {{template "component_container" .}}
+            {{else if eq .Type "Divider"}}
+                {{template "component_divider" .}}
+            {{end}}
+        {{end}}
+    </div>
+</body>
+</html>

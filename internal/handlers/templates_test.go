@@ -27,6 +27,7 @@ type mockTemplateService struct {
 	SetDefaultFunc            func(ctx context.Context, id int64) error
 	ListTemplatesFunc         func(ctx context.Context, filters *repositories.TemplateFilters) ([]*models.Template, error)
 	PreviewTemplateFunc       func(ctx context.Context, req *templates.PreviewRequest) (*templates.PreviewResponse, error)
+	GetComponentRendererFunc  func() *templates.ComponentRenderer
 }
 
 func (m *mockTemplateService) CreateTemplate(ctx context.Context, template *models.Template) error {
@@ -98,6 +99,13 @@ func (m *mockTemplateService) PreviewTemplate(ctx context.Context, req *template
 		return m.PreviewTemplateFunc(ctx, req)
 	}
 	return nil, nil
+}
+
+func (m *mockTemplateService) GetComponentRenderer() *templates.ComponentRenderer {
+	if m.GetComponentRendererFunc != nil {
+		return m.GetComponentRendererFunc()
+	}
+	return nil
 }
 
 func TestTemplateHandlers_CreateTemplate(t *testing.T) {

@@ -1,0 +1,67 @@
+/* Component Renderer CSS */
+
+.component-canvas {
+    position: relative;
+    width: 100%;
+    min-height: 100vh;
+    overflow: hidden;
+}
+
+.component-absolute {
+    position: absolute;
+    transform: translate(-50%, 0);
+}
+
+.component-relative {
+    position: relative;
+}
+
+.component-flex {
+    display: flex;
+}
+
+.component-textbox {
+    box-sizing: border-box;
+}
+
+.component-image {
+    display: block;
+}
+
+.component-background {
+    position: absolute;
+    top: 0;
+    left: 0;
+}
+
+.component-overlay {
+    position: absolute;
+    overflow: hidden;
+}
+
+.component-container {
+    box-sizing: border-box;
+}
+
+.component-divider {
+    border: none;
+    margin: 0;
+}
+
+@media (max-width: 767px) {
+    .component-canvas {
+        padding: 10px;
+    }
+}
+
+@media (min-width: 768px) and (max-width: 1023px) {
+    .component-canvas {
+        padding: 20px;
+    }
+}
+
+@media (min-width: 1024px) {
+    .component-canvas {
+        padding: 30px;
+    }
+}

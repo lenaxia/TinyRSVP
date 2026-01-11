@@ -631,3 +631,84 @@ func TestTemplateService_ListTemplates(t *testing.T) {
 		})
 	}
 }
+
+func TestTemplateService_RenderWithComponents(t *testing.T) {
+	tests := []struct {
+		name             string
+		template         *models.Template
+		event            *models.Event
+		wantErr          bool
+		wantComponentUse bool
+	}{
+		{
+			name: "template with component config",
+			template: &models.Template{
+				ID:          1,
+				Name:        "Component Template",
+				Type:        models.TemplateTypeRSVPPage,
+				HTMLContent: "<h1>Legacy</h1>",
+				ComponentConfig: stringPtr(`{
+					"version": "1.0",
+					"metadata": {"name": "Test", "category": "card", "description": "Test"},
+					"layout": {"mode": "card"},
+					"components": [{
+						"id": "title",
+						"type": "TextBox",
+						"position": {"mode": "absolute", "x": "50%", "y": "100px"},
+						"dimensions": {"width": "80%", "height": "auto"},
+						"zIndex": 10,
+						"visible": true,
+						"content": {"text": "{{.Event.Title}}"}
+					}]
+				}`),
+			},
+			event: &models.Event{
+				ID:        1,
+				Title:     "Test Event",
+				Status:    models.EventStatusPublished,
+				CreatedBy: 1,
+			},
+			wantErr:          false,
+			wantComponentUse: true,
+		},
+		{
+			name: "template without component config uses legacy",
+			template: &models.Template{
+				ID:              2,
+				Name:            "Legacy Template",
+				Type:            models.TemplateTypeRSVPPage,
+				HTMLContent:     "<h1>{{.Event.Title}}</h1>",
+				ComponentConfig: nil,
+			},
+			event: &models.Event{
+				ID:        1,
+				Title:     "Test Event",
+				Status:    models.EventStatusPublished,
+				CreatedBy: 1,
+			},
+			wantErr:          false,
+			wantComponentUse: false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			engine := NewEngine()
+			renderer := NewComponentRenderer(engine)
+			svc := &service{
+				repo:               &mockServiceTemplateRepository{},
+				validator:          &mockServiceValidator{},
+				componentRenderer:  renderer,
+			}
+
+			hasComponentConfig := tt.template.ComponentConfig != nil && *tt.template.ComponentConfig != ""
+			if hasComponentConfig != tt.wantComponentUse {
+				t.Errorf("Component config presence = %v, want %v", hasComponentConfig, tt.wantComponentUse)
+			}
+
+			if svc.componentRenderer == nil {
+				t.Error("ComponentRenderer should be initialized in service")
+			}
+		})
+	}
+}

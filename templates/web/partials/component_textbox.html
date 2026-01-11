@@ -1,0 +1,32 @@
+{{define "component_textbox"}}
+<div id="{{.ID}}" 
+     class="component-textbox component-{{.Position.Mode}}{{if .ClassName}} {{.ClassName}}{{end}}"
+     style="
+        {{if .Visible}}display: block;{{else}}display: none;{{end}}
+        {{if eq .Position.Mode "absolute"}}
+            position: absolute;
+            {{if .Position.X}}left: {{.Position.X}};{{end}}
+            {{if .Position.Y}}top: {{.Position.Y}};{{end}}
+        {{else if eq .Position.Mode "relative"}}
+            position: relative;
+            {{if .Position.Order}}order: {{.Position.Order}};{{end}}
+        {{else if eq .Position.Mode "flex"}}
+            {{if .Position.Order}}order: {{.Position.Order}};{{end}}
+        {{end}}
+        width: {{.Dimensions.Width}};
+        height: {{.Dimensions.Height}};
+        z-index: {{.ZIndex}};
+        {{if .Content.textAlign}}text-align: {{.Content.textAlign}};{{end}}
+        {{if .Content.fontFamily}}font-family: {{.Content.fontFamily}};{{end}}
+        {{if .Content.fontSize}}font-size: {{.Content.fontSize}};{{end}}
+        {{if .Content.fontWeight}}font-weight: {{.Content.fontWeight}};{{end}}
+        {{if .Content.color}}color: {{.Content.color}};{{end}}
+        {{if .Content.lineHeight}}line-height: {{.Content.lineHeight}};{{end}}
+        {{if .Content.letterSpacing}}letter-spacing: {{.Content.letterSpacing}};{{end}}
+        {{if .Content.textTransform}}text-transform: {{.Content.textTransform}};{{end}}
+        {{if .Content.textShadow}}text-shadow: {{.Content.textShadow}};{{end}}
+        {{if .Content.fontStyle}}font-style: {{.Content.fontStyle}};{{end}}
+     ">
+    {{.Content.text}}
+</div>
+{{end}}
