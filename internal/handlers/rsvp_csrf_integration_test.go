@@ -203,8 +203,8 @@ func TestRSVPHandler_CSRFTokenIntegration(t *testing.T) {
 		handler.SetAnswerRepository(&mockAnswerRepository{})
 
 		csrfToken := "test-csrf-token-67890"
-		tmpl := template.Must(template.New("confirmation_page.html").Parse(`CSRFToken={{.CSRFToken}}|Response={{.RSVP.Response}}`))
-		handler.SetTemplates(tmpl)
+		tmpl := template.Must(template.New("confirmation.html").Parse(`CSRFToken={{.CSRFToken}}|Response={{.RSVP.Response}}`))
+		handler.SetConfirmationTemplates(tmpl)
 
 		req := httptest.NewRequest(http.MethodGet, "/rsvp/valid-token/confirmation", nil)
 		ctx := context.WithValue(req.Context(), middleware.CSRFTokenKey, csrfToken)
@@ -456,8 +456,8 @@ func TestRSVPHandler_TemplateCSRFRendering(t *testing.T) {
 		handler.SetAnswerRepository(&mockConfirmationAnswerRepository{})
 
 		csrfToken := "confirmation-csrf-token"
-		tmpl := template.Must(template.New("confirmation_page.html").Parse(`CSRFToken={{.CSRFToken}}|Response={{.RSVP.Response}}`))
-		handler.SetTemplates(tmpl)
+		tmpl := template.Must(template.New("confirmation.html").Parse(`CSRFToken={{.CSRFToken}}|Response={{.RSVP.Response}}`))
+		handler.SetConfirmationTemplates(tmpl)
 
 		req := httptest.NewRequest(http.MethodGet, "/rsvp/valid-token/confirmation", nil)
 		ctx := context.WithValue(req.Context(), middleware.CSRFTokenKey, csrfToken)

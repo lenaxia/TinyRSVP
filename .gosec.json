@@ -1,0 +1,9 @@
+{
+  "global": {
+    "nosec": false,
+    "audit": true
+  },
+  "severity": "medium",
+  "confidence": "medium",
+  "exclude": []
+}

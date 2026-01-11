@@ -30,14 +30,15 @@ type RSVPService interface {
 }
 
 type RSVPHandler struct {
-	inviteService  RSVPInviteService
-	eventRepo      repositories.EventRepository
-	rsvpRepo       repositories.RSVPRepository
-	questionRepo   repositories.QuestionRepository
-	answerRepo     repositories.AnswerRepository
-	rsvpService    RSVPService
-	templateRepo   repositories.TemplateRepository
-	templates      *template.Template
+	inviteService         RSVPInviteService
+	eventRepo             repositories.EventRepository
+	rsvpRepo              repositories.RSVPRepository
+	questionRepo          repositories.QuestionRepository
+	answerRepo            repositories.AnswerRepository
+	rsvpService           RSVPService
+	templateRepo          repositories.TemplateRepository
+	templates             *template.Template
+	confirmationTemplates *template.Template
 }
 
 func NewRSVPHandler(
@@ -277,6 +278,10 @@ func (h *RSVPHandler) renderPage(w http.ResponseWriter, status int, data *RSVPPa
 
 func (h *RSVPHandler) SetTemplates(tmpl *template.Template) {
 	h.templates = tmpl
+}
+
+func (h *RSVPHandler) SetConfirmationTemplates(tmpl *template.Template) {
+	h.confirmationTemplates = tmpl
 }
 
 func (h *RSVPHandler) getEventTheme(ctx context.Context, event *models.Event) (*models.Template, error) {
@@ -769,8 +774,8 @@ func (h *RSVPHandler) renderConfirmationPage(w http.ResponseWriter, status int, 
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 	w.WriteHeader(status)
 
-	if h.templates != nil {
-		if err := h.templates.ExecuteTemplate(w, "confirmation_page.html", data); err != nil {
+	if h.confirmationTemplates != nil {
+		if err := h.confirmationTemplates.ExecuteTemplate(w, "confirmation.html", data); err != nil {
 			http.Error(w, "Failed to render page", http.StatusInternalServerError)
 		}
 		return

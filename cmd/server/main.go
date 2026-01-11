@@ -355,12 +355,27 @@ func main() {
 		},
 	}
 
-	rsvpTemplates, err := template.ParseFiles("templates/web/rsvp_page.html")
+	rsvpPageTemplates, err := template.New("rsvp_page.html").Funcs(funcMap).ParseFiles(
+		"templates/web/partials/base.html",
+		"templates/web/partials/navigation.html",
+		"templates/web/rsvp_page.html",
+	)
 	if err != nil {
-		logger.Error("Failed to load RSVP templates", "error", err)
+		logger.Error("Failed to parse RSVP page templates", "error", err)
 		os.Exit(1)
 	}
-	logger.Info("RSVP templates loaded successfully")
+	logger.Info("RSVP page templates loaded successfully")
+
+	confirmationTemplates, err := template.New("confirmation.html").Funcs(funcMap).ParseFiles(
+		"templates/web/partials/base.html",
+		"templates/web/partials/navigation.html",
+		"templates/web/confirmation.html",
+	)
+	if err != nil {
+		logger.Error("Failed to parse confirmation templates", "error", err)
+		os.Exit(1)
+	}
+	logger.Info("Confirmation templates loaded successfully")
 
 	rsvpSummaryTemplates, err := template.New("rsvp_summary.html").Funcs(funcMap).ParseFiles(
 		"templates/web/partials/base.html",
@@ -385,22 +400,42 @@ func main() {
 	dashboardHandler.SetTemplates(dashboardTemplates)
 	logger.Info("Dashboard templates loaded successfully")
 
-	eventWebTemplates, err := template.New("events").Funcs(funcMap).ParseFiles(
+	eventListTemplates, err := template.New("event_list.html").Funcs(funcMap).ParseFiles(
+		"templates/web/partials/base.html",
+		"templates/web/partials/navigation.html",
+		"templates/web/event_list.html",
+	)
+	if err != nil {
+		logger.Error("Failed to load event list templates", "error", err)
+		os.Exit(1)
+	}
+	logger.Info("Event list templates loaded successfully")
+
+	eventFormTemplates, err := template.New("event_form.html").Funcs(funcMap).ParseFiles(
 		"templates/web/partials/base.html",
 		"templates/web/partials/navigation.html",
 		"templates/web/partials/datetime_picker_panel.html",
 		"templates/web/partials/theme_picker.html",
-		"templates/web/event_list.html",
 		"templates/web/event_form.html",
+	)
+	if err != nil {
+		logger.Error("Failed to load event form templates", "error", err)
+		os.Exit(1)
+	}
+	logger.Info("Event form templates loaded successfully")
+
+	eventDetailTemplates, err := template.New("event_detail.html").Funcs(funcMap).ParseFiles(
+		"templates/web/partials/base.html",
+		"templates/web/partials/navigation.html",
 		"templates/web/event_detail.html",
 	)
 	if err != nil {
-		logger.Error("Failed to load event web templates", "error", err)
+		logger.Error("Failed to load event detail templates", "error", err)
 		os.Exit(1)
 	}
-	logger.Info("Event web templates loaded successfully")
+	logger.Info("Event detail templates loaded successfully")
 
-	eventWebHandlers := handlers.NewEventWebHandlers(eventService, templateService, eventWebTemplates)
+	eventWebHandlers := handlers.NewEventWebHandlers(eventService, templateService, eventListTemplates, eventFormTemplates, eventDetailTemplates)
 
 	inviteListTemplates, err := template.New("invite_list.html").Funcs(funcMap).ParseFiles(
 		"templates/web/partials/base.html",
@@ -448,9 +483,11 @@ func main() {
 	logger.Info("Initialized RSVP service with email support")
 
 	rsvpHandler := handlers.NewRSVPHandler(inviteService, eventRepo, rsvpRepo, questionRepo)
-	rsvpHandler.SetTemplates(rsvpTemplates)
+	rsvpHandler.SetTemplates(rsvpPageTemplates)
+	rsvpHandler.SetConfirmationTemplates(confirmationTemplates)
 	rsvpHandler.SetRSVPService(rsvpService)
 	rsvpHandler.SetAnswerRepository(answerRepo)
+	rsvpHandler.SetTemplateRepository(templateRepo)
 
 	rsvpSummaryHandler := handlers.NewRSVPSummaryHandler(eventRepo, rsvpRepo, questionRepo, answerRepo)
 	rsvpSummaryHandler.SetTemplates(rsvpSummaryTemplates)

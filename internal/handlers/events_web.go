@@ -20,9 +20,11 @@ import (
 )
 
 type EventWebHandlers struct {
-	service         events.Service
-	templateService templates.Service
-	templates       *template.Template
+	service            events.Service
+	templateService    templates.Service
+	listTemplates      *template.Template
+	formTemplates      *template.Template
+	detailTemplates    *template.Template
 }
 
 type EventListPageData struct {
@@ -54,11 +56,13 @@ type EventDetailPageData struct {
 	Error      string
 }
 
-func NewEventWebHandlers(service events.Service, templateService templates.Service, tmpl *template.Template) *EventWebHandlers {
+func NewEventWebHandlers(service events.Service, templateService templates.Service, listTmpl, formTmpl, detailTmpl *template.Template) *EventWebHandlers {
 	return &EventWebHandlers{
 		service:         service,
 		templateService: templateService,
-		templates:       tmpl,
+		listTemplates:   listTmpl,
+		formTemplates:   formTmpl,
+		detailTemplates: detailTmpl,
 	}
 }
 
@@ -428,8 +432,8 @@ func (h *EventWebHandlers) renderListPage(w http.ResponseWriter, status int, dat
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 	w.WriteHeader(status)
 
-	if h.templates != nil {
-		if err := h.templates.ExecuteTemplate(w, "event_list.html", data); err != nil {
+	if h.listTemplates != nil {
+		if err := h.listTemplates.ExecuteTemplate(w, "event_list.html", data); err != nil {
 			http.Error(w, "Failed to render page", http.StatusInternalServerError)
 		}
 		return
@@ -459,8 +463,8 @@ func (h *EventWebHandlers) renderFormPage(w http.ResponseWriter, status int, dat
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 	w.WriteHeader(status)
 
-	if h.templates != nil {
-		if err := h.templates.ExecuteTemplate(w, "event_form.html", data); err != nil {
+	if h.formTemplates != nil {
+		if err := h.formTemplates.ExecuteTemplate(w, "event_form.html", data); err != nil {
 			http.Error(w, "Failed to render page", http.StatusInternalServerError)
 		}
 		return
@@ -486,8 +490,8 @@ func (h *EventWebHandlers) renderDetailPage(w http.ResponseWriter, status int, d
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 	w.WriteHeader(status)
 
-	if h.templates != nil {
-		if err := h.templates.ExecuteTemplate(w, "event_detail.html", data); err != nil {
+	if h.detailTemplates != nil {
+		if err := h.detailTemplates.ExecuteTemplate(w, "event_detail.html", data); err != nil {
 			http.Error(w, "Failed to render page", http.StatusInternalServerError)
 		}
 		return

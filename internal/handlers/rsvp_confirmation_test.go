@@ -277,8 +277,8 @@ func TestRSVPHandler_GetConfirmationPage_WithTemplate(t *testing.T) {
 	handler := NewRSVPHandler(mockInviteSvc, mockEventRepo, mockRSVPRepo, mockQuestionRepo)
 	handler.SetAnswerRepository(mockAnswerRepo)
 
-	tmpl := template.Must(template.New("confirmation_page.html").Parse(`Event:{{.Event.Title}}|Response:{{.RSVP.Response}}|PlusOnes:{{.RSVP.PlusOnes}}|CanUpdate:{{.CanUpdate}}`))
-	handler.SetTemplates(tmpl)
+	tmpl := template.Must(template.New("confirmation.html").Parse(`Event:{{.Event.Title}}|Response:{{.RSVP.Response}}|PlusOnes:{{.RSVP.PlusOnes}}|CanUpdate:{{.CanUpdate}}`))
+	handler.SetConfirmationTemplates(tmpl)
 
 	r := chi.NewRouter()
 	r.Get("/rsvp/{token}/confirmation", handler.GetConfirmationPage)
@@ -404,8 +404,8 @@ func TestRSVPHandler_GetConfirmationPage_CanUpdateTrue(t *testing.T) {
 	handler := NewRSVPHandler(mockInviteSvc, mockEventRepo, mockRSVPRepo, mockQuestionRepo)
 	handler.SetAnswerRepository(mockAnswerRepo)
 
-	tmpl := template.Must(template.New("confirmation_page.html").Parse(`CanUpdate:{{.CanUpdate}}`))
-	handler.SetTemplates(tmpl)
+	tmpl := template.Must(template.New("confirmation.html").Parse(`CanUpdate:{{.CanUpdate}}`))
+	handler.SetConfirmationTemplates(tmpl)
 
 	r := chi.NewRouter()
 	r.Get("/rsvp/{token}/confirmation", handler.GetConfirmationPage)
@@ -481,8 +481,8 @@ func TestRSVPHandler_GetConfirmationPage_CanUpdateFalse_DeadlinePassed(t *testin
 	handler := NewRSVPHandler(mockInviteSvc, mockEventRepo, mockRSVPRepo, mockQuestionRepo)
 	handler.SetAnswerRepository(mockAnswerRepo)
 
-	tmpl := template.Must(template.New("confirmation_page.html").Parse(`CanUpdate:{{.CanUpdate}}`))
-	handler.SetTemplates(tmpl)
+	tmpl := template.Must(template.New("confirmation.html").Parse(`CanUpdate:{{.CanUpdate}}`))
+	handler.SetConfirmationTemplates(tmpl)
 
 	r := chi.NewRouter()
 	r.Get("/rsvp/{token}/confirmation", handler.GetConfirmationPage)
