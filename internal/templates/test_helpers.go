@@ -148,6 +148,14 @@ func stringPtr(s string) *string {
 	return &s
 }
 
+func strPtr(s string) *string {
+	return &s
+}
+
+func intPtr(i int) *int {
+	return &i
+}
+
 func containsString(s, substr string) bool {
 	if len(substr) > len(s) {
 		return false

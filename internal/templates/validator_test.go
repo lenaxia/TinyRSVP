@@ -479,6 +479,3 @@ func findSubstring(s, substr string) bool {
 	return false
 }
 
-func strPtr(s string) *string {
-	return &s
-}

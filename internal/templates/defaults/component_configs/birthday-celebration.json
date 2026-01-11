@@ -1,0 +1,134 @@
+{
+  "version": "1.0",
+  "metadata": {
+    "name": "Birthday Celebration",
+    "category": "card",
+    "description": "Fun birthday invitation with balloons and confetti"
+  },
+  "layout": {
+    "mode": "card",
+    "cardWidth": "800px",
+    "cardMaxWidth": "90vw",
+    "backgroundColor": "#fff5f7"
+  },
+  "components": [
+    {
+      "id": "page-background",
+      "type": "Background",
+      "position": {
+        "mode": "absolute",
+        "x": "0",
+        "y": "0"
+      },
+      "dimensions": {
+        "width": "100%",
+        "height": "100%"
+      },
+      "zIndex": 0,
+      "visible": true,
+      "content": {
+        "gradient": "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+        "type": "gradient"
+      }
+    },
+    {
+      "id": "header-image",
+      "type": "Image",
+      "position": {
+        "mode": "relative",
+        "order": 1
+      },
+      "dimensions": {
+        "width": "100%",
+        "height": "300px"
+      },
+      "zIndex": 1,
+      "visible": true,
+      "content": {
+        "alt": "Birthday celebration design",
+        "objectFit": "cover",
+        "objectPosition": "center",
+        "src": "{{if .Event.CustomThemeImageURL}}{{.Event.CustomThemeImageURL}}{{else}}/static/images/themes/birthday-celebration-header.svg{{end}}"
+      },
+      "responsive": {
+        "mobile": {
+          "height": "200px"
+        }
+      }
+    },
+    {
+      "id": "title-text",
+      "type": "TextBox",
+      "position": {
+        "mode": "relative",
+        "order": 2
+      },
+      "dimensions": {
+        "width": "100%",
+        "height": "auto"
+      },
+      "zIndex": 10,
+      "visible": true,
+      "content": {
+        "color": "#ff6b9d",
+        "fontFamily": "'Comic Sans MS', cursive, sans-serif",
+        "fontSize": "2.5rem",
+        "fontWeight": "700",
+        "lineHeight": "1.2",
+        "text": "{{.Event.Title}}",
+        "textAlign": "center",
+        "textShadow": "2px 2px 4px rgba(0,0,0,0.1)"
+      },
+      "responsive": {
+        "mobile": {
+          "fontSize": "2rem"
+        }
+      }
+    },
+    {
+      "id": "date-text",
+      "type": "TextBox",
+      "position": {
+        "mode": "relative",
+        "order": 3
+      },
+      "dimensions": {
+        "width": "100%",
+        "height": "auto"
+      },
+      "zIndex": 10,
+      "visible": true,
+      "content": {
+        "color": "#2c3e50",
+        "fontFamily": "-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+        "fontSize": "1.125rem",
+        "fontWeight": "600",
+        "lineHeight": "1.5",
+        "text": "{{formatDateTime .Event.StartTime}}",
+        "textAlign": "center"
+      }
+    },
+    {
+      "id": "location-text",
+      "type": "TextBox",
+      "position": {
+        "mode": "relative",
+        "order": 4
+      },
+      "dimensions": {
+        "width": "100%",
+        "height": "auto"
+      },
+      "zIndex": 10,
+      "visible": true,
+      "content": {
+        "color": "#555555",
+        "fontFamily": "-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+        "fontSize": "1rem",
+        "lineHeight": "1.5",
+        "text": "{{.Event.Location}}",
+        "textAlign": "center"
+      }
+    }
+  ]
+}
