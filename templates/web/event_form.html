@@ -12,6 +12,8 @@
     <link rel="stylesheet" href="/static/css/color_picker.css">
 {{end}}
 
+{{define "main-class"}}event-form-main{{end}}
+
 {{define "content"}}
     {{template "datetime-picker-panel" .}}
     {{template "theme-preview-modal" .}}
@@ -30,6 +32,7 @@
         <input type="hidden" name="csrf_token" value="{{.CSRFToken}}">
         {{if .Event.ID}}
         <input type="hidden" name="_method" value="PUT">
+        <input type="hidden" name="version" value="{{.Event.Version}}">
         {{end}}
 
         <section class="form-section">

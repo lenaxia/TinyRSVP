@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Customize Template - {{.Event.Title}} | TinyRSVP</title>
+    <link rel="stylesheet" href="/static/css/variables.css">
+    <link rel="stylesheet" href="/static/css/event_customization.css">
+</head>
+<body>
+    {{template "navigation.html" .}}
+
+    <div id="message-container"></div>
+
+    <div class="customization-container">
+        <!-- Component Palette -->
+        <aside class="component-palette">
+            <h2>Components</h2>
+            
+            <div class="quick-actions">
+                <h3>Quick Actions</h3>
+                <div class="quick-action-buttons">
+                    <button type="button" class="quick-action-btn" id="quick-change-header-image">
+                        <svg viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z" clip-rule="evenodd"/>
+                        </svg>
+                        Change Header
+                    </button>
+                    <button type="button" class="quick-action-btn" id="quick-change-colors">
+                        <svg viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M4 2a2 2 0 00-2 2v11a3 3 0 106 0V4a2 2 0 00-2-2H4zm1 14a1 1 0 100-2 1 1 0 000 2zm5-1.757l4.9-4.9a2 2 0 000-2.828L13.485 5.1a2 2 0 00-2.828 0L10 5.757v8.486zM16 18H9.071l6-6H16a2 2 0 012 2v2a2 2 0 01-2 2z" clip-rule="evenodd"/>
+                        </svg>
+                        Change Colors
+                    </button>
+                    <button type="button" class="quick-action-btn" id="quick-change-title">
+                        <svg viewBox="0 0 20 20" fill="currentColor">
+                            <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z"/>
+                        </svg>
+                        Edit Title
+                    </button>
+                    <button type="button" class="quick-action-btn" id="quick-add-subtitle">
+                        <svg viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd"/>
+                        </svg>
+                        Add Subtitle
+                    </button>
+                    <button type="button" class="quick-action-btn" id="quick-add-photo">
+                        <svg viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M4 5a2 2 0 00-2 2v8a2 2 0 002 2h12a2 2 0 002-2V7a2 2 0 00-2-2h-1.586a1 1 0 01-.707-.293l-1.121-1.121A2 2 0 0011.172 3H8.828a2 2 0 00-1.414.586L6.293 4.707A1 1 0 015.586 5H4zm6 9a3 3 0 100-6 3 3 0 000 6z" clip-rule="evenodd"/>
+                        </svg>
+                        Add Photo
+                    </button>
+                </div>
+            </div>
+
+            <div id="component-list" class="component-list">
+                <!-- Components will be rendered here by JavaScript -->
+            </div>
+        </aside>
+
+        <!-- Preview Canvas -->
+        <main class="preview-canvas">
+            <div class="preview-header">
+                <h2>Preview</h2>
+                <div class="preview-actions">
+                    <button type="button" class="btn-component-action" id="btn-show-overrides">
+                        View Changes
+                        <span class="override-count" id="override-count">0</span>
+                    </button>
+                </div>
+            </div>
+
+            <div class="preview-frame" id="preview-frame">
+                <div class="preview-loading">
+                    <div class="loading-spinner"></div>
+                    <p>Loading preview...</p>
+                </div>
+            </div>
+        </main>
+
+        <!-- Properties Panel -->
+        <aside class="properties-panel">
+            <h2>Properties</h2>
+            
+            <div class="properties-tabs">
+                <button type="button" class="properties-tab active" data-tab="properties">Properties</button>
+                <button type="button" class="properties-tab" data-tab="advanced">Advanced</button>
+            </div>
+
+            <div id="properties-panel-content">
+                <div class="properties-empty">
+                    <svg viewBox="0 0 20 20" fill="currentColor" style="width: 48px; height: 48px; margin-bottom: 12px; opacity: 0.3;">
+                        <path d="M10 12a2 2 0 100-4 2 2 0 000 4z"/>
+                        <path fill-rule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clip-rule="evenodd"/>
+                    </svg>
+                    <p>Select a component from the list to edit its properties</p>
+                </div>
+            </div>
+        </aside>
+    </div>
+
+    <!-- Action Bar -->
+    <div class="customization-actions">
+        <div class="action-group">
+            <button type="button" class="btn-reset" id="btn-reset">Reset All</button>
+            <button type="button" class="btn-cancel" id="btn-cancel">Cancel</button>
+        </div>
+        <div class="action-group">
+            <button type="button" class="btn-save" id="btn-save">Save Customization</button>
+        </div>
+    </div>
+
+    <script src="/static/js/event_customization.js"></script>
+    <script src="/static/js/quick_customization.js"></script>
+    <script src="/static/js/component_override_manager.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const eventID = {{.Event.ID}};
+            const customization = new EventCustomization(eventID);
+            const quickCustomization = new QuickCustomization(customization);
+            const overrideManager = new ComponentOverrideManager(customization);
+
+            window.eventCustomization = customization;
+            window.quickCustomization = quickCustomization;
+            window.overrideManager = overrideManager;
+        });
+    </script>
+</body>
+</html>

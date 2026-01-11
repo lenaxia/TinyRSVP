@@ -1,118 +1,102 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RSVP Confirmed - {{.Event.Title}}</title>
-    <link rel="stylesheet" href="/static/css/variables.css">
-    <link rel="stylesheet" href="/static/css/typography.css">
-    <link rel="stylesheet" href="/static/css/colors.css">
-    <link rel="stylesheet" href="/static/css/spacing.css">
-    <link rel="stylesheet" href="/static/css/grid.css">
-    <link rel="stylesheet" href="/static/css/buttons.css">
+{{template "base" .}}
+
+{{define "title"}}RSVP Confirmed - {{.Event.Title}} - TinyRSVP{{end}}
+
+{{define "css-extra"}}
     <link rel="stylesheet" href="/static/css/confirmation.css">
-    <link rel="stylesheet" href="/static/css/mobile_optimization.css">
-    <link rel="stylesheet" href="/static/css/loading_states.css">
-    <link rel="stylesheet" href="/static/css/error_display.css">
-    <link rel="stylesheet" href="/static/css/keyboard_navigation.css">
-    <link rel="stylesheet" href="/static/css/focus_management.css">
-    <link rel="stylesheet" href="/static/css/theme_toggle.css">
-</head>
-<body>
-    <a href="#main-content" class="skip-link">Skip to main content</a>
-    <main class="confirmation" role="main" aria-label="Main content" id="main-content">
-        <section class="confirmation-success" role="status" aria-live="polite">
-            <span class="confirmation-success-icon" aria-hidden="true">✓</span>
-            <div>
-                <h2 class="confirmation-success-title">RSVP Confirmed!</h2>
-                <p class="confirmation-success-message">Thank you for responding.</p>
-            </div>
-        </section>
+{{end}}
 
-        <h1 class="confirmation-title">{{.Event.Title}}</h1>
+{{define "main-class"}}confirmation-main{{end}}
 
-        <section class="confirmation-summary" aria-labelledby="summary-title">
-            <h2 id="summary-title" class="confirmation-summary-title">Your Response</h2>
-            <div class="confirmation-summary-item">
-                <span class="confirmation-summary-label">Status:</span>
-                <span class="response-status response-{{lower .RSVP.Response}}" aria-label="Response status: {{.RSVP.Response}}">
-                    {{upper .RSVP.Response}}
-                </span>
-            </div>
-            {{if gt .RSVP.PlusOnes 0}}
-            <div class="confirmation-summary-item">
-                <span class="confirmation-summary-label">Guests:</span>
-                <span class="confirmation-summary-value">{{.RSVP.PlusOnes}}</span>
-            </div>
-            {{end}}
-            {{if .RSVP.Notes}}
-            <div class="confirmation-summary-item">
-                <span class="confirmation-summary-label">Notes:</span>
-                <span class="confirmation-summary-value">{{.RSVP.Notes}}</span>
-            </div>
-            {{end}}
-        </section>
-
-        {{if .Answers}}
-        <section class="answer-list" aria-labelledby="answers-title">
-            <h2 id="answers-title" class="answer-list-title">Your Answers</h2>
-            {{range .Answers}}
-            <div class="answer-item">
-                <span class="answer-label">{{.QuestionText}}</span>
-                <span class="answer-value">{{.AnswerDisplay}}</span>
-            </div>
-            {{end}}
-        </section>
-        {{end}}
-
-        <section class="confirmation-details" aria-labelledby="details-title">
-            <h2 id="details-title" class="confirmation-details-title">Event Details</h2>
-            <div class="confirmation-details-item">
-                <span class="confirmation-details-label">When:</span>
-                <time datetime="{{.Event.StartTime.Format "2006-01-02T15:04:05Z07:00"}}" class="confirmation-details-value">
-                    {{formatDateTime .Event.StartTime}}
-                </time>
-            </div>
-            {{if .Event.EndTime}}
-            <div class="confirmation-details-item">
-                <span class="confirmation-details-label">Until:</span>
-                <time datetime="{{.Event.EndTime.Format "2006-01-02T15:04:05Z07:00"}}" class="confirmation-details-value">
-                    {{formatTime .Event.EndTime}}
-                </time>
-            </div>
-            {{end}}
-            {{if .Event.Location}}
-            <div class="confirmation-details-item">
-                <span class="confirmation-details-label">Where:</span>
-                <span class="confirmation-details-value">{{.Event.Location}}</span>
-            </div>
-            {{end}}
-            {{if .Event.Timezone}}
-            <div class="confirmation-details-item">
-                <span class="confirmation-details-label">Timezone:</span>
-                <span class="confirmation-details-value">{{.Event.Timezone}}</span>
-            </div>
-            {{end}}
-            {{if .Event.Description}}
-            <div class="confirmation-details-item">
-                <p class="confirmation-details-value">{{.Event.Description}}</p>
-            </div>
-            {{end}}
-        </section>
-
-        <div class="confirmation-actions">
-            <a href="/api/calendar/{{.Token}}" class="btn btn-primary calendar-download" aria-label="Download event to calendar">
-                Add to Calendar
-            </a>
-            <a href="/rsvp/{{.Token}}" class="btn btn-secondary update-rsvp" aria-label="Update your RSVP response">
-                Update RSVP
-            </a>
+{{define "content"}}
+    <section class="confirmation-success" role="status" aria-live="polite">
+        <span class="confirmation-success-icon" aria-hidden="true">✓</span>
+        <div>
+            <h2 class="confirmation-success-title">RSVP Confirmed!</h2>
+            <p class="confirmation-success-message">Thank you for responding.</p>
         </div>
-    </main>
-    <script src="/static/js/loading_states.js"></script>
-    <script src="/static/js/keyboard_navigation.js"></script>
-    <script src="/static/js/screen_reader.js"></script>
-    <script src="/static/js/focus_management.js"></script>
-    <script src="/static/js/theme_controller.js"></script>
-</body>
-</html>
+    </section>
+
+    <h1 class="confirmation-title">{{.Event.Title}}</h1>
+
+    <section class="confirmation-summary" aria-labelledby="summary-title">
+        <h2 id="summary-title" class="confirmation-summary-title">Your Response</h2>
+        <div class="confirmation-summary-item">
+            <span class="confirmation-summary-label">Status:</span>
+            <span class="response-status response-{{lower .RSVP.Response}}" aria-label="Response status: {{.RSVP.Response}}">
+                {{upper .RSVP.Response}}
+            </span>
+        </div>
+        {{if gt .RSVP.PlusOnes 0}}
+        <div class="confirmation-summary-item">
+            <span class="confirmation-summary-label">Guests:</span>
+            <span class="confirmation-summary-value">{{.RSVP.PlusOnes}}</span>
+        </div>
+        {{end}}
+        {{if .RSVP.Notes}}
+        <div class="confirmation-summary-item">
+            <span class="confirmation-summary-label">Notes:</span>
+            <span class="confirmation-summary-value">{{.RSVP.Notes}}</span>
+        </div>
+        {{end}}
+    </section>
+
+    {{if .AnswersWithQuestions}}
+    <section class="answer-list" aria-labelledby="answers-title">
+        <h2 id="answers-title" class="answer-list-title">Your Answers</h2>
+        {{range .AnswersWithQuestions}}
+        <div class="answer-item">
+            <span class="answer-label">{{.Question.Text}}</span>
+            <span class="answer-value">
+                {{if .Answer.AnswerText}}{{.Answer.AnswerText}}{{end}}
+                {{if .Answer.AnswerOption}}{{.Answer.AnswerOption}}{{end}}
+            </span>
+        </div>
+        {{end}}
+    </section>
+    {{end}}
+
+    <section class="confirmation-details" aria-labelledby="details-title">
+        <h2 id="details-title" class="confirmation-details-title">Event Details</h2>
+        <div class="confirmation-details-item">
+            <span class="confirmation-details-label">When:</span>
+            <time datetime="{{.Event.StartTime.Format "2006-01-02T15:04:05Z07:00"}}" class="confirmation-details-value">
+                {{formatDateTime .Event.StartTime}}
+            </time>
+        </div>
+        {{if .Event.EndTime}}
+        <div class="confirmation-details-item">
+            <span class="confirmation-details-label">Until:</span>
+            <time datetime="{{.Event.EndTime.Format "2006-01-02T15:04:05Z07:00"}}" class="confirmation-details-value">
+                {{formatTime .Event.EndTime}}
+            </time>
+        </div>
+        {{end}}
+        {{if .Event.Location}}
+        <div class="confirmation-details-item">
+            <span class="confirmation-details-label">Where:</span>
+            <span class="confirmation-details-value">{{.Event.Location}}</span>
+        </div>
+        {{end}}
+        {{if .Event.Timezone}}
+        <div class="confirmation-details-item">
+            <span class="confirmation-details-label">Timezone:</span>
+            <span class="confirmation-details-value">{{.Event.Timezone}}</span>
+        </div>
+        {{end}}
+        {{if .Event.Description}}
+        <div class="confirmation-details-item">
+            <p class="confirmation-details-value">{{.Event.Description}}</p>
+        </div>
+        {{end}}
+    </section>
+
+    <div class="confirmation-actions">
+        <a href="/api/calendar/{{.Token}}" class="btn btn-primary calendar-download" aria-label="Download event to calendar">
+            Add to Calendar
+        </a>
+        <a href="/rsvp/{{.Token}}" class="btn btn-secondary update-rsvp" aria-label="Update your RSVP response">
+            Update RSVP
+        </a>
+    </div>
+{{end}}
