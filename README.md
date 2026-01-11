@@ -67,6 +67,10 @@ BASE_URL=https://rsvp.yourdomain.com
 DATABASE_TYPE=sqlite  # or postgres
 DATABASE_PATH=/data/tinyrsvp.db
 
+# Token Security (IMPORTANT)
+TOKEN_SECRET=<generate-with-openssl-rand-hex-32>  # Required for production
+TOKEN_HASHING_ENABLED=true  # Default: true, set false for plain token mode
+
 # Authentication
 AUTH_MODE=oidc  # or forward_auth
 OIDC_ISSUER_URL=https://auth.yourdomain.com
@@ -84,6 +88,25 @@ SMTP_FROM=noreply@yourdomain.com
 STORAGE_TYPE=local  # or s3
 STORAGE_PATH=/data/uploads
 ```
+
+### Token Security Configuration
+
+**IMPORTANT:** Invite tokens must persist across server restarts. Configure `TOKEN_SECRET` to prevent invite links from breaking.
+
+**Generate a secure secret:**
+```bash
+openssl rand -hex 32
+```
+
+**Configuration modes:**
+
+| Mode | Configuration | Behavior |
+|------|---------------|----------|
+| **Production (Recommended)** | `TOKEN_SECRET=<your-secret>`<br>`TOKEN_HASHING_ENABLED=true` | Tokens hashed with your secret, maximum security |
+| **Homelab (Default)** | `TOKEN_SECRET` not set<br>`TOKEN_HASHING_ENABLED=true` | Tokens hashed with hardcoded fallback, tokens persist |
+| **Plain Token** | `TOKEN_HASHING_ENABLED=false` | Tokens stored in plain text, simplest operations |
+
+**⚠️ Warning:** If `TOKEN_SECRET` is not set, the application will show warnings on startup but will use a hardcoded fallback to ensure tokens persist across restarts.
 
 ### Docker Compose Example
 
