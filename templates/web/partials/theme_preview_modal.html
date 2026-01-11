@@ -1,0 +1,40 @@
+<div id="theme-preview-modal" 
+     class="modal" 
+     role="dialog" 
+     aria-labelledby="preview-modal-title"
+     aria-modal="true"
+     hidden>
+    <div class="modal-backdrop" aria-hidden="true"></div>
+    <div class="modal-container">
+        <div class="modal-header">
+            <h3 id="preview-modal-title">Theme Preview</h3>
+            <div class="modal-header-actions">
+                <button type="button" 
+                        id="preview-theme-toggle" 
+                        class="btn-icon"
+                        aria-label="Toggle preview theme">
+                    <span class="theme-icon">🌙</span>
+                </button>
+                <button type="button" 
+                        class="modal-close" 
+                        aria-label="Close preview">
+                    ×
+                </button>
+            </div>
+        </div>
+        <div class="modal-body">
+            <iframe id="theme-preview-frame" 
+                    title="Theme preview"
+                    sandbox="allow-same-origin"
+                    loading="lazy"></iframe>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-secondary modal-close">
+                Close
+            </button>
+            <button type="button" class="btn btn-primary" id="select-previewed-theme">
+                Select This Theme
+            </button>
+        </div>
+    </div>
+</div>
