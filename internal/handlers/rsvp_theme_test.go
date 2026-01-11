@@ -78,6 +78,18 @@ func (m *mockTemplateRepository) GetByNameAndType(ctx context.Context, name stri
 	return nil, nil
 }
 
+func (m *mockTemplateRepository) GetComponentConfig(ctx context.Context, templateID int64) (*models.ComponentConfiguration, error) {
+	return nil, nil
+}
+
+func (m *mockTemplateRepository) UpdateComponentConfig(ctx context.Context, templateID int64, config *models.ComponentConfiguration) error {
+	return nil
+}
+
+func (m *mockTemplateRepository) ValidateComponentConfig(ctx context.Context, config *models.ComponentConfiguration) error {
+	return nil
+}
+
 func TestRSVPHandler_GetRSVPPage_WithEventTheme(t *testing.T) {
 	startTime := time.Now().Add(24 * time.Hour)
 	templateID := int64(5)

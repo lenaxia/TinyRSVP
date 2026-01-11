@@ -26,6 +26,9 @@ type TemplateRepository interface {
 	SetDefault(ctx context.Context, id int64) error
 	GetTemplatesByCategory(ctx context.Context, category models.TemplateCategory) ([]*models.Template, error)
 	ListThemes(ctx context.Context, templateType models.TemplateType, category *models.TemplateCategory) ([]*models.Template, error)
+	GetComponentConfig(ctx context.Context, templateID int64) (*models.ComponentConfiguration, error)
+	UpdateComponentConfig(ctx context.Context, templateID int64, config *models.ComponentConfiguration) error
+	ValidateComponentConfig(ctx context.Context, config *models.ComponentConfiguration) error
 }
 
 type TemplateFilters struct {
@@ -57,9 +60,9 @@ func (r *templateRepository) Create(ctx context.Context, template *models.Templa
 			html_content, text_content, css_content,
 			is_default, is_active, version,
 			created_by, created_at, updated_at,
-			category, thumbnail_url, image_url, tags, sort_order
+			category, thumbnail_url, image_url, tags, sort_order, component_config
 		)
-		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 	`
 
 	now := time.Now()
@@ -96,6 +99,7 @@ func (r *templateRepository) Create(ctx context.Context, template *models.Templa
 		template.ImageURL,
 		tagsJSON,
 		template.SortOrder,
+		template.ComponentConfig,
 	)
 
 	if err != nil {
@@ -124,7 +128,7 @@ func (r *templateRepository) GetByID(ctx context.Context, id int64) (*models.Tem
 			html_content, text_content, css_content,
 			is_default, is_active, version,
 			created_by, created_at, updated_at,
-			category, thumbnail_url, image_url, tags, sort_order
+			category, thumbnail_url, image_url, tags, sort_order, component_config
 		FROM templates
 		WHERE id = ?
 	`
@@ -153,6 +157,7 @@ func (r *templateRepository) GetByID(ctx context.Context, id int64) (*models.Tem
 		&template.ImageURL,
 		&tagsJSON,
 		&template.SortOrder,
+		&template.ComponentConfig,
 	)
 
 	if err != nil {
@@ -184,7 +189,7 @@ func (r *templateRepository) GetByEventAndType(ctx context.Context, eventID int6
 			html_content, text_content, css_content,
 			is_default, is_active, version,
 			created_by, created_at, updated_at,
-			category, thumbnail_url, image_url, tags, sort_order
+			category, thumbnail_url, image_url, tags, sort_order, component_config
 		FROM templates
 		WHERE event_id = ? AND type = ? AND is_active = 1
 		ORDER BY created_at DESC
@@ -215,6 +220,7 @@ func (r *templateRepository) GetByEventAndType(ctx context.Context, eventID int6
 		&template.ImageURL,
 		&tagsJSON,
 		&template.SortOrder,
+		&template.ComponentConfig,
 	)
 
 	if err != nil {
@@ -246,7 +252,7 @@ func (r *templateRepository) GetDefaultByType(ctx context.Context, templateType 
 			html_content, text_content, css_content,
 			is_default, is_active, version,
 			created_by, created_at, updated_at,
-			category, thumbnail_url, image_url, tags, sort_order
+			category, thumbnail_url, image_url, tags, sort_order, component_config
 		FROM templates
 		WHERE type = ? AND is_default = 1 AND is_active = 1
 		ORDER BY created_at DESC
@@ -277,6 +283,7 @@ func (r *templateRepository) GetDefaultByType(ctx context.Context, templateType 
 		&template.ImageURL,
 		&tagsJSON,
 		&template.SortOrder,
+		&template.ComponentConfig,
 	)
 
 	if err != nil {
@@ -308,7 +315,7 @@ func (r *templateRepository) GetByNameAndType(ctx context.Context, name string, 
 			html_content, text_content, css_content,
 			is_default, is_active, version,
 			created_by, created_at, updated_at,
-			category, thumbnail_url, image_url, tags, sort_order
+			category, thumbnail_url, image_url, tags, sort_order, component_config
 		FROM templates
 		WHERE name = ? AND type = ?
 		ORDER BY created_at DESC
@@ -339,6 +346,7 @@ func (r *templateRepository) GetByNameAndType(ctx context.Context, name string, 
 		&template.ImageURL,
 		&tagsJSON,
 		&template.SortOrder,
+		&template.ComponentConfig,
 	)
 
 	if err != nil {
@@ -370,7 +378,7 @@ func (r *templateRepository) List(ctx context.Context, filters *TemplateFilters)
 			html_content, text_content, css_content,
 			is_default, is_active, version,
 			created_by, created_at, updated_at,
-			category, thumbnail_url, image_url, tags, sort_order
+			category, thumbnail_url, image_url, tags, sort_order, component_config
 		FROM templates
 		WHERE 1=1
 	`
@@ -621,7 +629,7 @@ func (r *templateRepository) GetTemplatesByCategory(ctx context.Context, categor
 			html_content, text_content, css_content,
 			is_default, is_active, version,
 			created_by, created_at, updated_at,
-			category, thumbnail_url, image_url, tags, sort_order
+			category, thumbnail_url, image_url, tags, sort_order, component_config
 		FROM templates
 		WHERE category = ?
 		ORDER BY sort_order ASC, name ASC
@@ -655,7 +663,7 @@ func (r *templateRepository) ListThemes(ctx context.Context, templateType models
 			html_content, text_content, css_content,
 			is_default, is_active, version,
 			created_by, created_at, updated_at,
-			category, thumbnail_url, image_url, tags, sort_order
+			category, thumbnail_url, image_url, tags, sort_order, component_config
 		FROM templates
 		WHERE type = ?
 	`
@@ -716,6 +724,7 @@ func (r *templateRepository) scanTemplate(scanner interface{ Scan(...interface{}
 		&template.ImageURL,
 		&tagsJSON,
 		&template.SortOrder,
+		&template.ComponentConfig,
 	)
 
 	if err != nil {
@@ -762,6 +771,135 @@ func deserializeTags(tagsJSON *string, tags *[]string) error {
 
 	if *tags == nil {
 		*tags = []string{}
+	}
+
+	return nil
+}
+
+func (r *templateRepository) GetComponentConfig(ctx context.Context, templateID int64) (*models.ComponentConfiguration, error) {
+	query := `
+		SELECT component_config
+		FROM templates
+		WHERE id = ?
+	`
+
+	var componentConfig *string
+	err := r.db.QueryRow(ctx, query, templateID).Scan(&componentConfig)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, &models.NotFoundError{
+				Resource: "Template",
+				ID:       templateID,
+			}
+		}
+		return nil, fmt.Errorf("failed to get component config: %w", err)
+	}
+
+	if componentConfig == nil || *componentConfig == "" {
+		return nil, nil
+	}
+
+	var config models.ComponentConfiguration
+	if err := json.Unmarshal([]byte(*componentConfig), &config); err != nil {
+		return nil, fmt.Errorf("failed to parse component configuration: %w", err)
+	}
+
+	return &config, nil
+}
+
+func (r *templateRepository) UpdateComponentConfig(ctx context.Context, templateID int64, config *models.ComponentConfiguration) error {
+	if config != nil {
+		if err := r.ValidateComponentConfig(ctx, config); err != nil {
+			return err
+		}
+	}
+
+	var componentConfigJSON *string
+	if config != nil {
+		data, err := json.Marshal(config)
+		if err != nil {
+			return fmt.Errorf("failed to marshal component configuration: %w", err)
+		}
+		str := string(data)
+		componentConfigJSON = &str
+	}
+
+	query := `
+		UPDATE templates
+		SET component_config = ?, updated_at = ?
+		WHERE id = ?
+	`
+
+	now := time.Now()
+	result, err := r.db.Exec(ctx, query, componentConfigJSON, now, templateID)
+	if err != nil {
+		return fmt.Errorf("failed to update component config: %w", err)
+	}
+
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		return fmt.Errorf("failed to get rows affected: %w", err)
+	}
+
+	if rowsAffected == 0 {
+		return &models.NotFoundError{
+			Resource: "Template",
+			ID:       templateID,
+		}
+	}
+
+	return nil
+}
+
+func (r *templateRepository) ValidateComponentConfig(ctx context.Context, config *models.ComponentConfiguration) error {
+	if config == nil {
+		return nil
+	}
+
+	if config.Version == "" {
+		return &models.ValidationError{
+			Field:   "version",
+			Message: "version is required",
+		}
+	}
+
+	if len(config.Components) > 50 {
+		return &models.ValidationError{
+			Field:   "components",
+			Message: "maximum 50 components allowed",
+		}
+	}
+
+	componentIDs := make(map[string]bool)
+	for i, component := range config.Components {
+		if component.ID == "" {
+			return &models.ValidationError{
+				Field:   fmt.Sprintf("components[%d].id", i),
+				Message: "component ID is required",
+			}
+		}
+
+		if componentIDs[component.ID] {
+			return &models.ValidationError{
+				Field:   fmt.Sprintf("components[%d].id", i),
+				Message: fmt.Sprintf("duplicate component ID: %s", component.ID),
+			}
+		}
+		componentIDs[component.ID] = true
+
+		if !component.Type.IsValid() {
+			return &models.ValidationError{
+				Field:   fmt.Sprintf("components[%d].type", i),
+				Message: fmt.Sprintf("invalid component type: %s", component.Type),
+			}
+		}
+
+		if !component.Position.Mode.IsValid() {
+			return &models.ValidationError{
+				Field:   fmt.Sprintf("components[%d].position.mode", i),
+				Message: fmt.Sprintf("invalid position mode: %s", component.Position.Mode),
+			}
+		}
 	}
 
 	return nil

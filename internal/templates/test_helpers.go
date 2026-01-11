@@ -9,19 +9,22 @@ import (
 )
 
 type mockServiceTemplateRepository struct {
-	CreateFunc                 func(ctx context.Context, template *models.Template) error
-	GetByIDFunc                func(ctx context.Context, id int64) (*models.Template, error)
-	GetByEventAndTypeFunc      func(ctx context.Context, eventID int64, templateType models.TemplateType) (*models.Template, error)
-	GetDefaultByTypeFunc       func(ctx context.Context, templateType models.TemplateType) (*models.Template, error)
-	GetByNameAndTypeFunc       func(ctx context.Context, name string, templateType models.TemplateType) (*models.Template, error)
-	ListFunc                   func(ctx context.Context, filters *repositories.TemplateFilters) ([]*models.Template, error)
-	UpdateFunc                 func(ctx context.Context, template *models.Template) error
-	DeleteFunc                 func(ctx context.Context, id int64) error
-	SetActiveFunc              func(ctx context.Context, id int64, active bool) error
-	IsTemplateInUseFunc        func(ctx context.Context, id int64) (bool, error)
-	SetDefaultFunc             func(ctx context.Context, id int64) error
-	GetTemplatesByCategoryFunc func(ctx context.Context, category models.TemplateCategory) ([]*models.Template, error)
-	ListThemesFunc             func(ctx context.Context, templateType models.TemplateType, category *models.TemplateCategory) ([]*models.Template, error)
+	CreateFunc                  func(ctx context.Context, template *models.Template) error
+	GetByIDFunc                 func(ctx context.Context, id int64) (*models.Template, error)
+	GetByEventAndTypeFunc       func(ctx context.Context, eventID int64, templateType models.TemplateType) (*models.Template, error)
+	GetDefaultByTypeFunc        func(ctx context.Context, templateType models.TemplateType) (*models.Template, error)
+	GetByNameAndTypeFunc        func(ctx context.Context, name string, templateType models.TemplateType) (*models.Template, error)
+	ListFunc                    func(ctx context.Context, filters *repositories.TemplateFilters) ([]*models.Template, error)
+	UpdateFunc                  func(ctx context.Context, template *models.Template) error
+	DeleteFunc                  func(ctx context.Context, id int64) error
+	SetActiveFunc               func(ctx context.Context, id int64, active bool) error
+	IsTemplateInUseFunc         func(ctx context.Context, id int64) (bool, error)
+	SetDefaultFunc              func(ctx context.Context, id int64) error
+	GetTemplatesByCategoryFunc  func(ctx context.Context, category models.TemplateCategory) ([]*models.Template, error)
+	ListThemesFunc              func(ctx context.Context, templateType models.TemplateType, category *models.TemplateCategory) ([]*models.Template, error)
+	GetComponentConfigFunc      func(ctx context.Context, templateID int64) (*models.ComponentConfiguration, error)
+	UpdateComponentConfigFunc   func(ctx context.Context, templateID int64, config *models.ComponentConfiguration) error
+	ValidateComponentConfigFunc func(ctx context.Context, config *models.ComponentConfiguration) error
 }
 
 func (m *mockServiceTemplateRepository) Create(ctx context.Context, template *models.Template) error {
@@ -119,6 +122,27 @@ func (m *mockServiceTemplateRepository) ListThemes(ctx context.Context, template
 		return m.ListThemesFunc(ctx, templateType, category)
 	}
 	return []*models.Template{}, nil
+}
+
+func (m *mockServiceTemplateRepository) GetComponentConfig(ctx context.Context, templateID int64) (*models.ComponentConfiguration, error) {
+	if m.GetComponentConfigFunc != nil {
+		return m.GetComponentConfigFunc(ctx, templateID)
+	}
+	return nil, nil
+}
+
+func (m *mockServiceTemplateRepository) UpdateComponentConfig(ctx context.Context, templateID int64, config *models.ComponentConfiguration) error {
+	if m.UpdateComponentConfigFunc != nil {
+		return m.UpdateComponentConfigFunc(ctx, templateID, config)
+	}
+	return nil
+}
+
+func (m *mockServiceTemplateRepository) ValidateComponentConfig(ctx context.Context, config *models.ComponentConfiguration) error {
+	if m.ValidateComponentConfigFunc != nil {
+		return m.ValidateComponentConfigFunc(ctx, config)
+	}
+	return nil
 }
 
 type mockServiceValidator struct {
