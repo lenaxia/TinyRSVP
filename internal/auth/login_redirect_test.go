@@ -1,9 +1,12 @@
 package auth
 
 import (
+	"context"
 	"net/http"
 	"net/http/httptest"
 	"testing"
+
+	"github.com/lenaxia/tinyrsvp/internal/models"
 )
 
 func TestLoginHandler_ReturnURL(t *testing.T) {
@@ -104,7 +107,7 @@ func TestCallbackHandler_ReturnURL(t *testing.T) {
 			}
 
 			mockUserService := &MockUserService{
-				GetOrCreateUserFunc: func(email, name string, oidcSubject *string) (*models.User, error) {
+				GetOrCreateUserFunc: func(ctx context.Context, email, name string, oidcSubject *string) (*models.User, error) {
 					return &models.User{
 						ID:    1,
 						Email: email,
@@ -112,13 +115,13 @@ func TestCallbackHandler_ReturnURL(t *testing.T) {
 						Role:  models.RoleEventManager,
 					}, nil
 				},
-				UpdateLastLoginFunc: func(userID int64) error {
+				UpdateLastLoginFunc: func(ctx context.Context, userID int64) error {
 					return nil
 				},
 			}
 
 			mockSessionMgr := &MockSessionManager{
-				CreateSessionFunc: func(userID int64, r *http.Request) (*models.Session, error) {
+				CreateSessionFunc: func(ctx context.Context, userID int64, r *http.Request) (*models.Session, error) {
 					return &models.Session{
 						ID:     "session-123",
 						UserID: userID,
