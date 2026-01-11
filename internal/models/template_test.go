@@ -201,16 +201,6 @@ func TestTemplate_Validate(t *testing.T) {
 			errField: "text_content",
 		},
 		{
-			name: "missing created by",
-			template: &Template{
-				Name:        "Test Template",
-				Type:        TemplateTypeRSVPPage,
-				HTMLContent: "<html></html>",
-			},
-			wantErr:  true,
-			errField: "created_by",
-		},
-		{
 			name: "page template with nil text content is valid",
 			template: &Template{
 				Name:        "Page Template",

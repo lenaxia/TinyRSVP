@@ -13,6 +13,7 @@ type mockServiceTemplateRepository struct {
 	GetByIDFunc                func(ctx context.Context, id int64) (*models.Template, error)
 	GetByEventAndTypeFunc      func(ctx context.Context, eventID int64, templateType models.TemplateType) (*models.Template, error)
 	GetDefaultByTypeFunc       func(ctx context.Context, templateType models.TemplateType) (*models.Template, error)
+	GetByNameAndTypeFunc       func(ctx context.Context, name string, templateType models.TemplateType) (*models.Template, error)
 	ListFunc                   func(ctx context.Context, filters *repositories.TemplateFilters) ([]*models.Template, error)
 	UpdateFunc                 func(ctx context.Context, template *models.Template) error
 	DeleteFunc                 func(ctx context.Context, id int64) error
@@ -51,6 +52,13 @@ func (m *mockServiceTemplateRepository) GetByEventAndType(ctx context.Context, e
 func (m *mockServiceTemplateRepository) GetDefaultByType(ctx context.Context, templateType models.TemplateType) (*models.Template, error) {
 	if m.GetDefaultByTypeFunc != nil {
 		return m.GetDefaultByTypeFunc(ctx, templateType)
+	}
+	return nil, &models.NotFoundError{Resource: "Template"}
+}
+
+func (m *mockServiceTemplateRepository) GetByNameAndType(ctx context.Context, name string, templateType models.TemplateType) (*models.Template, error) {
+	if m.GetByNameAndTypeFunc != nil {
+		return m.GetByNameAndTypeFunc(ctx, name, templateType)
 	}
 	return nil, &models.NotFoundError{Resource: "Template"}
 }

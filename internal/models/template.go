@@ -68,10 +68,6 @@ func (t *Template) Validate() error {
 		return &ValidationError{Field: "text_content", Message: "Text content required for email templates"}
 	}
 
-	if t.CreatedBy == 0 {
-		return &ValidationError{Field: "created_by", Message: "Created by is required"}
-	}
-
 	if t.Category == "" {
 		t.Category = CategoryPlain
 	}

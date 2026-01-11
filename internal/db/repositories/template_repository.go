@@ -17,6 +17,7 @@ type TemplateRepository interface {
 	GetByID(ctx context.Context, id int64) (*models.Template, error)
 	GetByEventAndType(ctx context.Context, eventID int64, templateType models.TemplateType) (*models.Template, error)
 	GetDefaultByType(ctx context.Context, templateType models.TemplateType) (*models.Template, error)
+	GetByNameAndType(ctx context.Context, name string, templateType models.TemplateType) (*models.Template, error)
 	List(ctx context.Context, filters *TemplateFilters) ([]*models.Template, error)
 	Update(ctx context.Context, template *models.Template) error
 	Delete(ctx context.Context, id int64) error
@@ -69,6 +70,13 @@ func (r *templateRepository) Create(ctx context.Context, template *models.Templa
 		return fmt.Errorf("failed to serialize tags: %w", err)
 	}
 
+	var createdBy interface{}
+	if template.CreatedBy == 0 {
+		createdBy = nil
+	} else {
+		createdBy = template.CreatedBy
+	}
+
 	result, err := r.db.Exec(ctx, query,
 		template.EventID,
 		template.Name,
@@ -80,7 +88,7 @@ func (r *templateRepository) Create(ctx context.Context, template *models.Templa
 		template.IsDefault,
 		template.IsActive,
 		version,
-		template.CreatedBy,
+		createdBy,
 		now,
 		now,
 		template.Category,
@@ -123,6 +131,7 @@ func (r *templateRepository) GetByID(ctx context.Context, id int64) (*models.Tem
 
 	template := &models.Template{}
 	var tagsJSON *string
+	var createdBy sql.NullInt64
 
 	err := r.db.QueryRow(ctx, query, id).Scan(
 		&template.ID,
@@ -136,7 +145,7 @@ func (r *templateRepository) GetByID(ctx context.Context, id int64) (*models.Tem
 		&template.IsDefault,
 		&template.IsActive,
 		&template.Version,
-		&template.CreatedBy,
+		&createdBy,
 		&template.CreatedAt,
 		&template.UpdatedAt,
 		&template.Category,
@@ -154,6 +163,12 @@ func (r *templateRepository) GetByID(ctx context.Context, id int64) (*models.Tem
 			}
 		}
 		return nil, fmt.Errorf("failed to get template by id: %w", err)
+	}
+
+	if createdBy.Valid {
+		template.CreatedBy = createdBy.Int64
+	} else {
+		template.CreatedBy = 0
 	}
 
 	if err := deserializeTags(tagsJSON, &template.Tags); err != nil {
@@ -178,6 +193,7 @@ func (r *templateRepository) GetByEventAndType(ctx context.Context, eventID int6
 
 	template := &models.Template{}
 	var tagsJSON *string
+	var createdBy sql.NullInt64
 
 	err := r.db.QueryRow(ctx, query, eventID, templateType).Scan(
 		&template.ID,
@@ -191,7 +207,7 @@ func (r *templateRepository) GetByEventAndType(ctx context.Context, eventID int6
 		&template.IsDefault,
 		&template.IsActive,
 		&template.Version,
-		&template.CreatedBy,
+		&createdBy,
 		&template.CreatedAt,
 		&template.UpdatedAt,
 		&template.Category,
@@ -209,6 +225,12 @@ func (r *templateRepository) GetByEventAndType(ctx context.Context, eventID int6
 			}
 		}
 		return nil, fmt.Errorf("failed to get template by event and type: %w", err)
+	}
+
+	if createdBy.Valid {
+		template.CreatedBy = createdBy.Int64
+	} else {
+		template.CreatedBy = 0
 	}
 
 	if err := deserializeTags(tagsJSON, &template.Tags); err != nil {
@@ -233,6 +255,7 @@ func (r *templateRepository) GetDefaultByType(ctx context.Context, templateType 
 
 	template := &models.Template{}
 	var tagsJSON *string
+	var createdBy sql.NullInt64
 
 	err := r.db.QueryRow(ctx, query, templateType).Scan(
 		&template.ID,
@@ -246,7 +269,7 @@ func (r *templateRepository) GetDefaultByType(ctx context.Context, templateType 
 		&template.IsDefault,
 		&template.IsActive,
 		&template.Version,
-		&template.CreatedBy,
+		&createdBy,
 		&template.CreatedAt,
 		&template.UpdatedAt,
 		&template.Category,
@@ -264,6 +287,74 @@ func (r *templateRepository) GetDefaultByType(ctx context.Context, templateType 
 			}
 		}
 		return nil, fmt.Errorf("failed to get default template by type: %w", err)
+	}
+
+	if createdBy.Valid {
+		template.CreatedBy = createdBy.Int64
+	} else {
+		template.CreatedBy = 0
+	}
+
+	if err := deserializeTags(tagsJSON, &template.Tags); err != nil {
+		return nil, fmt.Errorf("failed to deserialize tags: %w", err)
+	}
+
+	return template, nil
+}
+
+func (r *templateRepository) GetByNameAndType(ctx context.Context, name string, templateType models.TemplateType) (*models.Template, error) {
+	query := `
+		SELECT id, event_id, name, type, description,
+			html_content, text_content, css_content,
+			is_default, is_active, version,
+			created_by, created_at, updated_at,
+			category, thumbnail_url, image_url, tags, sort_order
+		FROM templates
+		WHERE name = ? AND type = ?
+		ORDER BY created_at DESC
+		LIMIT 1
+	`
+
+	template := &models.Template{}
+	var tagsJSON *string
+	var createdBy sql.NullInt64
+
+	err := r.db.QueryRow(ctx, query, name, templateType).Scan(
+		&template.ID,
+		&template.EventID,
+		&template.Name,
+		&template.Type,
+		&template.Description,
+		&template.HTMLContent,
+		&template.TextContent,
+		&template.CSSContent,
+		&template.IsDefault,
+		&template.IsActive,
+		&template.Version,
+		&createdBy,
+		&template.CreatedAt,
+		&template.UpdatedAt,
+		&template.Category,
+		&template.ThumbnailURL,
+		&template.ImageURL,
+		&tagsJSON,
+		&template.SortOrder,
+	)
+
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, &models.NotFoundError{
+				Resource: "Template",
+				ID:       0,
+			}
+		}
+		return nil, fmt.Errorf("failed to get template by name and type: %w", err)
+	}
+
+	if createdBy.Valid {
+		template.CreatedBy = createdBy.Int64
+	} else {
+		template.CreatedBy = 0
 	}
 
 	if err := deserializeTags(tagsJSON, &template.Tags); err != nil {
@@ -603,6 +694,7 @@ func (r *templateRepository) ListThemes(ctx context.Context, templateType models
 func (r *templateRepository) scanTemplate(scanner interface{ Scan(...interface{}) error }) (*models.Template, error) {
 	template := &models.Template{}
 	var tagsJSON *string
+	var createdBy sql.NullInt64
 
 	err := scanner.Scan(
 		&template.ID,
@@ -616,7 +708,7 @@ func (r *templateRepository) scanTemplate(scanner interface{ Scan(...interface{}
 		&template.IsDefault,
 		&template.IsActive,
 		&template.Version,
-		&template.CreatedBy,
+		&createdBy,
 		&template.CreatedAt,
 		&template.UpdatedAt,
 		&template.Category,
@@ -628,6 +720,12 @@ func (r *templateRepository) scanTemplate(scanner interface{ Scan(...interface{}
 
 	if err != nil {
 		return nil, fmt.Errorf("failed to scan template: %w", err)
+	}
+
+	if createdBy.Valid {
+		template.CreatedBy = createdBy.Int64
+	} else {
+		template.CreatedBy = 0
 	}
 
 	if err := deserializeTags(tagsJSON, &template.Tags); err != nil {

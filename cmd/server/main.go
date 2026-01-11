@@ -157,6 +157,17 @@ func main() {
 	}
 	logger.Info("Default templates seeded successfully")
 
+	logger.Info("Seeding theme templates")
+	themeSeeder := templates.NewSeeder(templateRepo, 0)
+	themeSeedCtx, themeSeedCancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer themeSeedCancel()
+
+	if err := themeSeeder.SeedThemes(themeSeedCtx); err != nil {
+		logger.Warn("Theme seeding encountered errors", "error", err)
+	} else {
+		logger.Info("Theme templates seeded successfully")
+	}
+
 	templateEngine := templates.NewEngine()
 	templateValidator := templates.NewValidator(templateEngine)
 	templateService := templates.NewService(templateRepo, templateValidator)

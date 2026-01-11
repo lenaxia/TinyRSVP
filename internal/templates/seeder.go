@@ -4,6 +4,9 @@ import (
 	"context"
 	"embed"
 	"fmt"
+	"log"
+	"os"
+	"path/filepath"
 
 	"github.com/lenaxia/tinyrsvp/internal/db/repositories"
 	"github.com/lenaxia/tinyrsvp/internal/models"
@@ -115,4 +118,198 @@ func (s *Seeder) SeedDefaults(ctx context.Context) error {
 	}
 
 	return nil
+}
+
+func (s *Seeder) SeedThemes(ctx context.Context) error {
+	themes := s.getDefaultThemes()
+
+	for _, theme := range themes {
+		if err := ctx.Err(); err != nil {
+			return fmt.Errorf("context cancelled: %w", err)
+		}
+
+		if err := s.seedTheme(ctx, theme); err != nil {
+			log.Printf("Warning: Failed to seed theme %s: %v", theme.Name, err)
+		}
+	}
+
+	return nil
+}
+
+func (s *Seeder) seedTheme(ctx context.Context, theme *models.Template) error {
+	existing, err := s.repo.GetByNameAndType(ctx, theme.Name, theme.Type)
+	if err == nil && existing != nil {
+		theme.ID = existing.ID
+		theme.Version = existing.Version
+		theme.CreatedAt = existing.CreatedAt
+		theme.CreatedBy = existing.CreatedBy
+		return s.repo.Update(ctx, theme)
+	}
+
+	var notFoundErr *models.NotFoundError
+	if err != nil {
+		switch e := err.(type) {
+		case *models.NotFoundError:
+			notFoundErr = e
+		default:
+			return fmt.Errorf("failed to check for existing theme: %w", err)
+		}
+	}
+
+	if notFoundErr == nil && existing != nil {
+		return nil
+	}
+
+	return s.repo.Create(ctx, theme)
+}
+
+func (s *Seeder) getDefaultThemes() []*models.Template {
+	return []*models.Template{
+		{
+			Name:         "Simple & Clean",
+			Type:         models.TemplateTypeRSVPPage,
+			Category:     models.CategoryPlain,
+			Description:  "Minimalist text-based invitation, perfect for accessibility and fast loading",
+			HTMLContent:  s.loadThemeTemplate("plain-text.html"),
+			CSSContent:   stringPtr(s.loadThemeCSS("plain-text.css")),
+			ThumbnailURL: stringPtr("/static/images/themes/plain-text-thumb.svg"),
+			ImageURL:     nil,
+			Tags:         []string{"accessible", "minimal", "text-only"},
+			SortOrder:    0,
+			IsDefault:    true,
+			IsActive:     true,
+			Version:      1,
+			CreatedBy:    0,
+		},
+		{
+			Name:         "Wedding Elegance",
+			Type:         models.TemplateTypeRSVPPage,
+			Category:     models.CategoryCard,
+			Description:  "Elegant floral design perfect for weddings and formal celebrations",
+			HTMLContent:  s.loadThemeTemplate("wedding-elegance.html"),
+			CSSContent:   stringPtr(s.loadThemeCSS("wedding-elegance.css")),
+			ThumbnailURL: stringPtr("/static/images/themes/wedding-elegance-thumb.svg"),
+			ImageURL:     stringPtr("/static/images/themes/wedding-elegance-header.svg"),
+			Tags:         []string{"wedding", "formal", "floral", "elegant"},
+			SortOrder:    1,
+			IsDefault:    false,
+			IsActive:     true,
+			Version:      1,
+			CreatedBy:    0,
+		},
+		{
+			Name:         "Birthday Celebration",
+			Type:         models.TemplateTypeRSVPPage,
+			Category:     models.CategoryCard,
+			Description:  "Fun and colorful design for birthday parties and celebrations",
+			HTMLContent:  s.loadThemeTemplate("birthday-celebration.html"),
+			CSSContent:   stringPtr(s.loadThemeCSS("birthday-celebration.css")),
+			ThumbnailURL: stringPtr("/static/images/themes/birthday-celebration-thumb.svg"),
+			ImageURL:     stringPtr("/static/images/themes/birthday-celebration-header.svg"),
+			Tags:         []string{"birthday", "celebration", "fun", "colorful"},
+			SortOrder:    2,
+			IsDefault:    false,
+			IsActive:     true,
+			Version:      1,
+			CreatedBy:    0,
+		},
+		{
+			Name:         "Corporate Professional",
+			Type:         models.TemplateTypeRSVPPage,
+			Category:     models.CategoryCard,
+			Description:  "Clean and professional design for business events and meetings",
+			HTMLContent:  s.loadThemeTemplate("corporate-professional.html"),
+			CSSContent:   stringPtr(s.loadThemeCSS("corporate-professional.css")),
+			ThumbnailURL: stringPtr("/static/images/themes/corporate-professional-thumb.svg"),
+			ImageURL:     stringPtr("/static/images/themes/corporate-professional-header.svg"),
+			Tags:         []string{"corporate", "professional", "business", "formal"},
+			SortOrder:    3,
+			IsDefault:    false,
+			IsActive:     true,
+			Version:      1,
+			CreatedBy:    0,
+		},
+		{
+			Name:         "Holiday Festive",
+			Type:         models.TemplateTypeRSVPPage,
+			Category:     models.CategoryCard,
+			Description:  "Warm and festive design for holiday gatherings and seasonal events",
+			HTMLContent:  s.loadThemeTemplate("holiday-festive.html"),
+			CSSContent:   stringPtr(s.loadThemeCSS("holiday-festive.css")),
+			ThumbnailURL: stringPtr("/static/images/themes/holiday-festive-thumb.svg"),
+			ImageURL:     stringPtr("/static/images/themes/holiday-festive-header.svg"),
+			Tags:         []string{"holiday", "festive", "seasonal", "warm"},
+			SortOrder:    4,
+			IsDefault:    false,
+			IsActive:     true,
+			Version:      1,
+			CreatedBy:    0,
+		},
+		{
+			Name:         "Garden Party",
+			Type:         models.TemplateTypeRSVPPage,
+			Category:     models.CategoryCard,
+			Description:  "Fresh botanical design for outdoor events and garden parties",
+			HTMLContent:  s.loadThemeTemplate("garden-party.html"),
+			CSSContent:   stringPtr(s.loadThemeCSS("garden-party.css")),
+			ThumbnailURL: stringPtr("/static/images/themes/garden-party-thumb.svg"),
+			ImageURL:     stringPtr("/static/images/themes/garden-party-header.svg"),
+			Tags:         []string{"garden", "nature", "outdoor", "botanical"},
+			SortOrder:    5,
+			IsDefault:    false,
+			IsActive:     true,
+			Version:      1,
+			CreatedBy:    0,
+		},
+		{
+			Name:         "Modern Minimalist",
+			Type:         models.TemplateTypeRSVPPage,
+			Category:     models.CategoryCard,
+			Description:  "Contemporary minimal design with clean lines and bold typography",
+			HTMLContent:  s.loadThemeTemplate("modern-minimalist.html"),
+			CSSContent:   stringPtr(s.loadThemeCSS("modern-minimalist.css")),
+			ThumbnailURL: stringPtr("/static/images/themes/modern-minimalist-thumb.svg"),
+			ImageURL:     stringPtr("/static/images/themes/modern-minimalist-header.svg"),
+			Tags:         []string{"modern", "minimal", "contemporary", "clean"},
+			SortOrder:    6,
+			IsDefault:    false,
+			IsActive:     true,
+			Version:      1,
+			CreatedBy:    0,
+		},
+	}
+}
+
+func (s *Seeder) loadThemeTemplate(filename string) string {
+	paths := []string{
+		filepath.Join("templates/web/rsvp_themes", filename),
+		filepath.Join("../../templates/web/rsvp_themes", filename),
+	}
+
+	for _, path := range paths {
+		content, err := os.ReadFile(path)
+		if err == nil {
+			return string(content)
+		}
+	}
+
+	log.Printf("Warning: Failed to load theme template %s", filename)
+	return ""
+}
+
+func (s *Seeder) loadThemeCSS(filename string) string {
+	paths := []string{
+		filepath.Join("static/css/themes", filename),
+		filepath.Join("../../static/css/themes", filename),
+	}
+
+	for _, path := range paths {
+		content, err := os.ReadFile(path)
+		if err == nil {
+			return string(content)
+		}
+	}
+
+	log.Printf("Warning: Failed to load theme CSS %s", filename)
+	return ""
 }
