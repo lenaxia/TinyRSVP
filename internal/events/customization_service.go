@@ -39,11 +39,12 @@ type templateRepository interface {
 func NewCustomizationService(
 	eventRepo repositories.EventRepository,
 	templateRepo templateRepository,
+	authz auth.AuthorizationChecker,
 ) CustomizationService {
 	return &customizationService{
 		eventRepo:    eventRepo,
 		templateRepo: templateRepo,
-		authz:        auth.NewAuthorizationChecker(),
+		authz:        authz,
 	}
 }
 
