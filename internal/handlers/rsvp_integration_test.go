@@ -689,16 +689,17 @@ func TestRSVPHandler_Integration_SubmitRSVP_DuplicateSubmission(t *testing.T) {
 
 	req2 := httptest.NewRequest("POST", "/api/rsvp/"+inviteToken, strings.NewReader(body))
 	req2.Header.Set("Content-Type", "application/json")
+	req2.Header.Set("Accept", "application/json")
 	w2 := httptest.NewRecorder()
 	r.ServeHTTP(w2, req2)
 
-	if w2.Code != http.StatusConflict {
-		t.Errorf("Expected status 409 for duplicate, got %d. Body: %s", w2.Code, w2.Body.String())
+	if w2.Code != http.StatusOK {
+		t.Errorf("Expected status 200 for update via POST, got %d. Body: %s", w2.Code, w2.Body.String())
 	}
 
 	responseBody := w2.Body.String()
-	if !strings.Contains(responseBody, "already responded") {
-		t.Error("Response should indicate already responded")
+	if !strings.Contains(responseBody, "RSVP") {
+		t.Error("Response should contain RSVP data")
 	}
 
 	rsvps, err := rsvpRepo.GetByEventID(context.Background(), event.ID)

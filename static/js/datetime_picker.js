@@ -536,8 +536,8 @@
             if (!displayElement) return;
 
             if (this.selectedStartDate && this.selectedStartTime) {
-                const startStr = this.selectedStartDate.toLocaleDateString('en-US', { 
-                    month: 'short', 
+                const startStr = this.selectedStartDate.toLocaleDateString('en-US', {
+                    month: 'short',
                     day: 'numeric',
                     year: 'numeric'
                 }) + ' at ' + this.selectedStartTime;
@@ -545,7 +545,27 @@
                 let displayText = startStr;
 
                 if (this.selectedEndDate && this.selectedEndTime) {
-                    displayText += ' - ' + this.selectedEndTime;
+                    const startDateStr = this.selectedStartDate.toLocaleDateString('en-US', {
+                        year: 'numeric',
+                        month: '2-digit',
+                        day: '2-digit'
+                    });
+                    const endDateStr = this.selectedEndDate.toLocaleDateString('en-US', {
+                        year: 'numeric',
+                        month: '2-digit',
+                        day: '2-digit'
+                    });
+                    
+                    if (startDateStr !== endDateStr) {
+                        const endStr = this.selectedEndDate.toLocaleDateString('en-US', {
+                            month: 'short',
+                            day: 'numeric',
+                            year: 'numeric'
+                        }) + ' at ' + this.selectedEndTime;
+                        displayText += ' - ' + endStr;
+                    } else {
+                        displayText += ' - ' + this.selectedEndTime;
+                    }
                 }
 
                 if (this.config.showTimezone && this.selectedTimezone) {

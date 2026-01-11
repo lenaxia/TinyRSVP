@@ -360,16 +360,58 @@ func (h *RSVPHandler) SubmitRSVP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	result, err := h.rsvpService.SubmitRSVP(r.Context(), token, req)
-	if err != nil {
-		h.handleSubmitError(w, err)
-		return
+	var existingRSVP *models.RSVP
+	var result *models.RSVP
+	
+	if h.rsvpRepo != nil {
+		invite, inviteErr := h.inviteService.GetInviteByToken(r.Context(), token)
+		if inviteErr != nil {
+			h.handleSubmitError(w, inviteErr)
+			return
+		}
+
+		existingRSVP, err = h.rsvpRepo.GetByInviteID(r.Context(), invite.ID)
+		if err != nil {
+			var notFoundErr *models.NotFoundError
+			if !errors.As(err, &notFoundErr) {
+				h.respondJSON(w, http.StatusInternalServerError, map[string]string{
+					"error": "failed to check RSVP status",
+				})
+				return
+			}
+		}
 	}
 
-	h.respondJSON(w, http.StatusCreated, map[string]interface{}{
-		"rsvp":    result,
-		"message": "RSVP submitted successfully",
-	})
+	if existingRSVP != nil {
+		result, err = h.rsvpService.UpdateRSVP(r.Context(), token, req)
+		if err != nil {
+			h.handleUpdateError(w, err)
+			return
+		}
+	} else {
+		result, err = h.rsvpService.SubmitRSVP(r.Context(), token, req)
+		if err != nil {
+			h.handleSubmitError(w, err)
+			return
+		}
+	}
+
+	acceptHeader := r.Header.Get("Accept")
+	contentType := r.Header.Get("Content-Type")
+	
+	if strings.Contains(acceptHeader, "application/json") || strings.Contains(contentType, "application/json") {
+		statusCode := http.StatusCreated
+		if existingRSVP != nil {
+			statusCode = http.StatusOK
+		}
+		h.respondJSON(w, statusCode, map[string]interface{}{
+			"rsvp":    result,
+			"message": "RSVP submitted successfully",
+		})
+		return
+	}
+	
+	http.Redirect(w, r, fmt.Sprintf("/rsvp/%s/confirmation", token), http.StatusSeeOther)
 }
 
 func (h *RSVPHandler) handleSubmitError(w http.ResponseWriter, err error) {
@@ -453,10 +495,18 @@ func (h *RSVPHandler) UpdateRSVP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	h.respondJSON(w, http.StatusOK, map[string]interface{}{
-		"rsvp":    result,
-		"message": "RSVP updated successfully",
-	})
+	acceptHeader := r.Header.Get("Accept")
+	contentType := r.Header.Get("Content-Type")
+	
+	if strings.Contains(acceptHeader, "application/json") || strings.Contains(contentType, "application/json") {
+		h.respondJSON(w, http.StatusOK, map[string]interface{}{
+			"rsvp":    result,
+			"message": "RSVP updated successfully",
+		})
+		return
+	}
+	
+	http.Redirect(w, r, fmt.Sprintf("/rsvp/%s/confirmation", token), http.StatusSeeOther)
 }
 
 func (h *RSVPHandler) handleUpdateError(w http.ResponseWriter, err error) {

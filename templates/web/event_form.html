@@ -238,7 +238,7 @@
                             <span class="datetime-trigger-icon">📅</span>
                             <span class="datetime-trigger-text" id="event_datetime_display">
                                 {{if and (not .Event.StartTime.IsZero) .Event.Timezone}}
-                                    {{.Event.StartTime.Format "Jan 2, 2006 at 3:04 PM"}}{{if .Event.EndTime}} - {{.Event.EndTime.Format "3:04 PM"}}{{end}} ({{.Event.Timezone}})
+                                    {{.Event.StartTime.Format "Jan 2, 2006 at 3:04 PM"}}{{if .Event.EndTime}}{{if ne (.Event.StartTime.Format "2006-01-02") (.Event.EndTime.Format "2006-01-02")}} - {{.Event.EndTime.Format "Jan 2, 2006 at 3:04 PM"}}{{else}} - {{.Event.EndTime.Format "3:04 PM"}}{{end}}{{end}} ({{.Event.Timezone}})
                                 {{else}}
                                     Click to select date, time, and timezone
                                 {{end}}
