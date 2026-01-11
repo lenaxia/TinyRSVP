@@ -227,6 +227,10 @@ func (c *Config) setDefaults() {
 	}
 	if c.Token.Secret == "" {
 		c.Token.Secret = generateHMACSecret()
+		fmt.Fprintln(os.Stderr, "WARNING: TOKEN_SECRET not set - generating random secret")
+		fmt.Fprintln(os.Stderr, "WARNING: Invite tokens will become invalid after server restart")
+		fmt.Fprintln(os.Stderr, "WARNING: Set TOKEN_SECRET environment variable to persist tokens")
+		fmt.Fprintf(os.Stderr, "WARNING: Generate with: openssl rand -hex 32\n")
 	}
 }
 
