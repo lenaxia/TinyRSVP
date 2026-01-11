@@ -1,6 +1,6 @@
 {{define "component_textbox"}}
 <div id="{{.ID}}"
-     class="component-textbox component-{{.Position.Mode}}{{if .ClassName}} {{.ClassName}}{{end}}"
+     class="component-textbox component-{{.Position.Mode}}{{if .ClassName}} {{.ClassName}}{{end}}{{if .Animation}} animated{{end}}"
      style="
         {{if .Visible}}display: block;{{else}}display: none;{{end}}
         {{if eq .Position.Mode "absolute"}}
@@ -26,7 +26,25 @@
         {{if .Content.textTransform}}text-transform: {{.Content.textTransform}};{{end}}
         {{if .Content.textShadow}}text-shadow: {{.Content.textShadow}};{{end}}
         {{if .Content.fontStyle}}font-style: {{.Content.fontStyle}};{{end}}
-     ">
+        {{if .Content.gradient}}
+            background: {{.Content.gradient}};
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        {{end}}
+        {{if .Content.stroke}}-webkit-text-stroke: {{.Content.stroke}};{{end}}
+        {{if .Content.wordSpacing}}word-spacing: {{.Content.wordSpacing}};{{end}}
+     "
+     {{if .Animation}}
+     data-animation-type="{{.Animation.Type}}"
+     data-animation-duration="{{.Animation.Duration}}"
+     data-animation-delay="{{.Animation.Delay}}"
+     data-animation-easing="{{.Animation.Easing}}"
+     data-animation-iteration="{{.Animation.Iteration}}"
+     {{if .Animation.IterationCount}}data-animation-count="{{.Animation.IterationCount}}"{{end}}
+     data-animation-direction="{{.Animation.Direction}}"
+     {{end}}
+     >
     {{if .Content.isEvaluated}}{{.Content.evaluatedText}}{{else}}{{.Content.text}}{{end}}
 </div>
 {{end}}

@@ -1,6 +1,6 @@
 {{define "component_image"}}
 <img id="{{.ID}}"
-     class="component-image component-{{.Position.Mode}}{{if .ClassName}} {{.ClassName}}{{end}}"
+     class="component-image component-{{.Position.Mode}}{{if .ClassName}} {{.ClassName}}{{end}}{{if .Animation}} animated{{end}}"
      src="{{.Content.src}}"
      alt="{{.Content.alt}}"
      style="
@@ -22,5 +22,22 @@
         {{if .Content.objectPosition}}object-position: {{.Content.objectPosition}};{{end}}
         {{if .Content.opacity}}opacity: {{.Content.opacity}};{{end}}
         {{if .Content.filter}}filter: {{.Content.filter}};{{end}}
-     ">
+        {{if .Content.transform}}transform: {{.Content.transform}};{{end}}
+        {{if .Content.blendMode}}mix-blend-mode: {{.Content.blendMode}};{{end}}
+        {{if .Content.clipPath}}clip-path: {{.Content.clipPath}};{{end}}
+        {{if .Content.mask}}
+            mask-image: url({{.Content.mask}});
+            -webkit-mask-image: url({{.Content.mask}});
+        {{end}}
+     "
+     {{if .Animation}}
+     data-animation-type="{{.Animation.Type}}"
+     data-animation-duration="{{.Animation.Duration}}"
+     data-animation-delay="{{.Animation.Delay}}"
+     data-animation-easing="{{.Animation.Easing}}"
+     data-animation-iteration="{{.Animation.Iteration}}"
+     {{if .Animation.IterationCount}}data-animation-count="{{.Animation.IterationCount}}"{{end}}
+     data-animation-direction="{{.Animation.Direction}}"
+     {{end}}
+     >
 {{end}}

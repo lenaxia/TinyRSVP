@@ -1,8 +1,16 @@
 {{define "component_container"}}
 <div id="{{.ID}}"
-     class="component-container component-{{.Position.Mode}}{{if .ClassName}} {{.ClassName}}{{end}}"
+     class="component-container component-{{.Position.Mode}}{{if .ClassName}} {{.ClassName}}{{end}}{{if .Animation}} animated{{end}}"
      style="
-        {{if .Visible}}display: {{if .Layout.display}}{{.Layout.display}}{{else}}block{{end}};{{else}}display: none;{{end}}
+        {{if .Visible}}
+            {{if .LayoutMode}}
+                {{if eq .LayoutMode "grid"}}display: grid;{{else if eq .LayoutMode "flexbox"}}display: flex;{{else}}display: {{if .Layout.display}}{{.Layout.display}}{{else}}block{{end}};{{end}}
+            {{else}}
+                display: {{if .Layout.display}}{{.Layout.display}}{{else}}block{{end}};
+            {{end}}
+        {{else}}
+            display: none;
+        {{end}}
         {{if eq .Position.Mode "absolute"}}
             position: absolute;
             {{if .Position.X}}left: {{.Position.X}};{{end}}
@@ -16,6 +24,19 @@
         width: {{.Dimensions.Width}};
         height: {{.Dimensions.Height}};
         z-index: {{.ZIndex}};
+        {{if .GridConfig}}
+            {{if .GridConfig.Columns}}grid-template-columns: {{.GridConfig.Columns}};{{end}}
+            {{if .GridConfig.Rows}}grid-template-rows: {{.GridConfig.Rows}};{{end}}
+            {{if .GridConfig.Gap}}gap: {{.GridConfig.Gap}};{{end}}
+            {{if .GridConfig.AutoFlow}}grid-auto-flow: {{.GridConfig.AutoFlow}};{{end}}
+        {{end}}
+        {{if .FlexConfig}}
+            {{if .FlexConfig.Direction}}flex-direction: {{.FlexConfig.Direction}};{{end}}
+            {{if .FlexConfig.Wrap}}flex-wrap: {{.FlexConfig.Wrap}};{{end}}
+            {{if .FlexConfig.JustifyContent}}justify-content: {{.FlexConfig.JustifyContent}};{{end}}
+            {{if .FlexConfig.AlignItems}}align-items: {{.FlexConfig.AlignItems}};{{end}}
+            {{if .FlexConfig.Gap}}gap: {{.FlexConfig.Gap}};{{end}}
+        {{end}}
         {{if .Layout.flexDirection}}flex-direction: {{.Layout.flexDirection}};{{end}}
         {{if .Layout.alignItems}}align-items: {{.Layout.alignItems}};{{end}}
         {{if .Layout.justifyContent}}justify-content: {{.Layout.justifyContent}};{{end}}
@@ -24,6 +45,16 @@
         {{if .Layout.backgroundColor}}background-color: {{.Layout.backgroundColor}};{{end}}
         {{if .Layout.borderRadius}}border-radius: {{.Layout.borderRadius}};{{end}}
         {{if .Layout.boxShadow}}box-shadow: {{.Layout.boxShadow}};{{end}}
-     ">
+     "
+     {{if .Animation}}
+     data-animation-type="{{.Animation.Type}}"
+     data-animation-duration="{{.Animation.Duration}}"
+     data-animation-delay="{{.Animation.Delay}}"
+     data-animation-easing="{{.Animation.Easing}}"
+     data-animation-iteration="{{.Animation.Iteration}}"
+     {{if .Animation.IterationCount}}data-animation-count="{{.Animation.IterationCount}}"{{end}}
+     data-animation-direction="{{.Animation.Direction}}"
+     {{end}}
+     >
 </div>
 {{end}}
