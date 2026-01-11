@@ -352,6 +352,7 @@ func main() {
 	logger.Info("RSVP templates loaded successfully")
 
 	rsvpSummaryTemplates, err := template.New("rsvp_summary.html").Funcs(funcMap).ParseFiles(
+		"templates/web/partials/base.html",
 		"templates/web/partials/navigation.html",
 		"templates/web/rsvp_summary.html",
 	)
@@ -391,6 +392,7 @@ func main() {
 	eventWebHandlers := handlers.NewEventWebHandlers(eventService, templateService, eventWebTemplates)
 
 	inviteListTemplates, err := template.New("invite_list.html").Funcs(funcMap).ParseFiles(
+		"templates/web/partials/base.html",
 		"templates/web/partials/navigation.html",
 		"templates/web/invite_list.html",
 	)
@@ -416,6 +418,7 @@ func main() {
 	logger.Info("Admin dashboard templates loaded successfully")
 
 	userManagementTemplates, err := template.New("user_management.html").ParseFiles(
+		"templates/web/partials/base.html",
 		"templates/web/partials/navigation.html",
 		"templates/web/user_management.html",
 	)

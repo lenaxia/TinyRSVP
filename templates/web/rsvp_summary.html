@@ -1,230 +1,209 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RSVP Summary - {{if .Event}}{{.Event.Title}}{{else}}Event{{end}} - TinyRSVP</title>
-    <link rel="stylesheet" href="/static/css/variables.css">
-    <link rel="stylesheet" href="/static/css/typography.css">
-    <link rel="stylesheet" href="/static/css/colors.css">
-    <link rel="stylesheet" href="/static/css/spacing.css">
-    <link rel="stylesheet" href="/static/css/grid.css">
-    <link rel="stylesheet" href="/static/css/buttons.css">
-    <link rel="stylesheet" href="/static/css/forms.css">
-    <link rel="stylesheet" href="/static/css/app_navigation.css">
+{{template "base" .}}
+
+{{define "title"}}RSVP Summary - {{if .Event}}{{.Event.Title}}{{else}}Event{{end}} - TinyRSVP{{end}}
+
+{{define "main-class"}}rsvp-summary{{end}}
+
+{{define "css-extra"}}
     <link rel="stylesheet" href="/static/css/rsvp_summary.css">
-    <link rel="stylesheet" href="/static/css/mobile_optimization.css">
-    <link rel="stylesheet" href="/static/css/loading_states.css">
-    <link rel="stylesheet" href="/static/css/error_display.css">
-    <link rel="stylesheet" href="/static/css/keyboard_navigation.css">
-    <link rel="stylesheet" href="/static/css/focus_management.css">
-    <link rel="stylesheet" href="/static/css/theme_toggle.css">
-</head>
-<body>
-    {{template "navigation" .}}
-    <main class="rsvp-summary" role="main" aria-label="Main content" id="main-content">
-        {{if .Error}}
-        <section class="rsvp-summary-error" role="alert">
-            <div class="error-icon">⚠️</div>
-            <h2 class="error-title">Error Loading RSVP Summary</h2>
-            <p class="error-description">{{.Error}}</p>
-            <div class="error-action">
-                <button class="btn btn-primary" onclick="window.location.reload()">Retry</button>
-            </div>
-        </section>
-        {{else if .Loading}}
-        <section class="rsvp-summary-loading loading-state" aria-live="polite" aria-busy="true">
-            <div class="loading-spinner" role="status"></div>
-            <p class="loading-text">Loading RSVP summary...</p>
-        </section>
-        {{else}}
-        <header class="rsvp-summary-header">
-            <div class="rsvp-summary-title-section">
-                <h1 class="rsvp-summary-title">RSVP Summary{{if .Event}} - {{.Event.Title}}{{end}}</h1>
-                <a href="/events/{{.EventID}}" class="btn btn-secondary">Back to Event</a>
-            </div>
-        </header>
+{{end}}
 
-        {{if .Stats}}
-        <section class="rsvp-stats-overview" aria-label="RSVP statistics overview">
-            <div class="stats-grid">
-                <div class="stat-card stat-card-total">
-                    <div class="stat-icon">📊</div>
-                    <div class="stat-content">
-                        <span class="stat-value">{{.Stats.TotalInvites}}</span>
-                        <span class="stat-label">Total Invites</span>
-                    </div>
-                </div>
+{{define "content"}}
+    {{if .Error}}
+    <section class="rsvp-summary-error" role="alert">
+        <div class="error-icon">⚠️</div>
+        <h2 class="error-title">Error Loading RSVP Summary</h2>
+        <p class="error-description">{{.Error}}</p>
+        <div class="error-action">
+            <button class="btn btn-primary" onclick="window.location.reload()">Retry</button>
+        </div>
+    </section>
+    {{else if .Loading}}
+    <section class="rsvp-summary-loading loading-state" aria-live="polite" aria-busy="true">
+        <div class="loading-spinner" role="status"></div>
+        <p class="loading-text">Loading RSVP summary...</p>
+    </section>
+    {{else}}
+    <header class="rsvp-summary-header">
+        <div class="rsvp-summary-title-section">
+            <h1 class="rsvp-summary-title">RSVP Summary{{if .Event}} - {{.Event.Title}}{{end}}</h1>
+            <a href="/events/{{.EventID}}" class="btn btn-secondary">Back to Event</a>
+        </div>
+    </header>
 
-                <div class="stat-card stat-card-yes">
-                    <div class="stat-icon">✓</div>
-                    <div class="stat-content">
-                        <span class="stat-value">{{.Stats.YesCount}}</span>
-                        <span class="stat-label">Yes</span>
-                    </div>
-                </div>
-
-                <div class="stat-card stat-card-no">
-                    <div class="stat-icon">✗</div>
-                    <div class="stat-content">
-                        <span class="stat-value">{{.Stats.NoCount}}</span>
-                        <span class="stat-label">No</span>
-                    </div>
-                </div>
-
-                <div class="stat-card stat-card-maybe">
-                    <div class="stat-icon">?</div>
-                    <div class="stat-content">
-                        <span class="stat-value">{{.Stats.MaybeCount}}</span>
-                        <span class="stat-label">Maybe</span>
-                    </div>
-                </div>
-
-                <div class="stat-card stat-card-pending">
-                    <div class="stat-icon">⏳</div>
-                    <div class="stat-content">
-                        <span class="stat-value">{{.Stats.NoResponse}}</span>
-                        <span class="stat-label">No Response</span>
-                    </div>
-                </div>
-
-                <div class="stat-card stat-card-guests">
-                    <div class="stat-icon">👥</div>
-                    <div class="stat-content">
-                        <span class="stat-value">{{.Stats.TotalGuests}}</span>
-                        <span class="stat-label">Total Guests</span>
-                    </div>
+    {{if .Stats}}
+    <section class="rsvp-stats-overview" aria-label="RSVP statistics overview">
+        <div class="stats-grid">
+            <div class="stat-card stat-card-total">
+                <div class="stat-icon">📊</div>
+                <div class="stat-content">
+                    <span class="stat-value">{{.Stats.TotalInvites}}</span>
+                    <span class="stat-label">Total Invites</span>
                 </div>
             </div>
-        </section>
 
-        <section class="rsvp-response-rate" aria-label="Response rate">
-            <div class="response-rate-card">
-                <h2 class="response-rate-title">Response Rate</h2>
-                <div class="response-rate-visual">
-                    <div class="response-rate-circle">
-                        <svg viewBox="0 0 100 100" class="response-rate-svg">
-                            <circle cx="50" cy="50" r="45" class="response-rate-bg"></circle>
-                            <circle cx="50" cy="50" r="45" class="response-rate-fill" 
-                                    style="stroke-dasharray: {{.ResponseRate}} 100"></circle>
-                        </svg>
-                        <div class="response-rate-text">
-                            <span class="response-rate-percentage">{{printf "%.0f" .ResponseRate}}%</span>
+            <div class="stat-card stat-card-yes">
+                <div class="stat-icon">✓</div>
+                <div class="stat-content">
+                    <span class="stat-value">{{.Stats.YesCount}}</span>
+                    <span class="stat-label">Yes</span>
+                </div>
+            </div>
+
+            <div class="stat-card stat-card-no">
+                <div class="stat-icon">✗</div>
+                <div class="stat-content">
+                    <span class="stat-value">{{.Stats.NoCount}}</span>
+                    <span class="stat-label">No</span>
+                </div>
+            </div>
+
+            <div class="stat-card stat-card-maybe">
+                <div class="stat-icon">?</div>
+                <div class="stat-content">
+                    <span class="stat-value">{{.Stats.MaybeCount}}</span>
+                    <span class="stat-label">Maybe</span>
+                </div>
+            </div>
+
+            <div class="stat-card stat-card-pending">
+                <div class="stat-icon">⏳</div>
+                <div class="stat-content">
+                    <span class="stat-value">{{.Stats.NoResponse}}</span>
+                    <span class="stat-label">No Response</span>
+                </div>
+            </div>
+
+            <div class="stat-card stat-card-guests">
+                <div class="stat-icon">👥</div>
+                <div class="stat-content">
+                    <span class="stat-value">{{.Stats.TotalGuests}}</span>
+                    <span class="stat-label">Total Guests</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="rsvp-response-rate" aria-label="Response rate">
+        <div class="response-rate-card">
+            <h2 class="response-rate-title">Response Rate</h2>
+            <div class="response-rate-visual">
+                <div class="response-rate-circle">
+                    <svg viewBox="0 0 100 100" class="response-rate-svg">
+                        <circle cx="50" cy="50" r="45" class="response-rate-bg"></circle>
+                        <circle cx="50" cy="50" r="45" class="response-rate-fill" 
+                                style="stroke-dasharray: {{.ResponseRate}} 100"></circle>
+                    </svg>
+                    <div class="response-rate-text">
+                        <span class="response-rate-percentage">{{printf "%.0f" .ResponseRate}}%</span>
+                    </div>
+                </div>
+            </div>
+            <p class="response-rate-description">
+                {{if gt .Stats.TotalInvites 0}}
+                {{sub .Stats.TotalInvites .Stats.NoResponse}} of {{.Stats.TotalInvites}} invites have responded
+                {{else}}
+                No invites sent yet
+                {{end}}
+            </p>
+        </div>
+    </section>
+
+    <section class="rsvp-actions" aria-label="Actions">
+        <div class="rsvp-actions-bar">
+            <div class="filter-group">
+                <label for="response-filter" class="filter-label">Filter by Response</label>
+                <select id="response-filter" class="form-select filter-select" name="filter" aria-label="Filter by response type">
+                    <option value="all">All Responses</option>
+                    <option value="yes">Yes ({{.Stats.YesCount}})</option>
+                    <option value="no">No ({{.Stats.NoCount}})</option>
+                    <option value="maybe">Maybe ({{.Stats.MaybeCount}})</option>
+                    <option value="pending">No Response ({{.Stats.NoResponse}})</option>
+                </select>
+            </div>
+            <div class="rsvp-actions-right">
+                <button class="btn btn-secondary export-btn" aria-label="Export RSVP data">
+                    <span class="btn-icon">📥</span>
+                    Export
+                </button>
+                <a href="/events/{{.EventID}}/invites" class="btn btn-primary">View Invites</a>
+            </div>
+        </div>
+    </section>
+
+    {{if .QuestionStats}}
+    <section class="rsvp-questions" aria-label="Preference question responses">
+        <h2 class="section-title">Preference Questions</h2>
+        <div class="questions-grid">
+            {{range $questionID, $stat := .QuestionStats}}
+            <div class="question-card">
+                <h3 class="question-title">{{$stat.Question.QuestionText}}</h3>
+                <div class="question-responses">
+                    {{range $answer, $count := $stat.Answers}}
+                    <div class="response-item">
+                        <div class="response-label">{{$answer}}</div>
+                        <div class="response-bar-container">
+                            <div class="response-bar" style="width: {{if gt $count 0}}{{mul (div $count (add $count 1)) 100}}{{else}}0{{end}}%"></div>
                         </div>
+                        <div class="response-count">{{$count}}</div>
                     </div>
-                </div>
-                <p class="response-rate-description">
-                    {{if gt .Stats.TotalInvites 0}}
-                    {{sub .Stats.TotalInvites .Stats.NoResponse}} of {{.Stats.TotalInvites}} invites have responded
-                    {{else}}
-                    No invites sent yet
                     {{end}}
-                </p>
-            </div>
-        </section>
-
-        <section class="rsvp-actions" aria-label="Actions">
-            <div class="rsvp-actions-bar">
-                <div class="filter-group">
-                    <label for="response-filter" class="filter-label">Filter by Response</label>
-                    <select id="response-filter" class="form-select filter-select" name="filter" aria-label="Filter by response type">
-                        <option value="all">All Responses</option>
-                        <option value="yes">Yes ({{.Stats.YesCount}})</option>
-                        <option value="no">No ({{.Stats.NoCount}})</option>
-                        <option value="maybe">Maybe ({{.Stats.MaybeCount}})</option>
-                        <option value="pending">No Response ({{.Stats.NoResponse}})</option>
-                    </select>
-                </div>
-                <div class="rsvp-actions-right">
-                    <button class="btn btn-secondary export-btn" aria-label="Export RSVP data">
-                        <span class="btn-icon">📥</span>
-                        Export
-                    </button>
-                    <a href="/events/{{.EventID}}/invites" class="btn btn-primary">View Invites</a>
                 </div>
             </div>
-        </section>
+            {{end}}
+        </div>
+    </section>
+    {{end}}
 
-        {{if .QuestionStats}}
-        <section class="rsvp-questions" aria-label="Preference question responses">
-            <h2 class="section-title">Preference Questions</h2>
-            <div class="questions-grid">
-                {{range $questionID, $stat := .QuestionStats}}
-                <div class="question-card">
-                    <h3 class="question-title">{{$stat.Question.QuestionText}}</h3>
-                    <div class="question-responses">
-                        {{range $answer, $count := $stat.Answers}}
-                        <div class="response-item">
-                            <div class="response-label">{{$answer}}</div>
-                            <div class="response-bar-container">
-                                <div class="response-bar" style="width: {{if gt $count 0}}{{mul (div $count (add $count 1)) 100}}{{else}}0{{end}}%"></div>
-                            </div>
-                            <div class="response-count">{{$count}}</div>
-                        </div>
-                        {{end}}
+    <section class="rsvp-chart" aria-label="Visual breakdown">
+        <h2 class="section-title">Response Breakdown</h2>
+        <div class="chart-container">
+            <div class="chart-bars">
+                {{if gt .Stats.TotalInvites 0}}
+                <div class="chart-bar-group">
+                    <div class="chart-bar chart-bar-yes" 
+                         style="height: {{if gt .Stats.YesCount 0}}{{mul (div (mul .Stats.YesCount 100) .Stats.TotalInvites) 1}}{{else}}0{{end}}%"
+                         aria-label="Yes responses: {{.Stats.YesCount}}">
+                        <span class="chart-bar-value">{{.Stats.YesCount}}</span>
                     </div>
+                    <span class="chart-bar-label">Yes</span>
+                </div>
+                <div class="chart-bar-group">
+                    <div class="chart-bar chart-bar-no" 
+                         style="height: {{if gt .Stats.NoCount 0}}{{mul (div (mul .Stats.NoCount 100) .Stats.TotalInvites) 1}}{{else}}0{{end}}%"
+                         aria-label="No responses: {{.Stats.NoCount}}">
+                        <span class="chart-bar-value">{{.Stats.NoCount}}</span>
+                    </div>
+                    <span class="chart-bar-label">No</span>
+                </div>
+                <div class="chart-bar-group">
+                    <div class="chart-bar chart-bar-maybe" 
+                         style="height: {{if gt .Stats.MaybeCount 0}}{{mul (div (mul .Stats.MaybeCount 100) .Stats.TotalInvites) 1}}{{else}}0{{end}}%"
+                         aria-label="Maybe responses: {{.Stats.MaybeCount}}">
+                        <span class="chart-bar-value">{{.Stats.MaybeCount}}</span>
+                    </div>
+                    <span class="chart-bar-label">Maybe</span>
+                </div>
+                <div class="chart-bar-group">
+                    <div class="chart-bar chart-bar-pending" 
+                         style="height: {{if gt .Stats.NoResponse 0}}{{mul (div (mul .Stats.NoResponse 100) .Stats.TotalInvites) 1}}{{else}}0{{end}}%"
+                         aria-label="No response: {{.Stats.NoResponse}}">
+                        <span class="chart-bar-value">{{.Stats.NoResponse}}</span>
+                    </div>
+                    <span class="chart-bar-label">Pending</span>
+                </div>
+                {{else}}
+                <div class="chart-empty">
+                    <p>No RSVP data available yet</p>
                 </div>
                 {{end}}
             </div>
-        </section>
-        {{end}}
+        </div>
+    </section>
+    {{end}}
+    {{end}}
+{{end}}
 
-        <section class="rsvp-chart" aria-label="Visual breakdown">
-            <h2 class="section-title">Response Breakdown</h2>
-            <div class="chart-container">
-                <div class="chart-bars">
-                    {{if gt .Stats.TotalInvites 0}}
-                    <div class="chart-bar-group">
-                        <div class="chart-bar chart-bar-yes" 
-                             style="height: {{if gt .Stats.YesCount 0}}{{mul (div (mul .Stats.YesCount 100) .Stats.TotalInvites) 1}}{{else}}0{{end}}%"
-                             aria-label="Yes responses: {{.Stats.YesCount}}">
-                            <span class="chart-bar-value">{{.Stats.YesCount}}</span>
-                        </div>
-                        <span class="chart-bar-label">Yes</span>
-                    </div>
-                    <div class="chart-bar-group">
-                        <div class="chart-bar chart-bar-no" 
-                             style="height: {{if gt .Stats.NoCount 0}}{{mul (div (mul .Stats.NoCount 100) .Stats.TotalInvites) 1}}{{else}}0{{end}}%"
-                             aria-label="No responses: {{.Stats.NoCount}}">
-                            <span class="chart-bar-value">{{.Stats.NoCount}}</span>
-                        </div>
-                        <span class="chart-bar-label">No</span>
-                    </div>
-                    <div class="chart-bar-group">
-                        <div class="chart-bar chart-bar-maybe" 
-                             style="height: {{if gt .Stats.MaybeCount 0}}{{mul (div (mul .Stats.MaybeCount 100) .Stats.TotalInvites) 1}}{{else}}0{{end}}%"
-                             aria-label="Maybe responses: {{.Stats.MaybeCount}}">
-                            <span class="chart-bar-value">{{.Stats.MaybeCount}}</span>
-                        </div>
-                        <span class="chart-bar-label">Maybe</span>
-                    </div>
-                    <div class="chart-bar-group">
-                        <div class="chart-bar chart-bar-pending" 
-                             style="height: {{if gt .Stats.NoResponse 0}}{{mul (div (mul .Stats.NoResponse 100) .Stats.TotalInvites) 1}}{{else}}0{{end}}%"
-                             aria-label="No response: {{.Stats.NoResponse}}">
-                            <span class="chart-bar-value">{{.Stats.NoResponse}}</span>
-                        </div>
-                        <span class="chart-bar-label">Pending</span>
-                    </div>
-                    {{else}}
-                    <div class="chart-empty">
-                        <p>No RSVP data available yet</p>
-                    </div>
-                    {{end}}
-                </div>
-            </div>
-        </section>
-        {{end}}
-        {{end}}
-    </main>
-    <script src="/static/js/navigation_toggle.js"></script>
-    <script src="/static/js/loading_states.js"></script>
-    <script src="/static/js/navigation_toggle.js"></script>
-    <script src="/static/js/keyboard_navigation.js"></script>
-    <script src="/static/js/navigation_toggle.js"></script>
+{{define "js-extra"}}
     <script src="/static/js/screen_reader.js"></script>
-    <script src="/static/js/navigation_toggle.js"></script>
-    <script src="/static/js/focus_management.js"></script>
-    <script src="/static/js/theme_controller.js"></script>
-</body>
-</html>
+{{end}}
