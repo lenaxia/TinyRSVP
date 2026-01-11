@@ -38,6 +38,10 @@ Epic 10 is reserved for technical debt, improvements, and issues that don't fit 
 - [10_STORY_10_admin_settings_page.md](10_STORY_10_admin_settings_page.md) - Admin settings page
 - [10_STORY_11_admin_metrics_dashboard.md](10_STORY_11_admin_metrics_dashboard.md) - Admin metrics dashboard
 - [10_STORY_12_theme_switching.md](10_STORY_12_theme_switching.md) - Light/dark theme switching with real-time toggle
+- [10_STORY_13_admin_theme_integration.md](10_STORY_13_admin_theme_integration.md) - Admin template theme integration (identified in Epic 11 validation)
+- [10_STORY_14_rsvp_summary_template_fix.md](10_STORY_14_rsvp_summary_template_fix.md) - RSVP summary template structure fix (identified in Epic 11 validation)
+- [10_STORY_15_auth_test_expectations.md](10_STORY_15_auth_test_expectations.md) - Auth test expectations fix (identified in Epic 11 validation)
+- [10_STORY_16_auth_test_compilation.md](10_STORY_16_auth_test_compilation.md) - Auth test compilation fix (identified in Epic 11 validation)
 
 ### Analysis Documents
 - [10_ANALYSIS_image_templates_wysiwyg.md](10_ANALYSIS_image_templates_wysiwyg.md) - Image templates & WYSIWYG editor analysis
