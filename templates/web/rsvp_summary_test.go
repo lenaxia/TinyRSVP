@@ -12,6 +12,7 @@ import (
 )
 
 type RSVPSummaryData struct {
+	ActivePage     string
 	Event          *models.Event
 	Stats          *repositories.RSVPStats
 	RSVPs          []*models.RSVP
@@ -40,7 +41,11 @@ func parseRSVPSummaryTemplate() (*template.Template, error) {
 		},
 	}
 	
-	return template.New("rsvp_summary.html").Funcs(funcMap).ParseFiles("rsvp_summary.html")
+	return template.New("rsvp_summary.html").Funcs(funcMap).ParseFiles(
+		"partials/base.html",
+		"partials/navigation.html",
+		"rsvp_summary.html",
+	)
 }
 
 func TestRSVPSummaryTemplate_ValidData(t *testing.T) {
@@ -68,6 +73,7 @@ func TestRSVPSummaryTemplate_ValidData(t *testing.T) {
 	}
 
 	data := &RSVPSummaryData{
+		ActivePage:   "events",
 		Event:        event,
 		Stats:        stats,
 		ResponseRate: 90.0,
@@ -75,7 +81,7 @@ func TestRSVPSummaryTemplate_ValidData(t *testing.T) {
 	}
 
 	var buf bytes.Buffer
-	err = tmpl.Execute(&buf, data)
+	err = tmpl.ExecuteTemplate(&buf, "base", data)
 	if err != nil {
 		t.Fatalf("Failed to execute template: %v", err)
 	}
@@ -124,6 +130,7 @@ func TestRSVPSummaryTemplate_EmptyStats(t *testing.T) {
 	}
 
 	data := &RSVPSummaryData{
+		ActivePage:   "events",
 		Event:        event,
 		Stats:        stats,
 		ResponseRate: 0.0,
@@ -131,7 +138,7 @@ func TestRSVPSummaryTemplate_EmptyStats(t *testing.T) {
 	}
 
 	var buf bytes.Buffer
-	err = tmpl.Execute(&buf, data)
+	err = tmpl.ExecuteTemplate(&buf, "base", data)
 	if err != nil {
 		t.Fatalf("Failed to execute template: %v", err)
 	}
@@ -154,11 +161,12 @@ func TestRSVPSummaryTemplate_ErrorState(t *testing.T) {
 	}
 
 	data := &RSVPSummaryData{
+		ActivePage:   "events",
 		Error: "Failed to load RSVP data",
 	}
 
 	var buf bytes.Buffer
-	err = tmpl.Execute(&buf, data)
+	err = tmpl.ExecuteTemplate(&buf, "base", data)
 	if err != nil {
 		t.Fatalf("Failed to execute template: %v", err)
 	}
@@ -177,11 +185,12 @@ func TestRSVPSummaryTemplate_LoadingState(t *testing.T) {
 	}
 
 	data := &RSVPSummaryData{
+		ActivePage:   "events",
 		Loading: true,
 	}
 
 	var buf bytes.Buffer
-	err = tmpl.Execute(&buf, data)
+	err = tmpl.ExecuteTemplate(&buf, "base", data)
 	if err != nil {
 		t.Fatalf("Failed to execute template: %v", err)
 	}
@@ -236,6 +245,7 @@ func TestRSVPSummaryTemplate_WithQuestionStats(t *testing.T) {
 	}
 
 	data := &RSVPSummaryData{
+		ActivePage:   "events",
 		Event:         event,
 		Stats:         stats,
 		ResponseRate:  90.0,
@@ -244,7 +254,7 @@ func TestRSVPSummaryTemplate_WithQuestionStats(t *testing.T) {
 	}
 
 	var buf bytes.Buffer
-	err = tmpl.Execute(&buf, data)
+	err = tmpl.ExecuteTemplate(&buf, "base", data)
 	if err != nil {
 		t.Fatalf("Failed to execute template: %v", err)
 	}
@@ -281,6 +291,7 @@ func TestRSVPSummaryTemplate_ResponseRateCalculation(t *testing.T) {
 	}
 
 	data := &RSVPSummaryData{
+		ActivePage:   "events",
 		Event:        event,
 		Stats:        stats,
 		ResponseRate: 90.0,
@@ -288,7 +299,7 @@ func TestRSVPSummaryTemplate_ResponseRateCalculation(t *testing.T) {
 	}
 
 	var buf bytes.Buffer
-	err = tmpl.Execute(&buf, data)
+	err = tmpl.ExecuteTemplate(&buf, "base", data)
 	if err != nil {
 		t.Fatalf("Failed to execute template: %v", err)
 	}
@@ -325,6 +336,7 @@ func TestRSVPSummaryTemplate_ExportButton(t *testing.T) {
 	}
 
 	data := &RSVPSummaryData{
+		ActivePage:   "events",
 		Event:        event,
 		Stats:        stats,
 		ResponseRate: 90.0,
@@ -332,7 +344,7 @@ func TestRSVPSummaryTemplate_ExportButton(t *testing.T) {
 	}
 
 	var buf bytes.Buffer
-	err = tmpl.Execute(&buf, data)
+	err = tmpl.ExecuteTemplate(&buf, "base", data)
 	if err != nil {
 		t.Fatalf("Failed to execute template: %v", err)
 	}
@@ -369,6 +381,7 @@ func TestRSVPSummaryTemplate_FilterByResponseType(t *testing.T) {
 	}
 
 	data := &RSVPSummaryData{
+		ActivePage:   "events",
 		Event:        event,
 		Stats:        stats,
 		ResponseRate: 90.0,
@@ -376,7 +389,7 @@ func TestRSVPSummaryTemplate_FilterByResponseType(t *testing.T) {
 	}
 
 	var buf bytes.Buffer
-	err = tmpl.Execute(&buf, data)
+	err = tmpl.ExecuteTemplate(&buf, "base", data)
 	if err != nil {
 		t.Fatalf("Failed to execute template: %v", err)
 	}

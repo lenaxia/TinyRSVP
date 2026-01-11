@@ -24,7 +24,11 @@ func getTemplateWithFuncs() (*template.Template, error) {
 		},
 	}
 	
-	return template.New("rsvp_summary.html").Funcs(funcMap).ParseFiles("rsvp_summary.html")
+	return template.New("rsvp_summary.html").Funcs(funcMap).ParseFiles(
+		"partials/base.html",
+		"partials/navigation.html",
+		"rsvp_summary.html",
+	)
 }
 
 func TestRSVPSummaryTemplateFileExists(t *testing.T) {
@@ -34,12 +38,44 @@ func TestRSVPSummaryTemplateFileExists(t *testing.T) {
 }
 
 func TestRSVPSummaryTemplateValidHTML(t *testing.T) {
-	content, err := os.ReadFile("rsvp_summary.html")
+	tmpl, err := getTemplateWithFuncs()
 	if err != nil {
-		t.Fatalf("Failed to read rsvp_summary.html: %v", err)
+		t.Fatalf("Failed to parse template: %v", err)
 	}
 
-	htmlContent := string(content)
+	startTime := time.Now().Add(24 * time.Hour)
+	event := &models.Event{
+		ID:        1,
+		Title:     "Test Event",
+		StartTime: startTime,
+		Timezone:  "America/Los_Angeles",
+		Status:    models.EventStatusPublished,
+	}
+
+	stats := &repositories.RSVPStats{
+		TotalInvites: 50,
+		YesCount:     30,
+		NoCount:      10,
+		MaybeCount:   5,
+		NoResponse:   5,
+		TotalGuests:  40,
+	}
+
+	data := &RSVPSummaryData{
+		ActivePage:   "events",
+		Event:        event,
+		Stats:        stats,
+		ResponseRate: 90.0,
+		EventID:      1,
+	}
+
+	var buf strings.Builder
+	err = tmpl.ExecuteTemplate(&buf, "base", data)
+	if err != nil {
+		t.Fatalf("Failed to execute template: %v", err)
+	}
+
+	htmlContent := buf.String()
 
 	if !strings.Contains(htmlContent, "<!DOCTYPE html>") {
 		t.Error("Missing DOCTYPE declaration")
@@ -63,12 +99,44 @@ func TestRSVPSummaryTemplateValidHTML(t *testing.T) {
 }
 
 func TestRSVPSummaryTemplateMetaTags(t *testing.T) {
-	content, err := os.ReadFile("rsvp_summary.html")
+	tmpl, err := getTemplateWithFuncs()
 	if err != nil {
-		t.Fatalf("Failed to read rsvp_summary.html: %v", err)
+		t.Fatalf("Failed to parse template: %v", err)
 	}
 
-	htmlContent := string(content)
+	startTime := time.Now().Add(24 * time.Hour)
+	event := &models.Event{
+		ID:        1,
+		Title:     "Test Event",
+		StartTime: startTime,
+		Timezone:  "America/Los_Angeles",
+		Status:    models.EventStatusPublished,
+	}
+
+	stats := &repositories.RSVPStats{
+		TotalInvites: 50,
+		YesCount:     30,
+		NoCount:      10,
+		MaybeCount:   5,
+		NoResponse:   5,
+		TotalGuests:  40,
+	}
+
+	data := &RSVPSummaryData{
+		ActivePage:   "events",
+		Event:        event,
+		Stats:        stats,
+		ResponseRate: 90.0,
+		EventID:      1,
+	}
+
+	var buf strings.Builder
+	err = tmpl.ExecuteTemplate(&buf, "base", data)
+	if err != nil {
+		t.Fatalf("Failed to execute template: %v", err)
+	}
+
+	htmlContent := buf.String()
 
 	requiredMeta := []string{
 		`<meta charset="UTF-8">`,
@@ -83,12 +151,44 @@ func TestRSVPSummaryTemplateMetaTags(t *testing.T) {
 }
 
 func TestRSVPSummaryTemplateIncludesCSS(t *testing.T) {
-	content, err := os.ReadFile("rsvp_summary.html")
+	tmpl, err := getTemplateWithFuncs()
 	if err != nil {
-		t.Fatalf("Failed to read rsvp_summary.html: %v", err)
+		t.Fatalf("Failed to parse template: %v", err)
 	}
 
-	htmlContent := string(content)
+	startTime := time.Now().Add(24 * time.Hour)
+	event := &models.Event{
+		ID:        1,
+		Title:     "Test Event",
+		StartTime: startTime,
+		Timezone:  "America/Los_Angeles",
+		Status:    models.EventStatusPublished,
+	}
+
+	stats := &repositories.RSVPStats{
+		TotalInvites: 50,
+		YesCount:     30,
+		NoCount:      10,
+		MaybeCount:   5,
+		NoResponse:   5,
+		TotalGuests:  40,
+	}
+
+	data := &RSVPSummaryData{
+		ActivePage:   "events",
+		Event:        event,
+		Stats:        stats,
+		ResponseRate: 90.0,
+		EventID:      1,
+	}
+
+	var buf strings.Builder
+	err = tmpl.ExecuteTemplate(&buf, "base", data)
+	if err != nil {
+		t.Fatalf("Failed to execute template: %v", err)
+	}
+
+	htmlContent := buf.String()
 
 	requiredCSS := []string{
 		"/static/css/variables.css",
@@ -97,8 +197,6 @@ func TestRSVPSummaryTemplateIncludesCSS(t *testing.T) {
 		"/static/css/spacing.css",
 		"/static/css/grid.css",
 		"/static/css/buttons.css",
-		"/static/css/forms.css",
-		"/static/css/navigation.css",
 		"/static/css/rsvp_summary.css",
 	}
 
@@ -145,6 +243,7 @@ func TestRSVPSummaryTemplateRendersWithData(t *testing.T) {
 	}
 
 	data := &RSVPSummaryData{
+		ActivePage:   "events",
 		Event:        event,
 		Stats:        stats,
 		ResponseRate: 90.0,
@@ -152,7 +251,7 @@ func TestRSVPSummaryTemplateRendersWithData(t *testing.T) {
 	}
 
 	var buf strings.Builder
-	err = tmpl.Execute(&buf, data)
+	err = tmpl.ExecuteTemplate(&buf, "base", data)
 	if err != nil {
 		t.Fatalf("Failed to execute template: %v", err)
 	}
@@ -173,12 +272,44 @@ func TestRSVPSummaryTemplateRendersWithData(t *testing.T) {
 }
 
 func TestRSVPSummaryTemplateAccessibility(t *testing.T) {
-	content, err := os.ReadFile("rsvp_summary.html")
+	tmpl, err := getTemplateWithFuncs()
 	if err != nil {
-		t.Fatalf("Failed to read rsvp_summary.html: %v", err)
+		t.Fatalf("Failed to parse template: %v", err)
 	}
 
-	htmlContent := string(content)
+	startTime := time.Now().Add(24 * time.Hour)
+	event := &models.Event{
+		ID:        1,
+		Title:     "Test Event",
+		StartTime: startTime,
+		Timezone:  "America/Los_Angeles",
+		Status:    models.EventStatusPublished,
+	}
+
+	stats := &repositories.RSVPStats{
+		TotalInvites: 50,
+		YesCount:     30,
+		NoCount:      10,
+		MaybeCount:   5,
+		NoResponse:   5,
+		TotalGuests:  40,
+	}
+
+	data := &RSVPSummaryData{
+		ActivePage:   "events",
+		Event:        event,
+		Stats:        stats,
+		ResponseRate: 90.0,
+		EventID:      1,
+	}
+
+	var buf strings.Builder
+	err = tmpl.ExecuteTemplate(&buf, "base", data)
+	if err != nil {
+		t.Fatalf("Failed to execute template: %v", err)
+	}
+
+	htmlContent := buf.String()
 
 	accessibilityFeatures := []string{
 		`lang="en"`,
@@ -198,12 +329,62 @@ func TestRSVPSummaryTemplateAccessibility(t *testing.T) {
 }
 
 func TestRSVPSummaryTemplateHasSemanticHTML(t *testing.T) {
-	content, err := os.ReadFile("rsvp_summary.html")
+	tmpl, err := getTemplateWithFuncs()
 	if err != nil {
-		t.Fatalf("Failed to read rsvp_summary.html: %v", err)
+		t.Fatalf("Failed to parse template: %v", err)
 	}
 
-	htmlContent := string(content)
+	startTime := time.Now().Add(24 * time.Hour)
+	event := &models.Event{
+		ID:        1,
+		Title:     "Test Event",
+		StartTime: startTime,
+		Timezone:  "America/Los_Angeles",
+		Status:    models.EventStatusPublished,
+	}
+
+	stats := &repositories.RSVPStats{
+		TotalInvites: 50,
+		YesCount:     30,
+		NoCount:      10,
+		MaybeCount:   5,
+		NoResponse:   5,
+		TotalGuests:  40,
+	}
+
+	question := &models.PreferenceQuestion{
+		ID:           1,
+		EventID:      1,
+		QuestionText: "Dietary restrictions?",
+		QuestionType: models.QuestionTypeSingleChoice,
+	}
+
+	questionStats := map[int64]*QuestionStat{
+		1: {
+			Question: question,
+			Answers: map[string]int{
+				"Vegetarian": 15,
+				"None":       25,
+			},
+		},
+	}
+
+	data := &RSVPSummaryData{
+		ActivePage:    "events",
+		Event:         event,
+		Stats:         stats,
+		ResponseRate:  90.0,
+		EventID:       1,
+		QuestionStats: questionStats,
+	}
+
+	var buf strings.Builder
+	err = tmpl.ExecuteTemplate(&buf, "base", data)
+	if err != nil {
+		t.Fatalf("Failed to execute template: %v", err)
+	}
+
+	htmlContent := buf.String()
 
 	semanticTags := []string{
 		"<main",
@@ -327,7 +508,7 @@ func TestRSVPSummaryTemplateConditionalRendering(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			var buf strings.Builder
-			err := tmpl.Execute(&buf, tt.data)
+			err := tmpl.ExecuteTemplate(&buf, "base", tt.data)
 			if err != nil {
 				t.Fatalf("Failed to execute template: %v", err)
 			}
@@ -496,6 +677,7 @@ func TestRSVPSummaryTemplateRendersQuestionStats(t *testing.T) {
 	}
 
 	data := &RSVPSummaryData{
+		ActivePage:   "events",
 		Event:         event,
 		Stats:         stats,
 		ResponseRate:  90.0,
@@ -569,6 +751,7 @@ func TestRSVPSummaryTemplateHandlesZeroStats(t *testing.T) {
 	}
 
 	data := &RSVPSummaryData{
+		ActivePage:   "events",
 		Event:        event,
 		Stats:        stats,
 		ResponseRate: 0.0,
