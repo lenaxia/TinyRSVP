@@ -1,0 +1,166 @@
+[data-event-theme="corporate-professional"] {
+    --theme-primary: #2563eb;
+    --theme-secondary: #64748b;
+    --theme-accent: #0ea5e9;
+    --theme-font-heading: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+    --theme-font-body: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+[data-theme="dark"][data-event-theme="corporate-professional"] {
+    --theme-primary: #3b82f6;
+    --theme-secondary: #94a3b8;
+    --theme-accent: #06b6d4;
+}
+
+[data-event-theme="corporate-professional"] .rsvp-container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: var(--spacing-4);
+}
+
+[data-event-theme="corporate-professional"] .rsvp-card {
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    box-shadow: var(--shadow-lg);
+}
+
+[data-event-theme="corporate-professional"] .rsvp-card-header {
+    position: relative;
+    height: 300px;
+    overflow: hidden;
+    background: linear-gradient(135deg, rgba(37, 99, 235, 0.05) 0%, rgba(14, 165, 233, 0.05) 100%);
+}
+
+[data-event-theme="corporate-professional"] .theme-header-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+[data-event-theme="corporate-professional"] .rsvp-card-content {
+    padding: var(--spacing-8);
+}
+
+[data-event-theme="corporate-professional"] .event-title {
+    font-family: var(--theme-font-heading);
+    font-size: var(--font-size-4xl);
+    font-weight: var(--font-weight-bold);
+    color: var(--theme-primary);
+    margin-bottom: var(--spacing-6);
+    line-height: var(--line-height-tight);
+}
+
+[data-event-theme="corporate-professional"] .event-details {
+    font-family: var(--theme-font-body);
+    margin-bottom: var(--spacing-8);
+}
+
+[data-event-theme="corporate-professional"] .event-date,
+[data-event-theme="corporate-professional"] .event-location {
+    font-size: var(--font-size-lg);
+    color: var(--color-text-secondary);
+    margin-bottom: var(--spacing-3);
+}
+
+[data-event-theme="corporate-professional"] .event-date strong,
+[data-event-theme="corporate-professional"] .event-location strong {
+    color: var(--theme-primary);
+    font-weight: var(--font-weight-semibold);
+}
+
+[data-event-theme="corporate-professional"] .event-description {
+    margin-top: var(--spacing-4);
+    padding-top: var(--spacing-4);
+    border-top: 1px solid var(--color-border);
+    color: var(--color-text-primary);
+    line-height: var(--line-height-relaxed);
+}
+
+[data-event-theme="corporate-professional"] .rsvp-form {
+    margin-top: var(--spacing-8);
+    padding-top: var(--spacing-6);
+    border-top: 2px solid var(--theme-primary);
+}
+
+[data-event-theme="corporate-professional"] .form-group {
+    margin-bottom: var(--spacing-5);
+}
+
+[data-event-theme="corporate-professional"] .form-group label {
+    display: block;
+    font-family: var(--theme-font-body);
+    font-weight: var(--font-weight-semibold);
+    color: var(--theme-secondary);
+    margin-bottom: var(--spacing-2);
+}
+
+[data-event-theme="corporate-professional"] .form-group input,
+[data-event-theme="corporate-professional"] .form-group select,
+[data-event-theme="corporate-professional"] .form-group textarea {
+    width: 100%;
+    padding: var(--spacing-3);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    font-family: var(--theme-font-body);
+    background: var(--color-background);
+    color: var(--color-text-primary);
+    transition: all var(--transition-fast);
+}
+
+[data-event-theme="corporate-professional"] .form-group input:focus,
+[data-event-theme="corporate-professional"] .form-group select:focus,
+[data-event-theme="corporate-professional"] .form-group textarea:focus {
+    outline: none;
+    border-color: var(--theme-primary);
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+[data-event-theme="corporate-professional"] .btn-primary {
+    width: 100%;
+    padding: var(--spacing-4);
+    background: var(--theme-primary);
+    color: white;
+    border: none;
+    border-radius: var(--radius-md);
+    font-family: var(--theme-font-body);
+    font-size: var(--font-size-lg);
+    font-weight: var(--font-weight-semibold);
+    cursor: pointer;
+    transition: all var(--transition-base);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+[data-event-theme="corporate-professional"] .btn-primary:hover {
+    background: var(--theme-accent);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-lg);
+}
+
+[data-event-theme="corporate-professional"] .btn-primary:active {
+    transform: translateY(0);
+}
+
+[data-event-theme="corporate-professional"] .required {
+    color: var(--theme-accent);
+}
+
+@media (max-width: 767px) {
+    [data-event-theme="corporate-professional"] .rsvp-container {
+        padding: var(--spacing-2);
+    }
+    
+    [data-event-theme="corporate-professional"] .rsvp-card-header {
+        height: 200px;
+    }
+    
+    [data-event-theme="corporate-professional"] .rsvp-card-content {
+        padding: var(--spacing-6);
+    }
+    
+    [data-event-theme="corporate-professional"] .event-title {
+        font-size: var(--font-size-2xl);
+    }
+}

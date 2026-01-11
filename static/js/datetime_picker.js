@@ -215,6 +215,7 @@
             document.addEventListener('keydown', (e) => {
                 if (e.key === 'Escape') {
                     if (this.timezonePanel && this.timezonePanel.classList.contains('open')) {
+                        e.stopPropagation();
                         this.closeTimezonePanel();
                     } else if (this.panel.classList.contains('open')) {
                         this.closePanel();

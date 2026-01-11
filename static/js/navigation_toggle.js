@@ -66,6 +66,15 @@
 
     overlay.addEventListener('click', closeMenu);
 
+    const navLinks = document.querySelectorAll('.app-nav-link');
+    navLinks.forEach(link => {
+        link.addEventListener('click', function() {
+            if (window.innerWidth < 768) {
+                closeMenu();
+            }
+        });
+    });
+
     function handleResize() {
         if (window.innerWidth >= 768) {
             menu.classList.remove('open');

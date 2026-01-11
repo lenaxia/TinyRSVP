@@ -1,0 +1,167 @@
+[data-event-theme="birthday-celebration"] {
+    --theme-primary: #ff6b9d;
+    --theme-secondary: #ffd93d;
+    --theme-accent: #6bcf7f;
+    --theme-font-heading: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+    --theme-font-body: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+[data-theme="dark"][data-event-theme="birthday-celebration"] {
+    --theme-primary: #ff6b9d;
+    --theme-secondary: #ffd93d;
+    --theme-accent: #6bcf7f;
+}
+
+[data-event-theme="birthday-celebration"] .rsvp-container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: var(--spacing-4);
+}
+
+[data-event-theme="birthday-celebration"] .rsvp-card {
+    background: var(--color-surface);
+    border: 3px solid var(--theme-primary);
+    border-radius: var(--radius-2xl);
+    overflow: hidden;
+    box-shadow: var(--shadow-xl);
+}
+
+[data-event-theme="birthday-celebration"] .rsvp-card-header {
+    position: relative;
+    height: 300px;
+    overflow: hidden;
+    background: linear-gradient(135deg, rgba(255, 107, 157, 0.1) 0%, rgba(255, 217, 61, 0.1) 50%, rgba(107, 207, 127, 0.1) 100%);
+}
+
+[data-event-theme="birthday-celebration"] .theme-header-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+[data-event-theme="birthday-celebration"] .rsvp-card-content {
+    padding: var(--spacing-8);
+}
+
+[data-event-theme="birthday-celebration"] .event-title {
+    font-family: var(--theme-font-heading);
+    font-size: var(--font-size-4xl);
+    font-weight: var(--font-weight-bold);
+    color: var(--theme-primary);
+    text-align: center;
+    margin-bottom: var(--spacing-6);
+    line-height: var(--line-height-tight);
+    text-shadow: 2px 2px 4px rgba(255, 107, 157, 0.1);
+}
+
+[data-event-theme="birthday-celebration"] .event-details {
+    font-family: var(--theme-font-body);
+    text-align: center;
+    margin-bottom: var(--spacing-8);
+}
+
+[data-event-theme="birthday-celebration"] .event-date,
+[data-event-theme="birthday-celebration"] .event-location {
+    font-size: var(--font-size-lg);
+    color: var(--color-text-secondary);
+    margin-bottom: var(--spacing-3);
+}
+
+[data-event-theme="birthday-celebration"] .event-date strong,
+[data-event-theme="birthday-celebration"] .event-location strong {
+    color: var(--theme-secondary);
+    font-weight: var(--font-weight-bold);
+}
+
+[data-event-theme="birthday-celebration"] .event-description {
+    margin-top: var(--spacing-4);
+    padding-top: var(--spacing-4);
+    border-top: 2px dashed var(--theme-accent);
+    color: var(--color-text-primary);
+    line-height: var(--line-height-relaxed);
+}
+
+[data-event-theme="birthday-celebration"] .rsvp-form {
+    margin-top: var(--spacing-8);
+    padding-top: var(--spacing-6);
+    border-top: 2px solid var(--theme-primary);
+}
+
+[data-event-theme="birthday-celebration"] .form-group {
+    margin-bottom: var(--spacing-5);
+}
+
+[data-event-theme="birthday-celebration"] .form-group label {
+    display: block;
+    font-family: var(--theme-font-body);
+    font-weight: var(--font-weight-semibold);
+    color: var(--theme-accent);
+    margin-bottom: var(--spacing-2);
+}
+
+[data-event-theme="birthday-celebration"] .form-group input,
+[data-event-theme="birthday-celebration"] .form-group select,
+[data-event-theme="birthday-celebration"] .form-group textarea {
+    width: 100%;
+    padding: var(--spacing-3);
+    border: 2px solid var(--theme-primary);
+    border-radius: var(--radius-xl);
+    font-family: var(--theme-font-body);
+    background: var(--color-background);
+    color: var(--color-text-primary);
+    transition: all var(--transition-fast);
+}
+
+[data-event-theme="birthday-celebration"] .form-group input:focus,
+[data-event-theme="birthday-celebration"] .form-group select:focus,
+[data-event-theme="birthday-celebration"] .form-group textarea:focus {
+    outline: none;
+    border-color: var(--theme-secondary);
+    box-shadow: 0 0 0 4px rgba(255, 217, 61, 0.2);
+}
+
+[data-event-theme="birthday-celebration"] .btn-primary {
+    width: 100%;
+    padding: var(--spacing-5);
+    background: linear-gradient(135deg, var(--theme-primary) 0%, var(--theme-secondary) 100%);
+    color: var(--color-text-primary);
+    border: none;
+    border-radius: var(--radius-xl);
+    font-family: var(--theme-font-body);
+    font-size: var(--font-size-xl);
+    font-weight: var(--font-weight-bold);
+    cursor: pointer;
+    transition: all var(--transition-base);
+    box-shadow: var(--shadow-md);
+}
+
+[data-event-theme="birthday-celebration"] .btn-primary:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--shadow-xl);
+}
+
+[data-event-theme="birthday-celebration"] .btn-primary:active {
+    transform: translateY(-1px);
+}
+
+[data-event-theme="birthday-celebration"] .required {
+    color: var(--theme-primary);
+}
+
+@media (max-width: 767px) {
+    [data-event-theme="birthday-celebration"] .rsvp-container {
+        padding: var(--spacing-2);
+    }
+    
+    [data-event-theme="birthday-celebration"] .rsvp-card-header {
+        height: 200px;
+    }
+    
+    [data-event-theme="birthday-celebration"] .rsvp-card-content {
+        padding: var(--spacing-6);
+    }
+    
+    [data-event-theme="birthday-celebration"] .event-title {
+        font-size: var(--font-size-2xl);
+    }
+}

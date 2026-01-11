@@ -1,0 +1,170 @@
+[data-event-theme="modern-minimalist"] {
+    --theme-primary: #0f172a;
+    --theme-secondary: #64748b;
+    --theme-accent: #06b6d4;
+    --theme-font-heading: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+    --theme-font-body: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+[data-theme="dark"][data-event-theme="modern-minimalist"] {
+    --theme-primary: #f1f5f9;
+    --theme-secondary: #cbd5e1;
+    --theme-accent: #22d3ee;
+}
+
+[data-event-theme="modern-minimalist"] .rsvp-container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: var(--spacing-4);
+}
+
+[data-event-theme="modern-minimalist"] .rsvp-card {
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-base);
+    overflow: hidden;
+    box-shadow: var(--shadow-md);
+}
+
+[data-event-theme="modern-minimalist"] .rsvp-card-header {
+    position: relative;
+    height: 300px;
+    overflow: hidden;
+    background: linear-gradient(135deg, rgba(15, 23, 42, 0.03) 0%, rgba(6, 182, 212, 0.03) 100%);
+}
+
+[data-event-theme="modern-minimalist"] .theme-header-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+[data-event-theme="modern-minimalist"] .rsvp-card-content {
+    padding: var(--spacing-8);
+}
+
+[data-event-theme="modern-minimalist"] .event-title {
+    font-family: var(--theme-font-heading);
+    font-size: var(--font-size-4xl);
+    font-weight: var(--font-weight-bold);
+    color: var(--theme-primary);
+    margin-bottom: var(--spacing-6);
+    line-height: var(--line-height-tight);
+    letter-spacing: -0.02em;
+}
+
+[data-event-theme="modern-minimalist"] .event-details {
+    font-family: var(--theme-font-body);
+    margin-bottom: var(--spacing-8);
+}
+
+[data-event-theme="modern-minimalist"] .event-date,
+[data-event-theme="modern-minimalist"] .event-location {
+    font-size: var(--font-size-lg);
+    color: var(--color-text-secondary);
+    margin-bottom: var(--spacing-3);
+}
+
+[data-event-theme="modern-minimalist"] .event-date strong,
+[data-event-theme="modern-minimalist"] .event-location strong {
+    color: var(--theme-primary);
+    font-weight: var(--font-weight-semibold);
+}
+
+[data-event-theme="modern-minimalist"] .event-description {
+    margin-top: var(--spacing-4);
+    padding-top: var(--spacing-4);
+    border-top: 1px solid var(--color-border);
+    color: var(--color-text-primary);
+    line-height: var(--line-height-relaxed);
+}
+
+[data-event-theme="modern-minimalist"] .rsvp-form {
+    margin-top: var(--spacing-8);
+    padding-top: var(--spacing-6);
+    border-top: 2px solid var(--theme-primary);
+}
+
+[data-event-theme="modern-minimalist"] .form-group {
+    margin-bottom: var(--spacing-5);
+}
+
+[data-event-theme="modern-minimalist"] .form-group label {
+    display: block;
+    font-family: var(--theme-font-body);
+    font-weight: var(--font-weight-medium);
+    color: var(--theme-secondary);
+    margin-bottom: var(--spacing-2);
+    text-transform: uppercase;
+    font-size: var(--font-size-sm);
+    letter-spacing: 0.05em;
+}
+
+[data-event-theme="modern-minimalist"] .form-group input,
+[data-event-theme="modern-minimalist"] .form-group select,
+[data-event-theme="modern-minimalist"] .form-group textarea {
+    width: 100%;
+    padding: var(--spacing-3);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-base);
+    font-family: var(--theme-font-body);
+    background: var(--color-background);
+    color: var(--color-text-primary);
+    transition: all var(--transition-fast);
+}
+
+[data-event-theme="modern-minimalist"] .form-group input:focus,
+[data-event-theme="modern-minimalist"] .form-group select:focus,
+[data-event-theme="modern-minimalist"] .form-group textarea:focus {
+    outline: none;
+    border-color: var(--theme-accent);
+    box-shadow: 0 0 0 3px rgba(6, 182, 212, 0.1);
+}
+
+[data-event-theme="modern-minimalist"] .btn-primary {
+    width: 100%;
+    padding: var(--spacing-4);
+    background: var(--theme-primary);
+    color: white;
+    border: none;
+    border-radius: var(--radius-base);
+    font-family: var(--theme-font-body);
+    font-size: var(--font-size-lg);
+    font-weight: var(--font-weight-semibold);
+    cursor: pointer;
+    transition: all var(--transition-base);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+[data-event-theme="modern-minimalist"] .btn-primary:hover {
+    background: var(--theme-accent);
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-md);
+}
+
+[data-event-theme="modern-minimalist"] .btn-primary:active {
+    transform: translateY(0);
+}
+
+[data-event-theme="modern-minimalist"] .required {
+    color: var(--theme-accent);
+}
+
+@media (max-width: 767px) {
+    [data-event-theme="modern-minimalist"] .rsvp-container {
+        padding: var(--spacing-2);
+    }
+    
+    [data-event-theme="modern-minimalist"] .rsvp-card-header {
+        height: 200px;
+    }
+    
+    [data-event-theme="modern-minimalist"] .rsvp-card-content {
+        padding: var(--spacing-6);
+    }
+    
+    [data-event-theme="modern-minimalist"] .event-title {
+        font-size: var(--font-size-2xl);
+    }
+}

@@ -1,0 +1,77 @@
+<svg viewBox="0 0 1200 400" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="holidayGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#dc2626;stop-opacity:0.15" />
+      <stop offset="50%" style="stop-color:#d4af37;stop-opacity:0.15" />
+      <stop offset="100%" style="stop-color:#16a34a;stop-opacity:0.15" />
+    </linearGradient>
+  </defs>
+  
+  <rect width="1200" height="400" fill="#fef8f8"/>
+  <rect width="1200" height="400" fill="url(#holidayGrad)"/>
+  
+  <!-- Snowflakes -->
+  <g opacity="0.4">
+    <g transform="translate(100, 80)">
+      <line x1="0" y1="-20" x2="0" y2="20" stroke="#dc2626" stroke-width="2"/>
+      <line x1="-20" y1="0" x2="20" y2="0" stroke="#dc2626" stroke-width="2"/>
+      <line x1="-14" y1="-14" x2="14" y2="14" stroke="#dc2626" stroke-width="2"/>
+      <line x1="-14" y1="14" x2="14" y2="-14" stroke="#dc2626" stroke-width="2"/>
+    </g>
+    
+    <g transform="translate(300, 120)">
+      <line x1="0" y1="-18" x2="0" y2="18" stroke="#16a34a" stroke-width="2"/>
+      <line x1="-18" y1="0" x2="18" y2="0" stroke="#16a34a" stroke-width="2"/>
+      <line x1="-13" y1="-13" x2="13" y2="13" stroke="#16a34a" stroke-width="2"/>
+      <line x1="-13" y1="13" x2="13" y2="-13" stroke="#16a34a" stroke-width="2"/>
+    </g>
+    
+    <g transform="translate(500, 90)">
+      <line x1="0" y1="-22" x2="0" y2="22" stroke="#d4af37" stroke-width="2"/>
+      <line x1="-22" y1="0" x2="22" y2="0" stroke="#d4af37" stroke-width="2"/>
+      <line x1="-16" y1="-16" x2="16" y2="16" stroke="#d4af37" stroke-width="2"/>
+      <line x1="-16" y1="16" x2="16" y2="-16" stroke="#d4af37" stroke-width="2"/>
+    </g>
+    
+    <g transform="translate(700, 110)">
+      <line x1="0" y1="-19" x2="0" y2="19" stroke="#dc2626" stroke-width="2"/>
+      <line x1="-19" y1="0" x2="19" y2="0" stroke="#dc2626" stroke-width="2"/>
+      <line x1="-14" y1="-14" x2="14" y2="14" stroke="#dc2626" stroke-width="2"/>
+      <line x1="-14" y1="14" x2="14" y2="-14" stroke="#dc2626" stroke-width="2"/>
+    </g>
+    
+    <g transform="translate(900, 85)">
+      <line x1="0" y1="-21" x2="0" y2="21" stroke="#16a34a" stroke-width="2"/>
+      <line x1="-21" y1="0" x2="21" y2="0" stroke="#16a34a" stroke-width="2"/>
+      <line x1="-15" y1="-15" x2="15" y2="15" stroke="#16a34a" stroke-width="2"/>
+      <line x1="-15" y1="15" x2="15" y2="-15" stroke="#16a34a" stroke-width="2"/>
+    </g>
+    
+    <g transform="translate(1100, 100)">
+      <line x1="0" y1="-20" x2="0" y2="20" stroke="#d4af37" stroke-width="2"/>
+      <line x1="-20" y1="0" x2="20" y2="0" stroke="#d4af37" stroke-width="2"/>
+      <line x1="-14" y1="-14" x2="14" y2="14" stroke="#d4af37" stroke-width="2"/>
+      <line x1="-14" y1="14" x2="14" y2="-14" stroke="#d4af37" stroke-width="2"/>
+    </g>
+  </g>
+  
+  <!-- Ornaments -->
+  <circle cx="150" cy="280" r="25" fill="#dc2626" opacity="0.5"/>
+  <rect x="145" y="255" width="10" height="8" fill="#d4af37" opacity="0.6"/>
+  
+  <circle cx="350" cy="300" r="28" fill="#16a34a" opacity="0.5"/>
+  <rect x="344" y="272" width="12" height="8" fill="#d4af37" opacity="0.6"/>
+  
+  <circle cx="850" cy="290" r="26" fill="#dc2626" opacity="0.5"/>
+  <rect x="845" y="264" width="10" height="8" fill="#d4af37" opacity="0.6"/>
+  
+  <circle cx="1050" cy="310" r="27" fill="#16a34a" opacity="0.5"/>
+  <rect x="1044" y="283" width="12" height="8" fill="#d4af37" opacity="0.6"/>
+  
+  <!-- Garland wave -->
+  <path d="M 0 200 Q 150 180 300 200 T 600 200 T 900 200 T 1200 200" stroke="#16a34a" stroke-width="4" fill="none" opacity="0.4"/>
+  <circle cx="150" cy="190" r="8" fill="#dc2626" opacity="0.5"/>
+  <circle cx="450" cy="190" r="8" fill="#d4af37" opacity="0.5"/>
+  <circle cx="750" cy="190" r="8" fill="#dc2626" opacity="0.5"/>
+  <circle cx="1050" cy="190" r="8" fill="#d4af37" opacity="0.5"/>
+</svg>

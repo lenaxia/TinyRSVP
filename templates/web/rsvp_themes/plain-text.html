@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en" data-event-theme="plain-text">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RSVP - {{.Event.Title}}</title>
+    <link rel="stylesheet" href="/static/css/variables.css">
+    <link rel="stylesheet" href="/static/css/themes/plain-text.css">
+    <script src="/static/js/theme_controller.js" defer></script>
+</head>
+<body>
+    <div class="rsvp-container">
+        <div class="rsvp-card">
+            <h1 class="event-title">{{.Event.Title}}</h1>
+            
+            <div class="event-details">
+                <p class="event-date">
+                    <strong>When:</strong> {{formatDateTime .Event.StartTime}}
+                </p>
+                {{if .Event.EndTime}}
+                <p class="event-date">
+                    <strong>Until:</strong> {{formatTime .Event.EndTime}}
+                </p>
+                {{end}}
+                {{if .Event.Location}}
+                <p class="event-location">
+                    <strong>Where:</strong> {{.Event.Location}}
+                </p>
+                {{end}}
+                {{if .Event.Timezone}}
+                <p class="event-location">
+                    <strong>Timezone:</strong> {{.Event.Timezone}}
+                </p>
+                {{end}}
+                {{if .Event.Description}}
+                <p class="event-description">{{.Event.Description}}</p>
+                {{end}}
+                {{if .Event.RSVPDeadline}}
+                <p class="event-date">
+                    <strong>RSVP Deadline:</strong> {{formatDate .Event.RSVPDeadline "Monday, January 2, 2006"}}
+                </p>
+                {{end}}
+            </div>
+            
+            <form method="POST" action="/api/rsvp/{{.Token}}" class="rsvp-form">
+                <input type="hidden" name="csrf_token" value="{{.CSRFToken}}">
+                
+                <div class="form-group">
+                    <label for="response">Will you attend? <span class="required">*</span></label>
+                    <select id="response" name="response" required>
+                        <option value="">Please select...</option>
+                        <option value="yes">Yes, I'll be there</option>
+                        <option value="no">Sorry, can't make it</option>
+                        <option value="maybe">Maybe</option>
+                    </select>
+                </div>
+                
+                {{if gt .MaxPlusOnes 0}}
+                <div class="form-group">
+                    <label for="plus_ones">Number of additional guests (max {{.MaxPlusOnes}})</label>
+                    <input type="number" id="plus_ones" name="plus_ones" min="0" max="{{.MaxPlusOnes}}" value="0">
+                </div>
+                {{end}}
+                
+                {{range .Questions}}
+                <div class="form-group">
+                    <label for="question_{{.ID}}">
+                        {{.QuestionText}}
+                        {{if .Required}}<span class="required">*</span>{{end}}
+                    </label>
+                    {{if .HelpText}}
+                    <p class="help-text">{{.HelpText}}</p>
+                    {{end}}
+                    {{if eq .QuestionType "text"}}
+                    <input type="text" id="question_{{.ID}}" name="answer_{{.ID}}" {{if .Required}}required{{end}} maxlength="500">
+                    {{else if eq .QuestionType "textarea"}}
+                    <textarea id="question_{{.ID}}" name="answer_{{.ID}}" {{if .Required}}required{{end}} maxlength="2000"></textarea>
+                    {{else if eq .QuestionType "select"}}
+                    <select id="question_{{.ID}}" name="answer_{{.ID}}" {{if .Required}}required{{end}}>
+                        <option value="">Select an option</option>
+                        {{range .Options}}
+                        <option value="{{.Value}}">{{.Label}}</option>
+                        {{end}}
+                    </select>
+                    {{else if eq .QuestionType "boolean"}}
+                    <div class="radio-group">
+                        <label>
+                            <input type="radio" name="answer_{{.ID}}" value="true" {{if .Required}}required{{end}}> Yes
+                        </label>
+                        <label>
+                            <input type="radio" name="answer_{{.ID}}" value="false"> No
+                        </label>
+                    </div>
+                    {{end}}
+                </div>
+                {{end}}
+                
+                <button type="submit" class="btn-primary">Submit RSVP</button>
+            </form>
+        </div>
+    </div>
+</body>
+</html>

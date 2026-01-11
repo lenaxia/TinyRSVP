@@ -1,0 +1,50 @@
+<svg viewBox="0 0 1200 400" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="birthdayGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#ff6b9d;stop-opacity:0.2" />
+      <stop offset="50%" style="stop-color:#ffd93d;stop-opacity:0.2" />
+      <stop offset="100%" style="stop-color:#6bcf7f;stop-opacity:0.2" />
+    </linearGradient>
+  </defs>
+  
+  <rect width="1200" height="400" fill="#fffbf0"/>
+  <rect width="1200" height="400" fill="url(#birthdayGrad)"/>
+  
+  <!-- Balloons -->
+  <ellipse cx="150" cy="120" rx="35" ry="45" fill="#ff6b9d" opacity="0.7"/>
+  <line x1="150" y1="165" x2="150" y2="250" stroke="#ff6b9d" stroke-width="2"/>
+  
+  <ellipse cx="220" cy="80" rx="38" ry="48" fill="#ffd93d" opacity="0.7"/>
+  <line x1="220" y1="128" x2="220" y2="250" stroke="#ffd93d" stroke-width="2"/>
+  
+  <ellipse cx="290" cy="100" rx="36" ry="46" fill="#6bcf7f" opacity="0.7"/>
+  <line x1="290" y1="146" x2="290" y2="250" stroke="#6bcf7f" stroke-width="2"/>
+  
+  <ellipse cx="950" cy="90" rx="37" ry="47" fill="#ff6b9d" opacity="0.7"/>
+  <line x1="950" y1="137" x2="950" y2="250" stroke="#ff6b9d" stroke-width="2"/>
+  
+  <ellipse cx="1020" cy="110" rx="35" ry="45" fill="#6bcf7f" opacity="0.7"/>
+  <line x1="1020" y1="155" x2="1020" y2="250" stroke="#6bcf7f" stroke-width="2"/>
+  
+  <ellipse cx="1090" cy="85" rx="38" ry="48" fill="#ffd93d" opacity="0.7"/>
+  <line x1="1090" y1="133" x2="1090" y2="250" stroke="#ffd93d" stroke-width="2"/>
+  
+  <!-- Confetti -->
+  <g opacity="0.6">
+    <rect x="400" y="50" width="8" height="8" fill="#ff6b9d" transform="rotate(15 404 54)"/>
+    <rect x="500" y="80" width="8" height="8" fill="#ffd93d" transform="rotate(45 504 84)"/>
+    <rect x="600" y="60" width="8" height="8" fill="#6bcf7f" transform="rotate(30 604 64)"/>
+    <rect x="700" y="90" width="8" height="8" fill="#ff6b9d" transform="rotate(60 704 94)"/>
+    <rect x="800" y="70" width="8" height="8" fill="#ffd93d" transform="rotate(20 804 74)"/>
+    
+    <circle cx="450" cy="300" r="5" fill="#ff6b9d"/>
+    <circle cx="550" cy="320" r="5" fill="#6bcf7f"/>
+    <circle cx="650" cy="310" r="5" fill="#ffd93d"/>
+    <circle cx="750" cy="330" r="5" fill="#ff6b9d"/>
+    <circle cx="850" cy="315" r="5" fill="#6bcf7f"/>
+  </g>
+  
+  <!-- Streamers -->
+  <path d="M 0 150 Q 200 180 400 150 T 800 150 T 1200 150" stroke="#ff6b9d" stroke-width="3" fill="none" opacity="0.5"/>
+  <path d="M 0 250 Q 200 220 400 250 T 800 250 T 1200 250" stroke="#ffd93d" stroke-width="3" fill="none" opacity="0.5"/>
+</svg>

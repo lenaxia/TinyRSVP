@@ -1,0 +1,171 @@
+[data-event-theme="garden-party"] {
+    --theme-primary: #16a34a;
+    --theme-secondary: #84cc16;
+    --theme-accent: #fbbf24;
+    --theme-font-heading: Georgia, 'Times New Roman', serif;
+    --theme-font-body: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+[data-theme="dark"][data-event-theme="garden-party"] {
+    --theme-primary: #22c55e;
+    --theme-secondary: #a3e635;
+    --theme-accent: #fcd34d;
+}
+
+[data-event-theme="garden-party"] .rsvp-container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: var(--spacing-4);
+}
+
+[data-event-theme="garden-party"] .rsvp-card {
+    background: var(--color-surface);
+    border: 2px solid var(--theme-primary);
+    border-radius: var(--radius-2xl);
+    overflow: hidden;
+    box-shadow: var(--shadow-lg);
+}
+
+[data-event-theme="garden-party"] .rsvp-card-header {
+    position: relative;
+    height: 300px;
+    overflow: hidden;
+    background: linear-gradient(135deg, rgba(22, 163, 74, 0.1) 0%, rgba(132, 204, 22, 0.1) 50%, rgba(251, 191, 36, 0.1) 100%);
+}
+
+[data-event-theme="garden-party"] .theme-header-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+[data-event-theme="garden-party"] .rsvp-card-content {
+    padding: var(--spacing-8);
+}
+
+[data-event-theme="garden-party"] .event-title {
+    font-family: var(--theme-font-heading);
+    font-size: var(--font-size-4xl);
+    font-weight: var(--font-weight-bold);
+    color: var(--theme-primary);
+    text-align: center;
+    margin-bottom: var(--spacing-6);
+    line-height: var(--line-height-tight);
+}
+
+[data-event-theme="garden-party"] .event-details {
+    font-family: var(--theme-font-body);
+    text-align: center;
+    margin-bottom: var(--spacing-8);
+}
+
+[data-event-theme="garden-party"] .event-date,
+[data-event-theme="garden-party"] .event-location {
+    font-size: var(--font-size-lg);
+    color: var(--color-text-secondary);
+    margin-bottom: var(--spacing-3);
+}
+
+[data-event-theme="garden-party"] .event-date strong {
+    color: var(--theme-primary);
+    font-weight: var(--font-weight-bold);
+}
+
+[data-event-theme="garden-party"] .event-location strong {
+    color: var(--theme-secondary);
+    font-weight: var(--font-weight-bold);
+}
+
+[data-event-theme="garden-party"] .event-description {
+    margin-top: var(--spacing-4);
+    padding-top: var(--spacing-4);
+    border-top: 2px solid var(--theme-secondary);
+    color: var(--color-text-primary);
+    line-height: var(--line-height-relaxed);
+}
+
+[data-event-theme="garden-party"] .rsvp-form {
+    margin-top: var(--spacing-8);
+    padding-top: var(--spacing-6);
+    border-top: 2px solid var(--theme-primary);
+}
+
+[data-event-theme="garden-party"] .form-group {
+    margin-bottom: var(--spacing-5);
+}
+
+[data-event-theme="garden-party"] .form-group label {
+    display: block;
+    font-family: var(--theme-font-body);
+    font-weight: var(--font-weight-semibold);
+    color: var(--theme-primary);
+    margin-bottom: var(--spacing-2);
+}
+
+[data-event-theme="garden-party"] .form-group input,
+[data-event-theme="garden-party"] .form-group select,
+[data-event-theme="garden-party"] .form-group textarea {
+    width: 100%;
+    padding: var(--spacing-3);
+    border: 2px solid var(--theme-secondary);
+    border-radius: var(--radius-lg);
+    font-family: var(--theme-font-body);
+    background: var(--color-background);
+    color: var(--color-text-primary);
+    transition: all var(--transition-fast);
+}
+
+[data-event-theme="garden-party"] .form-group input:focus,
+[data-event-theme="garden-party"] .form-group select:focus,
+[data-event-theme="garden-party"] .form-group textarea:focus {
+    outline: none;
+    border-color: var(--theme-primary);
+    box-shadow: 0 0 0 3px rgba(22, 163, 74, 0.1);
+}
+
+[data-event-theme="garden-party"] .btn-primary {
+    width: 100%;
+    padding: var(--spacing-4);
+    background: var(--theme-primary);
+    color: white;
+    border: 2px solid var(--theme-primary);
+    border-radius: var(--radius-lg);
+    font-family: var(--theme-font-body);
+    font-size: var(--font-size-xl);
+    font-weight: var(--font-weight-bold);
+    cursor: pointer;
+    transition: all var(--transition-base);
+}
+
+[data-event-theme="garden-party"] .btn-primary:hover {
+    background: var(--theme-secondary);
+    border-color: var(--theme-secondary);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-lg);
+}
+
+[data-event-theme="garden-party"] .btn-primary:active {
+    transform: translateY(0);
+}
+
+[data-event-theme="garden-party"] .required {
+    color: var(--theme-accent);
+}
+
+@media (max-width: 767px) {
+    [data-event-theme="garden-party"] .rsvp-container {
+        padding: var(--spacing-2);
+    }
+    
+    [data-event-theme="garden-party"] .rsvp-card-header {
+        height: 200px;
+    }
+    
+    [data-event-theme="garden-party"] .rsvp-card-content {
+        padding: var(--spacing-6);
+    }
+    
+    [data-event-theme="garden-party"] .event-title {
+        font-size: var(--font-size-2xl);
+    }
+}

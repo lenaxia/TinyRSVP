@@ -1,0 +1,167 @@
+[data-event-theme="wedding-elegance"] {
+    --theme-primary: #f4c2c2;
+    --theme-secondary: #d4af37;
+    --theme-accent: #8b4789;
+    --theme-font-heading: Georgia, 'Times New Roman', serif;
+    --theme-font-body: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+
+[data-theme="dark"][data-event-theme="wedding-elegance"] {
+    --theme-primary: #f4c2c2;
+    --theme-secondary: #e6c84e;
+    --theme-accent: #a855b5;
+}
+
+[data-event-theme="wedding-elegance"] .rsvp-container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: var(--spacing-4);
+}
+
+[data-event-theme="wedding-elegance"] .rsvp-card {
+    background: var(--color-surface);
+    border: 2px solid var(--theme-primary);
+    border-radius: var(--radius-xl);
+    overflow: hidden;
+    box-shadow: var(--shadow-lg);
+}
+
+[data-event-theme="wedding-elegance"] .rsvp-card-header {
+    position: relative;
+    height: 300px;
+    overflow: hidden;
+    background: linear-gradient(135deg, rgba(244, 194, 194, 0.1) 0%, rgba(212, 175, 55, 0.1) 100%);
+}
+
+[data-event-theme="wedding-elegance"] .theme-header-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+[data-event-theme="wedding-elegance"] .rsvp-card-content {
+    padding: var(--spacing-8);
+}
+
+[data-event-theme="wedding-elegance"] .event-title {
+    font-family: var(--theme-font-heading);
+    font-size: var(--font-size-4xl);
+    font-weight: var(--font-weight-bold);
+    color: var(--theme-primary);
+    text-align: center;
+    margin-bottom: var(--spacing-6);
+    line-height: var(--line-height-tight);
+}
+
+[data-event-theme="wedding-elegance"] .event-details {
+    font-family: var(--theme-font-body);
+    text-align: center;
+    margin-bottom: var(--spacing-8);
+}
+
+[data-event-theme="wedding-elegance"] .event-date,
+[data-event-theme="wedding-elegance"] .event-location {
+    font-size: var(--font-size-lg);
+    color: var(--color-text-secondary);
+    margin-bottom: var(--spacing-3);
+}
+
+[data-event-theme="wedding-elegance"] .event-date strong,
+[data-event-theme="wedding-elegance"] .event-location strong {
+    color: var(--theme-secondary);
+    font-weight: var(--font-weight-semibold);
+}
+
+[data-event-theme="wedding-elegance"] .event-description {
+    margin-top: var(--spacing-4);
+    padding-top: var(--spacing-4);
+    border-top: 2px solid var(--theme-primary);
+    color: var(--color-text-primary);
+    line-height: var(--line-height-relaxed);
+}
+
+[data-event-theme="wedding-elegance"] .rsvp-form {
+    margin-top: var(--spacing-8);
+    padding-top: var(--spacing-6);
+    border-top: 1px solid var(--color-border);
+}
+
+[data-event-theme="wedding-elegance"] .form-group {
+    margin-bottom: var(--spacing-5);
+}
+
+[data-event-theme="wedding-elegance"] .form-group label {
+    display: block;
+    font-family: var(--theme-font-body);
+    font-weight: var(--font-weight-medium);
+    color: var(--theme-accent);
+    margin-bottom: var(--spacing-2);
+}
+
+[data-event-theme="wedding-elegance"] .form-group input,
+[data-event-theme="wedding-elegance"] .form-group select,
+[data-event-theme="wedding-elegance"] .form-group textarea {
+    width: 100%;
+    padding: var(--spacing-3);
+    border: 2px solid var(--theme-primary);
+    border-radius: var(--radius-lg);
+    font-family: var(--theme-font-body);
+    background: var(--color-background);
+    color: var(--color-text-primary);
+    transition: all var(--transition-fast);
+}
+
+[data-event-theme="wedding-elegance"] .form-group input:focus,
+[data-event-theme="wedding-elegance"] .form-group select:focus,
+[data-event-theme="wedding-elegance"] .form-group textarea:focus {
+    outline: none;
+    border-color: var(--theme-secondary);
+    box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.1);
+}
+
+[data-event-theme="wedding-elegance"] .btn-primary {
+    width: 100%;
+    padding: var(--spacing-4);
+    background: var(--theme-primary);
+    color: var(--color-text-primary);
+    border: 2px solid var(--theme-primary);
+    border-radius: var(--radius-lg);
+    font-family: var(--theme-font-heading);
+    font-size: var(--font-size-xl);
+    font-weight: var(--font-weight-semibold);
+    cursor: pointer;
+    transition: all var(--transition-base);
+}
+
+[data-event-theme="wedding-elegance"] .btn-primary:hover {
+    background: var(--theme-secondary);
+    border-color: var(--theme-secondary);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+}
+
+[data-event-theme="wedding-elegance"] .btn-primary:active {
+    transform: translateY(0);
+}
+
+[data-event-theme="wedding-elegance"] .required {
+    color: var(--theme-accent);
+}
+
+@media (max-width: 767px) {
+    [data-event-theme="wedding-elegance"] .rsvp-container {
+        padding: var(--spacing-2);
+    }
+    
+    [data-event-theme="wedding-elegance"] .rsvp-card-header {
+        height: 200px;
+    }
+    
+    [data-event-theme="wedding-elegance"] .rsvp-card-content {
+        padding: var(--spacing-6);
+    }
+    
+    [data-event-theme="wedding-elegance"] .event-title {
+        font-size: var(--font-size-2xl);
+    }
+}

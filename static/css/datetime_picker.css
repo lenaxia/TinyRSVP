@@ -280,7 +280,8 @@
 }
 
 .calendar-day:hover:not(.disabled):not(.other-month) {
-    background: var(--color-surface);
+    background: var(--color-primary-100);
+    border-color: var(--color-primary-300);
 }
 
 .calendar-day.other-month {
@@ -301,11 +302,16 @@
 }
 
 .calendar-day.selected {
-    background: var(--color-primary);
+    background: var(--color-primary-600);
     color: #ffffff;
     font-weight: var(--font-weight-semibold);
     border: 2px solid var(--color-primary-700);
-    box-shadow: 0 0 0 2px var(--color-primary);
+    box-shadow: 0 0 0 2px var(--color-primary-600);
+}
+
+.calendar-day.selected:hover {
+    background: var(--color-primary-700);
+    border-color: var(--color-primary-800);
 }
 
 .time-picker-container {
@@ -340,16 +346,21 @@
     text-align: center;
 }
 
-.time-option:hover {
-    background: var(--color-surface);
+.time-option:hover:not(.selected) {
+    background: var(--color-primary-100);
 }
 
 .time-option.selected {
-    background: var(--color-primary);
+    background: var(--color-primary-600);
     color: #ffffff;
     font-weight: var(--font-weight-medium);
     border: 2px solid var(--color-primary-700);
-    box-shadow: 0 0 0 2px var(--color-primary);
+    box-shadow: 0 0 0 2px var(--color-primary-600);
+}
+
+.time-option.selected:hover {
+    background: var(--color-primary-700);
+    border-color: var(--color-primary-800);
 }
 
 .timezone-display {
