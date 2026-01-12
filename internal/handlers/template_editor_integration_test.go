@@ -90,10 +90,12 @@ func TestTemplateEditorIntegration(t *testing.T) {
 					},
 					ZIndex:  10,
 					Visible: true,
-					Content: map[string]interface{}{
-						"text":      "{{.Event.Title}}",
-						"textAlign": "center",
-						"fontSize":  "48px",
+					Content: &models.ComponentContent{
+						TextBox: &models.TextBoxContent{
+							Text:      "{{.Event.Title}}",
+							TextAlign: "center",
+							FontSize:  "48px",
+						},
 					},
 				},
 			},
@@ -163,10 +165,12 @@ func TestTemplateEditorIntegration(t *testing.T) {
 					},
 					ZIndex:  10,
 					Visible: true,
-					Content: map[string]interface{}{
-						"text":      "{{.Event.Title}}",
-						"textAlign": "center",
-						"fontSize":  "56px",
+					Content: &models.ComponentContent{
+						TextBox: &models.TextBoxContent{
+							Text:      "{{.Event.Title}}",
+							TextAlign: "center",
+							FontSize:  "56px",
+						},
 					},
 				},
 				{
@@ -181,10 +185,12 @@ func TestTemplateEditorIntegration(t *testing.T) {
 					},
 					ZIndex:  9,
 					Visible: true,
-					Content: map[string]interface{}{
-						"text":      "Join us for a celebration",
-						"textAlign": "center",
-						"fontSize":  "24px",
+					Content: &models.ComponentContent{
+						TextBox: &models.TextBoxContent{
+							Text:      "Join us for a celebration",
+							TextAlign: "center",
+							FontSize:  "24px",
+						},
 					},
 				},
 			},
@@ -216,8 +222,12 @@ func TestTemplateEditorIntegration(t *testing.T) {
 			t.Errorf("Expected 2 components after update, got %d", len(updatedConfig.Components))
 		}
 
-		if updatedConfig.Components[0].Content["fontSize"] != "56px" {
-			t.Errorf("Expected fontSize 56px, got %v", updatedConfig.Components[0].Content["fontSize"])
+		textBoxContent, err := updatedConfig.Components[0].GetTextBoxContent()
+		if err != nil {
+			t.Fatalf("Failed to get TextBox content: %v", err)
+		}
+		if textBoxContent.FontSize != "56px" {
+			t.Errorf("Expected fontSize 56px, got %v", textBoxContent.FontSize)
 		}
 	})
 
