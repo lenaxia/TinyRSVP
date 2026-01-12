@@ -3,12 +3,7 @@
 {{define "title"}}Dashboard - TinyRSVP{{end}}
 
 {{define "content"}}
-    <header class="dashboard-header">
-        <h1>Dashboard</h1>
-        <div class="quick-actions">
-            <a href="/events/new" class="btn btn-primary">Create Event</a>
-        </div>
-    </header>
+    {{template "page-header" dict "Title" "Dashboard" "Actions" (printf `<a href="/events/new" class="btn btn-primary">Create Event</a>`)}}
 
     {{if .Error}}
     <div class="error-state" role="alert">

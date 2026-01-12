@@ -3,12 +3,7 @@
 {{define "title"}}Admin Dashboard - TinyRSVP{{end}}
 
 {{define "content"}}
-    <header class="dashboard-header">
-        <h1>Admin Dashboard</h1>
-        <div class="user-info">
-            <span>{{.User.Name}} ({{.User.Role}})</span>
-        </div>
-    </header>
+    {{template "page-header" dict "Title" "Admin Dashboard" "Actions" (printf `<span>%s (%s)</span>` .User.Name .User.Role)}}
 
     {{if .Error}}
     <div class="error-state" role="alert">

@@ -9,17 +9,12 @@
 {{end}}
 
 {{define "content"}}
-    <header class="dashboard-header">
-        <div>
-            <h1>{{.Event.Title}}</h1>
-            <span class="event-status-badge {{.Event.Status}}" aria-label="Status: {{.Event.Status}}">
-                {{if eq .Event.Status "draft"}}Draft{{else if eq .Event.Status "published"}}Published{{else if eq .Event.Status "cancelled"}}Cancelled{{else if eq .Event.Status "archived"}}Archived{{else}}{{.Event.Status}}{{end}}
-            </span>
-        </div>
-        <div class="dashboard-actions">
-            <a href="/events" class="btn btn-secondary">Back to Events</a>
-        </div>
-    </header>
+    {{$statusLabel := .Event.Status}}
+    {{if eq .Event.Status "draft"}}{{$statusLabel = "Draft"}}{{end}}
+    {{if eq .Event.Status "published"}}{{$statusLabel = "Published"}}{{end}}
+    {{if eq .Event.Status "cancelled"}}{{$statusLabel = "Cancelled"}}{{end}}
+    {{if eq .Event.Status "archived"}}{{$statusLabel = "Archived"}}{{end}}
+    {{template "page-header" dict "Title" .Event.Title "Actions" (printf `<span class="event-status-badge %s" aria-label="Status: %s">%s</span><a href="/events" class="btn btn-secondary">Back to Events</a>` .Event.Status .Event.Status $statusLabel)}}
 
     {{if .Error}}
     <div class="alert alert-error" role="alert">

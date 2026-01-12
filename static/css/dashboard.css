@@ -39,6 +39,13 @@
     line-height: 1.2;
 }
 
+.header-actions {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-3);
+    flex-wrap: wrap;
+}
+
 .stats-grid {
     display: grid;
     grid-template-columns: 1fr;

@@ -10,10 +10,7 @@
 {{end}}
 
 {{define "content"}}
-    <header class="dashboard-header">
-        <h1>Events</h1>
-        <a href="/events/new" class="btn btn-primary">Create Event</a>
-    </header>
+    {{template "page-header" dict "Title" "Events" "Actions" (printf `<a href="/events/new" class="btn btn-primary">Create Event</a>`)}}
 
     {{if .Error}}
     <section class="event-empty" role="alert">

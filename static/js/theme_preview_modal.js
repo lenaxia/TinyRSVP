@@ -83,6 +83,12 @@ class ThemePreviewModal {
             document.body.style.overflow = '';
         }
         
+        if (this.iframe) {
+            this.iframe.src = 'about:blank';
+        }
+        
+        this.currentThemeId = null;
+        
         if (this.lastFocusedElement) {
             this.lastFocusedElement.focus();
         }
