@@ -15,9 +15,9 @@
 {{define "main-class"}}event-form-main{{end}}
 
 {{define "content"}}
-    <header class="dashboard-header">
-        <h1>{{if .Event.ID}}Edit{{else}}Create{{end}} Event</h1>
-    </header>
+    {{$action := "Create"}}
+    {{if .Event.ID}}{{$action = "Edit"}}{{end}}
+    {{template "page-header" dict "Title" (printf "%s Event" $action)}}
 
     {{if .Error}}
     <div class="alert alert-error" role="alert">
