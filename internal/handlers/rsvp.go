@@ -15,6 +15,7 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	"github.com/lenaxia/tinyrsvp/internal/db/repositories"
+	"github.com/lenaxia/tinyrsvp/internal/events"
 	"github.com/lenaxia/tinyrsvp/internal/middleware"
 	"github.com/lenaxia/tinyrsvp/internal/models"
 	"github.com/lenaxia/tinyrsvp/internal/rsvp"
@@ -40,12 +41,17 @@ type RSVPHandler struct {
 	rsvpService           RSVPService
 	templateRepo          repositories.TemplateRepository
 	templateService       TemplateService
+	customizationService  CustomizationService
 	templates             *template.Template
 	confirmationTemplates *template.Template
 }
 
 type TemplateService interface {
 	RenderRSVPPage(w io.Writer, event *models.Event, template *models.Template) error
+}
+
+type CustomizationService interface {
+	GetEventCustomization(ctx context.Context, eventID int64) (*events.EventCustomizationData, error)
 }
 
 func NewRSVPHandler(
@@ -76,6 +82,10 @@ func (h *RSVPHandler) SetTemplateRepository(repo repositories.TemplateRepository
 
 func (h *RSVPHandler) SetTemplateService(service TemplateService) {
 	h.templateService = service
+}
+
+func (h *RSVPHandler) SetCustomizationService(service CustomizationService) {
+	h.customizationService = service
 }
 
 type QuestionWithOptions struct {
@@ -261,10 +271,31 @@ func (h *RSVPHandler) renderPage(w http.ResponseWriter, status int, data *RSVPPa
 	if h.templateService != nil && data.Event != nil && h.templateRepo != nil {
 		theme, err := h.getEventTheme(context.Background(), data.Event)
 		if err == nil && theme != nil {
-			var buf bytes.Buffer
-			if err := h.templateService.RenderRSVPPage(&buf, data.Event, theme); err == nil {
-				w.Write(buf.Bytes())
-				return
+			var mergedConfig *models.ComponentConfiguration
+			if h.customizationService != nil {
+				customization, err := h.customizationService.GetEventCustomization(context.Background(), data.Event.ID)
+				if err == nil && customization != nil {
+					mergedConfig = customization.MergedConfig
+				}
+			}
+			
+			if mergedConfig != nil {
+				mergedTemplate := *theme
+				configJSON, _ := json.Marshal(mergedConfig)
+				configStr := string(configJSON)
+				mergedTemplate.ComponentConfig = &configStr
+				
+				var buf bytes.Buffer
+				if err := h.templateService.RenderRSVPPage(&buf, data.Event, &mergedTemplate); err == nil {
+					w.Write(buf.Bytes())
+					return
+				}
+			} else {
+				var buf bytes.Buffer
+				if err := h.templateService.RenderRSVPPage(&buf, data.Event, theme); err == nil {
+					w.Write(buf.Bytes())
+					return
+				}
 			}
 		}
 	}

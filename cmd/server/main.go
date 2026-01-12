@@ -203,6 +203,13 @@ func main() {
 
 	logger.Info("Initialized event services")
 
+	customizationService := events.NewCustomizationService(
+		eventRepo,
+		templateRepo,
+		authChecker,
+	)
+	logger.Info("Initialized customization service")
+
 	dashboardService := events.NewDashboardService(eventRepo, inviteRepo, rsvpRepo)
 	logger.Info("Initialized dashboard service")
 
@@ -282,6 +289,7 @@ func main() {
 	eventHandlers := handlers.NewEventHandlers(eventService)
 	questionHandlers := handlers.NewQuestionHandlers(questionService)
 	templateHandlers := handlers.NewTemplateHandlers(templateService)
+	customizationHandlers := handlers.NewEventCustomizationHandlers(customizationService)
 
 	storageType := os.Getenv("STORAGE_TYPE")
 	if storageType == "" {
@@ -440,6 +448,17 @@ func main() {
 	}
 	logger.Info("Event form templates loaded successfully")
 
+	customizationTemplates, err := template.New("event_customization.html").Funcs(funcMap).ParseFiles(
+		"templates/web/partials/base.html",
+		"templates/web/partials/navigation.html",
+		"templates/web/event_customization.html",
+	)
+	if err != nil {
+		logger.Error("Failed to load event customization templates", "error", err)
+		os.Exit(1)
+	}
+	logger.Info("Event customization templates loaded successfully")
+
 	eventDetailTemplates, err := template.New("event_detail.html").Funcs(funcMap).ParseFiles(
 		"templates/web/partials/base.html",
 		"templates/web/partials/navigation.html",
@@ -452,6 +471,8 @@ func main() {
 	logger.Info("Event detail templates loaded successfully")
 
 	eventWebHandlers := handlers.NewEventWebHandlers(eventService, templateService, eventListTemplates, eventFormTemplates, eventDetailTemplates)
+
+	customizationHandlers.SetTemplates(customizationTemplates)
 
 	inviteListTemplates, err := template.New("invite_list.html").Funcs(funcMap).ParseFiles(
 		"templates/web/partials/base.html",
@@ -504,6 +525,8 @@ func main() {
 	rsvpHandler.SetRSVPService(rsvpService)
 	rsvpHandler.SetAnswerRepository(answerRepo)
 	rsvpHandler.SetTemplateRepository(templateRepo)
+	rsvpHandler.SetTemplateService(templateService)
+	rsvpHandler.SetCustomizationService(customizationService)
 
 	rsvpSummaryHandler := handlers.NewRSVPSummaryHandler(eventRepo, rsvpRepo, questionRepo, answerRepo)
 	rsvpSummaryHandler.SetTemplates(rsvpSummaryTemplates)
@@ -576,6 +599,7 @@ func main() {
 		AdminDashboardHandler:    adminDashboardHandler,
 		UserManagementHandler:    userManagementHandler,
 		TemplateHandlers:         templateHandlers,
+		CustomizationHandlers:    customizationHandlers,
 		AssetHandler:             assetHandler,
 		CleanupHandler:           cleanupHandler,
 		EmailHealthHandler:       emailHealthHandler,

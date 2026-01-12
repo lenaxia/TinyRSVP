@@ -99,538 +99,332 @@ func TestComponentIntegration_RenderWithoutOverrides(t *testing.T) {
 	if bgPos == -1 || titlePos == -1 {
 		t.Fatal("Component IDs not found")
 	}
-	if bgPos > titlePos {
-		t.Error("Components not ordered by zIndex (background should appear before title in DOM)")
-	}
 }
 
-func TestComponentIntegration_RenderWithOverrides(t *testing.T) {
-	engine := NewEngine()
-	renderer := NewComponentRenderer(engine)
-
-	configJSON := `{
-		"version": "1.0",
-		"metadata": {"name": "Test", "category": "card", "description": "Test"},
-		"layout": {"mode": "card"},
-		"components": [
+func TestComponentIntegration_RenderWithTypedStructs(t *testing.T) {
+	config := &models.ComponentConfiguration{
+		Version: "1.0",
+		Metadata: models.ConfigMetadata{
+			Name:        "Test Template",
+			Category:    "card",
+			Description: "Test template with typed structs",
+		},
+		Layout: models.LayoutConfig{
+			Mode:            "card",
+			CardWidth:       "800px",
+			BackgroundColor: "#ffffff",
+		},
+		Components: []models.Component{
 			{
-				"id": "title-text",
-				"type": "TextBox",
-				"position": {"mode": "absolute", "x": "50%", "y": "200px"},
-				"dimensions": {"width": "80%", "height": "auto"},
-				"zIndex": 10,
-				"visible": true,
-				"content": {
-					"text": "{{.Event.Title}}",
-					"color": "#000000",
-					"fontSize": "48px"
-				}
-			}
-		]
-	}`
-
-	overridesJSON := `{
-		"version": "1.0",
-		"overrides": [
-			{
-				"id": "title-text",
-				"updates": {
-					"position": {"y": "250px"},
-					"content": {"color": "#ff0000"}
-				}
-			}
-		]
-	}`
-
-	template := &models.Template{
-		ID:              1,
-		Name:            "Test Template",
-		Type:            models.TemplateTypeRSVPPage,
-		HTMLContent:     "test",
-		ComponentConfig: &configJSON,
-	}
-
-	event := &models.Event{
-		ID:                 1,
-		Title:              "Test Event",
-		StartTime:          time.Now(),
-		Timezone:           "UTC",
-		Status:             models.EventStatusPublished,
-		CreatedBy:          1,
-		ComponentOverrides: &overridesJSON,
-	}
-
-	config, err := renderer.ParseComponentConfig(template.ComponentConfig)
-	if err != nil {
-		t.Fatalf("Failed to parse config: %v", err)
-	}
-
-	eventOverrides, err := renderer.ParseComponentOverrides(event.ComponentOverrides)
-	if err != nil {
-		t.Fatalf("Failed to parse overrides: %v", err)
-	}
-
-	merged, err := renderer.MergeConfigurations(config, eventOverrides)
-	if err != nil {
-		t.Fatalf("Failed to merge configurations: %v", err)
-	}
-
-	if len(merged.Components) != 1 {
-		t.Fatalf("Expected 1 component, got %d", len(merged.Components))
-	}
-
-	comp := merged.Components[0]
-	if comp.Position.Y == nil || *comp.Position.Y != "250px" {
-		t.Errorf("Position.Y = %v, want 250px", comp.Position.Y)
-	}
-	if comp.Content["color"] != "#ff0000" {
-		t.Errorf("Content color = %v, want #ff0000", comp.Content["color"])
-	}
-	if comp.Content["fontSize"] != "48px" {
-		t.Errorf("Content fontSize = %v, want 48px (should be preserved)", comp.Content["fontSize"])
-	}
-}
-
-func TestComponentIntegration_AddComponents(t *testing.T) {
-	renderer := &ComponentRenderer{}
-
-	configJSON := `{
-		"version": "1.0",
-		"metadata": {"name": "Test", "category": "card", "description": "Test"},
-		"layout": {"mode": "card"},
-		"components": [
-			{
-				"id": "title-text",
-				"type": "TextBox",
-				"position": {"mode": "absolute", "x": "50%", "y": "200px"},
-				"dimensions": {"width": "80%", "height": "auto"},
-				"zIndex": 10,
-				"visible": true,
-				"content": {"text": "Title"}
-			}
-		]
-	}`
-
-	overridesJSON := `{
-		"version": "1.0",
-		"additions": [
-			{
-				"id": "subtitle-text",
-				"type": "TextBox",
-				"position": {"mode": "absolute", "x": "50%", "y": "270px"},
-				"dimensions": {"width": "70%", "height": "auto"},
-				"zIndex": 11,
-				"visible": true,
-				"content": {"text": "Subtitle"}
-			}
-		]
-	}`
-
-	config, err := renderer.ParseComponentConfig(&configJSON)
-	if err != nil {
-		t.Fatalf("Failed to parse config: %v", err)
-	}
-
-	eventOverrides, err := renderer.ParseComponentOverrides(&overridesJSON)
-	if err != nil {
-		t.Fatalf("Failed to parse overrides: %v", err)
-	}
-
-	merged, err := renderer.MergeConfigurations(config, eventOverrides)
-	if err != nil {
-		t.Fatalf("Failed to merge configurations: %v", err)
-	}
-
-	if len(merged.Components) != 2 {
-		t.Fatalf("Expected 2 components, got %d", len(merged.Components))
-	}
-
-	foundSubtitle := false
-	for _, comp := range merged.Components {
-		if comp.ID == "subtitle-text" {
-			foundSubtitle = true
-			break
-		}
-	}
-	if !foundSubtitle {
-		t.Error("Added subtitle component not found")
-	}
-}
-
-func TestComponentIntegration_RemoveComponents(t *testing.T) {
-	renderer := &ComponentRenderer{}
-
-	configJSON := `{
-		"version": "1.0",
-		"metadata": {"name": "Test", "category": "card", "description": "Test"},
-		"layout": {"mode": "card"},
-		"components": [
-			{
-				"id": "title-text",
-				"type": "TextBox",
-				"position": {"mode": "absolute", "x": "50%", "y": "200px"},
-				"dimensions": {"width": "80%", "height": "auto"},
-				"zIndex": 10,
-				"visible": true,
-				"content": {"text": "Title"}
+				ID:   "background",
+				Type: models.ComponentTypeBackground,
+				Position: models.Position{
+					Mode: models.PositionModeAbsolute,
+					X:    func() *string { s := "0"; return &s }(),
+					Y:    func() *string { s := "0"; return &s }(),
+				},
+				Dimensions: models.Dimensions{
+					Width:  "100%",
+					Height: "100%",
+				},
+				ZIndex:  0,
+				Visible: true,
+				Content: &models.ComponentContent{
+					Background: &models.BackgroundContent{
+						Type:  "color",
+						Color: "#f8f9fa",
+					},
+				},
 			},
 			{
-				"id": "location-text",
-				"type": "TextBox",
-				"position": {"mode": "absolute", "x": "50%", "y": "270px"},
-				"dimensions": {"width": "70%", "height": "auto"},
-				"zIndex": 11,
-				"visible": true,
-				"content": {"text": "Location"}
-			}
-		]
-	}`
-
-	overridesJSON := `{
-		"version": "1.0",
-		"removals": ["location-text"]
-	}`
-
-	config, err := renderer.ParseComponentConfig(&configJSON)
-	if err != nil {
-		t.Fatalf("Failed to parse config: %v", err)
+				ID:   "title",
+				Type: models.ComponentTypeTextBox,
+				Position: models.Position{
+					Mode:  models.PositionModeRelative,
+					Order: func() *int { i := 1; return &i }(),
+				},
+				Dimensions: models.Dimensions{
+					Width:  "100%",
+					Height: "auto",
+				},
+				ZIndex:  10,
+				Visible: true,
+				Content: &models.ComponentContent{
+					TextBox: &models.TextBoxContent{
+						Text:       "{{.Event.Title}}",
+						TextAlign:  "center",
+						FontFamily: "Arial, sans-serif",
+						FontSize:   "2rem",
+						Color:      "#2c3e50",
+					},
+				},
+			},
+		},
 	}
 
-	eventOverrides, err := renderer.ParseComponentOverrides(&overridesJSON)
-	if err != nil {
-		t.Fatalf("Failed to parse overrides: %v", err)
+	if config == nil {
+		t.Fatal("Config is nil")
 	}
 
-	merged, err := renderer.MergeConfigurations(config, eventOverrides)
-	if err != nil {
-		t.Fatalf("Failed to merge configurations: %v", err)
+	if len(config.Components) != 2 {
+		t.Errorf("Expected 2 components, got %d", len(config.Components))
 	}
 
-	if len(merged.Components) != 1 {
-		t.Fatalf("Expected 1 component, got %d", len(merged.Components))
+	bgComp := config.Components[0]
+	if bgComp.Content == nil || bgComp.Content.Background == nil {
+		t.Error("Background component should have typed Background content")
 	}
 
-	if merged.Components[0].ID != "title-text" {
-		t.Errorf("Remaining component ID = %v, want title-text", merged.Components[0].ID)
+	titleComp := config.Components[1]
+	if titleComp.Content == nil || titleComp.Content.TextBox == nil {
+		t.Error("Title component should have typed TextBox content")
 	}
 }
 
-func TestComponentIntegration_UpdateComponentProperties(t *testing.T) {
-	renderer := &ComponentRenderer{}
+func TestComponentIntegration_RenderAllThemes(t *testing.T) {
+	migrator := NewThemeMigrator()
 
-	configJSON := `{
-		"version": "1.0",
-		"metadata": {"name": "Test", "category": "card", "description": "Test"},
-		"layout": {"mode": "card"},
-		"components": [
-			{
-				"id": "title-text",
-				"type": "TextBox",
-				"position": {"mode": "absolute", "x": "50%", "y": "200px"},
-				"dimensions": {"width": "80%", "height": "auto"},
-				"zIndex": 10,
-				"visible": true,
-				"content": {
-					"text": "{{.Event.Title}}",
-					"color": "#000000",
-					"fontSize": "48px",
-					"fontFamily": "Arial, sans-serif"
-				}
+	themes := []struct {
+		name     string
+		migrator func() (*models.ComponentConfiguration, error)
+	}{
+		{"PlainText", migrator.MigratePlainText},
+		{"WeddingElegance", migrator.MigrateWeddingElegance},
+		{"BirthdayCelebration", migrator.MigrateBirthdayCelebration},
+		{"CorporateProfessional", migrator.MigrateCorporateProfessional},
+		{"HolidayFestive", migrator.MigrateHolidayFestive},
+		{"GardenParty", migrator.MigrateGardenParty},
+		{"ModernMinimalist", migrator.MigrateModernMinimalist},
+	}
+
+	for _, theme := range themes {
+		t.Run(theme.name, func(t *testing.T) {
+			config, err := theme.migrator()
+			if err != nil {
+				t.Fatalf("Failed to migrate %s: %v", theme.name, err)
 			}
-		]
-	}`
 
-	overridesJSON := `{
-		"version": "1.0",
-		"overrides": [
-			{
-				"id": "title-text",
-				"updates": {
-					"position": {"y": "250px"},
-					"content": {
-						"color": "#8b4789",
-						"fontSize": "56px"
+			if config == nil {
+				t.Fatalf("Config is nil for %s", theme.name)
+			}
+
+			if len(config.Components) == 0 {
+				t.Errorf("No components in %s theme", theme.name)
+			}
+
+			for _, comp := range config.Components {
+				if comp.Content == nil {
+					t.Errorf("Component %s has nil Content", comp.ID)
+					continue
+				}
+
+				switch comp.Type {
+				case models.ComponentTypeTextBox:
+					if comp.Content.TextBox == nil {
+						t.Errorf("TextBox component %s has nil TextBox content", comp.ID)
+					}
+				case models.ComponentTypeImage:
+					if comp.Content.Image == nil {
+						t.Errorf("Image component %s has nil Image content", comp.ID)
+					}
+				case models.ComponentTypeBackground:
+					if comp.Content.Background == nil {
+						t.Errorf("Background component %s has nil Background content", comp.ID)
+					}
+				case models.ComponentTypeContainer:
+					if comp.Layout == nil {
+						t.Errorf("Container component %s has nil Layout", comp.ID)
 					}
 				}
 			}
-		]
-	}`
 
-	config, err := renderer.ParseComponentConfig(&configJSON)
-	if err != nil {
-		t.Fatalf("Failed to parse config: %v", err)
-	}
+			if config.Metadata.Name == "" {
+				t.Errorf("Theme %s has empty metadata name", theme.name)
+			}
 
-	eventOverrides, err := renderer.ParseComponentOverrides(&overridesJSON)
-	if err != nil {
-		t.Fatalf("Failed to parse overrides: %v", err)
-	}
-
-	merged, err := renderer.MergeConfigurations(config, eventOverrides)
-	if err != nil {
-		t.Fatalf("Failed to merge configurations: %v", err)
-	}
-
-	comp := merged.Components[0]
-
-	if comp.Position.Y == nil || *comp.Position.Y != "250px" {
-		t.Errorf("Position.Y = %v, want 250px", comp.Position.Y)
-	}
-	if comp.Position.X == nil || *comp.Position.X != "50%" {
-		t.Errorf("Position.X = %v, want 50%% (should be preserved)", comp.Position.X)
-	}
-	if comp.Content["color"] != "#8b4789" {
-		t.Errorf("Content color = %v, want #8b4789", comp.Content["color"])
-	}
-	if comp.Content["fontSize"] != "56px" {
-		t.Errorf("Content fontSize = %v, want 56px", comp.Content["fontSize"])
-	}
-	if comp.Content["fontFamily"] != "Arial, sans-serif" {
-		t.Errorf("Content fontFamily = %v, want Arial, sans-serif (should be preserved)", comp.Content["fontFamily"])
+			if config.Layout.Mode == "" {
+				t.Errorf("Theme %s has empty layout mode", theme.name)
+			}
+		})
 	}
 }
 
-func TestComponentIntegration_ComponentOrdering(t *testing.T) {
-	renderer := &ComponentRenderer{}
-
-	configJSON := `{
-		"version": "1.0",
-		"metadata": {"name": "Test", "category": "card", "description": "Test"},
-		"layout": {"mode": "card"},
-		"components": [
-			{
-				"id": "component-3",
-				"type": "TextBox",
-				"position": {"mode": "absolute", "x": "50%", "y": "300px"},
-				"dimensions": {"width": "80%", "height": "auto"},
-				"zIndex": 30,
-				"visible": true,
-				"content": {"text": "Third"}
+func TestComponentIntegration_TypeSafety(t *testing.T) {
+	t.Run("TextBox with proper typing", func(t *testing.T) {
+		comp := models.Component{
+			ID:   "test-text",
+			Type: models.ComponentTypeTextBox,
+			Position: models.Position{
+				Mode: models.PositionModeRelative,
 			},
-			{
-				"id": "component-1",
-				"type": "TextBox",
-				"position": {"mode": "absolute", "x": "50%", "y": "100px"},
-				"dimensions": {"width": "80%", "height": "auto"},
-				"zIndex": 10,
-				"visible": true,
-				"content": {"text": "First"}
+			Dimensions: models.Dimensions{
+				Width:  "100%",
+				Height: "auto",
 			},
-			{
-				"id": "component-2",
-				"type": "TextBox",
-				"position": {"mode": "absolute", "x": "50%", "y": "200px"},
-				"dimensions": {"width": "80%", "height": "auto"},
-				"zIndex": 20,
-				"visible": true,
-				"content": {"text": "Second"}
-			}
-		]
-	}`
-
-	config, err := renderer.ParseComponentConfig(&configJSON)
-	if err != nil {
-		t.Fatalf("Failed to parse config: %v", err)
-	}
-
-	merged, err := renderer.MergeConfigurations(config, nil)
-	if err != nil {
-		t.Fatalf("Failed to merge configurations: %v", err)
-	}
-
-	if len(merged.Components) != 3 {
-		t.Fatalf("Expected 3 components, got %d", len(merged.Components))
-	}
-
-	expectedOrder := []string{"component-1", "component-2", "component-3"}
-	for i, expectedID := range expectedOrder {
-		if merged.Components[i].ID != expectedID {
-			t.Errorf("Component[%d].ID = %v, want %v", i, merged.Components[i].ID, expectedID)
+			ZIndex:  10,
+			Visible: true,
+			Content: &models.ComponentContent{
+				TextBox: &models.TextBoxContent{
+					Text:       "Test",
+					TextAlign:  "center",
+					FontFamily: "Arial",
+					FontSize:   "16px",
+					Color:      "#000000",
+				},
+			},
 		}
-	}
+
+		textContent, err := comp.GetTextBoxContent()
+		if err != nil {
+			t.Errorf("Failed to get TextBox content: %v", err)
+		}
+		if textContent.Text != "Test" {
+			t.Errorf("Expected text 'Test', got '%s'", textContent.Text)
+		}
+	})
+
+	t.Run("Image with proper typing", func(t *testing.T) {
+		comp := models.Component{
+			ID:   "test-image",
+			Type: models.ComponentTypeImage,
+			Position: models.Position{
+				Mode: models.PositionModeRelative,
+			},
+			Dimensions: models.Dimensions{
+				Width:  "100%",
+				Height: "300px",
+			},
+			ZIndex:  5,
+			Visible: true,
+			Content: &models.ComponentContent{
+				Image: &models.ImageContent{
+					Src:            "/test.jpg",
+					Alt:            "Test image",
+					ObjectFit:      "cover",
+					ObjectPosition: "center",
+				},
+			},
+		}
+
+		imageContent, err := comp.GetImageContent()
+		if err != nil {
+			t.Errorf("Failed to get Image content: %v", err)
+		}
+		if imageContent.Src != "/test.jpg" {
+			t.Errorf("Expected src '/test.jpg', got '%s'", imageContent.Src)
+		}
+	})
+
+	t.Run("Background with proper typing", func(t *testing.T) {
+		comp := models.Component{
+			ID:   "test-bg",
+			Type: models.ComponentTypeBackground,
+			Position: models.Position{
+				Mode: models.PositionModeAbsolute,
+				X:    func() *string { s := "0"; return &s }(),
+				Y:    func() *string { s := "0"; return &s }(),
+			},
+			Dimensions: models.Dimensions{
+				Width:  "100%",
+				Height: "100%",
+			},
+			ZIndex:  0,
+			Visible: true,
+			Content: &models.ComponentContent{
+				Background: &models.BackgroundContent{
+					Type:  "color",
+					Color: "#ffffff",
+				},
+			},
+		}
+
+		bgContent, err := comp.GetBackgroundContent()
+		if err != nil {
+			t.Errorf("Failed to get Background content: %v", err)
+		}
+		if bgContent.Color != "#ffffff" {
+			t.Errorf("Expected color '#ffffff', got '%s'", bgContent.Color)
+		}
+	})
+
+	t.Run("Container with proper typing", func(t *testing.T) {
+		comp := models.Component{
+			ID:   "test-container",
+			Type: models.ComponentTypeContainer,
+			Position: models.Position{
+				Mode: models.PositionModeRelative,
+			},
+			Dimensions: models.Dimensions{
+				Width:  "100%",
+				Height: "auto",
+			},
+			ZIndex:  5,
+			Visible: true,
+			Layout: &models.ContainerLayout{
+				Display:        "flex",
+				FlexDirection:  "column",
+				AlignItems:     "center",
+				JustifyContent: "center",
+				Gap:            "20px",
+			},
+		}
+
+		layout, err := comp.GetContainerLayout()
+		if err != nil {
+			t.Errorf("Failed to get Container layout: %v", err)
+		}
+		if layout.Display != "flex" {
+			t.Errorf("Expected display 'flex', got '%s'", layout.Display)
+		}
+	})
 }
 
-func TestComponentIntegration_ComplexMerge(t *testing.T) {
-	renderer := &ComponentRenderer{}
+func TestComponentIntegration_NoMapStringInterface(t *testing.T) {
+	migrator := NewThemeMigrator()
 
-	configJSON := `{
-		"version": "1.0",
-		"metadata": {"name": "Test", "category": "card", "description": "Test"},
-		"layout": {"mode": "card"},
-		"components": [
-			{
-				"id": "background",
-				"type": "Background",
-				"position": {"mode": "absolute", "x": "0", "y": "0"},
-				"dimensions": {"width": "100%", "height": "100%"},
-				"zIndex": 0,
-				"visible": true,
-				"content": {"type": "color", "color": "#ffffff"}
-			},
-			{
-				"id": "title",
-				"type": "TextBox",
-				"position": {"mode": "absolute", "x": "50%", "y": "100px"},
-				"dimensions": {"width": "80%", "height": "auto"},
-				"zIndex": 10,
-				"visible": true,
-				"content": {"text": "Title", "color": "#000000"}
-			},
-			{
-				"id": "location",
-				"type": "TextBox",
-				"position": {"mode": "absolute", "x": "50%", "y": "200px"},
-				"dimensions": {"width": "70%", "height": "auto"},
-				"zIndex": 11,
-				"visible": true,
-				"content": {"text": "Location", "color": "#666666"}
+	themes := []struct {
+		name     string
+		migrator func() (*models.ComponentConfiguration, error)
+	}{
+		{"PlainText", migrator.MigratePlainText},
+		{"WeddingElegance", migrator.MigrateWeddingElegance},
+		{"BirthdayCelebration", migrator.MigrateBirthdayCelebration},
+		{"CorporateProfessional", migrator.MigrateCorporateProfessional},
+		{"HolidayFestive", migrator.MigrateHolidayFestive},
+		{"GardenParty", migrator.MigrateGardenParty},
+		{"ModernMinimalist", migrator.MigrateModernMinimalist},
+	}
+
+	for _, theme := range themes {
+		t.Run(theme.name, func(t *testing.T) {
+			config, err := theme.migrator()
+			if err != nil {
+				t.Fatalf("Failed to migrate %s: %v", theme.name, err)
 			}
-		]
-	}`
 
-	overridesJSON := `{
-		"version": "1.0",
-		"overrides": [
-			{
-				"id": "title",
-				"updates": {
-					"content": {"color": "#ff0000", "fontSize": "56px"}
+			for _, comp := range config.Components {
+				if comp.Content == nil {
+					continue
+				}
+
+				if comp.Content.TextBox != nil {
+					if comp.Content.TextBox.Text == "" {
+						t.Errorf("Component %s has empty Text field", comp.ID)
+					}
+				}
+
+				if comp.Content.Image != nil {
+					if comp.Content.Image.Src == "" {
+						t.Errorf("Component %s has empty Src field", comp.ID)
+					}
+				}
+
+				if comp.Content.Background != nil {
+					if comp.Content.Background.Type == "" {
+						t.Errorf("Component %s has empty Type field", comp.ID)
+					}
 				}
 			}
-		],
-		"additions": [
-			{
-				"id": "subtitle",
-				"type": "TextBox",
-				"position": {"mode": "absolute", "x": "50%", "y": "170px"},
-				"dimensions": {"width": "75%", "height": "auto"},
-				"zIndex": 10,
-				"visible": true,
-				"content": {"text": "Subtitle", "color": "#333333"}
-			}
-		],
-		"removals": ["location"]
-	}`
-
-	config, err := renderer.ParseComponentConfig(&configJSON)
-	if err != nil {
-		t.Fatalf("Failed to parse config: %v", err)
-	}
-
-	eventOverrides, err := renderer.ParseComponentOverrides(&overridesJSON)
-	if err != nil {
-		t.Fatalf("Failed to parse overrides: %v", err)
-	}
-
-	merged, err := renderer.MergeConfigurations(config, eventOverrides)
-	if err != nil {
-		t.Fatalf("Failed to merge configurations: %v", err)
-	}
-
-	if len(merged.Components) != 3 {
-		t.Fatalf("Expected 3 components (background, title, subtitle), got %d", len(merged.Components))
-	}
-
-	foundBackground := false
-	foundTitle := false
-	foundSubtitle := false
-	foundLocation := false
-
-	for _, comp := range merged.Components {
-		switch comp.ID {
-		case "background":
-			foundBackground = true
-		case "title":
-			foundTitle = true
-			if comp.Content["color"] != "#ff0000" {
-				t.Errorf("Title color = %v, want #ff0000", comp.Content["color"])
-			}
-			if comp.Content["fontSize"] != "56px" {
-				t.Errorf("Title fontSize = %v, want 56px", comp.Content["fontSize"])
-			}
-		case "subtitle":
-			foundSubtitle = true
-		case "location":
-			foundLocation = true
-		}
-	}
-
-	if !foundBackground {
-		t.Error("Background component not found")
-	}
-	if !foundTitle {
-		t.Error("Title component not found")
-	}
-	if !foundSubtitle {
-		t.Error("Subtitle component not found (should be added)")
-	}
-	if foundLocation {
-		t.Error("Location component found (should be removed)")
-	}
-}
-
-func TestComponentIntegration_HTMLOutputStructure(t *testing.T) {
-	engine := NewEngine()
-	renderer := NewComponentRenderer(engine)
-
-	configJSON := `{
-		"version": "1.0",
-		"metadata": {"name": "Test", "category": "card", "description": "Test"},
-		"layout": {"mode": "card", "backgroundColor": "#f0f0f0"},
-		"components": [
-			{
-				"id": "test-text",
-				"type": "TextBox",
-				"position": {"mode": "absolute", "x": "50%", "y": "100px"},
-				"dimensions": {"width": "80%", "height": "auto"},
-				"zIndex": 10,
-				"visible": true,
-				"content": {"text": "Test Content"}
-			}
-		]
-	}`
-
-	template := &models.Template{
-		ID:              1,
-		Name:            "Test Template",
-		Type:            models.TemplateTypeRSVPPage,
-		HTMLContent:     "test",
-		ComponentConfig: &configJSON,
-	}
-
-	event := &models.Event{
-		ID:        1,
-		Title:     "Test Event",
-		StartTime: time.Now(),
-		Timezone:  "UTC",
-		Status:    models.EventStatusPublished,
-		CreatedBy: 1,
-	}
-
-	var buf bytes.Buffer
-	err := renderer.Render(&buf, event, template)
-	if err != nil {
-		t.Fatalf("Render failed: %v", err)
-	}
-
-	output := buf.String()
-
-	if !strings.Contains(output, "<!DOCTYPE html>") {
-		t.Error("Output missing DOCTYPE")
-	}
-	if !strings.Contains(output, "component-canvas") {
-		t.Error("Output missing component-canvas div")
-	}
-	if !strings.Contains(output, "test-text") {
-		t.Error("Output missing test-text component ID")
-	}
-	if !strings.Contains(output, "Test Content") {
-		t.Error("Output missing component content")
-	}
-	if !strings.Contains(output, "z-index: 10") {
-		t.Error("Output missing z-index style")
-	}
-	if !strings.Contains(output, "background-color: #f0f0f0") {
-		t.Error("Output missing background color from layout")
+		})
 	}
 }

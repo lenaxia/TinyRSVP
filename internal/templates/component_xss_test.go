@@ -148,8 +148,8 @@ func TestComponentXSS_InlineStyleInjection(t *testing.T) {
 
 	if len(config.Components) > 0 {
 		comp := config.Components[0]
-		if color, ok := comp.Content["color"].(string); ok {
-			if strings.Contains(color, "javascript:") {
+		if comp.Content != nil && comp.Content.TextBox != nil {
+			if strings.Contains(comp.Content.TextBox.Color, "javascript:") {
 				t.Log("Detected javascript: in style - should be sanitized during rendering")
 			}
 		}
@@ -239,8 +239,8 @@ func TestComponentXSS_DataURIScheme(t *testing.T) {
 
 	if len(config.Components) > 0 {
 		comp := config.Components[0]
-		if src, ok := comp.Content["src"].(string); ok {
-			if strings.HasPrefix(src, "data:text/html") {
+		if comp.Content != nil && comp.Content.Image != nil {
+			if strings.HasPrefix(comp.Content.Image.Src, "data:text/html") {
 				t.Log("Detected data:text/html URL - should be validated/sanitized")
 			}
 		}
@@ -274,8 +274,8 @@ func TestComponentXSS_HTMLEntities(t *testing.T) {
 
 	if len(config.Components) > 0 {
 		comp := config.Components[0]
-		if text, ok := comp.Content["text"].(string); ok {
-			if strings.Contains(text, "&lt;") {
+		if comp.Content != nil && comp.Content.TextBox != nil {
+			if strings.Contains(comp.Content.TextBox.Text, "&lt;") {
 				t.Log("HTML entities detected - Go html/template should handle correctly")
 			}
 		}
@@ -309,8 +309,8 @@ func TestComponentXSS_SVGWithScript(t *testing.T) {
 
 	if len(config.Components) > 0 {
 		comp := config.Components[0]
-		if src, ok := comp.Content["src"].(string); ok {
-			if strings.Contains(src, "onload") {
+		if comp.Content != nil && comp.Content.Image != nil {
+			if strings.Contains(comp.Content.Image.Src, "onload") {
 				t.Log("Detected SVG with event handler - should be sanitized")
 			}
 		}
@@ -344,8 +344,8 @@ func TestComponentXSS_CSSExpression(t *testing.T) {
 
 	if len(config.Components) > 0 {
 		comp := config.Components[0]
-		if color, ok := comp.Content["color"].(string); ok {
-			if strings.Contains(color, "expression(") {
+		if comp.Content != nil && comp.Content.TextBox != nil {
+			if strings.Contains(comp.Content.TextBox.Color, "expression(") {
 				t.Log("Detected CSS expression - should be sanitized (IE-specific vulnerability)")
 			}
 		}

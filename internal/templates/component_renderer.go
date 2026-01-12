@@ -120,31 +120,27 @@ func (r *ComponentRenderer) applyOverride(comp *models.Component, updates map[st
 			}
 		case "content":
 			if contentMap, ok := value.(map[string]interface{}); ok {
-				if comp.Content == nil {
-					comp.Content = make(map[string]interface{})
+				if err := r.deepMergeContent(comp, contentMap); err != nil {
+					return fmt.Errorf("failed to merge content: %w", err)
 				}
-				r.deepMergeMap(comp.Content, contentMap)
 			}
 		case "layout":
 			if layoutMap, ok := value.(map[string]interface{}); ok {
-				if comp.Layout == nil {
-					comp.Layout = make(map[string]interface{})
+				if err := r.deepMergeLayout(comp, layoutMap); err != nil {
+					return fmt.Errorf("failed to merge layout: %w", err)
 				}
-				r.deepMergeMap(comp.Layout, layoutMap)
 			}
 		case "style":
 			if styleMap, ok := value.(map[string]interface{}); ok {
-				if comp.Style == nil {
-					comp.Style = make(map[string]interface{})
+				if err := r.deepMergeStyle(comp, styleMap); err != nil {
+					return fmt.Errorf("failed to merge style: %w", err)
 				}
-				r.deepMergeMap(comp.Style, styleMap)
 			}
 		case "responsive":
 			if respMap, ok := value.(map[string]interface{}); ok {
-				if comp.Responsive == nil {
-					comp.Responsive = make(map[string]interface{})
+				if err := r.deepMergeResponsive(comp, respMap); err != nil {
+					return fmt.Errorf("failed to merge responsive: %w", err)
 				}
-				r.deepMergeMap(comp.Responsive, respMap)
 			}
 		case "zIndex":
 			if zIndex, ok := value.(float64); ok {
@@ -197,17 +193,254 @@ func (r *ComponentRenderer) deepMergeDimensions(dim *models.Dimensions, updates 
 	}
 }
 
-func (r *ComponentRenderer) deepMergeMap(target map[string]interface{}, source map[string]interface{}) {
-	for key, value := range source {
-		if existingValue, exists := target[key]; exists {
-			if existingMap, ok := existingValue.(map[string]interface{}); ok {
-				if sourceMap, ok := value.(map[string]interface{}); ok {
-					r.deepMergeMap(existingMap, sourceMap)
-					continue
-				}
+func (r *ComponentRenderer) deepMergeContent(comp *models.Component, updates map[string]interface{}) error {
+	if comp.Content == nil {
+		comp.Content = &models.ComponentContent{}
+	}
+
+	switch comp.Type {
+	case models.ComponentTypeTextBox:
+		if comp.Content.TextBox == nil {
+			comp.Content.TextBox = &models.TextBoxContent{}
+		}
+		return r.mergeTextBoxContent(comp.Content.TextBox, updates)
+	case models.ComponentTypeImage:
+		if comp.Content.Image == nil {
+			comp.Content.Image = &models.ImageContent{}
+		}
+		return r.mergeImageContent(comp.Content.Image, updates)
+	case models.ComponentTypeBackground:
+		if comp.Content.Background == nil {
+			comp.Content.Background = &models.BackgroundContent{}
+		}
+		return r.mergeBackgroundContent(comp.Content.Background, updates)
+	case models.ComponentTypeOverlay:
+		if comp.Content.Overlay == nil {
+			comp.Content.Overlay = &models.OverlayContent{}
+		}
+		return r.mergeOverlayContent(comp.Content.Overlay, updates)
+	}
+	return nil
+}
+
+func (r *ComponentRenderer) mergeTextBoxContent(content *models.TextBoxContent, updates map[string]interface{}) error {
+	if text, ok := updates["text"].(string); ok {
+		content.Text = text
+	}
+	if fontFamily, ok := updates["fontFamily"].(string); ok {
+		content.FontFamily = fontFamily
+	}
+	if fontSize, ok := updates["fontSize"].(string); ok {
+		content.FontSize = fontSize
+	}
+	if fontWeight, ok := updates["fontWeight"].(string); ok {
+		content.FontWeight = fontWeight
+	}
+	if color, ok := updates["color"].(string); ok {
+		content.Color = color
+	}
+	if textAlign, ok := updates["textAlign"].(string); ok {
+		content.TextAlign = textAlign
+	}
+	if lineHeight, ok := updates["lineHeight"].(string); ok {
+		content.LineHeight = lineHeight
+	}
+	if letterSpacing, ok := updates["letterSpacing"].(string); ok {
+		content.LetterSpacing = letterSpacing
+	}
+	if textTransform, ok := updates["textTransform"].(string); ok {
+		content.TextTransform = textTransform
+	}
+	if padding, ok := updates["padding"].(string); ok {
+		content.Padding = padding
+	}
+	if textShadow, ok := updates["textShadow"].(string); ok {
+		content.TextShadow = textShadow
+	}
+	return nil
+}
+
+func (r *ComponentRenderer) mergeImageContent(content *models.ImageContent, updates map[string]interface{}) error {
+	if src, ok := updates["src"].(string); ok {
+		content.Src = src
+	}
+	if alt, ok := updates["alt"].(string); ok {
+		content.Alt = alt
+	}
+	if objectFit, ok := updates["objectFit"].(string); ok {
+		content.ObjectFit = objectFit
+	}
+	if objectPosition, ok := updates["objectPosition"].(string); ok {
+		content.ObjectPosition = objectPosition
+	}
+	if opacity, ok := updates["opacity"].(float64); ok {
+		content.Opacity = &opacity
+	}
+	if filter, ok := updates["filter"].(string); ok {
+		content.Filter = filter
+	}
+	return nil
+}
+
+func (r *ComponentRenderer) mergeBackgroundContent(content *models.BackgroundContent, updates map[string]interface{}) error {
+	if typ, ok := updates["type"].(string); ok {
+		content.Type = typ
+	}
+	if color, ok := updates["color"].(string); ok {
+		content.Color = color
+	}
+	if gradient, ok := updates["gradient"].(string); ok {
+		content.Gradient = gradient
+	}
+	if image, ok := updates["image"].(string); ok {
+		content.Image = image
+	}
+	if backgroundSize, ok := updates["backgroundSize"].(string); ok {
+		content.BackgroundSize = backgroundSize
+	}
+	if backgroundPosition, ok := updates["backgroundPosition"].(string); ok {
+		content.BackgroundPosition = backgroundPosition
+	}
+	return nil
+}
+
+func (r *ComponentRenderer) mergeOverlayContent(content *models.OverlayContent, updates map[string]interface{}) error {
+	if backgroundColor, ok := updates["backgroundColor"].(string); ok {
+		content.BackgroundColor = backgroundColor
+	}
+	if backgroundImage, ok := updates["backgroundImage"].(string); ok {
+		content.BackgroundImage = backgroundImage
+	}
+	if backgroundSize, ok := updates["backgroundSize"].(string); ok {
+		content.BackgroundSize = backgroundSize
+	}
+	if borderRadius, ok := updates["borderRadius"].(string); ok {
+		content.BorderRadius = borderRadius
+	}
+	if border, ok := updates["border"].(string); ok {
+		content.Border = border
+	}
+	if boxShadow, ok := updates["boxShadow"].(string); ok {
+		content.BoxShadow = boxShadow
+	}
+	if clipPath, ok := updates["clipPath"].(string); ok {
+		content.ClipPath = clipPath
+	}
+	if placeholder, ok := updates["placeholder"].(bool); ok {
+		content.Placeholder = placeholder
+	}
+	return nil
+}
+
+func (r *ComponentRenderer) deepMergeLayout(comp *models.Component, updates map[string]interface{}) error {
+	if comp.Type != models.ComponentTypeContainer {
+		return nil
+	}
+
+	if comp.Layout == nil {
+		comp.Layout = &models.ContainerLayout{}
+	}
+
+	if display, ok := updates["display"].(string); ok {
+		comp.Layout.Display = display
+	}
+	if flexDirection, ok := updates["flexDirection"].(string); ok {
+		comp.Layout.FlexDirection = flexDirection
+	}
+	if justifyContent, ok := updates["justifyContent"].(string); ok {
+		comp.Layout.JustifyContent = justifyContent
+	}
+	if alignItems, ok := updates["alignItems"].(string); ok {
+		comp.Layout.AlignItems = alignItems
+	}
+	if gap, ok := updates["gap"].(string); ok {
+		comp.Layout.Gap = gap
+	}
+	if padding, ok := updates["padding"].(string); ok {
+		comp.Layout.Padding = padding
+	}
+	if children, ok := updates["children"].([]interface{}); ok {
+		comp.Layout.Children = make([]string, 0, len(children))
+		for _, child := range children {
+			if childStr, ok := child.(string); ok {
+				comp.Layout.Children = append(comp.Layout.Children, childStr)
 			}
 		}
-		target[key] = value
+	}
+	return nil
+}
+
+func (r *ComponentRenderer) deepMergeStyle(comp *models.Component, updates map[string]interface{}) error {
+	if comp.Type != models.ComponentTypeDivider {
+		return nil
+	}
+
+	if comp.Style == nil {
+		comp.Style = &models.DividerStyle{}
+	}
+
+	if backgroundColor, ok := updates["backgroundColor"].(string); ok {
+		comp.Style.BackgroundColor = backgroundColor
+	}
+	if height, ok := updates["height"].(string); ok {
+		comp.Style.Height = height
+	}
+	if margin, ok := updates["margin"].(string); ok {
+		comp.Style.Margin = margin
+	}
+	if borderRadius, ok := updates["borderRadius"].(string); ok {
+		comp.Style.BorderRadius = borderRadius
+	}
+	return nil
+}
+
+func (r *ComponentRenderer) deepMergeResponsive(comp *models.Component, updates map[string]interface{}) error {
+	if comp.Responsive == nil {
+		comp.Responsive = &models.ResponsiveConfig{}
+	}
+
+	if mobile, ok := updates["mobile"].(map[string]interface{}); ok {
+		if comp.Responsive.Mobile == nil {
+			comp.Responsive.Mobile = &models.ResponsiveBreakpoint{}
+		}
+		r.mergeResponsiveBreakpoint(comp.Responsive.Mobile, mobile)
+	}
+	if tablet, ok := updates["tablet"].(map[string]interface{}); ok {
+		if comp.Responsive.Tablet == nil {
+			comp.Responsive.Tablet = &models.ResponsiveBreakpoint{}
+		}
+		r.mergeResponsiveBreakpoint(comp.Responsive.Tablet, tablet)
+	}
+	if desktop, ok := updates["desktop"].(map[string]interface{}); ok {
+		if comp.Responsive.Desktop == nil {
+			comp.Responsive.Desktop = &models.ResponsiveBreakpoint{}
+		}
+		r.mergeResponsiveBreakpoint(comp.Responsive.Desktop, desktop)
+	}
+	return nil
+}
+
+func (r *ComponentRenderer) mergeResponsiveBreakpoint(bp *models.ResponsiveBreakpoint, updates map[string]interface{}) {
+	if width, ok := updates["width"].(string); ok {
+		bp.Width = width
+	}
+	if height, ok := updates["height"].(string); ok {
+		bp.Height = height
+	}
+	if fontSize, ok := updates["fontSize"].(string); ok {
+		bp.FontSize = fontSize
+	}
+	if padding, ok := updates["padding"].(string); ok {
+		bp.Padding = padding
+	}
+	if margin, ok := updates["margin"].(string); ok {
+		bp.Margin = margin
+	}
+	if display, ok := updates["display"].(string); ok {
+		bp.Display = display
+	}
+	if visible, ok := updates["visible"].(bool); ok {
+		bp.Visible = &visible
 	}
 }
 
@@ -274,7 +507,8 @@ func (r *ComponentRenderer) evaluateComponentTemplates(config *models.ComponentC
 			continue
 		}
 
-		if textVal, ok := comp.Content["text"].(string); ok {
+		if comp.Type == models.ComponentTypeTextBox && comp.Content.TextBox != nil {
+			textVal := comp.Content.TextBox.Text
 			if strings.Contains(textVal, "{{") {
 				parsedTmpl, err := r.engine.Parse(textVal)
 				if err != nil {
@@ -286,8 +520,8 @@ func (r *ComponentRenderer) evaluateComponentTemplates(config *models.ComponentC
 					return fmt.Errorf("failed to evaluate template in component %s: %w", comp.ID, err)
 				}
 
-				comp.Content["evaluatedText"] = evaluated
-				comp.Content["isEvaluated"] = true
+				comp.Content.TextBox.EvaluatedText = evaluated
+				comp.Content.TextBox.IsEvaluated = true
 			}
 		}
 	}

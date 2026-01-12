@@ -36,9 +36,11 @@ func TestComponentRenderer_RenderAnimation(t *testing.T) {
 		ZIndex:    10,
 		Visible:   true,
 		Animation: animation,
-		Content: map[string]interface{}{
-			"text":      "Animated Text",
-			"textAlign": "center",
+		Content: &models.ComponentContent{
+			TextBox: &models.TextBoxContent{
+				Text:      "Animated Text",
+				TextAlign: "center",
+			},
 		},
 	}
 
@@ -161,10 +163,12 @@ func TestComponentRenderer_RenderImageEffects(t *testing.T) {
 		},
 		ZIndex:  1,
 		Visible: true,
-		Content: map[string]interface{}{
-			"src":       "/images/test.jpg",
-			"alt":       "Test image",
-			"objectFit": "cover",
+		Content: &models.ComponentContent{
+			Image: &models.ImageContent{
+				Src:       "/images/test.jpg",
+				Alt:       "Test image",
+				ObjectFit: "cover",
+			},
 		},
 	}
 
@@ -208,9 +212,11 @@ func TestComponentRenderer_RenderTextEffects(t *testing.T) {
 		},
 		ZIndex:  10,
 		Visible: true,
-		Content: map[string]interface{}{
-			"text":      "Styled Text",
-			"textAlign": "center",
+		Content: &models.ComponentContent{
+			TextBox: &models.TextBoxContent{
+				Text:      "Styled Text",
+				TextAlign: "center",
+			},
 		},
 	}
 
@@ -258,8 +264,10 @@ func TestComponentRenderer_RenderVisibilityRules(t *testing.T) {
 			ShowOnTablet:  false,
 			ShowOnDesktop: true,
 		},
-		Content: map[string]interface{}{
-			"text": "Responsive Text",
+		Content: &models.ComponentContent{
+			TextBox: &models.TextBoxContent{
+				Text: "Responsive Text",
+			},
 		},
 	}
 
@@ -305,9 +313,11 @@ func TestComponentRenderer_GenerateComponentCSS(t *testing.T) {
 			ShowOnTablet:  true,
 			ShowOnDesktop: true,
 		},
-		Content: map[string]interface{}{
-			"text":      "Full Featured",
-			"textAlign": "center",
+		Content: &models.ComponentContent{
+			TextBox: &models.TextBoxContent{
+				Text:      "Full Featured",
+				TextAlign: "center",
+			},
 		},
 	}
 

@@ -248,12 +248,10 @@ func TestMigratedThemes_ResponsiveSupport(t *testing.T) {
 
 			hasResponsive := false
 			for _, comp := range config.Components {
-				if comp.Responsive != nil && len(comp.Responsive) > 0 {
+				if comp.Responsive != nil {
 					hasResponsive = true
-					if mobile, ok := comp.Responsive["mobile"].(map[string]interface{}); ok {
-						if len(mobile) > 0 {
-							t.Logf("%s component %s has mobile responsive config", theme.name, comp.ID)
-						}
+					if comp.Responsive.Mobile != nil {
+						t.Logf("%s component %s has mobile responsive config", theme.name, comp.ID)
 					}
 				}
 			}
@@ -297,11 +295,11 @@ func TestMigratedThemes_TemplateVariables(t *testing.T) {
 			allContent := ""
 			for _, comp := range config.Components {
 				if comp.Content != nil {
-					if text, ok := comp.Content["text"].(string); ok {
-						allContent += text + " "
+					if comp.Content.TextBox != nil {
+						allContent += comp.Content.TextBox.Text + " "
 					}
-					if src, ok := comp.Content["src"].(string); ok {
-						allContent += src + " "
+					if comp.Content.Image != nil {
+						allContent += comp.Content.Image.Src + " "
 					}
 				}
 			}
@@ -340,8 +338,8 @@ func TestMigratedThemes_CustomImageSupport(t *testing.T) {
 			hasCustomImageSupport := false
 			for _, comp := range config.Components {
 				if comp.Type == models.ComponentTypeImage {
-					if src, ok := comp.Content["src"].(string); ok {
-						if strings.Contains(src, "{{if .Event.CustomThemeImageURL}}") {
+					if comp.Content != nil && comp.Content.Image != nil {
+						if strings.Contains(comp.Content.Image.Src, "{{if .Event.CustomThemeImageURL}}") {
 							hasCustomImageSupport = true
 							t.Logf("%s supports custom theme images", theme.name)
 							break

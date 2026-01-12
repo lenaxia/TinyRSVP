@@ -378,31 +378,57 @@ func (s *editorService) applyPropertyUpdate(comp *models.Component, property str
 				}
 			case "content":
 				if comp.Content == nil {
-					comp.Content = make(map[string]interface{})
+					comp.Content = &models.ComponentContent{}
 				}
-				for k, val := range v {
-					comp.Content[k] = val
+				return &models.ValidationError{
+					Field:   property,
+					Message: "content updates must be done through specific content type fields",
 				}
 			case "layout":
 				if comp.Layout == nil {
-					comp.Layout = make(map[string]interface{})
+					comp.Layout = &models.ContainerLayout{}
 				}
-				for k, val := range v {
-					comp.Layout[k] = val
+				if display, ok := v["display"].(string); ok {
+					comp.Layout.Display = display
+				}
+				if flexDirection, ok := v["flexDirection"].(string); ok {
+					comp.Layout.FlexDirection = flexDirection
+				}
+				if justifyContent, ok := v["justifyContent"].(string); ok {
+					comp.Layout.JustifyContent = justifyContent
+				}
+				if alignItems, ok := v["alignItems"].(string); ok {
+					comp.Layout.AlignItems = alignItems
+				}
+				if gap, ok := v["gap"].(string); ok {
+					comp.Layout.Gap = gap
+				}
+				if padding, ok := v["padding"].(string); ok {
+					comp.Layout.Padding = padding
 				}
 			case "style":
 				if comp.Style == nil {
-					comp.Style = make(map[string]interface{})
+					comp.Style = &models.DividerStyle{}
 				}
-				for k, val := range v {
-					comp.Style[k] = val
+				if backgroundColor, ok := v["backgroundColor"].(string); ok {
+					comp.Style.BackgroundColor = backgroundColor
+				}
+				if height, ok := v["height"].(string); ok {
+					comp.Style.Height = height
+				}
+				if margin, ok := v["margin"].(string); ok {
+					comp.Style.Margin = margin
+				}
+				if borderRadius, ok := v["borderRadius"].(string); ok {
+					comp.Style.BorderRadius = borderRadius
 				}
 			case "responsive":
 				if comp.Responsive == nil {
-					comp.Responsive = make(map[string]interface{})
+					comp.Responsive = &models.ResponsiveConfig{}
 				}
-				for k, val := range v {
-					comp.Responsive[k] = val
+				return &models.ValidationError{
+					Field:   property,
+					Message: "responsive updates must be done through specific responsive breakpoint fields",
 				}
 			}
 		} else {
@@ -455,21 +481,111 @@ func (s *editorService) deepCopyComponent(comp models.Component) models.Componen
 	copy(copied.Children, comp.Children)
 
 	if comp.Content != nil {
-		copied.Content = s.deepCopyMap(comp.Content)
+		copied.Content = s.deepCopyContent(comp.Content)
 	}
 
 	if comp.Layout != nil {
-		copied.Layout = s.deepCopyMap(comp.Layout)
+		copied.Layout = s.deepCopyLayout(comp.Layout)
 	}
 
 	if comp.Style != nil {
-		copied.Style = s.deepCopyMap(comp.Style)
+		copied.Style = s.deepCopyStyle(comp.Style)
 	}
 
 	if comp.Responsive != nil {
-		copied.Responsive = s.deepCopyMap(comp.Responsive)
+		copied.Responsive = s.deepCopyResponsive(comp.Responsive)
 	}
 
+	return copied
+}
+
+func (s *editorService) deepCopyContent(content *models.ComponentContent) *models.ComponentContent {
+	if content == nil {
+		return nil
+	}
+	
+	copied := &models.ComponentContent{}
+	
+	if content.TextBox != nil {
+		textBox := *content.TextBox
+		copied.TextBox = &textBox
+	}
+	
+	if content.Image != nil {
+		image := *content.Image
+		copied.Image = &image
+	}
+	
+	if content.Background != nil {
+		background := *content.Background
+		copied.Background = &background
+	}
+	
+	if content.Overlay != nil {
+		overlay := *content.Overlay
+		copied.Overlay = &overlay
+	}
+	
+	return copied
+}
+
+func (s *editorService) deepCopyLayout(layout *models.ContainerLayout) *models.ContainerLayout {
+	if layout == nil {
+		return nil
+	}
+	
+	copied := &models.ContainerLayout{
+		Display:        layout.Display,
+		FlexDirection:  layout.FlexDirection,
+		JustifyContent: layout.JustifyContent,
+		AlignItems:     layout.AlignItems,
+		Gap:            layout.Gap,
+		Padding:        layout.Padding,
+	}
+	
+	if layout.Children != nil {
+		copied.Children = make([]string, len(layout.Children))
+		copy(copied.Children, layout.Children)
+	}
+	
+	return copied
+}
+
+func (s *editorService) deepCopyStyle(style *models.DividerStyle) *models.DividerStyle {
+	if style == nil {
+		return nil
+	}
+	
+	return &models.DividerStyle{
+		BackgroundColor: style.BackgroundColor,
+		Height:          style.Height,
+		Margin:          style.Margin,
+		BorderRadius:    style.BorderRadius,
+	}
+}
+
+func (s *editorService) deepCopyResponsive(responsive *models.ResponsiveConfig) *models.ResponsiveConfig {
+	if responsive == nil {
+		return nil
+	}
+	
+	copied := &models.ResponsiveConfig{}
+	
+	if responsive.Mobile != nil {
+		mobile := *responsive.Mobile
+		copied.Mobile = &mobile
+	}
+	
+	if responsive.Tablet != nil {
+		tablet := *responsive.Tablet
+		copied.Tablet = &tablet
+	}
+	
+	if responsive.Desktop != nil {
+		desktop := *responsive.Desktop
+		copied.Desktop = &desktop
+	}
+	
 	return copied
 }
 

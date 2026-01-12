@@ -39,16 +39,18 @@ func (m *ThemeMigrator) MigratePlainText() (*models.ComponentConfiguration, erro
 				},
 				ZIndex:  0,
 				Visible: true,
-				Content: map[string]interface{}{
-					"type":  "color",
-					"color": "#f8f9fa",
+				Content: &models.ComponentContent{
+					Background: &models.BackgroundContent{
+						Type:  "color",
+						Color: "#f8f9fa",
+					},
 				},
 			},
 			{
 				ID:   "title-text",
 				Type: models.ComponentTypeTextBox,
 				Position: models.Position{
-					Mode: models.PositionModeRelative,
+					Mode:  models.PositionModeRelative,
 					Order: intPtr(1),
 				},
 				Dimensions: models.Dimensions{
@@ -57,18 +59,20 @@ func (m *ThemeMigrator) MigratePlainText() (*models.ComponentConfiguration, erro
 				},
 				ZIndex:  10,
 				Visible: true,
-				Content: map[string]interface{}{
-					"text":       "{{.Event.Title}}",
-					"textAlign":  "center",
-					"fontFamily": "-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
-					"fontSize":   "2.5rem",
-					"fontWeight": "700",
-					"color":      "#2c3e50",
-					"lineHeight": "1.2",
+				Content: &models.ComponentContent{
+					TextBox: &models.TextBoxContent{
+						Text:       "{{.Event.Title}}",
+						TextAlign:  "center",
+						FontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+						FontSize:   "2.5rem",
+						FontWeight: "700",
+						Color:      "#2c3e50",
+						LineHeight: "1.2",
+					},
 				},
-				Responsive: map[string]interface{}{
-					"mobile": map[string]interface{}{
-						"fontSize": "2rem",
+				Responsive: &models.ResponsiveConfig{
+					Mobile: &models.ResponsiveBreakpoint{
+						FontSize: "2rem",
 					},
 				},
 			},
@@ -85,13 +89,15 @@ func (m *ThemeMigrator) MigratePlainText() (*models.ComponentConfiguration, erro
 				},
 				ZIndex:  10,
 				Visible: true,
-				Content: map[string]interface{}{
-					"text":       "{{formatDateTime .Event.StartTime}}",
-					"textAlign":  "center",
-					"fontFamily": "-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
-					"fontSize":   "1.125rem",
-					"color":      "#666666",
-					"lineHeight": "1.5",
+				Content: &models.ComponentContent{
+					TextBox: &models.TextBoxContent{
+						Text:       "{{formatDateTime .Event.StartTime}}",
+						TextAlign:  "center",
+						FontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+						FontSize:   "1.125rem",
+						Color:      "#666666",
+						LineHeight: "1.5",
+					},
 				},
 			},
 			{
@@ -107,13 +113,15 @@ func (m *ThemeMigrator) MigratePlainText() (*models.ComponentConfiguration, erro
 				},
 				ZIndex:  10,
 				Visible: true,
-				Content: map[string]interface{}{
-					"text":       "{{.Event.Location}}",
-					"textAlign":  "center",
-					"fontFamily": "-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
-					"fontSize":   "1rem",
-					"color":      "#888888",
-					"lineHeight": "1.5",
+				Content: &models.ComponentContent{
+					TextBox: &models.TextBoxContent{
+						Text:       "{{.Event.Location}}",
+						TextAlign:  "center",
+						FontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+						FontSize:   "1rem",
+						Color:      "#888888",
+						LineHeight: "1.5",
+					},
 				},
 			},
 		},
@@ -151,16 +159,18 @@ func (m *ThemeMigrator) MigrateWeddingElegance() (*models.ComponentConfiguration
 				},
 				ZIndex:  0,
 				Visible: true,
-				Content: map[string]interface{}{
-					"type":  "color",
-					"color": "#f8f9fa",
+				Content: &models.ComponentContent{
+					Background: &models.BackgroundContent{
+						Type:  "color",
+						Color: "#f8f9fa",
+					},
 				},
 			},
 			{
 				ID:   "header-image",
 				Type: models.ComponentTypeImage,
 				Position: models.Position{
-					Mode: models.PositionModeRelative,
+					Mode:  models.PositionModeRelative,
 					Order: intPtr(1),
 				},
 				Dimensions: models.Dimensions{
@@ -169,15 +179,17 @@ func (m *ThemeMigrator) MigrateWeddingElegance() (*models.ComponentConfiguration
 				},
 				ZIndex:  1,
 				Visible: true,
-				Content: map[string]interface{}{
-					"src":            "{{if .Event.CustomThemeImageURL}}{{.Event.CustomThemeImageURL}}{{else}}/static/images/themes/wedding-elegance-header.svg{{end}}",
-					"alt":            "Wedding invitation design",
-					"objectFit":      "cover",
-					"objectPosition": "center",
+				Content: &models.ComponentContent{
+					Image: &models.ImageContent{
+						Src:            "{{if .Event.CustomThemeImageURL}}{{.Event.CustomThemeImageURL}}{{else}}/static/images/themes/wedding-elegance-header.svg{{end}}",
+						Alt:            "Wedding invitation design",
+						ObjectFit:      "cover",
+						ObjectPosition: "center",
+					},
 				},
-				Responsive: map[string]interface{}{
-					"mobile": map[string]interface{}{
-						"height": "200px",
+				Responsive: &models.ResponsiveConfig{
+					Mobile: &models.ResponsiveBreakpoint{
+						Height: "200px",
 					},
 				},
 			},
@@ -194,18 +206,20 @@ func (m *ThemeMigrator) MigrateWeddingElegance() (*models.ComponentConfiguration
 				},
 				ZIndex:  10,
 				Visible: true,
-				Content: map[string]interface{}{
-					"text":       "{{.Event.Title}}",
-					"textAlign":  "center",
-					"fontFamily": "Georgia, 'Times New Roman', serif",
-					"fontSize":   "2.5rem",
-					"fontWeight": "700",
-					"color":      "#f4c2c2",
-					"lineHeight": "1.2",
+				Content: &models.ComponentContent{
+					TextBox: &models.TextBoxContent{
+						Text:       "{{.Event.Title}}",
+						TextAlign:  "center",
+						FontFamily: "Georgia, 'Times New Roman', serif",
+						FontSize:   "2.5rem",
+						FontWeight: "700",
+						Color:      "#f4c2c2",
+						LineHeight: "1.2",
+					},
 				},
-				Responsive: map[string]interface{}{
-					"mobile": map[string]interface{}{
-						"fontSize": "1.5rem",
+				Responsive: &models.ResponsiveConfig{
+					Mobile: &models.ResponsiveBreakpoint{
+						FontSize: "1.5rem",
 					},
 				},
 			},
@@ -222,13 +236,15 @@ func (m *ThemeMigrator) MigrateWeddingElegance() (*models.ComponentConfiguration
 				},
 				ZIndex:  10,
 				Visible: true,
-				Content: map[string]interface{}{
-					"text":       "{{formatDateTime .Event.StartTime}}",
-					"textAlign":  "center",
-					"fontFamily": "-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
-					"fontSize":   "1.125rem",
-					"color":      "#666666",
-					"lineHeight": "1.5",
+				Content: &models.ComponentContent{
+					TextBox: &models.TextBoxContent{
+						Text:       "{{formatDateTime .Event.StartTime}}",
+						TextAlign:  "center",
+						FontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+						FontSize:   "1.125rem",
+						Color:      "#666666",
+						LineHeight: "1.5",
+					},
 				},
 			},
 			{
@@ -244,13 +260,15 @@ func (m *ThemeMigrator) MigrateWeddingElegance() (*models.ComponentConfiguration
 				},
 				ZIndex:  10,
 				Visible: true,
-				Content: map[string]interface{}{
-					"text":       "{{.Event.Location}}",
-					"textAlign":  "center",
-					"fontFamily": "-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
-					"fontSize":   "1.125rem",
-					"color":      "#666666",
-					"lineHeight": "1.5",
+				Content: &models.ComponentContent{
+					TextBox: &models.TextBoxContent{
+						Text:       "{{.Event.Location}}",
+						TextAlign:  "center",
+						FontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+						FontSize:   "1.125rem",
+						Color:      "#666666",
+						LineHeight: "1.5",
+					},
 				},
 			},
 		},
@@ -288,9 +306,11 @@ func (m *ThemeMigrator) MigrateBirthdayCelebration() (*models.ComponentConfigura
 				},
 				ZIndex:  0,
 				Visible: true,
-				Content: map[string]interface{}{
-					"type":     "gradient",
-					"gradient": "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+				Content: &models.ComponentContent{
+					Background: &models.BackgroundContent{
+						Type:     "gradient",
+						Gradient: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+					},
 				},
 			},
 			{
@@ -306,15 +326,17 @@ func (m *ThemeMigrator) MigrateBirthdayCelebration() (*models.ComponentConfigura
 				},
 				ZIndex:  1,
 				Visible: true,
-				Content: map[string]interface{}{
-					"src":            "{{if .Event.CustomThemeImageURL}}{{.Event.CustomThemeImageURL}}{{else}}/static/images/themes/birthday-celebration-header.svg{{end}}",
-					"alt":            "Birthday celebration design",
-					"objectFit":      "cover",
-					"objectPosition": "center",
+				Content: &models.ComponentContent{
+					Image: &models.ImageContent{
+						Src:            "{{if .Event.CustomThemeImageURL}}{{.Event.CustomThemeImageURL}}{{else}}/static/images/themes/birthday-celebration-header.svg{{end}}",
+						Alt:            "Birthday celebration design",
+						ObjectFit:      "cover",
+						ObjectPosition: "center",
+					},
 				},
-				Responsive: map[string]interface{}{
-					"mobile": map[string]interface{}{
-						"height": "200px",
+				Responsive: &models.ResponsiveConfig{
+					Mobile: &models.ResponsiveBreakpoint{
+						Height: "200px",
 					},
 				},
 			},
@@ -331,19 +353,21 @@ func (m *ThemeMigrator) MigrateBirthdayCelebration() (*models.ComponentConfigura
 				},
 				ZIndex:  10,
 				Visible: true,
-				Content: map[string]interface{}{
-					"text":       "{{.Event.Title}}",
-					"textAlign":  "center",
-					"fontFamily": "'Comic Sans MS', cursive, sans-serif",
-					"fontSize":   "2.5rem",
-					"fontWeight": "700",
-					"color":      "#ff6b9d",
-					"lineHeight": "1.2",
-					"textShadow": "2px 2px 4px rgba(0,0,0,0.1)",
+				Content: &models.ComponentContent{
+					TextBox: &models.TextBoxContent{
+						Text:       "{{.Event.Title}}",
+						TextAlign:  "center",
+						FontFamily: "'Comic Sans MS', cursive, sans-serif",
+						FontSize:   "2.5rem",
+						FontWeight: "700",
+						Color:      "#ff6b9d",
+						LineHeight: "1.2",
+						TextShadow: "2px 2px 4px rgba(0,0,0,0.1)",
+					},
 				},
-				Responsive: map[string]interface{}{
-					"mobile": map[string]interface{}{
-						"fontSize": "2rem",
+				Responsive: &models.ResponsiveConfig{
+					Mobile: &models.ResponsiveBreakpoint{
+						FontSize: "2rem",
 					},
 				},
 			},
@@ -360,14 +384,16 @@ func (m *ThemeMigrator) MigrateBirthdayCelebration() (*models.ComponentConfigura
 				},
 				ZIndex:  10,
 				Visible: true,
-				Content: map[string]interface{}{
-					"text":       "{{formatDateTime .Event.StartTime}}",
-					"textAlign":  "center",
-					"fontFamily": "-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
-					"fontSize":   "1.125rem",
-					"fontWeight": "600",
-					"color":      "#2c3e50",
-					"lineHeight": "1.5",
+				Content: &models.ComponentContent{
+					TextBox: &models.TextBoxContent{
+						Text:       "{{formatDateTime .Event.StartTime}}",
+						TextAlign:  "center",
+						FontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+						FontSize:   "1.125rem",
+						FontWeight: "600",
+						Color:      "#2c3e50",
+						LineHeight: "1.5",
+					},
 				},
 			},
 			{
@@ -383,13 +409,15 @@ func (m *ThemeMigrator) MigrateBirthdayCelebration() (*models.ComponentConfigura
 				},
 				ZIndex:  10,
 				Visible: true,
-				Content: map[string]interface{}{
-					"text":       "{{.Event.Location}}",
-					"textAlign":  "center",
-					"fontFamily": "-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
-					"fontSize":   "1rem",
-					"color":      "#555555",
-					"lineHeight": "1.5",
+				Content: &models.ComponentContent{
+					TextBox: &models.TextBoxContent{
+						Text:       "{{.Event.Location}}",
+						TextAlign:  "center",
+						FontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+						FontSize:   "1rem",
+						Color:      "#555555",
+						LineHeight: "1.5",
+					},
 				},
 			},
 		},
@@ -427,9 +455,11 @@ func (m *ThemeMigrator) MigrateCorporateProfessional() (*models.ComponentConfigu
 				},
 				ZIndex:  0,
 				Visible: true,
-				Content: map[string]interface{}{
-					"type":  "color",
-					"color": "#ffffff",
+				Content: &models.ComponentContent{
+					Background: &models.BackgroundContent{
+						Type:  "color",
+						Color: "#ffffff",
+					},
 				},
 			},
 			{
@@ -445,15 +475,17 @@ func (m *ThemeMigrator) MigrateCorporateProfessional() (*models.ComponentConfigu
 				},
 				ZIndex:  1,
 				Visible: true,
-				Content: map[string]interface{}{
-					"src":            "{{if .Event.CustomThemeImageURL}}{{.Event.CustomThemeImageURL}}{{else}}/static/images/themes/corporate-professional-header.svg{{end}}",
-					"alt":            "Corporate event design",
-					"objectFit":      "cover",
-					"objectPosition": "center",
+				Content: &models.ComponentContent{
+					Image: &models.ImageContent{
+						Src:            "{{if .Event.CustomThemeImageURL}}{{.Event.CustomThemeImageURL}}{{else}}/static/images/themes/corporate-professional-header.svg{{end}}",
+						Alt:            "Corporate event design",
+						ObjectFit:      "cover",
+						ObjectPosition: "center",
+					},
 				},
-				Responsive: map[string]interface{}{
-					"mobile": map[string]interface{}{
-						"height": "180px",
+				Responsive: &models.ResponsiveConfig{
+					Mobile: &models.ResponsiveBreakpoint{
+						Height: "180px",
 					},
 				},
 			},
@@ -470,18 +502,20 @@ func (m *ThemeMigrator) MigrateCorporateProfessional() (*models.ComponentConfigu
 				},
 				ZIndex:  10,
 				Visible: true,
-				Content: map[string]interface{}{
-					"text":       "{{.Event.Title}}",
-					"textAlign":  "center",
-					"fontFamily": "'Helvetica Neue', Helvetica, Arial, sans-serif",
-					"fontSize":   "2rem",
-					"fontWeight": "600",
-					"color":      "#1a365d",
-					"lineHeight": "1.3",
+				Content: &models.ComponentContent{
+					TextBox: &models.TextBoxContent{
+						Text:       "{{.Event.Title}}",
+						TextAlign:  "center",
+						FontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif",
+						FontSize:   "2rem",
+						FontWeight: "600",
+						Color:      "#1a365d",
+						LineHeight: "1.3",
+					},
 				},
-				Responsive: map[string]interface{}{
-					"mobile": map[string]interface{}{
-						"fontSize": "1.5rem",
+				Responsive: &models.ResponsiveConfig{
+					Mobile: &models.ResponsiveBreakpoint{
+						FontSize: "1.5rem",
 					},
 				},
 			},
@@ -498,13 +532,15 @@ func (m *ThemeMigrator) MigrateCorporateProfessional() (*models.ComponentConfigu
 				},
 				ZIndex:  10,
 				Visible: true,
-				Content: map[string]interface{}{
-					"text":       "{{formatDateTime .Event.StartTime}}",
-					"textAlign":  "center",
-					"fontFamily": "'Helvetica Neue', Helvetica, Arial, sans-serif",
-					"fontSize":   "1.125rem",
-					"color":      "#4a5568",
-					"lineHeight": "1.5",
+				Content: &models.ComponentContent{
+					TextBox: &models.TextBoxContent{
+						Text:       "{{formatDateTime .Event.StartTime}}",
+						TextAlign:  "center",
+						FontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif",
+						FontSize:   "1.125rem",
+						Color:      "#4a5568",
+						LineHeight: "1.5",
+					},
 				},
 			},
 			{
@@ -520,13 +556,15 @@ func (m *ThemeMigrator) MigrateCorporateProfessional() (*models.ComponentConfigu
 				},
 				ZIndex:  10,
 				Visible: true,
-				Content: map[string]interface{}{
-					"text":       "{{.Event.Location}}",
-					"textAlign":  "center",
-					"fontFamily": "'Helvetica Neue', Helvetica, Arial, sans-serif",
-					"fontSize":   "1rem",
-					"color":      "#718096",
-					"lineHeight": "1.5",
+				Content: &models.ComponentContent{
+					TextBox: &models.TextBoxContent{
+						Text:       "{{.Event.Location}}",
+						TextAlign:  "center",
+						FontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif",
+						FontSize:   "1rem",
+						Color:      "#718096",
+						LineHeight: "1.5",
+					},
 				},
 			},
 		},
@@ -564,9 +602,11 @@ func (m *ThemeMigrator) MigrateHolidayFestive() (*models.ComponentConfiguration,
 				},
 				ZIndex:  0,
 				Visible: true,
-				Content: map[string]interface{}{
-					"type":     "gradient",
-					"gradient": "linear-gradient(135deg, #e0f2fe 0%, #dbeafe 100%)",
+				Content: &models.ComponentContent{
+					Background: &models.BackgroundContent{
+						Type:     "gradient",
+						Gradient: "linear-gradient(135deg, #e0f2fe 0%, #dbeafe 100%)",
+					},
 				},
 			},
 			{
@@ -582,15 +622,17 @@ func (m *ThemeMigrator) MigrateHolidayFestive() (*models.ComponentConfiguration,
 				},
 				ZIndex:  1,
 				Visible: true,
-				Content: map[string]interface{}{
-					"src":            "{{if .Event.CustomThemeImageURL}}{{.Event.CustomThemeImageURL}}{{else}}/static/images/themes/holiday-festive-header.svg{{end}}",
-					"alt":            "Holiday festive design",
-					"objectFit":      "cover",
-					"objectPosition": "center",
+				Content: &models.ComponentContent{
+					Image: &models.ImageContent{
+						Src:            "{{if .Event.CustomThemeImageURL}}{{.Event.CustomThemeImageURL}}{{else}}/static/images/themes/holiday-festive-header.svg{{end}}",
+						Alt:            "Holiday festive design",
+						ObjectFit:      "cover",
+						ObjectPosition: "center",
+					},
 				},
-				Responsive: map[string]interface{}{
-					"mobile": map[string]interface{}{
-						"height": "200px",
+				Responsive: &models.ResponsiveConfig{
+					Mobile: &models.ResponsiveBreakpoint{
+						Height: "200px",
 					},
 				},
 			},
@@ -607,19 +649,21 @@ func (m *ThemeMigrator) MigrateHolidayFestive() (*models.ComponentConfiguration,
 				},
 				ZIndex:  10,
 				Visible: true,
-				Content: map[string]interface{}{
-					"text":       "{{.Event.Title}}",
-					"textAlign":  "center",
-					"fontFamily": "'Brush Script MT', cursive",
-					"fontSize":   "2.5rem",
-					"fontWeight": "400",
-					"color":      "#dc2626",
-					"lineHeight": "1.2",
-					"textShadow": "2px 2px 4px rgba(0,0,0,0.1)",
+				Content: &models.ComponentContent{
+					TextBox: &models.TextBoxContent{
+						Text:       "{{.Event.Title}}",
+						TextAlign:  "center",
+						FontFamily: "'Brush Script MT', cursive",
+						FontSize:   "2.5rem",
+						FontWeight: "400",
+						Color:      "#dc2626",
+						LineHeight: "1.2",
+						TextShadow: "2px 2px 4px rgba(0,0,0,0.1)",
+					},
 				},
-				Responsive: map[string]interface{}{
-					"mobile": map[string]interface{}{
-						"fontSize": "2rem",
+				Responsive: &models.ResponsiveConfig{
+					Mobile: &models.ResponsiveBreakpoint{
+						FontSize: "2rem",
 					},
 				},
 			},
@@ -636,14 +680,16 @@ func (m *ThemeMigrator) MigrateHolidayFestive() (*models.ComponentConfiguration,
 				},
 				ZIndex:  10,
 				Visible: true,
-				Content: map[string]interface{}{
-					"text":       "{{formatDateTime .Event.StartTime}}",
-					"textAlign":  "center",
-					"fontFamily": "-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
-					"fontSize":   "1.125rem",
-					"fontWeight": "600",
-					"color":      "#166534",
-					"lineHeight": "1.5",
+				Content: &models.ComponentContent{
+					TextBox: &models.TextBoxContent{
+						Text:       "{{formatDateTime .Event.StartTime}}",
+						TextAlign:  "center",
+						FontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+						FontSize:   "1.125rem",
+						FontWeight: "600",
+						Color:      "#166534",
+						LineHeight: "1.5",
+					},
 				},
 			},
 			{
@@ -659,13 +705,15 @@ func (m *ThemeMigrator) MigrateHolidayFestive() (*models.ComponentConfiguration,
 				},
 				ZIndex:  10,
 				Visible: true,
-				Content: map[string]interface{}{
-					"text":       "{{.Event.Location}}",
-					"textAlign":  "center",
-					"fontFamily": "-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
-					"fontSize":   "1rem",
-					"color":      "#065f46",
-					"lineHeight": "1.5",
+				Content: &models.ComponentContent{
+					TextBox: &models.TextBoxContent{
+						Text:       "{{.Event.Location}}",
+						TextAlign:  "center",
+						FontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+						FontSize:   "1rem",
+						Color:      "#065f46",
+						LineHeight: "1.5",
+					},
 				},
 			},
 		},
@@ -703,9 +751,11 @@ func (m *ThemeMigrator) MigrateGardenParty() (*models.ComponentConfiguration, er
 				},
 				ZIndex:  0,
 				Visible: true,
-				Content: map[string]interface{}{
-					"type":     "gradient",
-					"gradient": "linear-gradient(135deg, #dcfce7 0%, #f0fdf4 100%)",
+				Content: &models.ComponentContent{
+					Background: &models.BackgroundContent{
+						Type:     "gradient",
+						Gradient: "linear-gradient(135deg, #dcfce7 0%, #f0fdf4 100%)",
+					},
 				},
 			},
 			{
@@ -721,15 +771,17 @@ func (m *ThemeMigrator) MigrateGardenParty() (*models.ComponentConfiguration, er
 				},
 				ZIndex:  1,
 				Visible: true,
-				Content: map[string]interface{}{
-					"src":            "{{if .Event.CustomThemeImageURL}}{{.Event.CustomThemeImageURL}}{{else}}/static/images/themes/garden-party-header.svg{{end}}",
-					"alt":            "Garden party design",
-					"objectFit":      "cover",
-					"objectPosition": "center",
+				Content: &models.ComponentContent{
+					Image: &models.ImageContent{
+						Src:            "{{if .Event.CustomThemeImageURL}}{{.Event.CustomThemeImageURL}}{{else}}/static/images/themes/garden-party-header.svg{{end}}",
+						Alt:            "Garden party design",
+						ObjectFit:      "cover",
+						ObjectPosition: "center",
+					},
 				},
-				Responsive: map[string]interface{}{
-					"mobile": map[string]interface{}{
-						"height": "200px",
+				Responsive: &models.ResponsiveConfig{
+					Mobile: &models.ResponsiveBreakpoint{
+						Height: "200px",
 					},
 				},
 			},
@@ -746,18 +798,20 @@ func (m *ThemeMigrator) MigrateGardenParty() (*models.ComponentConfiguration, er
 				},
 				ZIndex:  10,
 				Visible: true,
-				Content: map[string]interface{}{
-					"text":       "{{.Event.Title}}",
-					"textAlign":  "center",
-					"fontFamily": "'Palatino Linotype', 'Book Antiqua', Palatino, serif",
-					"fontSize":   "2.5rem",
-					"fontWeight": "600",
-					"color":      "#166534",
-					"lineHeight": "1.2",
+				Content: &models.ComponentContent{
+					TextBox: &models.TextBoxContent{
+						Text:       "{{.Event.Title}}",
+						TextAlign:  "center",
+						FontFamily: "'Palatino Linotype', 'Book Antiqua', Palatino, serif",
+						FontSize:   "2.5rem",
+						FontWeight: "600",
+						Color:      "#166534",
+						LineHeight: "1.2",
+					},
 				},
-				Responsive: map[string]interface{}{
-					"mobile": map[string]interface{}{
-						"fontSize": "2rem",
+				Responsive: &models.ResponsiveConfig{
+					Mobile: &models.ResponsiveBreakpoint{
+						FontSize: "2rem",
 					},
 				},
 			},
@@ -774,13 +828,15 @@ func (m *ThemeMigrator) MigrateGardenParty() (*models.ComponentConfiguration, er
 				},
 				ZIndex:  10,
 				Visible: true,
-				Content: map[string]interface{}{
-					"text":       "{{formatDateTime .Event.StartTime}}",
-					"textAlign":  "center",
-					"fontFamily": "-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
-					"fontSize":   "1.125rem",
-					"color":      "#15803d",
-					"lineHeight": "1.5",
+				Content: &models.ComponentContent{
+					TextBox: &models.TextBoxContent{
+						Text:       "{{formatDateTime .Event.StartTime}}",
+						TextAlign:  "center",
+						FontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+						FontSize:   "1.125rem",
+						Color:      "#15803d",
+						LineHeight: "1.5",
+					},
 				},
 			},
 			{
@@ -796,13 +852,15 @@ func (m *ThemeMigrator) MigrateGardenParty() (*models.ComponentConfiguration, er
 				},
 				ZIndex:  10,
 				Visible: true,
-				Content: map[string]interface{}{
-					"text":       "{{.Event.Location}}",
-					"textAlign":  "center",
-					"fontFamily": "-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
-					"fontSize":   "1rem",
-					"color":      "#16a34a",
-					"lineHeight": "1.5",
+				Content: &models.ComponentContent{
+					TextBox: &models.TextBoxContent{
+						Text:       "{{.Event.Location}}",
+						TextAlign:  "center",
+						FontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+						FontSize:   "1rem",
+						Color:      "#16a34a",
+						LineHeight: "1.5",
+					},
 				},
 			},
 		},
@@ -840,9 +898,11 @@ func (m *ThemeMigrator) MigrateModernMinimalist() (*models.ComponentConfiguratio
 				},
 				ZIndex:  0,
 				Visible: true,
-				Content: map[string]interface{}{
-					"type":  "color",
-					"color": "#ffffff",
+				Content: &models.ComponentContent{
+					Background: &models.BackgroundContent{
+						Type:  "color",
+						Color: "#ffffff",
+					},
 				},
 			},
 			{
@@ -858,15 +918,17 @@ func (m *ThemeMigrator) MigrateModernMinimalist() (*models.ComponentConfiguratio
 				},
 				ZIndex:  1,
 				Visible: true,
-				Content: map[string]interface{}{
-					"src":            "{{if .Event.CustomThemeImageURL}}{{.Event.CustomThemeImageURL}}{{else}}/static/images/themes/modern-minimalist-header.svg{{end}}",
-					"alt":            "Modern minimalist design",
-					"objectFit":      "cover",
-					"objectPosition": "center",
+				Content: &models.ComponentContent{
+					Image: &models.ImageContent{
+						Src:            "{{if .Event.CustomThemeImageURL}}{{.Event.CustomThemeImageURL}}{{else}}/static/images/themes/modern-minimalist-header.svg{{end}}",
+						Alt:            "Modern minimalist design",
+						ObjectFit:      "cover",
+						ObjectPosition: "center",
+					},
 				},
-				Responsive: map[string]interface{}{
-					"mobile": map[string]interface{}{
-						"height": "200px",
+				Responsive: &models.ResponsiveConfig{
+					Mobile: &models.ResponsiveBreakpoint{
+						Height: "200px",
 					},
 				},
 			},
@@ -883,19 +945,21 @@ func (m *ThemeMigrator) MigrateModernMinimalist() (*models.ComponentConfiguratio
 				},
 				ZIndex:  10,
 				Visible: true,
-				Content: map[string]interface{}{
-					"text":          "{{.Event.Title}}",
-					"textAlign":     "center",
-					"fontFamily":    "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
-					"fontSize":      "2rem",
-					"fontWeight":    "300",
-					"color":         "#1a202c",
-					"lineHeight":    "1.3",
-					"letterSpacing": "0.02em",
+				Content: &models.ComponentContent{
+					TextBox: &models.TextBoxContent{
+						Text:          "{{.Event.Title}}",
+						TextAlign:     "center",
+						FontFamily:    "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+						FontSize:      "2rem",
+						FontWeight:    "300",
+						Color:         "#1a202c",
+						LineHeight:    "1.3",
+						LetterSpacing: "0.02em",
+					},
 				},
-				Responsive: map[string]interface{}{
-					"mobile": map[string]interface{}{
-						"fontSize": "1.5rem",
+				Responsive: &models.ResponsiveConfig{
+					Mobile: &models.ResponsiveBreakpoint{
+						FontSize: "1.5rem",
 					},
 				},
 			},
@@ -912,14 +976,16 @@ func (m *ThemeMigrator) MigrateModernMinimalist() (*models.ComponentConfiguratio
 				},
 				ZIndex:  10,
 				Visible: true,
-				Content: map[string]interface{}{
-					"text":       "{{formatDateTime .Event.StartTime}}",
-					"textAlign":  "center",
-					"fontFamily": "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
-					"fontSize":   "1.125rem",
-					"fontWeight": "400",
-					"color":      "#4a5568",
-					"lineHeight": "1.5",
+				Content: &models.ComponentContent{
+					TextBox: &models.TextBoxContent{
+						Text:       "{{formatDateTime .Event.StartTime}}",
+						TextAlign:  "center",
+						FontFamily: "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+						FontSize:   "1.125rem",
+						FontWeight: "400",
+						Color:      "#4a5568",
+						LineHeight: "1.5",
+					},
 				},
 			},
 			{
@@ -935,14 +1001,16 @@ func (m *ThemeMigrator) MigrateModernMinimalist() (*models.ComponentConfiguratio
 				},
 				ZIndex:  10,
 				Visible: true,
-				Content: map[string]interface{}{
-					"text":       "{{.Event.Location}}",
-					"textAlign":  "center",
-					"fontFamily": "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
-					"fontSize":   "1rem",
-					"fontWeight": "400",
-					"color":      "#718096",
-					"lineHeight": "1.5",
+				Content: &models.ComponentContent{
+					TextBox: &models.TextBoxContent{
+						Text:       "{{.Event.Location}}",
+						TextAlign:  "center",
+						FontFamily: "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+						FontSize:   "1rem",
+						FontWeight: "400",
+						Color:      "#718096",
+						LineHeight: "1.5",
+					},
 				},
 			},
 		},

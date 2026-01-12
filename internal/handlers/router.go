@@ -58,6 +58,7 @@ type RouterHandlers struct {
 	RSVPSummaryHandler RSVPSummaryHandlerInterface
 	UserHandler      UserHandlerInterface
 	TemplateHandlers TemplateHandlerInterface
+	CustomizationHandlers CustomizationHandlerInterface
 	AssetHandler     AssetHandlerInterface
 	
 	AdminDashboardHandler AdminDashboardHandlerInterface
@@ -171,6 +172,11 @@ type UserHandlerInterface interface {
 
 type TemplateHandlerInterface interface {
 	RegisterRoutes(r chi.Router)
+}
+
+type CustomizationHandlerInterface interface {
+	RegisterRoutes(r chi.Router)
+	CustomizationPage(w http.ResponseWriter, r *http.Request)
 }
 
 type AssetHandlerInterface interface {
@@ -348,6 +354,9 @@ func NewRouter(handlers *RouterHandlers) *Router {
 			r.Route("/{id}", func(r chi.Router) {
 				r.Get("/", handlers.EventWebHandlers.GetEventPage)
 				r.Get("/edit", handlers.EventWebHandlers.EditEventForm)
+				if handlers.CustomizationHandlers != nil {
+					r.Get("/customize", handlers.CustomizationHandlers.CustomizationPage)
+				}
 				r.Post("/", handlers.EventWebHandlers.UpdateEventFromForm)
 				r.Post("/publish", handlers.EventWebHandlers.PublishEventAction)
 				r.Post("/cancel", handlers.EventWebHandlers.CancelEventAction)
@@ -451,6 +460,10 @@ func NewRouter(handlers *RouterHandlers) *Router {
 
 	if handlers.TemplateHandlers != nil {
 		handlers.TemplateHandlers.RegisterRoutes(apiRouter)
+	}
+
+	if handlers.CustomizationHandlers != nil {
+		handlers.CustomizationHandlers.RegisterRoutes(apiRouter)
 	}
 
 	if handlers.UserHandler != nil {

@@ -74,12 +74,14 @@ func TestComponent_JSONSerialization(t *testing.T) {
 					Width:  "80%",
 					Height: "auto",
 				},
-				Content: map[string]interface{}{
-					"text":       "{{.Event.Title}}",
-					"textAlign":  "center",
-					"fontFamily": "Arial, sans-serif",
-					"fontSize":   "48px",
-					"color":      "#000000",
+				Content: &ComponentContent{
+					TextBox: &TextBoxContent{
+						Text:       "{{.Event.Title}}",
+						TextAlign:  "center",
+						FontFamily: "Arial, sans-serif",
+						FontSize:   "48px",
+						Color:      "#000000",
+					},
 				},
 			},
 			wantErr: false,
@@ -100,10 +102,12 @@ func TestComponent_JSONSerialization(t *testing.T) {
 					Width:  "100%",
 					Height: "400px",
 				},
-				Content: map[string]interface{}{
-					"src":       "/static/images/header.jpg",
-					"alt":       "Header image",
-					"objectFit": "cover",
+				Content: &ComponentContent{
+					Image: &ImageContent{
+						Src:       "/static/images/header.jpg",
+						Alt:       "Header image",
+						ObjectFit: "cover",
+					},
 				},
 			},
 			wantErr: false,
@@ -170,8 +174,10 @@ func TestComponentConfiguration_JSONSerialization(t *testing.T) {
 					Width:  "80%",
 					Height: "auto",
 				},
-				Content: map[string]interface{}{
-					"text": "Test",
+				Content: &ComponentContent{
+					TextBox: &TextBoxContent{
+						Text: "Test",
+					},
 				},
 			},
 		},
@@ -229,8 +235,10 @@ func TestComponentOverrides_JSONSerialization(t *testing.T) {
 					Width:  "70%",
 					Height: "auto",
 				},
-				Content: map[string]interface{}{
-					"text": "New text",
+				Content: &ComponentContent{
+					TextBox: &TextBoxContent{
+						Text: "New text",
+					},
 				},
 			},
 		},
@@ -259,6 +267,130 @@ func TestComponentOverrides_JSONSerialization(t *testing.T) {
 	if len(decoded.Removals) != len(overrides.Removals) {
 		t.Errorf("len(Removals) = %v, want %v", len(decoded.Removals), len(overrides.Removals))
 	}
+}
+
+func TestComponent_GetterMethods(t *testing.T) {
+	t.Run("GetTextBoxContent success", func(t *testing.T) {
+		comp := Component{
+			Type: ComponentTypeTextBox,
+			Content: &ComponentContent{
+				TextBox: &TextBoxContent{
+					Text: "Test",
+				},
+			},
+		}
+
+		content, err := comp.GetTextBoxContent()
+		if err != nil {
+			t.Errorf("GetTextBoxContent() error = %v", err)
+		}
+		if content.Text != "Test" {
+			t.Errorf("Text = %v, want %v", content.Text, "Test")
+		}
+	})
+
+	t.Run("GetTextBoxContent wrong type", func(t *testing.T) {
+		comp := Component{
+			Type: ComponentTypeImage,
+		}
+
+		_, err := comp.GetTextBoxContent()
+		if err == nil {
+			t.Error("GetTextBoxContent() expected error for wrong type")
+		}
+	})
+
+	t.Run("GetImageContent success", func(t *testing.T) {
+		comp := Component{
+			Type: ComponentTypeImage,
+			Content: &ComponentContent{
+				Image: &ImageContent{
+					Src: "/test.jpg",
+				},
+			},
+		}
+
+		content, err := comp.GetImageContent()
+		if err != nil {
+			t.Errorf("GetImageContent() error = %v", err)
+		}
+		if content.Src != "/test.jpg" {
+			t.Errorf("Src = %v, want %v", content.Src, "/test.jpg")
+		}
+	})
+
+	t.Run("GetBackgroundContent success", func(t *testing.T) {
+		comp := Component{
+			Type: ComponentTypeBackground,
+			Content: &ComponentContent{
+				Background: &BackgroundContent{
+					Type:  "color",
+					Color: "#ffffff",
+				},
+			},
+		}
+
+		content, err := comp.GetBackgroundContent()
+		if err != nil {
+			t.Errorf("GetBackgroundContent() error = %v", err)
+		}
+		if content.Color != "#ffffff" {
+			t.Errorf("Color = %v, want %v", content.Color, "#ffffff")
+		}
+	})
+
+	t.Run("GetOverlayContent success", func(t *testing.T) {
+		comp := Component{
+			Type: ComponentTypeOverlay,
+			Content: &ComponentContent{
+				Overlay: &OverlayContent{
+					BackgroundColor: "rgba(0,0,0,0.5)",
+				},
+			},
+		}
+
+		content, err := comp.GetOverlayContent()
+		if err != nil {
+			t.Errorf("GetOverlayContent() error = %v", err)
+		}
+		if content.BackgroundColor != "rgba(0,0,0,0.5)" {
+			t.Errorf("BackgroundColor = %v, want %v", content.BackgroundColor, "rgba(0,0,0,0.5)")
+		}
+	})
+
+	t.Run("GetContainerLayout success", func(t *testing.T) {
+		comp := Component{
+			Type: ComponentTypeContainer,
+			Layout: &ContainerLayout{
+				Display: "flex",
+			},
+		}
+
+		layout, err := comp.GetContainerLayout()
+		if err != nil {
+			t.Errorf("GetContainerLayout() error = %v", err)
+		}
+		if layout.Display != "flex" {
+			t.Errorf("Display = %v, want %v", layout.Display, "flex")
+		}
+	})
+
+	t.Run("GetDividerStyle success", func(t *testing.T) {
+		comp := Component{
+			Type: ComponentTypeDivider,
+			Style: &DividerStyle{
+				Height: "2px",
+			},
+		}
+
+		style, err := comp.GetDividerStyle()
+		if err != nil {
+			t.Errorf("GetDividerStyle() error = %v", err)
+		}
+		if style.Height != "2px" {
+			t.Errorf("Height = %v, want %v", style.Height, "2px")
+		}
+	})
 }
 
 func strPtr(s string) *string {

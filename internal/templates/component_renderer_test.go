@@ -214,9 +214,11 @@ func TestMergeConfigurations_NoOverrides(t *testing.T) {
 					Width:  "80%",
 					Height: "auto",
 				},
-				Content: map[string]interface{}{
-					"text":  "Original",
-					"color": "#000000",
+				Content: &models.ComponentContent{
+					TextBox: &models.TextBoxContent{
+						Text:  "Original",
+						Color: "#000000",
+					},
 				},
 			},
 		},
@@ -257,10 +259,12 @@ func TestMergeConfigurations_SimpleOverride(t *testing.T) {
 					Width:  "80%",
 					Height: "auto",
 				},
-				Content: map[string]interface{}{
-					"text":     "Original Title",
-					"color":    "#000000",
-					"fontSize": "48px",
+				Content: &models.ComponentContent{
+					TextBox: &models.TextBoxContent{
+						Text:     "Original Title",
+						Color:    "#000000",
+						FontSize: "48px",
+					},
 				},
 			},
 		},
@@ -290,14 +294,17 @@ func TestMergeConfigurations_SimpleOverride(t *testing.T) {
 	}
 
 	comp := result.Components[0]
-	if comp.Content["color"] != "#ff0000" {
-		t.Errorf("Content color = %v, want #ff0000", comp.Content["color"])
+	if comp.Content == nil || comp.Content.TextBox == nil {
+		t.Fatal("Component Content or TextBox is nil")
 	}
-	if comp.Content["text"] != "Original Title" {
-		t.Errorf("Content text = %v, want Original Title", comp.Content["text"])
+	if comp.Content.TextBox.Color != "#ff0000" {
+		t.Errorf("Content color = %v, want #ff0000", comp.Content.TextBox.Color)
 	}
-	if comp.Content["fontSize"] != "48px" {
-		t.Errorf("Content fontSize = %v, want 48px", comp.Content["fontSize"])
+	if comp.Content.TextBox.Text != "Original Title" {
+		t.Errorf("Content text = %v, want Original Title", comp.Content.TextBox.Text)
+	}
+	if comp.Content.TextBox.FontSize != "48px" {
+		t.Errorf("Content fontSize = %v, want 48px", comp.Content.TextBox.FontSize)
 	}
 }
 
@@ -321,9 +328,11 @@ func TestMergeConfigurations_NestedOverride(t *testing.T) {
 					Width:  "80%",
 					Height: "auto",
 				},
-				Content: map[string]interface{}{
-					"text":  "Original",
-					"color": "#000000",
+				Content: &models.ComponentContent{
+					TextBox: &models.TextBoxContent{
+						Text:  "Original",
+						Color: "#000000",
+					},
 				},
 			},
 		},

@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"encoding/json"
+	"html/template"
 	"net/http"
 	"strconv"
 
@@ -11,12 +12,48 @@ import (
 )
 
 type EventCustomizationHandlers struct {
-	service events.CustomizationService
+	service   events.CustomizationService
+	templates *template.Template
 }
 
 func NewEventCustomizationHandlers(service events.CustomizationService) *EventCustomizationHandlers {
 	return &EventCustomizationHandlers{
 		service: service,
+	}
+}
+
+func (h *EventCustomizationHandlers) SetTemplates(templates *template.Template) {
+	h.templates = templates
+}
+
+func (h *EventCustomizationHandlers) RegisterRoutes(r chi.Router) {
+	r.Route("/events/{id}/template/customization", func(r chi.Router) {
+		r.Get("/", h.GetCustomization)
+		r.Put("/", h.UpdateCustomization)
+		r.Post("/preview", h.PreviewCustomization)
+		r.Delete("/", h.ResetCustomization)
+	})
+}
+
+func (h *EventCustomizationHandlers) CustomizationPage(w http.ResponseWriter, r *http.Request) {
+	eventID, err := strconv.ParseInt(chi.URLParam(r, "id"), 10, 64)
+	if err != nil {
+		HandleError(w, r, NewBadRequestError("invalid event ID"))
+		return
+	}
+
+	data := map[string]interface{}{
+		"EventID": eventID,
+	}
+
+	if h.templates != nil {
+		w.Header().Set("Content-Type", "text/html; charset=utf-8")
+		if err := h.templates.ExecuteTemplate(w, "event_customization.html", data); err != nil {
+			HandleError(w, r, err)
+			return
+		}
+	} else {
+		http.Error(w, "Templates not configured", http.StatusInternalServerError)
 	}
 }
 

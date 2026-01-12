@@ -43,9 +43,11 @@ var presets = map[string]*ComponentPreset{
 				},
 				ZIndex:  0,
 				Visible: true,
-				Content: map[string]interface{}{
-					"type":  "gradient",
-					"gradient": "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+				Content: &models.ComponentContent{
+					Background: &models.BackgroundContent{
+						Type:     "gradient",
+						Gradient: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+					},
 				},
 			},
 			{
@@ -62,13 +64,15 @@ var presets = map[string]*ComponentPreset{
 				},
 				ZIndex:  10,
 				Visible: true,
-				Content: map[string]interface{}{
-					"text":       "{{.Event.Title}}",
-					"textAlign":  "center",
-					"fontFamily": "Playfair Display, serif",
-					"fontSize":   "56px",
-					"fontWeight": "700",
-					"color":      "#ffffff",
+				Content: &models.ComponentContent{
+					TextBox: &models.TextBoxContent{
+						Text:       "{{.Event.Title}}",
+						TextAlign:  "center",
+						FontFamily: "Playfair Display, serif",
+						FontSize:   "56px",
+						FontWeight: "700",
+						Color:      "#ffffff",
+					},
 				},
 			},
 			{
@@ -85,13 +89,15 @@ var presets = map[string]*ComponentPreset{
 				},
 				ZIndex:  10,
 				Visible: true,
-				Content: map[string]interface{}{
-					"text":       "Join us for an unforgettable celebration",
-					"textAlign":  "center",
-					"fontFamily": "Lato, sans-serif",
-					"fontSize":   "24px",
-					"fontWeight": "300",
-					"color":      "#ffffff",
+				Content: &models.ComponentContent{
+					TextBox: &models.TextBoxContent{
+						Text:       "Join us for an unforgettable celebration",
+						TextAlign:  "center",
+						FontFamily: "Lato, sans-serif",
+						FontSize:   "24px",
+						FontWeight: "300",
+						Color:      "#ffffff",
+					},
 				},
 			},
 		},
@@ -118,16 +124,16 @@ var presets = map[string]*ComponentPreset{
 				},
 				ZIndex:  5,
 				Visible: true,
-				Layout: map[string]interface{}{
-					"display":        "flex",
-					"flexDirection":  "column",
-					"alignItems":     "center",
-					"justifyContent": "center",
-					"gap":            "20px",
-					"padding":        "60px 20px",
+				Layout: &models.ContainerLayout{
+					Display:        "flex",
+					FlexDirection:  "column",
+					AlignItems:     "center",
+					JustifyContent: "center",
+					Gap:            "20px",
+					Padding:        "60px 20px",
 				},
-				Style: map[string]interface{}{
-					"backgroundColor": "#f8f9fa",
+				Style: &models.DividerStyle{
+					BackgroundColor: "#f8f9fa",
 				},
 			},
 			{
@@ -143,13 +149,15 @@ var presets = map[string]*ComponentPreset{
 				},
 				ZIndex:  10,
 				Visible: true,
-				Content: map[string]interface{}{
-					"text":       "Ready to RSVP?",
-					"textAlign":  "center",
-					"fontFamily": "Playfair Display, serif",
-					"fontSize":   "36px",
-					"fontWeight": "700",
-					"color":      "#2c3e50",
+				Content: &models.ComponentContent{
+					TextBox: &models.TextBoxContent{
+						Text:       "Ready to RSVP?",
+						TextAlign:  "center",
+						FontFamily: "Playfair Display, serif",
+						FontSize:   "36px",
+						FontWeight: "700",
+						Color:      "#2c3e50",
+					},
 				},
 			},
 			{
@@ -165,19 +173,18 @@ var presets = map[string]*ComponentPreset{
 				},
 				ZIndex:  10,
 				Visible: true,
-				Content: map[string]interface{}{
-					"text":       "RSVP Now",
-					"textAlign":  "center",
-					"fontFamily": "Lato, sans-serif",
-					"fontSize":   "18px",
-					"fontWeight": "600",
-					"color":      "#ffffff",
+				Content: &models.ComponentContent{
+					TextBox: &models.TextBoxContent{
+						Text:       "RSVP Now",
+						TextAlign:  "center",
+						FontFamily: "Lato, sans-serif",
+						FontSize:   "18px",
+						FontWeight: "600",
+						Color:      "#ffffff",
+					},
 				},
-				Style: map[string]interface{}{
-					"backgroundColor": "#667eea",
-					"padding":         "15px 40px",
-					"borderRadius":    "8px",
-					"cursor":          "pointer",
+				Style: &models.DividerStyle{
+					BackgroundColor: "#667eea",
 				},
 			},
 		},
@@ -204,11 +211,10 @@ var presets = map[string]*ComponentPreset{
 				},
 				ZIndex:  5,
 				Visible: true,
-				Layout: map[string]interface{}{
-					"display":             "grid",
-					"gridTemplateColumns": "repeat(3, 1fr)",
-					"gap":                 "20px",
-					"padding":             "40px 20px",
+				Layout: &models.ContainerLayout{
+					Display: "grid",
+					Gap:     "20px",
+					Padding: "40px 20px",
 				},
 				LayoutMode: func() *models.LayoutMode { m := models.LayoutModeGrid; return &m }(),
 				GridConfig: &models.GridConfig{
@@ -230,11 +236,13 @@ var presets = map[string]*ComponentPreset{
 				},
 				ZIndex:  10,
 				Visible: true,
-				Content: map[string]interface{}{
-					"src":            "/static/images/placeholder-1.jpg",
-					"alt":            "Gallery image 1",
-					"objectFit":      "cover",
-					"objectPosition": "center",
+				Content: &models.ComponentContent{
+					Image: &models.ImageContent{
+						Src:            "/static/images/placeholder-1.jpg",
+						Alt:            "Gallery image 1",
+						ObjectFit:      "cover",
+						ObjectPosition: "center",
+					},
 				},
 			},
 			{
@@ -250,11 +258,13 @@ var presets = map[string]*ComponentPreset{
 				},
 				ZIndex:  10,
 				Visible: true,
-				Content: map[string]interface{}{
-					"src":            "/static/images/placeholder-2.jpg",
-					"alt":            "Gallery image 2",
-					"objectFit":      "cover",
-					"objectPosition": "center",
+				Content: &models.ComponentContent{
+					Image: &models.ImageContent{
+						Src:            "/static/images/placeholder-2.jpg",
+						Alt:            "Gallery image 2",
+						ObjectFit:      "cover",
+						ObjectPosition: "center",
+					},
 				},
 			},
 			{
@@ -270,11 +280,13 @@ var presets = map[string]*ComponentPreset{
 				},
 				ZIndex:  10,
 				Visible: true,
-				Content: map[string]interface{}{
-					"src":            "/static/images/placeholder-3.jpg",
-					"alt":            "Gallery image 3",
-					"objectFit":      "cover",
-					"objectPosition": "center",
+				Content: &models.ComponentContent{
+					Image: &models.ImageContent{
+						Src:            "/static/images/placeholder-3.jpg",
+						Alt:            "Gallery image 3",
+						ObjectFit:      "cover",
+						ObjectPosition: "center",
+					},
 				},
 			},
 		},
@@ -301,18 +313,17 @@ var presets = map[string]*ComponentPreset{
 				},
 				ZIndex:  5,
 				Visible: true,
-				Layout: map[string]interface{}{
-					"display":        "flex",
-					"flexDirection":  "column",
-					"alignItems":     "center",
-					"justifyContent": "center",
-					"gap":            "20px",
-					"padding":        "60px 40px",
+				Layout: &models.ContainerLayout{
+					Display:        "flex",
+					FlexDirection:  "column",
+					AlignItems:     "center",
+					JustifyContent: "center",
+					Gap:            "20px",
+					Padding:        "60px 40px",
 				},
-				Style: map[string]interface{}{
-					"backgroundColor": "#ffffff",
-					"borderRadius":    "12px",
-					"boxShadow":       "0 4px 12px rgba(0,0,0,0.1)",
+				Style: &models.DividerStyle{
+					BackgroundColor: "#ffffff",
+					BorderRadius:    "12px",
 				},
 			},
 			{
@@ -328,14 +339,15 @@ var presets = map[string]*ComponentPreset{
 				},
 				ZIndex:  10,
 				Visible: true,
-				Content: map[string]interface{}{
-					"text":       "\"This was an amazing event! Everything was perfect.\"",
-					"textAlign":  "center",
-					"fontFamily": "Georgia, serif",
-					"fontSize":   "24px",
-					"fontWeight": "400",
-					"fontStyle":  "italic",
-					"color":      "#2c3e50",
+				Content: &models.ComponentContent{
+					TextBox: &models.TextBoxContent{
+						Text:       "\"This was an amazing event! Everything was perfect.\"",
+						TextAlign:  "center",
+						FontFamily: "Georgia, serif",
+						FontSize:   "24px",
+						FontWeight: "400",
+						Color:      "#2c3e50",
+					},
 				},
 			},
 			{
@@ -351,13 +363,15 @@ var presets = map[string]*ComponentPreset{
 				},
 				ZIndex:  10,
 				Visible: true,
-				Content: map[string]interface{}{
-					"text":       "— Guest Name",
-					"textAlign":  "center",
-					"fontFamily": "Lato, sans-serif",
-					"fontSize":   "16px",
-					"fontWeight": "600",
-					"color":      "#666666",
+				Content: &models.ComponentContent{
+					TextBox: &models.TextBoxContent{
+						Text:       "— Guest Name",
+						TextAlign:  "center",
+						FontFamily: "Lato, sans-serif",
+						FontSize:   "16px",
+						FontWeight: "600",
+						Color:      "#666666",
+					},
 				},
 			},
 		},
