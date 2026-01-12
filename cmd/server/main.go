@@ -374,6 +374,20 @@ func main() {
 		"formatTime": func(t time.Time) string {
 			return t.Format("3:04 PM MST")
 		},
+		"dict": func(values ...interface{}) (map[string]interface{}, error) {
+			if len(values)%2 != 0 {
+				return nil, fmt.Errorf("dict requires even number of arguments")
+			}
+			dict := make(map[string]interface{}, len(values)/2)
+			for i := 0; i < len(values); i += 2 {
+				key, ok := values[i].(string)
+				if !ok {
+					return nil, fmt.Errorf("dict keys must be strings")
+				}
+				dict[key] = values[i+1]
+			}
+			return dict, nil
+		},
 	}
 
 	rsvpPageTemplates, err := template.New("rsvp_page.html").Funcs(funcMap).ParseFiles(
@@ -409,9 +423,10 @@ func main() {
 	}
 	logger.Info("RSVP summary templates loaded successfully")
 
-	dashboardTemplates, err := template.New("dashboard.html").ParseFiles(
+	dashboardTemplates, err := template.New("dashboard.html").Funcs(funcMap).ParseFiles(
 		"templates/web/partials/base.html",
 		"templates/web/partials/navigation.html",
+		"templates/web/partials/page_header.html",
 		"templates/web/dashboard.html",
 	)
 	if err != nil {
@@ -424,6 +439,7 @@ func main() {
 	eventListTemplates, err := template.New("event_list.html").Funcs(funcMap).ParseFiles(
 		"templates/web/partials/base.html",
 		"templates/web/partials/navigation.html",
+		"templates/web/partials/page_header.html",
 		"templates/web/event_list.html",
 	)
 	if err != nil {
@@ -435,6 +451,7 @@ func main() {
 	eventFormTemplates, err := template.New("event_form.html").Funcs(funcMap).ParseFiles(
 		"templates/web/partials/base.html",
 		"templates/web/partials/navigation.html",
+		"templates/web/partials/page_header.html",
 		"templates/web/partials/datetime_picker_panel.html",
 		"templates/web/partials/theme_picker.html",
 		"templates/web/partials/theme_preview_modal.html",
@@ -462,6 +479,7 @@ func main() {
 	eventDetailTemplates, err := template.New("event_detail.html").Funcs(funcMap).ParseFiles(
 		"templates/web/partials/base.html",
 		"templates/web/partials/navigation.html",
+		"templates/web/partials/page_header.html",
 		"templates/web/event_detail.html",
 	)
 	if err != nil {
@@ -488,9 +506,10 @@ func main() {
 	inviteWebHandlers := handlers.NewInviteWebHandlers(inviteService, eventRepo)
 	inviteWebHandlers.SetTemplates(inviteListTemplates)
 
-	adminDashboardTemplates, err := template.New("admin_dashboard.html").ParseFiles(
+	adminDashboardTemplates, err := template.New("admin_dashboard.html").Funcs(funcMap).ParseFiles(
 		"templates/web/partials/base.html",
 		"templates/web/partials/navigation.html",
+		"templates/web/partials/page_header.html",
 		"templates/web/admin_dashboard.html",
 	)
 	if err != nil {
