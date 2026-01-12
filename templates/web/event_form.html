@@ -15,9 +15,6 @@
 {{define "main-class"}}event-form-main{{end}}
 
 {{define "content"}}
-    {{template "datetime-picker-panel" .}}
-    {{template "theme-preview-modal" .}}
-
     <header class="dashboard-header">
         <h1>{{if .Event.ID}}Edit{{else}}Create{{end}} Event</h1>
     </header>
@@ -280,6 +277,11 @@
             </button>
         </div>
     </form>
+{{end}}
+
+{{define "modals"}}
+    {{template "datetime-picker-panel" .}}
+    {{template "theme-preview-modal" .}}
 {{end}}
 
 {{define "js-extra"}}

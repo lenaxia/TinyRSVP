@@ -53,7 +53,7 @@
     right: 0;
     bottom: 0;
     background: rgba(0, 0, 0, 0.5);
-    z-index: 998;
+    z-index: var(--z-index-modal-backdrop);
     opacity: 0;
     transition: opacity var(--transition-base);
 }
@@ -72,7 +72,7 @@
     max-width: 90vw;
     background: var(--color-background);
     box-shadow: var(--shadow-lg);
-    z-index: 999;
+    z-index: var(--z-index-modal);
     transition: right var(--transition-base);
     overflow-y: auto;
     display: flex;
@@ -303,7 +303,7 @@
 
 .calendar-day.selected {
     background: var(--color-primary-600);
-    color: #ffffff;
+    color: var(--color-text-inverse);
     font-weight: var(--font-weight-semibold);
     border: 2px solid var(--color-primary-700);
     box-shadow: 0 0 0 2px var(--color-primary-600);
@@ -344,16 +344,18 @@
     transition: all var(--transition-fast);
     font-size: var(--font-size-xs);
     text-align: center;
+    border: 2px solid transparent;
 }
 
 .time-option:hover:not(.selected) {
     background: var(--color-primary-200);
+    border-color: var(--color-primary-400);
 }
 
 .time-option.selected {
     background: var(--color-primary-600);
-    color: #ffffff;
-    font-weight: var(--font-weight-medium);
+    color: var(--color-text-inverse);
+    font-weight: var(--font-weight-semibold);
     border: 2px solid var(--color-primary-700);
     box-shadow: 0 0 0 2px var(--color-primary-600);
 }

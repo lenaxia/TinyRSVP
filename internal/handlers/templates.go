@@ -14,6 +14,16 @@ import (
 	"github.com/lenaxia/tinyrsvp/internal/templates"
 )
 
+type TemplateCategory = models.TemplateCategory
+
+const (
+	CategoryPlain   = models.CategoryPlain
+	CategoryCard    = models.CategoryCard
+	CategoryModern  = models.CategoryModern
+	CategoryClassic = models.CategoryClassic
+	CategoryFun     = models.CategoryFun
+)
+
 type TemplateHandlers struct {
 	service templates.Service
 }
@@ -25,7 +35,7 @@ func NewTemplateHandlers(service templates.Service) *TemplateHandlers {
 }
 
 func (h *TemplateHandlers) RegisterRoutes(r chi.Router) {
-	r.Route("/api/templates", func(r chi.Router) {
+	r.Route("/templates", func(r chi.Router) {
 		r.Post("/", h.CreateTemplate)
 		r.Get("/", h.ListTemplates)
 		r.Post("/preview", h.PreviewTemplate)
@@ -38,8 +48,17 @@ func (h *TemplateHandlers) RegisterRoutes(r chi.Router) {
 			r.Post("/set-default", h.SetDefault)
 		})
 	})
-	
-	r.Get("/api/themes/preview", h.HandleThemePreview)
+
+	r.Group(func(r chi.Router) {
+		r.Use(func(next http.Handler) http.Handler {
+			return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				w.Header().Set("Content-Security-Policy", "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self'; connect-src 'self'; frame-ancestors 'self'; base-uri 'self'; form-action 'self'")
+				w.Header().Set("X-Frame-Options", "SAMEORIGIN")
+				next.ServeHTTP(w, r)
+			})
+		})
+		r.Get("/themes/preview", h.HandleThemePreview)
+	})
 }
 
 type CreateTemplateRequest struct {
@@ -415,6 +434,20 @@ func (h *TemplateHandlers) PreviewTemplate(w http.ResponseWriter, r *http.Reques
 	respondJSON(w, http.StatusOK, resp)
 }
 
+func getThemeSlug(category TemplateCategory) string {
+	mapping := map[TemplateCategory]string{
+		CategoryPlain:   "plain-text",
+		CategoryCard:    "wedding-elegance",
+		CategoryModern:  "modern-minimalist",
+		CategoryClassic: "corporate-professional",
+		CategoryFun:     "birthday-celebration",
+	}
+	if slug, ok := mapping[category]; ok {
+		return slug
+	}
+	return "modern-minimalist"
+}
+
 func (h *TemplateHandlers) HandleThemePreview(w http.ResponseWriter, r *http.Request) {
 	themeIDStr := r.URL.Query().Get("theme_id")
 	if themeIDStr == "" {
@@ -468,8 +501,6 @@ func (h *TemplateHandlers) HandleThemePreview(w http.ResponseWriter, r *http.Req
 	customImageURL := r.URL.Query().Get("custom_image_url")
 	customColor := r.URL.Query().Get("custom_color")
 
-	w.Header().Set("Content-Security-Policy", "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self'; connect-src 'self'; frame-ancestors 'self'; base-uri 'self'; form-action 'self'")
-	w.Header().Set("X-Frame-Options", "SAMEORIGIN")
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 
 	dataTheme := themeMode
@@ -498,6 +529,8 @@ func (h *TemplateHandlers) HandleThemePreview(w http.ResponseWriter, r *http.Req
 	   </style>`, customColor, customColor, customColor)
 	}
 
+	themeSlug := getThemeSlug(template.Category)
+	
 	fmt.Fprintf(w, `<!DOCTYPE html>
 <html lang="en" data-theme="%s" data-event-theme="%s">
 <head>
@@ -510,6 +543,7 @@ func (h *TemplateHandlers) HandleThemePreview(w http.ResponseWriter, r *http.Req
 	   <link rel="stylesheet" href="/static/css/buttons.css">
 	   <link rel="stylesheet" href="/static/css/forms.css">
 	   <link rel="stylesheet" href="/static/css/rsvp_page.css">
+	   <link rel="stylesheet" href="/static/css/themes/%s.css">
 	   <style>
 	       .event-header-image {
 	           width: 100%%;
@@ -579,7 +613,7 @@ func (h *TemplateHandlers) HandleThemePreview(w http.ResponseWriter, r *http.Req
 	       </div>
 	   </div>
 </body>
-</html>`, dataTheme, eventTheme, customColorCSS, headerImageHTML, title, startTime.Format("Monday, January 2, 2006 at 3:04 PM MST"), location, description)
+</html>`, dataTheme, eventTheme, themeSlug, customColorCSS, headerImageHTML, title, startTime.Format("Monday, January 2, 2006 at 3:04 PM MST"), location, description)
 }
 
 func isValidHexColor(color string) bool {
