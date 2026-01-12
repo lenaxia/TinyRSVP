@@ -35,6 +35,8 @@ class ThemePreviewModal {
 
         document.addEventListener('keydown', (e) => {
             if (e.key === 'Escape' && !this.modal.hidden) {
+                e.preventDefault();
+                e.stopPropagation();
                 this.close();
             }
         });
@@ -70,8 +72,16 @@ class ThemePreviewModal {
     }
 
     close() {
+        if (this.modal.hidden) return;
+        
         this.modal.hidden = true;
-        document.body.style.overflow = '';
+        
+        try {
+            document.body.style.overflow = '';
+        } catch (e) {
+            console.error('Error restoring scroll:', e);
+            document.body.style.overflow = '';
+        }
         
         if (this.lastFocusedElement) {
             this.lastFocusedElement.focus();

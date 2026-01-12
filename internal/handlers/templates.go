@@ -468,6 +468,8 @@ func (h *TemplateHandlers) HandleThemePreview(w http.ResponseWriter, r *http.Req
 	customImageURL := r.URL.Query().Get("custom_image_url")
 	customColor := r.URL.Query().Get("custom_color")
 
+	w.Header().Set("Content-Security-Policy", "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self'; connect-src 'self'; frame-ancestors 'self'; base-uri 'self'; form-action 'self'")
+	w.Header().Set("X-Frame-Options", "SAMEORIGIN")
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 
 	dataTheme := themeMode
