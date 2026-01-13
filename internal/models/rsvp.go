@@ -23,12 +23,14 @@ func (r RSVPResponse) Valid() bool {
 }
 
 type RSVP struct {
-	ID        int64        `db:"id" json:"id"`
-	InviteID  int64        `db:"invite_id" json:"invite_id"`
-	Response  RSVPResponse `db:"response" json:"response"`
-	PlusOnes  int          `db:"plus_ones" json:"plus_ones"`
-	CreatedAt time.Time    `db:"created_at" json:"created_at"`
-	UpdatedAt time.Time    `db:"updated_at" json:"updated_at"`
+	ID          int64        `db:"id" json:"id"`
+	InviteID    int64        `db:"invite_id" json:"invite_id"`
+	Response    RSVPResponse `db:"response" json:"response"`
+	PlusOnes    int          `db:"plus_ones" json:"plus_ones"`
+	AdultsCount *int         `db:"adults_count" json:"adults_count,omitempty"`
+	KidsCount   *int         `db:"kids_count" json:"kids_count,omitempty"`
+	CreatedAt   time.Time    `db:"created_at" json:"created_at"`
+	UpdatedAt   time.Time    `db:"updated_at" json:"updated_at"`
 }
 
 func (r *RSVP) Validate() error {
@@ -42,6 +44,14 @@ func (r *RSVP) Validate() error {
 
 	if r.PlusOnes < 0 {
 		return fmt.Errorf("plus_ones cannot be negative")
+	}
+
+	if r.AdultsCount != nil && *r.AdultsCount < 0 {
+		return fmt.Errorf("adults_count cannot be negative")
+	}
+
+	if r.KidsCount != nil && *r.KidsCount < 0 {
+		return fmt.Errorf("kids_count cannot be negative")
 	}
 
 	return nil

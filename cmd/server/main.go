@@ -388,6 +388,9 @@ func main() {
 			}
 			return dict, nil
 		},
+		"safeHTML": func(s string) template.HTML {
+			return template.HTML(s)
+		},
 	}
 
 	rsvpPageTemplates, err := template.New("rsvp_page.html").Funcs(funcMap).ParseFiles(

@@ -113,6 +113,79 @@ func TestRSVP_Validate(t *testing.T) {
 			},
 			wantErr: false,
 		},
+		{
+			name: "valid with adults count",
+			rsvp: &RSVP{
+				InviteID:    1,
+				Response:    RSVPResponseYes,
+				PlusOnes:    2,
+				AdultsCount: func() *int { i := 2; return &i }(),
+			},
+			wantErr: false,
+		},
+		{
+			name: "valid with kids count",
+			rsvp: &RSVP{
+				InviteID:  1,
+				Response:  RSVPResponseYes,
+				PlusOnes:  2,
+				KidsCount: func() *int { i := 1; return &i }(),
+			},
+			wantErr: false,
+		},
+		{
+			name: "valid with both adults and kids count",
+			rsvp: &RSVP{
+				InviteID:    1,
+				Response:    RSVPResponseYes,
+				PlusOnes:    3,
+				AdultsCount: func() *int { i := 2; return &i }(),
+				KidsCount:   func() *int { i := 1; return &i }(),
+			},
+			wantErr: false,
+		},
+		{
+			name: "negative adults count",
+			rsvp: &RSVP{
+				InviteID:    1,
+				Response:    RSVPResponseYes,
+				PlusOnes:    0,
+				AdultsCount: func() *int { i := -1; return &i }(),
+			},
+			wantErr: true,
+			errMsg:  "adults_count cannot be negative",
+		},
+		{
+			name: "negative kids count",
+			rsvp: &RSVP{
+				InviteID:  1,
+				Response:  RSVPResponseYes,
+				PlusOnes:  0,
+				KidsCount: func() *int { i := -1; return &i }(),
+			},
+			wantErr: true,
+			errMsg:  "kids_count cannot be negative",
+		},
+		{
+			name: "zero adults count is valid",
+			rsvp: &RSVP{
+				InviteID:    1,
+				Response:    RSVPResponseYes,
+				PlusOnes:    0,
+				AdultsCount: func() *int { i := 0; return &i }(),
+			},
+			wantErr: false,
+		},
+		{
+			name: "zero kids count is valid",
+			rsvp: &RSVP{
+				InviteID:  1,
+				Response:  RSVPResponseYes,
+				PlusOnes:  0,
+				KidsCount: func() *int { i := 0; return &i }(),
+			},
+			wantErr: false,
+		},
 	}
 
 	for _, tt := range tests {
