@@ -63,7 +63,8 @@
     gap: var(--spacing-2);
 }
 
-#theme-preview-modal .modal-close {
+/* Close button in header (X button) */
+#theme-preview-modal .modal-header .modal-close {
     display: flex;
     align-items: center;
     justify-content: center;
@@ -80,14 +81,20 @@
     line-height: 1;
 }
 
-#theme-preview-modal .modal-close:hover {
+#theme-preview-modal .modal-header .modal-close:hover {
     background: var(--color-surface);
     color: var(--color-text-primary);
 }
 
-#theme-preview-modal .modal-close:focus {
+#theme-preview-modal .modal-header .modal-close:focus {
     outline: 2px solid var(--color-border-focus);
     outline-offset: 2px;
+}
+
+/* Close button in footer - should match other .btn styles */
+#theme-preview-modal .modal-footer .modal-close {
+    /* Inherits from .btn .btn-secondary in buttons.css */
+    /* No override needed - let it use default button styling */
 }
 
 .modal-body {
