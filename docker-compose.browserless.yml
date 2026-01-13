@@ -1,0 +1,85 @@
+# Browserless Chrome with Remote Debugging
+# Provides a headless Chrome instance with remote debugging enabled
+# Usage: docker-compose -f docker-compose.browserless.yml up -d
+#
+# Remote debugging port: 9222
+# Connect via: ws://localhost:9222/devtools/browser/<id>
+
+services:
+  # ============================================================================
+  # Browserless - Headless Chrome with Remote Debugging
+  # ============================================================================
+  browserless:
+    image: browserless/chrome:latest
+    container_name: browserless-chrome
+    ports:
+      - "3000:3000"   # Browserless HTTP API
+      - "9222:9222"   # Chrome Remote Debugging Protocol
+    environment:
+      # Enable remote debugging
+      - DEBUG=browserless*
+      - ENABLE_DEBUGGER=true
+      - CHROME_REFRESH_TIME=0
+      
+      # Connection settings
+      - CONNECTION_TIMEOUT=60000
+      - MAX_CONCURRENT_SESSIONS=10
+      - QUEUE_LENGTH=10
+      
+      # Chrome flags for remote debugging
+      - PREBOOT_CHROME=true
+      - KEEP_ALIVE=true
+      
+      # Security (adjust for your needs)
+      - TOKEN=
+      - CORS=true
+      
+      # Resource limits
+      - MAX_CPU_PERCENT=99
+      - MAX_MEMORY_PERCENT=99
+      
+    shm_size: 2gb
+    
+    # Chrome needs to run with specific flags for remote debugging
+    command: >
+      --remote-debugging-address=0.0.0.0
+      --remote-debugging-port=9222
+      --no-sandbox
+      --disable-setuid-sandbox
+      --disable-dev-shm-usage
+      --disable-gpu
+    
+    networks:
+      - browserless-net
+    
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/pressure"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+    
+    restart: unless-stopped
+
+networks:
+  browserless-net:
+    driver: bridge
+
+# Usage Examples:
+# 
+# 1. Start browserless:
+#    docker-compose -f docker-compose.browserless.yml up -d
+#
+# 2. Connect to remote debugging:
+#    - Chrome DevTools: chrome://inspect
+#    - WebSocket: ws://localhost:9222/devtools/browser/<id>
+#    - HTTP API: http://localhost:3000
+#
+# 3. Get browser WebSocket endpoint:
+#    curl http://localhost:3000/json/version
+#
+# 4. Stop browserless:
+#    docker-compose -f docker-compose.browserless.yml down
+#
+# 5. View logs:
+#    docker-compose -f docker-compose.browserless.yml logs -f
