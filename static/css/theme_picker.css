@@ -145,11 +145,18 @@
     color: var(--color-text-primary);
     border-radius: var(--radius-base);
     cursor: pointer;
-    transition: background var(--transition-fast);
+    transition: all var(--transition-fast);
 }
 
 .btn-preview:hover {
-    background: var(--color-gray-50);
+    background: var(--color-primary-50);
+    border-color: var(--color-primary-300);
+    transform: translateY(-1px);
+}
+
+.btn-preview:focus {
+    outline: 2px solid var(--color-border-focus);
+    outline-offset: 2px;
 }
 
 .btn-select {
