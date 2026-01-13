@@ -3,7 +3,7 @@
     <h1>{{.Title}}</h1>
     {{if .Actions}}
     <div class="header-actions">
-        {{.Actions}}
+        {{.Actions | safeHTML}}
     </div>
     {{end}}
 </header>
