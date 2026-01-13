@@ -119,12 +119,18 @@
                         {{end}}
                     </section>
 
-                    {{if .DeadlinePassed}}
+                    {{if and .DeadlinePassed (not .Event.AllowRSVPAfterDeadline)}}
                     <div class="deadline-warning" role="alert" aria-live="polite">
                         <strong>⏰ RSVP Deadline Passed</strong>
                         <p>The deadline to respond to this invitation has passed. Please contact the event organizer if you need to make changes.</p>
                     </div>
-                    {{else if .EventPassed}}
+                    {{else if .DeadlinePassed}}
+                    <div class="deadline-info" role="status" aria-live="polite">
+                        <strong>⏰ RSVP Deadline Passed</strong>
+                        <p>The deadline has passed, but you can still submit your RSVP.</p>
+                    </div>
+                    {{end}}
+                    {{if .EventPassed}}
                     <div class="deadline-warning" role="alert" aria-live="polite">
                         <strong>📅 Event Has Passed</strong>
                         <p>This event has already occurred. RSVPs are no longer being accepted.</p>
@@ -139,7 +145,7 @@
                     {{end}}
                 </article>
 
-                {{if not .DeadlinePassed}}
+                {{if not (and .DeadlinePassed (not .Event.AllowRSVPAfterDeadline))}}
                 {{if not .EventPassed}}
                 <form class="rsvp-form" method="POST" action="/rsvp/{{.Token}}" novalidate>
                     <input type="hidden" name="csrf_token" value="{{.CSRFToken}}">
@@ -155,10 +161,12 @@
                                     <input type="radio" name="response" value="yes" id="response_yes" {{if .ExistingRSVP}}{{if eq .ExistingRSVP.Response "yes"}}checked{{end}}{{end}} required>
                                     <label for="response_yes">Yes, I'll be there</label>
                                 </div>
+                                {{if .Event.AllowMaybeRSVP}}
                                 <div class="response-option">
                                     <input type="radio" name="response" value="maybe" id="response_maybe" {{if .ExistingRSVP}}{{if eq .ExistingRSVP.Response "maybe"}}checked{{end}}{{end}}>
                                     <label for="response_maybe">Maybe</label>
                                 </div>
+                                {{end}}
                                 <div class="response-option">
                                     <input type="radio" name="response" value="no" id="response_no" {{if .ExistingRSVP}}{{if eq .ExistingRSVP.Response "no"}}checked{{end}}{{end}}>
                                     <label for="response_no">No, I can't make it</label>
@@ -193,6 +201,43 @@
                         </small>
                     </div>
                     {{end}}
+                    {{end}}
+
+                    {{if .Event.FamilyHeadcount}}
+                    <div class="family-headcount-selector">
+                        <h3 class="form-label">Headcount Details</h3>
+                        <p class="form-help-text">Please let us know how many adults and kids are attending</p>
+                        
+                        <div class="headcount-fields">
+                            <div class="form-group">
+                                <label for="adults_count" class="form-label">Adults</label>
+                                <input
+                                    type="number"
+                                    id="adults_count"
+                                    name="adults_count"
+                                    class="form-input"
+                                    min="0"
+                                    value="{{if .ExistingRSVP}}{{if .ExistingRSVP.AdultsCount}}{{.ExistingRSVP.AdultsCount}}{{else}}1{{end}}{{else}}1{{end}}"
+                                    aria-describedby="adults_count-help"
+                                >
+                                <span class="form-help-text" id="adults_count-help">Number of adults (including yourself)</span>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="kids_count" class="form-label">Kids</label>
+                                <input
+                                    type="number"
+                                    id="kids_count"
+                                    name="kids_count"
+                                    class="form-input"
+                                    min="0"
+                                    value="{{if .ExistingRSVP}}{{if .ExistingRSVP.KidsCount}}{{.ExistingRSVP.KidsCount}}{{else}}0{{end}}{{else}}0{{end}}"
+                                    aria-describedby="kids_count-help"
+                                >
+                                <span class="form-help-text" id="kids_count-help">Number of children</span>
+                            </div>
+                        </div>
+                    </div>
                     {{end}}
 
                     {{if .Questions}}

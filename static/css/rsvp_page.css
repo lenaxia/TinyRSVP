@@ -391,6 +391,45 @@
     }
 }
 
+.family-headcount-selector {
+    margin-bottom: var(--spacing-5);
+    background-color: var(--color-surface);
+    padding: var(--spacing-4);
+    border-radius: var(--radius-md);
+    border: 1px solid var(--color-border);
+}
+
+.family-headcount-selector .form-label {
+    margin-bottom: var(--spacing-2);
+    color: var(--color-text-primary);
+    font-weight: var(--font-weight-semibold);
+}
+
+.family-headcount-selector .form-help-text {
+    display: block;
+    margin-bottom: var(--spacing-3);
+}
+
+.headcount-fields {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--spacing-3);
+}
+
+.headcount-fields .form-group {
+    margin-bottom: 0;
+}
+
+.deadline-info {
+    padding: var(--spacing-3);
+    background-color: var(--color-primary-50);
+    border: 1px solid var(--color-primary-200);
+    border-radius: var(--radius-md);
+    color: var(--color-primary-700);
+    margin-bottom: var(--spacing-4);
+    font-size: var(--font-size-sm);
+}
+
 @media (min-width: 1024px) {
     .rsvp-container {
         max-width: 700px;
