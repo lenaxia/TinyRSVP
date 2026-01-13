@@ -147,7 +147,13 @@ class ThemePicker {
 }
 
 if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', () => new ThemePicker());
+    document.addEventListener('DOMContentLoaded', () => {
+        if (!window.themePicker) {
+            window.themePicker = new ThemePicker();
+        }
+    });
 } else {
-    new ThemePicker();
+    if (!window.themePicker) {
+        window.themePicker = new ThemePicker();
+    }
 }

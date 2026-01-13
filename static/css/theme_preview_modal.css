@@ -14,6 +14,11 @@
 
 #theme-preview-modal[hidden] {
     display: none;
+    pointer-events: none;
+}
+
+#theme-preview-modal:not([hidden]) {
+    pointer-events: auto;
 }
 
 .modal-backdrop {

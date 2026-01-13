@@ -58,16 +58,19 @@ class ThemePreviewModal {
     }
 
     open(themeId) {
-        if (!this.modal.hidden) {
+        if (!this.modal || !this.modal.hidden) {
+            console.log('Modal already open or not found');
             return;
         }
         
+        console.log('Opening preview for theme:', themeId);
         this.currentThemeId = themeId;
         this.lastFocusedElement = document.activeElement;
         
         this.loadPreview(themeId);
         
         this.modal.hidden = false;
+        this.modal.setAttribute('aria-hidden', 'false');
         document.body.style.overflow = 'hidden';
         
         const firstFocusable = this.modal.querySelector('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
@@ -79,9 +82,14 @@ class ThemePreviewModal {
     }
 
     close() {
-        if (this.modal.hidden) return;
+        if (!this.modal || this.modal.hidden) {
+            console.log('Modal already closed or not found');
+            return;
+        }
         
+        console.log('Closing modal');
         this.modal.hidden = true;
+        this.modal.setAttribute('aria-hidden', 'true');
         
         try {
             document.body.style.overflow = '';
@@ -97,7 +105,11 @@ class ThemePreviewModal {
         this.currentThemeId = null;
         
         if (this.lastFocusedElement) {
-            this.lastFocusedElement.focus();
+            setTimeout(() => {
+                if (this.lastFocusedElement && typeof this.lastFocusedElement.focus === 'function') {
+                    this.lastFocusedElement.focus();
+                }
+            }, 0);
         }
         
         this.announce('Theme preview closed');
