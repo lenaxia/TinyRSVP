@@ -77,26 +77,26 @@
             
             if (toggleGroup) {
                 if (this.config.mode === 'datetime-single' || this.config.mode === 'date-only') {
-                    toggleGroup.style.display = 'none';
+                    toggleGroup.style.setProperty('display', 'none', 'important');
                 } else if (this.config.mode === 'datetime-range') {
-                    toggleGroup.style.display = 'flex';
+                    toggleGroup.style.setProperty('display', 'flex', 'important');
                 }
             }
 
             timezoneDisplays.forEach(display => {
                 if (this.config.showTimezone) {
-                    display.style.display = '';
+                    display.style.removeProperty('display');
                 } else {
-                    display.style.display = 'none';
+                    display.style.setProperty('display', 'none', 'important');
                 }
             });
 
             const timeContainers = this.panel.querySelectorAll('.time-picker-container');
             timeContainers.forEach(container => {
                 if (this.config.mode === 'date-only') {
-                    container.style.display = 'none';
+                    container.style.setProperty('display', 'none', 'important');
                 } else {
-                    container.style.display = '';
+                    container.style.removeProperty('display');
                 }
             });
         }
