@@ -18,6 +18,10 @@ services:
       - EMAIL_FROM=${EMAIL_FROM:-noreply@example.com}
       - STORAGE_TYPE=local
       - STORAGE_LOCAL_PATH=/data/uploads
+      - FORWARD_AUTH_ENABLED=true
+      - FORWARD_AUTH_USER_HEADER=X-Forwarded-User
+      - FORWARD_AUTH_EMAIL_HEADER=X-Forwarded-Email
+      - FORWARD_AUTH_TRUSTED_IPS=127.0.0.1,172.17.0.1,172.18.0.1,172.19.0.1,172.20.0.1
     volumes:
       - tinyrsvp-data:/data
     restart: unless-stopped
