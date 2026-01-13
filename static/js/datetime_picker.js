@@ -76,27 +76,27 @@
             const timezoneDisplays = this.panel.querySelectorAll('.timezone-display');
             
             if (toggleGroup) {
-                if (this.config.mode === 'datetime-single' || this.config.mode === 'date-only') {
-                    toggleGroup.style.setProperty('display', 'none', 'important');
-                } else if (this.config.mode === 'datetime-range') {
-                    toggleGroup.style.setProperty('display', 'flex', 'important');
+                if (this.config.showEndTime) {
+                    toggleGroup.style.display = 'flex';
+                } else {
+                    toggleGroup.style.display = 'none';
                 }
             }
 
             timezoneDisplays.forEach(display => {
                 if (this.config.showTimezone) {
-                    display.style.removeProperty('display');
+                    display.style.display = '';
                 } else {
-                    display.style.setProperty('display', 'none', 'important');
+                    display.style.display = 'none';
                 }
             });
 
             const timeContainers = this.panel.querySelectorAll('.time-picker-container');
             timeContainers.forEach(container => {
                 if (this.config.mode === 'date-only') {
-                    container.style.setProperty('display', 'none', 'important');
+                    container.style.display = 'none';
                 } else {
-                    container.style.removeProperty('display');
+                    container.style.display = '';
                 }
             });
         }
