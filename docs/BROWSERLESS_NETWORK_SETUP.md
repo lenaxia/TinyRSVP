@@ -69,12 +69,20 @@ curl -X POST http://localhost:3000/screenshot \
 ### From Puppeteer/Playwright Scripts
 
 ```javascript
-// Via Traefik (port 8081 on host = traefik-test:80 in Docker)
-await page.goto('http://traefik-test:80');
+// Via Traefik with basic auth (port 8081 on host = traefik-test:80 in Docker)
+await page.goto('http://admin:admin@traefik-test:80');
 
-// Direct to app
+// Direct to app (no auth required)
 await page.goto('http://tinyrsvp-tinyrsvp:8080');
 ```
+
+### Authentication
+
+Traefik is configured with basic authentication:
+- **Username:** `admin`
+- **Password:** `admin`
+
+Include credentials in the URL: `http://admin:admin@traefik-test:80`
 
 ### URL Mapping
 
@@ -89,11 +97,23 @@ await page.goto('http://tinyrsvp-tinyrsvp:8080');
 ### Take Screenshot of RSVP Page
 
 ```bash
-# Get an event's RSVP page screenshot
+# Via Traefik with auth
 curl -X POST http://localhost:3000/screenshot \
   -H "Content-Type: application/json" \
   -d '{
-    "url": "http://traefik-test:80/rsvp/some-event-id",
+    "url": "http://admin:admin@traefik-test:80/rsvp/some-event-id",
+    "options": {
+      "fullPage": true,
+      "type": "png"
+    }
+  }' \
+  --output rsvp-page.png
+
+# Direct to app (no auth)
+curl -X POST http://localhost:3000/screenshot \
+  -H "Content-Type: application/json" \
+  -d '{
+    "url": "http://tinyrsvp-tinyrsvp:8080/rsvp/some-event-id",
     "options": {
       "fullPage": true,
       "type": "png"
@@ -105,10 +125,23 @@ curl -X POST http://localhost:3000/screenshot \
 ### Generate PDF of Event Page
 
 ```bash
+# Via Traefik with auth
 curl -X POST http://localhost:3000/pdf \
   -H "Content-Type: application/json" \
   -d '{
-    "url": "http://traefik-test:80/events/123",
+    "url": "http://admin:admin@traefik-test:80/events/123",
+    "options": {
+      "format": "A4",
+      "printBackground": true
+    }
+  }' \
+  --output event-page.pdf
+
+# Direct to app (no auth)
+curl -X POST http://localhost:3000/pdf \
+  -H "Content-Type: application/json" \
+  -d '{
+    "url": "http://tinyrsvp-tinyrsvp:8080/events/123",
     "options": {
       "format": "A4",
       "printBackground": true
@@ -120,11 +153,23 @@ curl -X POST http://localhost:3000/pdf \
 ### Run Automated Test Script
 
 ```bash
+# Via Traefik with auth
 curl -X POST http://localhost:3000/function \
   -H "Content-Type: application/json" \
   -d '{
     "code": "async ({ page }) => {
-      await page.goto(\"http://traefik-test:80\");
+      await page.goto(\"http://admin:admin@traefik-test:80\");
+      const title = await page.title();
+      return { title, success: true };
+    }"
+  }'
+
+# Direct to app (no auth)
+curl -X POST http://localhost:3000/function \
+  -H "Content-Type: application/json" \
+  -d '{
+    "code": "async ({ page }) => {
+      await page.goto(\"http://tinyrsvp-tinyrsvp:8080\");
       const title = await page.title();
       return { title, success: true };
     }"
