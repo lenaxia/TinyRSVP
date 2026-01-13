@@ -1624,6 +1624,7 @@ func TestService_UpdateRSVP_ValidUpdate(t *testing.T) {
 		Timezone:     "UTC",
 		Status:       models.EventStatusPublished,
 		RSVPDeadline: &rsvpDeadline,
+		AllowMaybeRSVP: true,
 		CreatedBy:    1,
 	}
 	if err := eventRepo.Create(ctx, event); err != nil {

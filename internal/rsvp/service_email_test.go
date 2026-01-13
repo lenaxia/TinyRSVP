@@ -180,13 +180,14 @@ func TestService_UpdateRSVP_SendsConfirmationEmail(t *testing.T) {
 
 	eventRepo := repositories.NewEventRepository(database)
 	event := &models.Event{
-		Title:        "Test Event",
-		Description:  strPtr("Test Description"),
-		StartTime:    future,
-		Timezone:     "UTC",
-		Status:       models.EventStatusPublished,
-		RSVPDeadline: &rsvpDeadline,
-		CreatedBy:    1,
+		Title:          "Test Event",
+		Description:    strPtr("Test Description"),
+		StartTime:      future,
+		Timezone:       "UTC",
+		Status:         models.EventStatusPublished,
+		RSVPDeadline:   &rsvpDeadline,
+		AllowMaybeRSVP: true,
+		CreatedBy:      1,
 	}
 	if err := eventRepo.Create(ctx, event); err != nil {
 		t.Fatalf("Failed to create test event: %v", err)
