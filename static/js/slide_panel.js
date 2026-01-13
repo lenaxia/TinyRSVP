@@ -14,9 +14,11 @@
 
             this.panel = document.querySelector(panelSelector);
             this.overlay = document.querySelector(`${panelSelector.replace('-panel', '-overlay')}`);
-            this.closeBtn = this.panel?.querySelector(`${panelSelector.replace('.', '.')}-close`);
-            this.cancelBtn = this.panel?.querySelector(`${panelSelector.replace('.', '.')}-cancel`);
-            this.saveBtn = this.panel?.querySelector(`${panelSelector.replace('.', '.')}-save`);
+            
+            const baseClass = panelSelector.replace('.', '');
+            this.closeBtn = this.panel?.querySelector(`.${baseClass}-close`);
+            this.cancelBtn = this.panel?.querySelector(`.${baseClass}-cancel`);
+            this.saveBtn = this.panel?.querySelector(`.${baseClass}-save`);
 
             if (!this.panel || !this.overlay) {
                 console.error(`SlidePanel: Could not find panel or overlay for selector ${panelSelector}`);
