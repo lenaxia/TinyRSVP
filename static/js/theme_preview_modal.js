@@ -96,6 +96,7 @@ class ThemePreviewModal {
         // Now safe to hide the modal
         this.modal.hidden = true;
         this.modal.setAttribute('hidden', '');
+        this.modal.style.display = '';  // Remove inline style to let CSS take over
         this.modal.setAttribute('aria-hidden', 'true');
         
         try {
