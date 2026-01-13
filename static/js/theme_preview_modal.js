@@ -7,6 +7,7 @@ class ThemePreviewModal {
         this.currentThemeId = null;
         this.previewTheme = 'light';
         this.lastFocusedElement = null;
+        this.handlePreviewRequest = this.handlePreviewRequest.bind(this);
         this.init();
     }
 
@@ -18,10 +19,12 @@ class ThemePreviewModal {
         this.setupColorChangeListener();
     }
 
+    handlePreviewRequest(e) {
+        this.open(e.detail.themeId);
+    }
+
     attachEventListeners() {
-        document.addEventListener('theme-preview-requested', (e) => {
-            this.open(e.detail.themeId);
-        });
+        document.addEventListener('theme-preview-requested', this.handlePreviewRequest);
 
         const closeButtons = this.modal.querySelectorAll('.modal-close');
         closeButtons.forEach(btn => {
@@ -55,6 +58,10 @@ class ThemePreviewModal {
     }
 
     open(themeId) {
+        if (!this.modal.hidden) {
+            return;
+        }
+        
         this.currentThemeId = themeId;
         this.lastFocusedElement = document.activeElement;
         
@@ -200,14 +207,22 @@ class ThemePreviewModal {
         document.body.appendChild(announcement);
         setTimeout(() => announcement.remove(), 1000);
     }
+
+    destroy() {
+        document.removeEventListener('theme-preview-requested', this.handlePreviewRequest);
+    }
 }
 
 if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', () => {
-        window.themePreviewModal = new ThemePreviewModal();
+        if (!window.themePreviewModal) {
+            window.themePreviewModal = new ThemePreviewModal();
+        }
     });
 } else {
-    window.themePreviewModal = new ThemePreviewModal();
+    if (!window.themePreviewModal) {
+        window.themePreviewModal = new ThemePreviewModal();
+    }
 }
 
 document.addEventListener('theme-selected', (e) => {
