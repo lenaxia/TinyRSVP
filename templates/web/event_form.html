@@ -10,6 +10,7 @@
     <link rel="stylesheet" href="/static/css/theme_preview_modal.css">
     <link rel="stylesheet" href="/static/css/image_upload.css">
     <link rel="stylesheet" href="/static/css/color_picker.css">
+    <link rel="stylesheet" href="/static/css/rsvp_settings.css">
 {{end}}
 
 {{define "main-class"}}event-form-main{{end}}
@@ -165,44 +166,17 @@
 
         <section class="form-section">
             <h2 class="form-section-title">RSVP Settings</h2>
+            <p class="form-help-text">Configure how guests can respond to your invitation</p>
             
-            <div class="form-group">
-                <label for="rsvp_deadline" class="form-label">RSVP Deadline</label>
-                <input 
-                    type="datetime-local" 
-                    id="rsvp_deadline" 
-                    name="rsvp_deadline" 
-                    class="form-input{{if .Errors.RSVPDeadline}} error{{end}}"
-                    value="{{if .Event.RSVPDeadline}}{{.Event.RSVPDeadline.Format "2006-01-02T15:04"}}{{end}}"
-                    aria-describedby="rsvp_deadline-help{{if .Errors.RSVPDeadline}} rsvp_deadline-error{{end}}"
-                    data-datetime-picker
-                    data-mode="datetime-single"
-                    data-show-timezone="false"
-                    data-title="Select RSVP Deadline"
-                >
-                <span class="form-help-text" id="rsvp_deadline-help">Last date guests can respond</span>
-                {{if .Errors.RSVPDeadline}}
-                <span class="form-error" id="rsvp_deadline-error">{{.Errors.RSVPDeadline}}</span>
-                {{end}}
-            </div>
-
-            <div class="form-group">
-                <label for="max_plus_ones" class="form-label">Maximum Plus Ones</label>
-                <input 
-                    type="number" 
-                    id="max_plus_ones" 
-                    name="max_plus_ones" 
-                    class="form-input{{if .Errors.MaxPlusOnes}} error{{end}}"
-                    min="0"
-                    max="10"
-                    value="{{.Event.MaxPlusOnes}}"
-                    aria-describedby="max_plus_ones-help{{if .Errors.MaxPlusOnes}} max_plus_ones-error{{end}}"
-                >
-                <span class="form-help-text" id="max_plus_ones-help">How many guests can each invitee bring?</span>
-                {{if .Errors.MaxPlusOnes}}
-                <span class="form-error" id="max_plus_ones-error">{{.Errors.MaxPlusOnes}}</span>
-                {{end}}
-            </div>
+            <button
+                type="button"
+                class="rsvp-settings-trigger-btn"
+                data-rsvp-settings-trigger
+                aria-label="Open RSVP settings"
+            >
+                <span class="rsvp-settings-trigger-icon">⚙️</span>
+                <span class="rsvp-settings-trigger-text">Configure RSVP Settings</span>
+            </button>
         </section>
 
         <section class="form-section">
@@ -281,6 +255,7 @@
 
 {{define "modals"}}
     {{template "datetime-picker-panel" .}}
+    {{template "rsvp-settings-panel" .}}
     {{template "theme-preview-modal" .}}
 {{end}}
 
@@ -289,6 +264,7 @@
     <script src="/static/js/date_defaults.js"></script>
     <script src="/static/js/form_validation.js"></script>
     <script src="/static/js/datetime_picker.js"></script>
+    <script src="/static/js/rsvp_settings.js"></script>
     <script src="/static/js/theme_picker.js"></script>
     <script src="/static/js/theme_preview_modal.js"></script>
     <script src="/static/js/image_upload.js"></script>

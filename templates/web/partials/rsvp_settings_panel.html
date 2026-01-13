@@ -1,0 +1,179 @@
+{{define "rsvp-settings-panel"}}
+<div class="rsvp-settings-overlay"></div>
+<div class="rsvp-settings-panel">
+    <div class="rsvp-settings-header">
+        <h2 class="rsvp-settings-title">RSVP Settings</h2>
+        <button class="rsvp-settings-close" aria-label="Close RSVP settings">×</button>
+    </div>
+    <div class="rsvp-settings-body">
+        <p class="rsvp-settings-description">Configure how guests can respond to your event invitation.</p>
+
+        <div class="rsvp-settings-section">
+            <h3 class="rsvp-settings-section-title">RSVP Deadline</h3>
+            
+            <div class="form-group">
+                <label class="form-checkbox-label">
+                    <input 
+                        type="checkbox" 
+                        id="has_rsvp_deadline" 
+                        name="has_rsvp_deadline" 
+                        class="form-checkbox"
+                        {{if .Event.RSVPDeadline}}checked{{end}}
+                    >
+                    <span>Set a reply-by date</span>
+                </label>
+                <span class="form-help-text">Guests will be reminded to RSVP before this date</span>
+            </div>
+
+            <div class="form-group rsvp-deadline-fields" style="display: {{if .Event.RSVPDeadline}}block{{else}}none{{end}};">
+                <label for="rsvp_deadline_input" class="form-label">Reply-by Date & Time</label>
+                <button
+                    type="button"
+                    id="rsvp_deadline_trigger"
+                    class="form-input datetime-trigger-btn"
+                    data-datetime-picker
+                    data-mode="datetime-single"
+                    data-show-timezone="false"
+                    data-title="Select RSVP Deadline"
+                >
+                    <span class="datetime-trigger-icon">📅</span>
+                    <span class="datetime-trigger-text" id="rsvp_deadline_display">
+                        {{if .Event.RSVPDeadline}}
+                            {{.Event.RSVPDeadline.Format "Jan 2, 2006 at 3:04 PM"}}
+                        {{else}}
+                            Click to select deadline
+                        {{end}}
+                    </span>
+                </button>
+                <input 
+                    type="hidden" 
+                    id="rsvp_deadline_input" 
+                    name="rsvp_deadline" 
+                    value="{{if .Event.RSVPDeadline}}{{.Event.RSVPDeadline.Format "2006-01-02T15:04"}}{{end}}"
+                >
+            </div>
+
+            <div class="form-group rsvp-deadline-fields" style="display: {{if .Event.RSVPDeadline}}block{{else}}none{{end}};">
+                <label class="form-checkbox-label">
+                    <input 
+                        type="checkbox" 
+                        id="allow_rsvp_after_deadline" 
+                        name="allow_rsvp_after_deadline" 
+                        class="form-checkbox"
+                        {{if .Event.AllowRSVPAfterDeadline}}checked{{end}}
+                    >
+                    <span>Allow guests to RSVP after the deadline</span>
+                </label>
+            </div>
+        </div>
+
+        <div class="rsvp-settings-section">
+            <h3 class="rsvp-settings-section-title">Response Options</h3>
+            
+            <div class="form-group">
+                <label class="form-checkbox-label">
+                    <input 
+                        type="checkbox" 
+                        id="allow_maybe_rsvp" 
+                        name="allow_maybe_rsvp" 
+                        class="form-checkbox"
+                        {{if .Event.AllowMaybeRSVP}}checked{{end}}
+                    >
+                    <span>Allow "Maybe" RSVPs</span>
+                </label>
+                <span class="form-help-text">For guests with commitment issues</span>
+            </div>
+        </div>
+
+        <div class="rsvp-settings-section">
+            <h3 class="rsvp-settings-section-title">Guest List Privacy</h3>
+            
+            <div class="form-group">
+                <label class="form-checkbox-label">
+                    <input 
+                        type="checkbox" 
+                        id="private_guest_list" 
+                        name="private_guest_list" 
+                        class="form-checkbox"
+                        {{if .Event.PrivateGuestList}}checked{{end}}
+                    >
+                    <span>Private guest list</span>
+                </label>
+                <span class="form-help-text">Only you can see who's attending</span>
+            </div>
+        </div>
+
+        <div class="rsvp-settings-section">
+            <h3 class="rsvp-settings-section-title">Plus Ones</h3>
+            
+            <div class="form-group">
+                <label for="max_plus_ones_input" class="form-label">Maximum plus ones per guest</label>
+                <select 
+                    id="max_plus_ones_input" 
+                    name="max_plus_ones" 
+                    class="form-select"
+                >
+                    {{range $i := iterate 11}}
+                    <option value="{{$i}}" {{if eq $.Event.MaxPlusOnes $i}}selected{{end}}>{{$i}}</option>
+                    {{end}}
+                </select>
+                <span class="form-help-text">How many additional guests each invitee can bring</span>
+            </div>
+        </div>
+
+        <div class="rsvp-settings-section">
+            <h3 class="rsvp-settings-section-title">Headcount Details</h3>
+            
+            <div class="form-group">
+                <label class="form-checkbox-label">
+                    <input 
+                        type="checkbox" 
+                        id="family_headcount" 
+                        name="family_headcount" 
+                        class="form-checkbox"
+                        {{if .Event.FamilyHeadcount}}checked{{end}}
+                    >
+                    <span>Track adults & kids separately</span>
+                </label>
+                <span class="form-help-text">Find out how many adults and kids are coming</span>
+            </div>
+        </div>
+
+        <div class="rsvp-settings-section">
+            <h3 class="rsvp-settings-section-title">Event Capacity</h3>
+            
+            <div class="form-group">
+                <label class="form-checkbox-label">
+                    <input 
+                        type="checkbox" 
+                        id="has_event_capacity" 
+                        name="has_event_capacity" 
+                        class="form-checkbox"
+                        {{if .Event.EventCapacity}}checked{{end}}
+                    >
+                    <span>Set an event capacity</span>
+                </label>
+                <span class="form-help-text">Limit the total number of guests who can RSVP "Yes"</span>
+            </div>
+
+            <div class="form-group event-capacity-fields" style="display: {{if .Event.EventCapacity}}block{{else}}none{{end}};">
+                <label for="event_capacity_input" class="form-label">Maximum Guests</label>
+                <input 
+                    type="number" 
+                    id="event_capacity_input" 
+                    name="event_capacity" 
+                    class="form-input"
+                    min="1"
+                    value="{{if .Event.EventCapacity}}{{.Event.EventCapacity}}{{end}}"
+                    placeholder="e.g., 50"
+                >
+                <span class="form-help-text">New guests won't be able to RSVP once capacity is reached (includes host)</span>
+            </div>
+        </div>
+    </div>
+    <div class="rsvp-settings-footer">
+        <button type="button" class="btn btn-secondary rsvp-settings-cancel">Cancel</button>
+        <button type="button" class="btn btn-primary rsvp-settings-save">Save Settings</button>
+    </div>
+</div>
+{{end}}

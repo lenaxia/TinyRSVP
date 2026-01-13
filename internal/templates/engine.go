@@ -66,6 +66,8 @@ func createFuncMap() template.FuncMap {
 		"formatDateTime": formatDateTime,
 		"truncate":       truncate,
 		"default":        defaultValue,
+		"iterate":        iterate,
+		"add":            add,
 	}
 }
 
@@ -93,4 +95,16 @@ func defaultValue(value, defaultVal string) string {
 		return defaultVal
 	}
 	return value
+}
+
+func iterate(count int) []int {
+	result := make([]int, count)
+	for i := 0; i < count; i++ {
+		result[i] = i
+	}
+	return result
+}
+
+func add(a, b int) int {
+	return a + b
 }
