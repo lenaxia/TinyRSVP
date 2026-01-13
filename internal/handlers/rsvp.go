@@ -408,6 +408,22 @@ func (h *RSVPHandler) parseRSVPRequest(r *http.Request) (*rsvp.SubmitRSVPRequest
 		req.PlusOnes = plusOnes
 	}
 	
+	if adultsStr := r.FormValue("adults_count"); adultsStr != "" {
+		adults, err := strconv.Atoi(adultsStr)
+		if err != nil {
+			return nil, fmt.Errorf("invalid adults_count value")
+		}
+		req.AdultsCount = &adults
+	}
+	
+	if kidsStr := r.FormValue("kids_count"); kidsStr != "" {
+		kids, err := strconv.Atoi(kidsStr)
+		if err != nil {
+			return nil, fmt.Errorf("invalid kids_count value")
+		}
+		req.KidsCount = &kids
+	}
+	
 	answerMap := make(map[int64]*rsvp.AnswerRequest)
 	
 	for key, values := range r.Form {

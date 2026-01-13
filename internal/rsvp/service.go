@@ -89,9 +89,11 @@ func NewServiceWithEmail(
 }
 
 type SubmitRSVPRequest struct {
-	Response string          `json:"response"`
-	PlusOnes int             `json:"plus_ones"`
-	Answers  []AnswerRequest `json:"answers"`
+	Response    string          `json:"response"`
+	PlusOnes    int             `json:"plus_ones"`
+	AdultsCount *int            `json:"adults_count,omitempty"`
+	KidsCount   *int            `json:"kids_count,omitempty"`
+	Answers     []AnswerRequest `json:"answers"`
 }
 
 type AnswerRequest struct {
@@ -103,6 +105,10 @@ type AnswerRequest struct {
 
 func checkDeadline(event *models.Event) error {
 	if event.RSVPDeadline == nil {
+		return nil
+	}
+
+	if event.AllowRSVPAfterDeadline {
 		return nil
 	}
 
@@ -169,9 +175,11 @@ func (s *service) SubmitRSVP(ctx context.Context, token string, req *SubmitRSVPR
 	var rsvp *models.RSVP
 	err = s.db.WithTransaction(ctx, func(tx *sql.Tx) error {
 		rsvpModel := &models.RSVP{
-			InviteID: invite.ID,
-			Response: models.RSVPResponse(req.Response),
-			PlusOnes: req.PlusOnes,
+			InviteID:    invite.ID,
+			Response:    models.RSVPResponse(req.Response),
+			PlusOnes:    req.PlusOnes,
+			AdultsCount: req.AdultsCount,
+			KidsCount:   req.KidsCount,
 		}
 
 		if err := rsvpModel.Validate(); err != nil {
@@ -179,9 +187,9 @@ func (s *service) SubmitRSVP(ctx context.Context, token string, req *SubmitRSVPR
 		}
 
 		result, err := tx.ExecContext(ctx,
-			`INSERT INTO rsvps (invite_id, response, plus_ones, created_at, updated_at)
-			 VALUES (?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)`,
-			rsvpModel.InviteID, rsvpModel.Response, rsvpModel.PlusOnes)
+			`INSERT INTO rsvps (invite_id, response, plus_ones, adults_count, kids_count, created_at, updated_at)
+			 VALUES (?, ?, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)`,
+			rsvpModel.InviteID, rsvpModel.Response, rsvpModel.PlusOnes, rsvpModel.AdultsCount, rsvpModel.KidsCount)
 		if err != nil {
 			return fmt.Errorf("failed to create RSVP: %w", err)
 		}
@@ -210,9 +218,9 @@ func (s *service) SubmitRSVP(ctx context.Context, token string, req *SubmitRSVPR
 		}
 
 		err = tx.QueryRowContext(ctx,
-			`SELECT id, invite_id, response, plus_ones, created_at, updated_at FROM rsvps WHERE id = ?`,
+			`SELECT id, invite_id, response, plus_ones, adults_count, kids_count, created_at, updated_at FROM rsvps WHERE id = ?`,
 			rsvpID).Scan(&rsvpModel.ID, &rsvpModel.InviteID, &rsvpModel.Response,
-			&rsvpModel.PlusOnes, &rsvpModel.CreatedAt, &rsvpModel.UpdatedAt)
+			&rsvpModel.PlusOnes, &rsvpModel.AdultsCount, &rsvpModel.KidsCount, &rsvpModel.CreatedAt, &rsvpModel.UpdatedAt)
 		if err != nil {
 			return fmt.Errorf("failed to retrieve created RSVP: %w", err)
 		}
@@ -247,6 +255,13 @@ func (s *service) validateRequest(ctx context.Context, req *SubmitRSVPRequest, i
 		return &models.ValidationError{
 			Field:   "response",
 			Message: "response must be yes, no, or maybe",
+		}
+	}
+
+	if response == models.RSVPResponseMaybe && !event.AllowMaybeRSVP {
+		return &models.ValidationError{
+			Field:   "response",
+			Message: "maybe responses are not allowed for this event",
 		}
 	}
 
@@ -384,14 +399,16 @@ func (s *service) UpdateRSVP(ctx context.Context, token string, req *SubmitRSVPR
 	err = s.db.WithTransaction(ctx, func(tx *sql.Tx) error {
 		existing.Response = models.RSVPResponse(req.Response)
 		existing.PlusOnes = req.PlusOnes
+		existing.AdultsCount = req.AdultsCount
+		existing.KidsCount = req.KidsCount
 
 		if err := existing.Validate(); err != nil {
 			return fmt.Errorf("validation failed: %w", err)
 		}
 
 		_, err := tx.ExecContext(ctx,
-			`UPDATE rsvps SET response = ?, plus_ones = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?`,
-			existing.Response, existing.PlusOnes, existing.ID)
+			`UPDATE rsvps SET response = ?, plus_ones = ?, adults_count = ?, kids_count = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?`,
+			existing.Response, existing.PlusOnes, existing.AdultsCount, existing.KidsCount, existing.ID)
 		if err != nil {
 			return fmt.Errorf("failed to update RSVP: %w", err)
 		}
@@ -414,9 +431,9 @@ func (s *service) UpdateRSVP(ctx context.Context, token string, req *SubmitRSVPR
 		}
 
 		err = tx.QueryRowContext(ctx,
-			`SELECT id, invite_id, response, plus_ones, created_at, updated_at FROM rsvps WHERE id = ?`,
+			`SELECT id, invite_id, response, plus_ones, adults_count, kids_count, created_at, updated_at FROM rsvps WHERE id = ?`,
 			existing.ID).Scan(&existing.ID, &existing.InviteID, &existing.Response,
-			&existing.PlusOnes, &existing.CreatedAt, &existing.UpdatedAt)
+			&existing.PlusOnes, &existing.AdultsCount, &existing.KidsCount, &existing.CreatedAt, &existing.UpdatedAt)
 		if err != nil {
 			return fmt.Errorf("failed to retrieve updated RSVP: %w", err)
 		}
