@@ -73,6 +73,7 @@ class ThemePreviewModal {
         
         this.modal.hidden = false;
         this.modal.removeAttribute('hidden');
+        this.modal.style.display = 'flex';  // Explicitly set display to override any lingering styles
         this.modal.setAttribute('aria-hidden', 'false');
         document.body.style.overflow = 'hidden';
         
