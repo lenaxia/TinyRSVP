@@ -27,13 +27,18 @@ curl http://localhost:3000/json/version
 
 ### 3. Configure Roo Code
 
-Roo Code can connect to the Chrome browser using the remote debugging port:
+Roo Code can connect to the Chrome browser through the browserless API:
 
-**Connection URL:** `ws://localhost:9222`
+**Primary Connection:** Use the browserless HTTP API at `http://localhost:3000`
 
-The browserless instance is configured with:
-- **HTTP API Port:** 3000 (for browserless API)
-- **Remote Debugging Port:** 9222 (for Chrome DevTools Protocol)
+**WebSocket Connection:** Get the dynamic WebSocket URL via:
+```bash
+curl http://localhost:3000/json | jq -r '.[0].webSocketDebuggerUrl'
+```
+
+The browserless instance provides:
+- **HTTP API Port:** 3000 (for browserless API and WebSocket proxy)
+- **Remote Debugging Port:** 9222 (internal Chrome DevTools Protocol)
 
 ## Remote Debugging Configuration
 
