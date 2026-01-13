@@ -43,7 +43,7 @@ services:
     
     networks:
       - browserless-net
-      - tinyrsvp-test
+      - tinyrsvp_tinyrsvp-test
     
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:3000/pressure"]
@@ -57,7 +57,7 @@ services:
 networks:
   browserless-net:
     driver: bridge
-  tinyrsvp-test:
+  tinyrsvp_tinyrsvp-test:
     external: true
 
 # Usage Examples:
