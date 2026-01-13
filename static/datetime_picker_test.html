@@ -30,59 +30,48 @@
     <h1>DateTime Picker Component Test</h1>
 
     <div class="test-section">
-        <h2>Test 1: DateTime Range (Event Form)</h2>
+        <h2>Test 1: DateTime Range (Event Form) - Button Trigger</h2>
         <p>This should show start/end time toggle buttons and timezone selector</p>
         
         <div class="form-group">
-            <label for="event_start" class="form-label">Event Start Time</label>
-            <input
-                type="datetime-local"
-                id="event_start"
-                class="form-input"
+            <label for="event_datetime_trigger" class="form-label">Event Date & Time</label>
+            <button
+                type="button"
+                id="event_datetime_trigger"
+                class="form-input datetime-trigger-btn"
                 data-datetime-picker
                 data-mode="datetime-range"
-                data-end-input="event_end"
-                data-timezone-input="event_timezone"
                 data-show-timezone="true"
                 data-title="Select Event Date & Time"
             >
-        </div>
-
-        <div class="form-group">
-            <label for="event_end" class="form-label">Event End Time</label>
-            <input
-                type="datetime-local"
-                id="event_end"
-                class="form-input"
-            >
-        </div>
-
-        <div class="form-group">
-            <label for="event_timezone" class="form-label">Timezone</label>
-            <select id="event_timezone" class="form-select">
-                <option value="America/Los_Angeles">Pacific Time (PT)</option>
-                <option value="America/Denver">Mountain Time (MT)</option>
-                <option value="America/Chicago">Central Time (CT)</option>
-                <option value="America/New_York">Eastern Time (ET)</option>
-            </select>
+                <span class="datetime-trigger-icon">📅</span>
+                <span class="datetime-trigger-text">Click to select date, time, and timezone</span>
+            </button>
+            <input type="hidden" id="start_time" name="start_time">
+            <input type="hidden" id="end_time" name="end_time">
+            <input type="hidden" id="timezone" name="timezone" value="America/Los_Angeles">
         </div>
     </div>
 
     <div class="test-section">
-        <h2>Test 2: Single DateTime (RSVP Deadline)</h2>
+        <h2>Test 2: Single DateTime (RSVP Deadline) - Button Trigger</h2>
         <p>This should NOT show toggle buttons or timezone selector</p>
         
         <div class="form-group">
-            <label for="rsvp_deadline" class="form-label">RSVP Deadline</label>
-            <input
-                type="datetime-local"
-                id="rsvp_deadline"
-                class="form-input"
+            <label for="rsvp_deadline_trigger" class="form-label">RSVP Deadline</label>
+            <button
+                type="button"
+                id="rsvp_deadline_trigger"
+                class="form-input datetime-trigger-btn"
                 data-datetime-picker
                 data-mode="datetime-single"
                 data-show-timezone="false"
                 data-title="Select RSVP Deadline"
             >
+                <span class="datetime-trigger-icon">📅</span>
+                <span class="datetime-trigger-text">Click to select deadline</span>
+            </button>
+            <input type="hidden" id="rsvp_deadline_input" name="rsvp_deadline">
         </div>
     </div>
 

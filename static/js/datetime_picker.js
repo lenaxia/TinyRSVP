@@ -75,29 +75,30 @@
             const toggleGroup = this.panel.querySelector('.datetime-toggle-group');
             const timezoneDisplays = this.panel.querySelectorAll('.timezone-display');
             
-            // Show/hide toggle buttons based on mode (not input type)
-            if (this.config.mode === 'datetime-single' || this.config.mode === 'date-only') {
-                if (toggleGroup) {
+            if (toggleGroup) {
+                if (this.config.mode === 'datetime-single' || this.config.mode === 'date-only') {
                     toggleGroup.style.display = 'none';
-                }
-            } else if (this.config.mode === 'datetime-range') {
-                if (toggleGroup) {
+                } else if (this.config.mode === 'datetime-range') {
                     toggleGroup.style.display = 'flex';
                 }
             }
 
-            if (!this.config.showTimezone) {
-                timezoneDisplays.forEach(display => {
+            timezoneDisplays.forEach(display => {
+                if (this.config.showTimezone) {
+                    display.style.display = '';
+                } else {
                     display.style.display = 'none';
-                });
-            }
+                }
+            });
 
-            if (this.config.mode === 'date-only') {
-                const timeContainers = this.panel.querySelectorAll('.time-picker-container');
-                timeContainers.forEach(container => {
+            const timeContainers = this.panel.querySelectorAll('.time-picker-container');
+            timeContainers.forEach(container => {
+                if (this.config.mode === 'date-only') {
                     container.style.display = 'none';
-                });
-            }
+                } else {
+                    container.style.display = '';
+                }
+            });
         }
 
         loadExistingValues() {
