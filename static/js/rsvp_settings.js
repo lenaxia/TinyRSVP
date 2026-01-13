@@ -1,15 +1,15 @@
 (function() {
     'use strict';
 
-    class RSVPSettingsPanel {
+    class RSVPSettingsPanel extends SlidePanel {
         constructor(triggerBtn) {
+            super('.rsvp-settings-panel', {
+                onOpen: () => this.handleOpen(),
+                onSave: () => this.handleSave(),
+                onCancel: () => this.handleCancel()
+            });
+
             this.triggerBtn = triggerBtn;
-            this.panel = document.querySelector('.rsvp-settings-panel');
-            this.overlay = document.querySelector('.rsvp-settings-overlay');
-            this.closeBtn = document.querySelector('.rsvp-settings-close');
-            this.cancelBtn = document.querySelector('.rsvp-settings-cancel');
-            this.saveBtn = document.querySelector('.rsvp-settings-save');
-            
             this.hasDeadlineCheckbox = document.getElementById('has_rsvp_deadline');
             this.deadlineFields = document.querySelectorAll('.rsvp-deadline-fields');
             this.hasCapacityCheckbox = document.getElementById('has_event_capacity');
@@ -21,23 +21,14 @@
                 return;
             }
             
-            this.init();
+            this.initRSVPSettings();
         }
         
-        init() {
-            this.attachEventListeners();
-        }
-        
-        attachEventListeners() {
+        initRSVPSettings() {
             this.triggerBtn.addEventListener('click', (e) => {
                 e.preventDefault();
-                this.openPanel();
+                this.open();
             });
-            
-            this.closeBtn.addEventListener('click', () => this.closePanel());
-            this.overlay.addEventListener('click', () => this.closePanel());
-            this.cancelBtn.addEventListener('click', () => this.cancel());
-            this.saveBtn.addEventListener('click', () => this.save());
             
             this.hasDeadlineCheckbox.addEventListener('change', (e) => {
                 this.toggleDeadlineFields(e.target.checked);
@@ -46,33 +37,17 @@
             this.hasCapacityCheckbox.addEventListener('change', (e) => {
                 this.toggleCapacityFields(e.target.checked);
             });
-            
-            document.addEventListener('keydown', (e) => {
-                if (e.key === 'Escape' && this.panel.classList.contains('open')) {
-                    this.closePanel();
-                }
-            });
         }
         
-        openPanel() {
+        handleOpen() {
             this.saveOriginalValues();
-            this.panel.classList.add('open');
-            this.overlay.classList.add('open');
-            document.body.style.overflow = 'hidden';
         }
         
-        closePanel() {
-            this.panel.classList.remove('open');
-            this.overlay.classList.remove('open');
-            document.body.style.overflow = '';
-        }
-        
-        cancel() {
+        handleCancel() {
             this.restoreOriginalValues();
-            this.closePanel();
         }
         
-        save() {
+        handleSave() {
             if (!this.hasDeadlineCheckbox.checked) {
                 document.getElementById('rsvp_deadline_input').value = '';
             }
@@ -82,7 +57,6 @@
             }
             
             this.updateTriggerButtonText();
-            this.closePanel();
         }
         
         saveOriginalValues() {
