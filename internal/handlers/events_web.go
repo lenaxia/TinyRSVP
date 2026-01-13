@@ -164,7 +164,8 @@ func (h *EventWebHandlers) NewEventForm(w http.ResponseWriter, r *http.Request) 
 	data := &EventFormPageData{
 		ActivePage: "events",
 		Event: &models.Event{
-			MaxPlusOnes: 0,
+			MaxPlusOnes:    0,
+			AllowMaybeRSVP: true,
 		},
 		Questions:       []*models.PreferenceQuestion{},
 		Themes:          themes,
@@ -291,16 +292,21 @@ func (h *EventWebHandlers) UpdateEventFromForm(w http.ResponseWriter, r *http.Re
 	}
 
 	event := &models.Event{
-		ID:           id,
-		Version:      version,
-		Title:        existing.Title,
-		Description:  existing.Description,
-		StartTime:    existing.StartTime,
-		EndTime:      existing.EndTime,
-		Timezone:     existing.Timezone,
-		Location:     existing.Location,
-		MaxPlusOnes:  existing.MaxPlusOnes,
-		RSVPDeadline: existing.RSVPDeadline,
+		ID:                     id,
+		Version:                version,
+		Title:                  existing.Title,
+		Description:            existing.Description,
+		StartTime:              existing.StartTime,
+		EndTime:                existing.EndTime,
+		Timezone:               existing.Timezone,
+		Location:               existing.Location,
+		MaxPlusOnes:            existing.MaxPlusOnes,
+		RSVPDeadline:           existing.RSVPDeadline,
+		AllowRSVPAfterDeadline: existing.AllowRSVPAfterDeadline,
+		AllowMaybeRSVP:         existing.AllowMaybeRSVP,
+		PrivateGuestList:       existing.PrivateGuestList,
+		FamilyHeadcount:        existing.FamilyHeadcount,
+		EventCapacity:          existing.EventCapacity,
 	}
 
 	if title := r.FormValue("title"); title != "" {
@@ -353,6 +359,20 @@ func (h *EventWebHandlers) UpdateEventFromForm(w http.ResponseWriter, r *http.Re
 		}
 	} else if r.Form.Has("rsvp_deadline") {
 		event.RSVPDeadline = nil
+	}
+
+	event.AllowRSVPAfterDeadline = r.FormValue("allow_rsvp_after_deadline") == "on"
+	event.AllowMaybeRSVP = r.FormValue("allow_maybe_rsvp") == "on"
+	event.PrivateGuestList = r.FormValue("private_guest_list") == "on"
+	event.FamilyHeadcount = r.FormValue("family_headcount") == "on"
+
+	if capacityStr := r.FormValue("event_capacity"); capacityStr != "" {
+		capacity, err := strconv.Atoi(capacityStr)
+		if err == nil && capacity > 0 {
+			event.EventCapacity = &capacity
+		}
+	} else if r.Form.Has("event_capacity") {
+		event.EventCapacity = nil
 	}
 
 	if friendlyName := strings.TrimSpace(r.FormValue("friendly_name")); friendlyName != "" {
@@ -547,10 +567,14 @@ func parseEventFormData(form url.Values) (*models.Event, error) {
 	}
 
 	event := &models.Event{
-		Title:       title,
-		StartTime:   startTime,
-		Timezone:    timezone,
-		MaxPlusOnes: maxPlusOnes,
+		Title:              title,
+		StartTime:          startTime,
+		Timezone:           timezone,
+		MaxPlusOnes:        maxPlusOnes,
+		AllowMaybeRSVP:     form.Get("allow_maybe_rsvp") == "on",
+		PrivateGuestList:   form.Get("private_guest_list") == "on",
+		FamilyHeadcount:    form.Get("family_headcount") == "on",
+		AllowRSVPAfterDeadline: form.Get("allow_rsvp_after_deadline") == "on",
 	}
 
 	if desc := strings.TrimSpace(form.Get("description")); desc != "" {
@@ -572,6 +596,13 @@ func parseEventFormData(form url.Values) (*models.Event, error) {
 		deadline, err := time.Parse("2006-01-02T15:04", deadlineStr)
 		if err == nil {
 			event.RSVPDeadline = &deadline
+		}
+	}
+
+	if capacityStr := form.Get("event_capacity"); capacityStr != "" {
+		capacity, err := strconv.Atoi(capacityStr)
+		if err == nil && capacity > 0 {
+			event.EventCapacity = &capacity
 		}
 	}
 
