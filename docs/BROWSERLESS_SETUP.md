@@ -181,35 +181,80 @@ If exposing browserless to a network:
 
 ## Integration with TinyRSVP
 
-To integrate browserless with the TinyRSVP test environment:
+The browserless container is configured to connect to the TinyRSVP test network, allowing it to access the application directly.
 
-### Option 1: Separate Compose File (Current)
+### Network Configuration
 
-Keep browserless separate and start it independently:
+The browserless container connects to two networks:
+- **browserless-net**: Its own isolated network
+- **tinyrsvp-test**: The TinyRSVP test environment network (external)
+
+### Starting the Services
+
+**Important:** Start services in this order:
 
 ```bash
-docker-compose -f docker-compose.browserless.yml up -d
+# 1. Start TinyRSVP test environment first (creates the network)
 docker-compose -f docker-compose.test.yml up -d
+
+# 2. Start browserless (connects to existing network)
+docker-compose -f docker-compose.browserless.yml up -d
 ```
 
-### Option 2: Merge into Test Environment
+### Accessing TinyRSVP from Browserless
 
-Add the browserless service to [`docker-compose.test.yml`](../docker-compose.test.yml):
+From within the browserless container, TinyRSVP is accessible via:
 
-```yaml
-services:
-  # ... existing services ...
-  
-  browserless:
-    image: browserless/chrome:latest
-    container_name: browserless-chrome
-    ports:
-      - "3000:3000"
-      - "9222:9222"
-    # ... rest of configuration ...
-    networks:
-      - tinyrsvp-test
+**Via Traefik (Recommended):**
 ```
+http://traefik-test:80
+```
+This corresponds to `http://localhost:8081` on the host machine.
+
+**Direct to Application:**
+```
+http://tinyrsvp-tinyrsvp:8080
+```
+
+**Example Usage:**
+```bash
+# Take a screenshot of TinyRSVP via Traefik
+curl -X POST http://localhost:3000/screenshot \
+  -H "Content-Type: application/json" \
+  -d '{"url": "http://traefik-test:80"}' \
+  --output tinyrsvp-screenshot.png
+
+# Or access the app directly
+curl -X POST http://localhost:3000/screenshot \
+  -H "Content-Type: application/json" \
+  -d '{"url": "http://tinyrsvp-tinyrsvp:8080"}' \
+  --output tinyrsvp-screenshot.png
+```
+
+### Troubleshooting Network Connectivity
+
+If browserless cannot reach TinyRSVP:
+
+1. **Verify network exists:**
+   ```bash
+   docker network ls | grep tinyrsvp-test
+   ```
+
+2. **Check browserless is on the network:**
+   ```bash
+   docker network inspect tinyrsvp-test
+   ```
+   Look for `browserless-chrome` in the containers list.
+
+3. **Test connectivity from browserless:**
+   ```bash
+   docker exec browserless-chrome wget -O- http://traefik-test:80/health
+   ```
+
+4. **Verify TinyRSVP is running:**
+   ```bash
+   docker ps | grep tinyrsvp
+   ```
 
 ## API Examples
 

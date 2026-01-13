@@ -43,6 +43,7 @@ services:
     
     networks:
       - browserless-net
+      - tinyrsvp-test
     
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:3000/pressure"]
@@ -56,22 +57,31 @@ services:
 networks:
   browserless-net:
     driver: bridge
+  tinyrsvp-test:
+    external: true
 
 # Usage Examples:
-# 
-# 1. Start browserless:
+#
+# 1. Start TinyRSVP test environment first (creates the network):
+#    docker-compose -f docker-compose.test.yml up -d
+#
+# 2. Start browserless (connects to TinyRSVP network):
 #    docker-compose -f docker-compose.browserless.yml up -d
 #
-# 2. Connect to remote debugging:
+# 3. Access TinyRSVP from browserless container:
+#    - Via Traefik: http://traefik-test:80 (port 8081 on host)
+#    - Direct to app: http://tinyrsvp-tinyrsvp:8080
+#
+# 4. Connect to remote debugging from host:
 #    - Chrome DevTools: chrome://inspect
 #    - WebSocket: ws://localhost:9222/devtools/browser/<id>
 #    - HTTP API: http://localhost:3000
 #
-# 3. Get browser WebSocket endpoint:
+# 5. Get browser WebSocket endpoint:
 #    curl http://localhost:3000/json/version
 #
-# 4. Stop browserless:
+# 6. Stop browserless:
 #    docker-compose -f docker-compose.browserless.yml down
 #
-# 5. View logs:
+# 7. View logs:
 #    docker-compose -f docker-compose.browserless.yml logs -f
