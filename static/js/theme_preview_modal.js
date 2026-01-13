@@ -58,14 +58,10 @@ class ThemePreviewModal {
     }
 
     open(themeId) {
-        console.log('open() called, modal.hidden:', this.modal?.hidden, 'modal exists:', !!this.modal);
-        
         if (!this.modal || !this.modal.hidden) {
-            console.log('Modal already open or not found, hidden attr:', this.modal?.hidden, 'hasAttribute:', this.modal?.hasAttribute('hidden'));
             return;
         }
         
-        console.log('Opening preview for theme:', themeId);
         this.currentThemeId = themeId;
         this.lastFocusedElement = document.activeElement;
         
@@ -73,11 +69,9 @@ class ThemePreviewModal {
         
         this.modal.hidden = false;
         this.modal.removeAttribute('hidden');
-        this.modal.style.display = 'flex';  // Explicitly set display to override any lingering styles
+        this.modal.style.display = 'flex';
         this.modal.setAttribute('aria-hidden', 'false');
         document.body.style.overflow = 'hidden';
-        
-        console.log('After setting hidden=false, modal.hidden:', this.modal.hidden, 'display:', window.getComputedStyle(this.modal).display);
         
         const firstFocusable = this.modal.querySelector('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
         if (firstFocusable) {
@@ -88,14 +82,9 @@ class ThemePreviewModal {
     }
 
     close() {
-        console.log('close() called, modal.hidden:', this.modal?.hidden);
-        
         if (!this.modal || this.modal.hidden) {
-            console.log('Modal already closed or not found');
             return;
         }
-        
-        console.log('Closing modal');
         
         // Move focus out of modal BEFORE hiding it to avoid aria-hidden focus trap
         if (this.lastFocusedElement && typeof this.lastFocusedElement.focus === 'function') {
@@ -108,8 +97,6 @@ class ThemePreviewModal {
         this.modal.hidden = true;
         this.modal.setAttribute('hidden', '');
         this.modal.setAttribute('aria-hidden', 'true');
-        
-        console.log('After setting hidden=true, modal.hidden:', this.modal.hidden, 'hasAttribute:', this.modal.hasAttribute('hidden'));
         
         try {
             document.body.style.overflow = '';
