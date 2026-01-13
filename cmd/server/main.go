@@ -362,6 +362,13 @@ func main() {
 			}
 			return result
 		},
+		"iterate": func(count int) []int {
+			result := make([]int, count)
+			for i := 0; i < count; i++ {
+				result[i] = i
+			}
+			return result
+		},
 		"lower": func(s string) string {
 			return strings.ToLower(s)
 		},
@@ -456,6 +463,7 @@ func main() {
 		"templates/web/partials/navigation.html",
 		"templates/web/partials/page_header.html",
 		"templates/web/partials/datetime_picker_panel.html",
+		"templates/web/partials/rsvp_settings_panel.html",
 		"templates/web/partials/theme_picker.html",
 		"templates/web/partials/theme_preview_modal.html",
 		"templates/web/partials/image_upload.html",
