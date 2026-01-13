@@ -88,6 +88,15 @@ class ThemePreviewModal {
         }
         
         console.log('Closing modal');
+        
+        // Move focus out of modal BEFORE hiding it to avoid aria-hidden focus trap
+        if (this.lastFocusedElement && typeof this.lastFocusedElement.focus === 'function') {
+            this.lastFocusedElement.focus();
+        } else if (document.activeElement && this.modal.contains(document.activeElement)) {
+            document.activeElement.blur();
+        }
+        
+        // Now safe to hide the modal
         this.modal.hidden = true;
         this.modal.setAttribute('aria-hidden', 'true');
         
@@ -103,14 +112,6 @@ class ThemePreviewModal {
         }
         
         this.currentThemeId = null;
-        
-        if (this.lastFocusedElement) {
-            setTimeout(() => {
-                if (this.lastFocusedElement && typeof this.lastFocusedElement.focus === 'function') {
-                    this.lastFocusedElement.focus();
-                }
-            }, 0);
-        }
         
         this.announce('Theme preview closed');
     }
