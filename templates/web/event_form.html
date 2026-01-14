@@ -231,16 +231,6 @@
                     </button>
                 </section>
 
-                <div class="form-actions">
-                    <button type="button" onclick="window.location.href='/events'" class="btn btn-secondary">Cancel</button>
-                    <button type="submit" name="action" value="draft" class="btn btn-secondary">
-                        Save Draft
-                    </button>
-                    <button type="submit" name="action" value="publish" class="btn btn-primary">
-                        {{if .Event.ID}}Update{{else}}Publish{{end}} Event
-                    </button>
-                </div>
-
                 {{if .Event.ID}}
                 <section class="form-section">
                     <h2 class="form-section-title">Template Customization</h2>
@@ -253,6 +243,16 @@
                     </a>
                 </section>
                 {{end}}
+            </div>
+
+            <div class="form-actions">
+                <button type="button" onclick="window.location.href='/events'" class="btn btn-secondary">Cancel</button>
+                <button type="submit" name="action" value="draft" class="btn btn-secondary">
+                    Save Draft
+                </button>
+                <button type="submit" name="action" value="publish" class="btn btn-primary">
+                    {{if .Event.ID}}Update{{else}}Publish{{end}} Event
+                </button>
             </div>
         </div>
     </form>
