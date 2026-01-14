@@ -223,4 +223,201 @@ describe('DateTimePicker Toggle Group Visibility', () => {
             }, 100);
         }, 100);
     });
+
+    test('single-date mode should not display end date in trigger text', (done) => {
+        const rsvpTrigger = document.getElementById('rsvp_deadline_trigger');
+        const rsvpInput = document.getElementById('rsvp_deadline_input');
+        const saveBtn = document.querySelector('.datetime-picker-save');
+        
+        setTimeout(() => {
+            rsvpTrigger.click();
+            
+            setTimeout(() => {
+                const calendarDays = panel.querySelectorAll('.calendar-day:not(.other-month):not(.disabled)');
+                if (calendarDays.length > 0) {
+                    calendarDays[0].click();
+                    
+                    setTimeout(() => {
+                        const timeOptions = panel.querySelectorAll('.time-option');
+                        if (timeOptions.length > 0) {
+                            timeOptions[0].click();
+                            
+                            setTimeout(() => {
+                                saveBtn.click();
+                                
+                                setTimeout(() => {
+                                    const triggerText = rsvpTrigger.querySelector('.datetime-trigger-text').textContent;
+                                    expect(triggerText).not.toContain(' - ');
+                                    expect(rsvpInput.value).toBeTruthy();
+                                    done();
+                                }, 100);
+                            }, 100);
+                        } else {
+                            done();
+                        }
+                    }, 100);
+                } else {
+                    done();
+                }
+            }, 100);
+        }, 100);
+    });
+
+    test('date-range mode should display both start and end dates in trigger text', (done) => {
+        const eventTrigger = document.getElementById('event_datetime_trigger');
+        const startInput = document.getElementById('start_time');
+        const endInput = document.getElementById('end_time');
+        const saveBtn = document.querySelector('.datetime-picker-save');
+        const closeBtn = document.querySelector('.datetime-picker-close');
+        
+        setTimeout(() => {
+            eventTrigger.click();
+            
+            setTimeout(() => {
+                const startCalendarDays = panel.querySelectorAll('.calendar-day:not(.other-month):not(.disabled)');
+                if (startCalendarDays.length > 1) {
+                    startCalendarDays[0].click();
+                    
+                    setTimeout(() => {
+                        const startTimeOptions = panel.querySelectorAll('.time-option');
+                        if (startTimeOptions.length > 0) {
+                            startTimeOptions[0].click();
+                            
+                            setTimeout(() => {
+                                const endToggleBtn = panel.querySelector('.datetime-toggle-btn[data-mode="end"]');
+                                endToggleBtn.click();
+                                
+                                setTimeout(() => {
+                                    const endCalendarDays = panel.querySelectorAll('.calendar-day:not(.other-month):not(.disabled)');
+                                    if (endCalendarDays.length > 1) {
+                                        endCalendarDays[1].click();
+                                        
+                                        setTimeout(() => {
+                                            const endTimeOptions = panel.querySelectorAll('.time-option');
+                                            if (endTimeOptions.length > 0) {
+                                                endTimeOptions[0].click();
+                                                
+                                                setTimeout(() => {
+                                                    saveBtn.click();
+                                                    
+                                                    setTimeout(() => {
+                                                        const triggerText = eventTrigger.querySelector('.datetime-trigger-text').textContent;
+                                                        expect(triggerText).toContain(' - ');
+                                                        expect(startInput.value).toBeTruthy();
+                                                        expect(endInput.value).toBeTruthy();
+                                                        done();
+                                                    }, 100);
+                                                }, 100);
+                                            } else {
+                                                done();
+                                            }
+                                        }, 100);
+                                    } else {
+                                        done();
+                                    }
+                                }, 100);
+                            }, 100);
+                        } else {
+                            done();
+                        }
+                    }, 100);
+                } else {
+                    done();
+                }
+            }, 100);
+        }, 100);
+    });
+
+    test('single-date mode should not show end date even after using date-range mode', (done) => {
+        const eventTrigger = document.getElementById('event_datetime_trigger');
+        const rsvpTrigger = document.getElementById('rsvp_deadline_trigger');
+        const saveBtn = document.querySelector('.datetime-picker-save');
+        const closeBtn = document.querySelector('.datetime-picker-close');
+        
+        setTimeout(() => {
+            eventTrigger.click();
+            
+            setTimeout(() => {
+                const startCalendarDays = panel.querySelectorAll('.calendar-day:not(.other-month):not(.disabled)');
+                if (startCalendarDays.length > 1) {
+                    startCalendarDays[0].click();
+                    
+                    setTimeout(() => {
+                        const startTimeOptions = panel.querySelectorAll('.time-option');
+                        if (startTimeOptions.length > 0) {
+                            startTimeOptions[0].click();
+                            
+                            setTimeout(() => {
+                                const endToggleBtn = panel.querySelector('.datetime-toggle-btn[data-mode="end"]');
+                                endToggleBtn.click();
+                                
+                                setTimeout(() => {
+                                    const endCalendarDays = panel.querySelectorAll('.calendar-day:not(.other-month):not(.disabled)');
+                                    if (endCalendarDays.length > 1) {
+                                        endCalendarDays[1].click();
+                                        
+                                        setTimeout(() => {
+                                            const endTimeOptions = panel.querySelectorAll('.time-option');
+                                            if (endTimeOptions.length > 0) {
+                                                endTimeOptions[0].click();
+                                                
+                                                setTimeout(() => {
+                                                    saveBtn.click();
+                                                    
+                                                    setTimeout(() => {
+                                                        const eventTriggerText = eventTrigger.querySelector('.datetime-trigger-text').textContent;
+                                                        expect(eventTriggerText).toContain(' - ');
+                                                        
+                                                        setTimeout(() => {
+                                                            rsvpTrigger.click();
+                                                            
+                                                            setTimeout(() => {
+                                                                const rsvpCalendarDays = panel.querySelectorAll('.calendar-day:not(.other-month):not(.disabled)');
+                                                                if (rsvpCalendarDays.length > 0) {
+                                                                    rsvpCalendarDays[0].click();
+                                                                    
+                                                                    setTimeout(() => {
+                                                                        const rsvpTimeOptions = panel.querySelectorAll('.time-option');
+                                                                        if (rsvpTimeOptions.length > 0) {
+                                                                            rsvpTimeOptions[0].click();
+                                                                            
+                                                                            setTimeout(() => {
+                                                                                saveBtn.click();
+                                                                                
+                                                                                setTimeout(() => {
+                                                                                    const rsvpTriggerText = rsvpTrigger.querySelector('.datetime-trigger-text').textContent;
+                                                                                    expect(rsvpTriggerText).not.toContain(' - ');
+                                                                                    done();
+                                                                                }, 100);
+                                                                            }, 100);
+                                                                        } else {
+                                                                            done();
+                                                                        }
+                                                                    }, 100);
+                                                                } else {
+                                                                    done();
+                                                                }
+                                                            }, 100);
+                                                        }, 100);
+                                                    }, 100);
+                                                }, 100);
+                                            } else {
+                                                done();
+                                            }
+                                        }, 100);
+                                    } else {
+                                        done();
+                                    }
+                                }, 100);
+                            }, 100);
+                        } else {
+                            done();
+                        }
+                    }, 100);
+                } else {
+                    done();
+                }
+            }, 100);
+        }, 100);
+    });
 });

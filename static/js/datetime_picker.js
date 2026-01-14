@@ -548,7 +548,7 @@
 
                 let displayText = startStr;
 
-                if (this.selectedEndDate && this.selectedEndTime) {
+                if (this.config.showEndTime && this.selectedEndDate && this.selectedEndTime) {
                     const startDateStr = this.selectedStartDate.toLocaleDateString('en-US', {
                         year: 'numeric',
                         month: '2-digit',
