@@ -34,222 +34,226 @@
         <input type="hidden" name="version" value="{{.Event.Version}}">
         {{end}}
 
-        <section class="form-section">
-            <h2 class="form-section-title">Event Details</h2>
-            
-            <div class="form-group">
-                <label for="title" class="form-label">
-                    Event Title<span class="form-required" aria-label="required">*</span>
-                </label>
-                <input 
-                    type="text" 
-                    id="title" 
-                    name="title" 
-                    class="form-input{{if .Errors.Title}} error{{end}}" 
-                    value="{{.Event.Title}}"
-                    required
-                    aria-describedby="title-help{{if .Errors.Title}} title-error{{end}}"
-                    maxlength="200"
-                >
-                <span class="form-help-text" id="title-help">Give your event a clear, descriptive name</span>
-                {{if .Errors.Title}}
-                <span class="form-error" id="title-error">{{.Errors.Title}}</span>
-                {{end}}
+        <div class="event-form-layout">
+            <div class="event-form-theme-column">
+                <section class="form-section">
+                    <h2 class="form-section-title">Invitation Page Theme</h2>
+                    <p class="form-help-text">Choose a visual theme for your RSVP page</p>
+                    {{template "theme_picker" .}}
+                    {{template "image_upload" .}}
+                    {{template "color_picker" .}}
+                </section>
             </div>
 
-            <div class="form-group">
-                <label for="friendly_name" class="form-label">Friendly URL Name</label>
-                <input 
-                    type="text" 
-                    id="friendly_name" 
-                    name="friendly_name" 
-                    class="form-input{{if .Errors.FriendlyName}} error{{end}}"
-                    value="{{if .Event.FriendlyName}}{{.Event.FriendlyName}}{{end}}"
-                    aria-describedby="friendly_name-help{{if .Errors.FriendlyName}} friendly_name-error{{end}}"
-                    pattern="[a-z0-9-]+"
-                    maxlength="100"
-                >
-                <span class="form-help-text" id="friendly_name-help">Optional: Create a memorable URL like "summer-party-2026" (lowercase letters, numbers, and hyphens only)</span>
-                {{if .Errors.FriendlyName}}
-                <span class="form-error" id="friendly_name-error">{{.Errors.FriendlyName}}</span>
-                {{end}}
-            </div>
-
-            <div class="form-group">
-                <label for="description" class="form-label">Description</label>
-                <textarea 
-                    id="description" 
-                    name="description" 
-                    class="form-textarea{{if .Errors.Description}} error{{end}}"
-                    aria-describedby="description-help{{if .Errors.Description}} description-error{{end}}"
-                    rows="5"
-                >{{if .Event.Description}}{{.Event.Description}}{{end}}</textarea>
-                <span class="form-help-text" id="description-help">Provide details about your event</span>
-                {{if .Errors.Description}}
-                <span class="form-error" id="description-error">{{.Errors.Description}}</span>
-                {{end}}
-            </div>
-
-            <div class="form-group">
-                <label for="location" class="form-label">Location</label>
-                <input 
-                    type="text" 
-                    id="location" 
-                    name="location" 
-                    class="form-input{{if .Errors.Location}} error{{end}}"
-                    value="{{if .Event.Location}}{{.Event.Location}}{{end}}"
-                    aria-describedby="location-help{{if .Errors.Location}} location-error{{end}}"
-                >
-                <span class="form-help-text" id="location-help">Physical address or virtual meeting link</span>
-                {{if .Errors.Location}}
-                <span class="form-error" id="location-error">{{.Errors.Location}}</span>
-                {{end}}
-            </div>
-        </section>
-
-        <section class="form-section">
-            <h2 class="form-section-title">Date & Time</h2>
-            
-            <div class="form-group">
-                <label for="event_datetime_trigger" class="form-label">
-                    Event Date & Time<span class="form-required" aria-label="required">*</span>
-                </label>
-                <button
-                    type="button"
-                    id="event_datetime_trigger"
-                    class="form-input datetime-trigger-btn{{if or .Errors.StartTime .Errors.EndTime .Errors.Timezone}} error{{end}}"
-                    data-datetime-picker
-                    data-mode="datetime-range"
-                    data-end-input="end_time"
-                    data-timezone-input="timezone"
-                    data-show-timezone="true"
-                    data-title="Select Event Date & Time"
-                    aria-describedby="event_datetime-help{{if or .Errors.StartTime .Errors.EndTime .Errors.Timezone}} event_datetime-error{{end}}"
-                >
-                    <span class="datetime-trigger-icon">📅</span>
-                    <span class="datetime-trigger-text" id="event_datetime_display">
-                        {{if and (not .Event.StartTime.IsZero) .Event.Timezone}}
-                            {{.Event.StartTime.Format "Jan 2, 2006 at 3:04 PM"}}{{if .Event.EndTime}}{{if ne (.Event.StartTime.Format "2006-01-02") (.Event.EndTime.Format "2006-01-02")}} - {{.Event.EndTime.Format "Jan 2, 2006 at 3:04 PM"}}{{else}} - {{.Event.EndTime.Format "3:04 PM"}}{{end}}{{end}} ({{.Event.Timezone}})
-                        {{else}}
-                            Click to select date, time, and timezone
+            <div class="event-form-details-column">
+                <section class="form-section">
+                    <h2 class="form-section-title">Event Details</h2>
+                    
+                    <div class="form-group">
+                        <label for="title" class="form-label">
+                            Event Title<span class="form-required" aria-label="required">*</span>
+                        </label>
+                        <input
+                            type="text"
+                            id="title"
+                            name="title"
+                            class="form-input{{if .Errors.Title}} error{{end}}"
+                            value="{{.Event.Title}}"
+                            required
+                            aria-describedby="title-help{{if .Errors.Title}} title-error{{end}}"
+                            maxlength="200"
+                        >
+                        <span class="form-help-text" id="title-help">Give your event a clear, descriptive name</span>
+                        {{if .Errors.Title}}
+                        <span class="form-error" id="title-error">{{.Errors.Title}}</span>
                         {{end}}
-                    </span>
-                </button>
-                <span class="form-help-text" id="event_datetime-help">Select start time, end time, and timezone for your event</span>
-                {{if .Errors.StartTime}}
-                <span class="form-error" id="event_datetime-error">{{.Errors.StartTime}}</span>
-                {{else if .Errors.EndTime}}
-                <span class="form-error" id="event_datetime-error">{{.Errors.EndTime}}</span>
-                {{else if .Errors.Timezone}}
-                <span class="form-error" id="event_datetime-error">{{.Errors.Timezone}}</span>
-                {{end}}
-            </div>
-
-            <input 
-                type="hidden" 
-                id="start_time" 
-                name="start_time" 
-                value="{{if not .Event.StartTime.IsZero}}{{.Event.StartTime.Format "2006-01-02T15:04"}}{{end}}"
-            >
-            <input 
-                type="hidden" 
-                id="end_time" 
-                name="end_time" 
-                value="{{if .Event.EndTime}}{{.Event.EndTime.Format "2006-01-02T15:04"}}{{end}}"
-            >
-            <input 
-                type="hidden" 
-                id="timezone" 
-                name="timezone" 
-                value="{{.Event.Timezone}}"
-            >
-        </section>
-
-        <section class="form-section">
-            <h2 class="form-section-title">RSVP Settings</h2>
-            <p class="form-help-text">Configure how guests can respond to your invitation</p>
-            
-            <button
-                type="button"
-                class="rsvp-settings-trigger-btn"
-                data-rsvp-settings-trigger
-                aria-label="Open RSVP settings"
-            >
-                <span class="rsvp-settings-trigger-icon">⚙️</span>
-                <span class="rsvp-settings-trigger-text">Configure RSVP Settings</span>
-            </button>
-        </section>
-
-        <section class="form-section">
-            <h2 class="form-section-title">RSVP Page Theme</h2>
-            <p class="form-help-text">Choose a visual theme for your RSVP page</p>
-            {{template "theme_picker" .}}
-            {{template "image_upload" .}}
-            {{template "color_picker" .}}
-        </section>
-
-        {{if .Event.ID}}
-        <section class="form-section">
-            <h2 class="form-section-title">Template Customization</h2>
-            <p class="form-help-text">Personalize the RSVP page layout and components for this event</p>
-            <a href="/events/{{.Event.ID}}/customize" class="btn btn-secondary">
-                <svg class="icon" width="20" height="20" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                    <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z"/>
-                </svg>
-                Customize Template
-            </a>
-        </section>
-        {{end}}
-
-        <section class="form-section">
-            <h2 class="form-section-title">Preference Questions</h2>
-            <p class="form-help-text">Ask guests about dietary restrictions, meal preferences, etc.</p>
-            
-            <div id="questions-container">
-                {{range $index, $question := .Questions}}
-                <div class="question-item" data-index="{{$index}}">
-                    <div class="form-group">
-                        <label for="question_{{$index}}_text" class="form-label">Question {{add $index 1}}</label>
-                        <input 
-                            type="text" 
-                            id="question_{{$index}}_text" 
-                            name="questions[{{$index}}][text]" 
-                            class="form-input"
-                            value="{{$question.Text}}"
-                            placeholder="e.g., Do you have any dietary restrictions?"
-                        >
                     </div>
+
                     <div class="form-group">
-                        <label for="question_{{$index}}_type" class="form-label">Answer Type</label>
-                        <select 
-                            id="question_{{$index}}_type" 
-                            name="questions[{{$index}}][type]" 
-                            class="form-select"
+                        <label for="event_datetime_trigger" class="form-label">
+                            Date & Time<span class="form-required" aria-label="required">*</span>
+                        </label>
+                        <button
+                            type="button"
+                            id="event_datetime_trigger"
+                            class="form-input datetime-trigger-btn{{if or .Errors.StartTime .Errors.EndTime .Errors.Timezone}} error{{end}}"
+                            data-datetime-picker
+                            data-mode="datetime-range"
+                            data-end-input="end_time"
+                            data-timezone-input="timezone"
+                            data-show-timezone="true"
+                            data-title="Select Event Date & Time"
+                            aria-describedby="event_datetime-help{{if or .Errors.StartTime .Errors.EndTime .Errors.Timezone}} event_datetime-error{{end}}"
                         >
-                            <option value="text"{{if eq $question.Type "text"}} selected{{end}}>Text</option>
-                            <option value="choice"{{if eq $question.Type "choice"}} selected{{end}}>Multiple Choice</option>
-                        </select>
+                            <span class="datetime-trigger-icon">📅</span>
+                            <span class="datetime-trigger-text" id="event_datetime_display">
+                                {{if and (not .Event.StartTime.IsZero) .Event.Timezone}}
+                                    {{.Event.StartTime.Format "Jan 2, 2006 at 3:04 PM"}}{{if .Event.EndTime}}{{if ne (.Event.StartTime.Format "2006-01-02") (.Event.EndTime.Format "2006-01-02")}} - {{.Event.EndTime.Format "Jan 2, 2006 at 3:04 PM"}}{{else}} - {{.Event.EndTime.Format "3:04 PM"}}{{end}}{{end}} ({{.Event.Timezone}})
+                                {{else}}
+                                    Click to select date, time, and timezone
+                                {{end}}
+                            </span>
+                        </button>
+                        <span class="form-help-text" id="event_datetime-help">Select start time, end time, and timezone for your event</span>
+                        {{if .Errors.StartTime}}
+                        <span class="form-error" id="event_datetime-error">{{.Errors.StartTime}}</span>
+                        {{else if .Errors.EndTime}}
+                        <span class="form-error" id="event_datetime-error">{{.Errors.EndTime}}</span>
+                        {{else if .Errors.Timezone}}
+                        <span class="form-error" id="event_datetime-error">{{.Errors.Timezone}}</span>
+                        {{end}}
                     </div>
-                    <button type="button" class="btn btn-danger btn-sm remove-question" data-index="{{$index}}">
-                        Remove
+
+                    <input
+                        type="hidden"
+                        id="start_time"
+                        name="start_time"
+                        value="{{if not .Event.StartTime.IsZero}}{{.Event.StartTime.Format "2006-01-02T15:04"}}{{end}}"
+                    >
+                    <input
+                        type="hidden"
+                        id="end_time"
+                        name="end_time"
+                        value="{{if .Event.EndTime}}{{.Event.EndTime.Format "2006-01-02T15:04"}}{{end}}"
+                    >
+                    <input
+                        type="hidden"
+                        id="timezone"
+                        name="timezone"
+                        value="{{.Event.Timezone}}"
+                    >
+
+                    <div class="form-group">
+                        <label for="location" class="form-label">Location</label>
+                        <input
+                            type="text"
+                            id="location"
+                            name="location"
+                            class="form-input{{if .Errors.Location}} error{{end}}"
+                            value="{{if .Event.Location}}{{.Event.Location}}{{end}}"
+                            aria-describedby="location-help{{if .Errors.Location}} location-error{{end}}"
+                        >
+                        <span class="form-help-text" id="location-help">Physical address or virtual meeting link</span>
+                        {{if .Errors.Location}}
+                        <span class="form-error" id="location-error">{{.Errors.Location}}</span>
+                        {{end}}
+                    </div>
+
+                    <div class="form-group">
+                        <label for="description" class="form-label">Description</label>
+                        <textarea
+                            id="description"
+                            name="description"
+                            class="form-textarea{{if .Errors.Description}} error{{end}}"
+                            aria-describedby="description-help{{if .Errors.Description}} description-error{{end}}"
+                            rows="5"
+                        >{{if .Event.Description}}{{.Event.Description}}{{end}}</textarea>
+                        <span class="form-help-text" id="description-help">Provide details about your event</span>
+                        {{if .Errors.Description}}
+                        <span class="form-error" id="description-error">{{.Errors.Description}}</span>
+                        {{end}}
+                    </div>
+
+                    <div class="form-group">
+                        <label for="rsvp_settings_trigger" class="form-label">RSVP Settings</label>
+                        <button
+                            type="button"
+                            id="rsvp_settings_trigger"
+                            class="rsvp-settings-trigger-btn"
+                            data-rsvp-settings-trigger
+                            aria-label="Open RSVP settings"
+                        >
+                            <span class="rsvp-settings-trigger-icon">⚙️</span>
+                            <span class="rsvp-settings-trigger-text">Configure RSVP Settings</span>
+                        </button>
+                        <span class="form-help-text">Configure how guests can respond to your invitation</span>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="friendly_name" class="form-label">
+                            Friendly URL Name <span class="form-optional-badge">Optional</span>
+                        </label>
+                        <input
+                            type="text"
+                            id="friendly_name"
+                            name="friendly_name"
+                            class="form-input{{if .Errors.FriendlyName}} error{{end}}"
+                            value="{{if .Event.FriendlyName}}{{.Event.FriendlyName}}{{end}}"
+                            aria-describedby="friendly_name-help{{if .Errors.FriendlyName}} friendly_name-error{{end}}"
+                            pattern="[a-z0-9-]+"
+                            maxlength="100"
+                        >
+                        <span class="form-help-text" id="friendly_name-help">Create a memorable URL like "summer-party-2026" (lowercase letters, numbers, and hyphens only)</span>
+                        {{if .Errors.FriendlyName}}
+                        <span class="form-error" id="friendly_name-error">{{.Errors.FriendlyName}}</span>
+                        {{end}}
+                    </div>
+                </section>
+
+                <section class="form-section">
+                    <h2 class="form-section-title">Preference Questions</h2>
+                    <p class="form-help-text">Ask guests about dietary restrictions, meal preferences, etc.</p>
+                    
+                    <div id="questions-container">
+                        {{range $index, $question := .Questions}}
+                        <div class="question-item" data-index="{{$index}}">
+                            <div class="form-group">
+                                <label for="question_{{$index}}_text" class="form-label">Question {{add $index 1}}</label>
+                                <input
+                                    type="text"
+                                    id="question_{{$index}}_text"
+                                    name="questions[{{$index}}][text]"
+                                    class="form-input"
+                                    value="{{$question.Text}}"
+                                    placeholder="e.g., Do you have any dietary restrictions?"
+                                >
+                            </div>
+                            <div class="form-group">
+                                <label for="question_{{$index}}_type" class="form-label">Answer Type</label>
+                                <select
+                                    id="question_{{$index}}_type"
+                                    name="questions[{{$index}}][type]"
+                                    class="form-select"
+                                >
+                                    <option value="text"{{if eq $question.Type "text"}} selected{{end}}>Text</option>
+                                    <option value="choice"{{if eq $question.Type "choice"}} selected{{end}}>Multiple Choice</option>
+                                </select>
+                            </div>
+                            <button type="button" class="btn btn-danger btn-sm remove-question" data-index="{{$index}}">
+                                Remove
+                            </button>
+                        </div>
+                        {{end}}
+                    </div>
+                    
+                    <button type="button" class="btn btn-secondary" id="add-question-btn">
+                        Add Question
+                    </button>
+                </section>
+
+                <div class="form-actions">
+                    <button type="button" onclick="window.location.href='/events'" class="btn btn-secondary">Cancel</button>
+                    <button type="submit" name="action" value="draft" class="btn btn-secondary">
+                        Save Draft
+                    </button>
+                    <button type="submit" name="action" value="publish" class="btn btn-primary">
+                        {{if .Event.ID}}Update{{else}}Publish{{end}} Event
                     </button>
                 </div>
+
+                {{if .Event.ID}}
+                <section class="form-section">
+                    <h2 class="form-section-title">Template Customization</h2>
+                    <p class="form-help-text">Personalize the RSVP page layout and components for this event</p>
+                    <a href="/events/{{.Event.ID}}/customize" class="btn btn-secondary">
+                        <svg class="icon" width="20" height="20" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                            <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z"/>
+                        </svg>
+                        Customize Template
+                    </a>
+                </section>
                 {{end}}
             </div>
-            
-            <button type="button" class="btn btn-secondary" id="add-question-btn">
-                Add Question
-            </button>
-        </section>
-
-        <div class="form-actions">
-            <button type="button" onclick="window.location.href='/events'" class="btn btn-secondary">Cancel</button>
-            <button type="submit" name="action" value="draft" class="btn btn-secondary">
-                Save Draft
-            </button>
-            <button type="submit" name="action" value="publish" class="btn btn-primary">
-                {{if .Event.ID}}Update{{else}}Publish{{end}} Event
-            </button>
         </div>
     </form>
 {{end}}
