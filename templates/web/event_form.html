@@ -233,16 +233,6 @@
                     </a>
                 </section>
                 {{end}}
-
-                <div class="form-actions">
-                    <button type="button" onclick="window.location.href='/events'" class="btn btn-secondary">Cancel</button>
-                    <button type="submit" name="action" value="draft" class="btn btn-secondary">
-                        Save Draft
-                    </button>
-                    <button type="submit" name="action" value="publish" class="btn btn-primary">
-                        {{if .Event.ID}}Update{{else}}Publish{{end}} Event
-                    </button>
-                </div>
             </div>
 
             <div class="event-form-theme-column">
@@ -253,6 +243,16 @@
                     {{template "image_upload" .}}
                     {{template "color_picker" .}}
                 </section>
+            </div>
+
+            <div class="form-actions">
+                <button type="button" onclick="window.location.href='/events'" class="btn btn-secondary">Cancel</button>
+                <button type="submit" name="action" value="draft" class="btn btn-secondary">
+                    Save Draft
+                </button>
+                <button type="submit" name="action" value="publish" class="btn btn-primary">
+                    {{if .Event.ID}}Update{{else}}Publish{{end}} Event
+                </button>
             </div>
         </div>
     </form>
