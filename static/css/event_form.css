@@ -134,24 +134,25 @@
         flex-direction: row;
         align-items: flex-start;
         flex-wrap: wrap;
+        gap: var(--spacing-6);
     }
 
     .event-form-theme-column {
         order: 1;
-        flex: 0 0 75%;
-        max-width: 75%;
+        flex: 0 0 calc(75% - var(--spacing-3));
+        max-width: calc(75% - var(--spacing-3));
     }
 
     .event-form-details-column {
         order: 2;
-        flex: 0 0 25%;
-        max-width: 25%;
+        flex: 0 0 calc(25% - var(--spacing-3));
+        max-width: calc(25% - var(--spacing-3));
     }
 
     .form-actions {
         order: 2;
-        width: 25%;
-        margin-left: 75%;
+        width: calc(25% - var(--spacing-3));
+        margin-left: calc(75% + var(--spacing-6));
     }
 
     .event-form-details-column .form-section {

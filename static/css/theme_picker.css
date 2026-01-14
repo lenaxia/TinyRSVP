@@ -28,7 +28,7 @@
 
 .theme-gallery {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
     gap: var(--spacing-4);
 }
 
@@ -182,7 +182,8 @@
 
 @media (max-width: 767px) {
     .theme-gallery {
-        grid-template-columns: 1fr;
+        grid-template-columns: repeat(2, 1fr);
+        gap: var(--spacing-3);
     }
     
     .theme-picker-header {
@@ -193,12 +194,12 @@
 
 @media (min-width: 768px) and (max-width: 1023px) {
     .theme-gallery {
-        grid-template-columns: repeat(2, 1fr);
+        grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
     }
 }
 
 @media (min-width: 1024px) {
     .theme-gallery {
-        grid-template-columns: repeat(3, 1fr);
+        grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
     }
 }
