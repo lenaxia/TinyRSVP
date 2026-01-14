@@ -28,7 +28,7 @@
 
 .theme-gallery {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    grid-template-columns: 1fr;
     gap: var(--spacing-4);
 }
 
@@ -180,9 +180,16 @@
     background: var(--color-primary-700);
 }
 
-@media (max-width: 767px) {
+@media (min-width: 480px) and (max-width: 767px) {
     .theme-gallery {
         grid-template-columns: repeat(2, 1fr);
+        gap: var(--spacing-3);
+    }
+}
+
+@media (max-width: 479px) {
+    .theme-gallery {
+        grid-template-columns: 1fr;
         gap: var(--spacing-3);
     }
     
@@ -194,12 +201,14 @@
 
 @media (min-width: 768px) and (max-width: 1023px) {
     .theme-gallery {
-        grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+        grid-template-columns: repeat(2, 1fr);
+        gap: var(--spacing-4);
     }
 }
 
 @media (min-width: 1024px) {
     .theme-gallery {
-        grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+        gap: var(--spacing-4);
     }
 }

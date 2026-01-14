@@ -35,16 +35,6 @@
         {{end}}
 
         <div class="event-form-layout">
-            <div class="event-form-theme-column">
-                <section class="form-section">
-                    <h2 class="form-section-title">Invitation Page Theme</h2>
-                    <p class="form-help-text">Choose a visual theme for your RSVP page</p>
-                    {{template "theme_picker" .}}
-                    {{template "image_upload" .}}
-                    {{template "color_picker" .}}
-                </section>
-            </div>
-
             <div class="event-form-details-column">
                 <section class="form-section">
                     <h2 class="form-section-title">Event Details</h2>
@@ -243,16 +233,26 @@
                     </a>
                 </section>
                 {{end}}
+
+                <div class="form-actions">
+                    <button type="button" onclick="window.location.href='/events'" class="btn btn-secondary">Cancel</button>
+                    <button type="submit" name="action" value="draft" class="btn btn-secondary">
+                        Save Draft
+                    </button>
+                    <button type="submit" name="action" value="publish" class="btn btn-primary">
+                        {{if .Event.ID}}Update{{else}}Publish{{end}} Event
+                    </button>
+                </div>
             </div>
 
-            <div class="form-actions">
-                <button type="button" onclick="window.location.href='/events'" class="btn btn-secondary">Cancel</button>
-                <button type="submit" name="action" value="draft" class="btn btn-secondary">
-                    Save Draft
-                </button>
-                <button type="submit" name="action" value="publish" class="btn btn-primary">
-                    {{if .Event.ID}}Update{{else}}Publish{{end}} Event
-                </button>
+            <div class="event-form-theme-column">
+                <section class="form-section">
+                    <h2 class="form-section-title">Invitation Page Theme</h2>
+                    <p class="form-help-text">Choose a visual theme for your RSVP page</p>
+                    {{template "theme_picker" .}}
+                    {{template "image_upload" .}}
+                    {{template "color_picker" .}}
+                </section>
             </div>
         </div>
     </form>
