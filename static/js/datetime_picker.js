@@ -230,7 +230,9 @@
             this.panel.classList.add('open');
             this.overlay.classList.add('open');
             document.body.style.overflow = 'hidden';
-            this.switchMode(this.currentMode);
+            if (this.config.showEndTime) {
+                this.switchMode(this.currentMode);
+            }
             this.renderCalendar();
             if (this.config.mode !== 'date-only') {
                 this.renderTimePicker();

@@ -1,0 +1,226 @@
+/**
+ * Tests for datetime picker toggle group visibility
+ */
+
+describe('DateTimePicker Toggle Group Visibility', () => {
+    let container;
+    let panel;
+    let overlay;
+    let toggleGroup;
+
+    beforeEach(() => {
+        container = document.createElement('div');
+        container.innerHTML = `
+            <button
+                type="button"
+                id="event_datetime_trigger"
+                class="datetime-trigger-btn"
+                data-datetime-picker
+                data-mode="datetime-range"
+                data-show-timezone="true"
+                data-title="Select Event Date & Time"
+            >
+                <span class="datetime-trigger-text">Event DateTime</span>
+            </button>
+            <input type="hidden" id="start_time" value="">
+            <input type="hidden" id="end_time" value="">
+            <input type="hidden" id="timezone" value="America/Los_Angeles">
+
+            <button
+                type="button"
+                id="rsvp_deadline_trigger"
+                class="datetime-trigger-btn"
+                data-datetime-picker
+                data-mode="datetime-single"
+                data-show-timezone="false"
+                data-title="Select RSVP Deadline"
+            >
+                <span class="datetime-trigger-text">RSVP Deadline</span>
+            </button>
+            <input type="hidden" id="rsvp_deadline_input" value="">
+
+            <div class="datetime-picker-overlay"></div>
+            <div class="datetime-picker-panel">
+                <div class="datetime-picker-header">
+                    <h2 class="datetime-picker-title">Select Date & Time</h2>
+                    <button class="datetime-picker-close">×</button>
+                </div>
+                <div class="datetime-picker-body">
+                    <div class="datetime-toggle-group">
+                        <button type="button" class="datetime-toggle-btn active" data-mode="start">
+                            <span class="datetime-toggle-label">Start Time</span>
+                            <span class="datetime-toggle-value" id="start-time-display">Not set</span>
+                        </button>
+                        <button type="button" class="datetime-toggle-btn" data-mode="end">
+                            <span class="datetime-toggle-label">End Time (Optional)</span>
+                            <span class="datetime-toggle-value" id="end-time-display">Not set</span>
+                        </button>
+                    </div>
+                    <div class="datetime-picker-content active" data-content="start">
+                        <div class="datetime-picker-layout">
+                            <div class="calendar-container">
+                                <div class="calendar-header">
+                                    <button type="button" class="calendar-nav-btn" data-nav="prev">‹</button>
+                                    <span class="calendar-month-year"></span>
+                                    <button type="button" class="calendar-nav-btn" data-nav="next">›</button>
+                                </div>
+                                <div class="calendar-grid"></div>
+                            </div>
+                            <div class="time-picker-container">
+                                <label class="time-picker-label">Time</label>
+                                <div class="time-picker-scroll"></div>
+                            </div>
+                        </div>
+                        <div class="timezone-display">
+                            <div>
+                                <div class="timezone-label">Timezone</div>
+                                <div class="timezone-value"></div>
+                            </div>
+                            <button type="button" class="timezone-change-btn">Change</button>
+                        </div>
+                    </div>
+                    <div class="datetime-picker-content" data-content="end">
+                        <div class="datetime-picker-layout">
+                            <div class="calendar-container">
+                                <div class="calendar-header">
+                                    <button type="button" class="calendar-nav-btn" data-nav="prev">‹</button>
+                                    <span class="calendar-month-year"></span>
+                                    <button type="button" class="calendar-nav-btn" data-nav="next">›</button>
+                                </div>
+                                <div class="calendar-grid"></div>
+                            </div>
+                            <div class="time-picker-container">
+                                <label class="time-picker-label">Time</label>
+                                <div class="time-picker-scroll"></div>
+                            </div>
+                        </div>
+                        <div class="timezone-display">
+                            <div>
+                                <div class="timezone-label">Timezone</div>
+                                <div class="timezone-value"></div>
+                            </div>
+                            <button type="button" class="timezone-change-btn">Change</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="datetime-picker-footer">
+                    <button type="button" class="btn btn-secondary datetime-picker-cancel">Cancel</button>
+                    <button type="button" class="btn btn-primary datetime-picker-save">Save</button>
+                </div>
+            </div>
+
+            <div class="timezone-picker-overlay"></div>
+            <div class="timezone-picker-panel datetime-picker-panel">
+                <div class="datetime-picker-header">
+                    <h2 class="datetime-picker-title">Select Timezone</h2>
+                    <button class="timezone-picker-close datetime-picker-close">×</button>
+                </div>
+                <div class="datetime-picker-body">
+                    <div class="timezone-list">
+                        <div class="timezone-option" data-timezone="America/Los_Angeles">
+                            <div class="timezone-option-name">Pacific Time (PT)</div>
+                            <div class="timezone-option-offset">UTC-8</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(container);
+
+        panel = document.querySelector('.datetime-picker-panel');
+        overlay = document.querySelector('.datetime-picker-overlay');
+        toggleGroup = document.querySelector('.datetime-toggle-group');
+    });
+
+    afterEach(() => {
+        if (container && container.parentNode) {
+            container.parentNode.removeChild(container);
+        }
+    });
+
+    test('toggle group should be hidden for datetime-single mode', (done) => {
+        const rsvpTrigger = document.getElementById('rsvp_deadline_trigger');
+        
+        setTimeout(() => {
+            rsvpTrigger.click();
+            
+            setTimeout(() => {
+                expect(panel.classList.contains('open')).toBe(true);
+                expect(toggleGroup.style.display).toBe('none');
+                done();
+            }, 100);
+        }, 100);
+    });
+
+    test('toggle group should be visible for datetime-range mode', (done) => {
+        const eventTrigger = document.getElementById('event_datetime_trigger');
+        
+        setTimeout(() => {
+            eventTrigger.click();
+            
+            setTimeout(() => {
+                expect(panel.classList.contains('open')).toBe(true);
+                expect(toggleGroup.style.display).toBe('flex');
+                done();
+            }, 100);
+        }, 100);
+    });
+
+    test('toggle group should switch correctly when opening different pickers', (done) => {
+        const eventTrigger = document.getElementById('event_datetime_trigger');
+        const rsvpTrigger = document.getElementById('rsvp_deadline_trigger');
+        const closeBtn = document.querySelector('.datetime-picker-close');
+        
+        setTimeout(() => {
+            eventTrigger.click();
+            
+            setTimeout(() => {
+                expect(toggleGroup.style.display).toBe('flex');
+                
+                closeBtn.click();
+                
+                setTimeout(() => {
+                    rsvpTrigger.click();
+                    
+                    setTimeout(() => {
+                        expect(panel.classList.contains('open')).toBe(true);
+                        expect(toggleGroup.style.display).toBe('none');
+                        done();
+                    }, 100);
+                }, 100);
+            }, 100);
+        }, 100);
+    });
+
+    test('timezone display should be hidden when showTimezone is false', (done) => {
+        const rsvpTrigger = document.getElementById('rsvp_deadline_trigger');
+        
+        setTimeout(() => {
+            rsvpTrigger.click();
+            
+            setTimeout(() => {
+                const timezoneDisplays = panel.querySelectorAll('.timezone-display');
+                timezoneDisplays.forEach(display => {
+                    expect(display.style.display).toBe('none');
+                });
+                done();
+            }, 100);
+        }, 100);
+    });
+
+    test('timezone display should be visible when showTimezone is true', (done) => {
+        const eventTrigger = document.getElementById('event_datetime_trigger');
+        
+        setTimeout(() => {
+            eventTrigger.click();
+            
+            setTimeout(() => {
+                const timezoneDisplays = panel.querySelectorAll('.timezone-display');
+                timezoneDisplays.forEach(display => {
+                    expect(display.style.display).toBe('');
+                });
+                done();
+            }, 100);
+        }, 100);
+    });
+});
