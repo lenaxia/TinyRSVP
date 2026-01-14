@@ -136,13 +136,13 @@
     }
 
     .event-form-theme-column {
-        order: 2;
+        order: 1;
         flex: 0 0 calc(75% - var(--spacing-3));
         max-width: calc(75% - var(--spacing-3));
     }
 
     .event-form-details-column {
-        order: 1;
+        order: 2;
         flex: 0 0 calc(25% - var(--spacing-3));
         max-width: calc(25% - var(--spacing-3));
     }

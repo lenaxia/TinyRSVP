@@ -180,7 +180,7 @@
     background: var(--color-primary-700);
 }
 
-@media (min-width: 480px) and (max-width: 767px) {
+@media (min-width: 480px) {
     .theme-gallery {
         grid-template-columns: repeat(2, 1fr);
         gap: var(--spacing-3);
@@ -196,13 +196,6 @@
     .theme-picker-header {
         flex-direction: column;
         align-items: flex-start;
-    }
-}
-
-@media (min-width: 768px) and (max-width: 1023px) {
-    .theme-gallery {
-        grid-template-columns: repeat(2, 1fr);
-        gap: var(--spacing-4);
     }
 }
 
