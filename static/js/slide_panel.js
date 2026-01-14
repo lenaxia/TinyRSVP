@@ -15,7 +15,7 @@
             this.panel = document.querySelector(panelSelector);
             this.overlay = document.querySelector(`${panelSelector.replace('-panel', '-overlay')}`);
             
-            const baseClass = panelSelector.replace('.', '');
+            const baseClass = panelSelector.replace('.', '').replace('-panel', '');
             this.closeBtn = this.panel?.querySelector(`.${baseClass}-close`);
             this.cancelBtn = this.panel?.querySelector(`.${baseClass}-cancel`);
             this.saveBtn = this.panel?.querySelector(`.${baseClass}-save`);
