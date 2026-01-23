@@ -45,11 +45,11 @@ See [Epic 12](../../docs/00_BACKLOG/12_EPIC_test_infrastructure.md) for details.
 - [x] Database helpers (Story 03) ✅
 - [x] Context helpers (Story 04) ✅
 
-### Phase 2: Mock Generation (In Progress)
+### Phase 2: Mock Generation (Complete)
 - [x] Mock generation setup (Story 05) ✅
 - [x] Generated mocks for repositories (Story 06) ✅
 - [x] Generated mocks for services (Story 07) ✅
-- [ ] Generated mocks for utilities (Story 08)
+- [x] Generated mocks for utilities (Story 08) ✅
 
 ### Phase 5: Advanced Features (Planned)
 - [ ] Test data builders (Story 18)
@@ -99,13 +99,20 @@ func TestMyService(t *testing.T) {
 }
 ```
 
-**Available Mocks:**
+**Available Mocks (20 total):**
 
 **Repositories & Core:**
 - `mocks.MockDatabase` - Database interface (Exec, Query, QueryRow, etc.)
 - `mocks.MockEventRepository` - Event repository interface (17 methods)
 - `mocks.MockInviteRepository` - Invite repository interface (13 methods)
 - `mocks.MockUserRepository` - User repository interface (12 methods)
+- `mocks.MockRSVPRepository` - RSVP repository interface
+- `mocks.MockTemplateRepository` - Template repository interface
+- `mocks.MockAnswerRepository` - Answer repository interface
+- `mocks.MockQuestionRepository` - Question repository interface
+- `mocks.MockConfigRepository` - Config repository interface
+- `mocks.MockSessionRepository` - Session repository interface
+- `mocks.MockEmailQueueRepository` - Email queue repository interface
 - `mocks.MockAuthorizationChecker` - Authorization checker interface (permission checks)
 
 **Services:**
@@ -115,7 +122,10 @@ func TestMyService(t *testing.T) {
 - `mocks.MockTemplateService` - Template service interface (11 methods)
 - `mocks.MockEmailService` - Email service interface (1 method)
 
-More mocks will be added in Story 08
+**Validators & Utilities:**
+- `mocks.MockEventValidator` - Event validator interface
+- `mocks.MockTemplateValidator` - Template validator interface
+- `mocks.MockProvider` - Storage provider interface
 
 **Key Features:**
 - Auto-generated from interface definitions

@@ -97,5 +97,72 @@ $MOCKGEN -source=internal/email/service.go \
     -package=mocks \
     -mock_names=Service=MockEmailService
 
+echo -e "${GREEN}Generating remaining repository mocks...${NC}"
+
+# Story 08: Remaining Repository Mocks
+
+# RSVPRepository
+echo "  - RSVPRepository..."
+$MOCKGEN -source=internal/db/repositories/rsvp_repository.go \
+    -destination=$MOCK_DIR/mock_rsvp_repository.go \
+    -package=mocks
+
+# TemplateRepository
+echo "  - TemplateRepository..."
+$MOCKGEN -source=internal/db/repositories/template_repository.go \
+    -destination=$MOCK_DIR/mock_template_repository.go \
+    -package=mocks
+
+# AnswerRepository
+echo "  - AnswerRepository..."
+$MOCKGEN -source=internal/db/repositories/answer_repository.go \
+    -destination=$MOCK_DIR/mock_answer_repository.go \
+    -package=mocks
+
+# QuestionRepository
+echo "  - QuestionRepository..."
+$MOCKGEN -source=internal/db/repositories/question_repository.go \
+    -destination=$MOCK_DIR/mock_question_repository.go \
+    -package=mocks
+
+# ConfigRepository
+echo "  - ConfigRepository..."
+$MOCKGEN -source=internal/db/repositories/config_repository.go \
+    -destination=$MOCK_DIR/mock_config_repository.go \
+    -package=mocks
+
+# SessionRepository
+echo "  - SessionRepository..."
+$MOCKGEN -source=internal/db/repositories/session_repository.go \
+    -destination=$MOCK_DIR/mock_session_repository.go \
+    -package=mocks
+
+# EmailQueueRepository
+echo "  - EmailQueueRepository..."
+$MOCKGEN -source=internal/db/repositories/email_queue_repository.go \
+    -destination=$MOCK_DIR/mock_email_queue_repository.go \
+    -package=mocks
+
+echo -e "${GREEN}Generating validator and utility mocks...${NC}"
+
+# Validators
+echo "  - EventValidator..."
+$MOCKGEN -source=internal/events/validator.go \
+    -destination=$MOCK_DIR/mock_event_validator.go \
+    -package=mocks \
+    -mock_names=Validator=MockEventValidator
+
+echo "  - TemplateValidator..."
+$MOCKGEN -source=internal/templates/validator.go \
+    -destination=$MOCK_DIR/mock_template_validator.go \
+    -package=mocks \
+    -mock_names=Validator=MockTemplateValidator
+
+# Storage Provider
+echo "  - StorageProvider..."
+$MOCKGEN -source=internal/storage/provider.go \
+    -destination=$MOCK_DIR/mock_storage_provider.go \
+    -package=mocks
+
 echo -e "${GREEN}Mock generation complete!${NC}"
 echo -e "Generated mocks are in: $MOCK_DIR"
