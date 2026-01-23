@@ -45,7 +45,8 @@ See [Epic 12](../../docs/00_BACKLOG/12_EPIC_test_infrastructure.md) for details.
 - [x] Database helpers (Story 03) ✅
 - [x] Context helpers (Story 04) ✅
 
-### Phase 2: Mock Generation (Planned)
+### Phase 2: Mock Generation (In Progress)
+- [x] Mock generation setup (Story 05) ✅
 - [ ] Generated mocks for repositories (Story 06)
 - [ ] Generated mocks for services (Story 07)
 - [ ] Generated mocks for utilities (Story 08)
@@ -56,6 +57,63 @@ See [Epic 12](../../docs/00_BACKLOG/12_EPIC_test_infrastructure.md) for details.
 - [ ] Fixture file loaders (Story 20)
 
 ## Usage
+
+### Generated Mocks
+
+TinyRSVP uses [mockgen](https://github.com/uber-go/mock) to generate mocks for all interfaces. This eliminates manual mock definitions and ensures consistency across tests.
+
+**Regenerating Mocks:**
+
+When interface definitions change, regenerate mocks:
+
+```bash
+./scripts/generate_mocks.sh
+```
+
+**Using Generated Mocks:**
+
+```go
+import (
+    "testing"
+    "github.com/lenaxia/tinyrsvp/internal/testutil/mocks"
+    "go.uber.org/mock/gomock"
+)
+
+func TestMyService(t *testing.T) {
+    ctrl := gomock.NewController(t)
+    defer ctrl.Finish()
+    
+    // Create mock
+    mockRepo := mocks.NewMockEventRepository(ctrl)
+    
+    // Set expectations
+    mockRepo.EXPECT().
+        GetByID(gomock.Any(), int64(123)).
+        Return(&models.Event{ID: 123, Title: "Test Event"}, nil)
+    
+    // Use mock in service
+    service := NewMyService(mockRepo)
+    event, err := service.GetEvent(context.Background(), 123)
+    
+    // Assertions...
+}
+```
+
+**Available Mocks:**
+- `mocks.MockEventRepository` - Event repository interface
+- More mocks will be added in Stories 06-08
+
+**Key Features:**
+- Auto-generated from interface definitions
+- Type-safe method expectations
+- Automatic verification via `ctrl.Finish()`
+- Clear error messages on unexpected calls
+
+**Mock Generation Workflow:**
+1. Change an interface definition
+2. Run `./scripts/generate_mocks.sh`
+3. Generated mocks in `internal/testutil/mocks/mock_*.go`
+4. Commit generated mocks with your changes
 
 ### Context Helpers
 
