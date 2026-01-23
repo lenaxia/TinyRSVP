@@ -58,5 +58,44 @@ $MOCKGEN -source=internal/auth/permissions.go \
     -destination=$MOCK_DIR/mock_authorization.go \
     -package=mocks
 
+echo -e "${GREEN}Generating service mocks...${NC}"
+
+# Story 07: Service Interface Mocks
+
+# Event service - 8 methods
+echo "  - EventService..."
+$MOCKGEN -source=internal/events/service.go \
+    -destination=$MOCK_DIR/mock_event_service.go \
+    -package=mocks \
+    -mock_names=Service=MockEventService
+
+# Invite service - 16 methods
+echo "  - InviteService..."
+$MOCKGEN -source=internal/invites/service.go \
+    -destination=$MOCK_DIR/mock_invite_service.go \
+    -package=mocks
+
+# RSVP service - 2 methods
+echo "  - RSVPService..."
+$MOCKGEN -source=internal/rsvp/service.go \
+    -destination=$MOCK_DIR/mock_rsvp_service.go \
+    -package=mocks \
+    -mock_names=Service=MockRSVPService \
+    -exclude_interfaces=InviteService,InviteRepository
+
+# Template service - 11 methods
+echo "  - TemplateService..."
+$MOCKGEN -source=internal/templates/service.go \
+    -destination=$MOCK_DIR/mock_template_service.go \
+    -package=mocks \
+    -mock_names=Service=MockTemplateService
+
+# Email service - 1 method
+echo "  - EmailService..."
+$MOCKGEN -source=internal/email/service.go \
+    -destination=$MOCK_DIR/mock_email_service.go \
+    -package=mocks \
+    -mock_names=Service=MockEmailService
+
 echo -e "${GREEN}Mock generation complete!${NC}"
 echo -e "Generated mocks are in: $MOCK_DIR"
