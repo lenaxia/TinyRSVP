@@ -4,7 +4,27 @@ Centralized testing utilities for TinyRSVP.
 
 ## Quick Start
 
-[Examples to be added as utilities are implemented]
+```go
+import "github.com/lenaxia/tinyrsvp/internal/testutil"
+
+// Create pointers for optional fields
+email := testutil.StringPtr("test@example.com")
+capacity := testutil.IntPtr(100)
+allowMaybe := testutil.BoolPtr(true)
+deadline := testutil.TimePtr(time.Now().Add(24 * time.Hour))
+
+// Use in test data
+invite := &models.Invite{
+    Email:       testutil.StringPtr("test@example.com"),
+    MaxPlusOnes: 2,
+}
+
+event := &models.Event{
+    Title:          "Test Event",
+    AllowMaybeRSVP: testutil.BoolPtr(true),
+    EventCapacity:  testutil.IntPtr(50),
+}
+```
 
 ## Contents
 
@@ -25,7 +45,7 @@ See [Epic 12](../../docs/00_BACKLOG/12_EPIC_test_infrastructure.md) for details.
 ## Utilities Available
 
 ### Phase 1: Foundation (In Progress)
-- [ ] Pointer helpers (Story 02)
+- [x] Pointer helpers (Story 02) ✅
 - [ ] Database helpers (Story 03)
 - [ ] Context helpers (Story 04)
 
@@ -41,10 +61,60 @@ See [Epic 12](../../docs/00_BACKLOG/12_EPIC_test_infrastructure.md) for details.
 
 ## Usage
 
+### Pointer Helpers
+
+Pointer helpers make it easy to create pointers to values for optional fields in test data.
+
+**Available Functions:**
+- `StringPtr(s string) *string`
+- `IntPtr(i int) *int`
+- `Int64Ptr(i int64) *int64`
+- `BoolPtr(b bool) *bool`
+- `TimePtr(t time.Time) *time.Time`
+- `Float64Ptr(f float64) *float64`
+
+**Example:**
+
 ```go
 import "github.com/lenaxia/tinyrsvp/internal/testutil"
 
-// Examples will be added as utilities are implemented
+func TestCreateInvite(t *testing.T) {
+    invite := &models.Invite{
+        EventID:     1,
+        Email:       testutil.StringPtr("guest@example.com"),
+        Name:        testutil.StringPtr("John Doe"),
+        MaxPlusOnes: 2,
+        Status:      models.InviteStatusDraft,
+    }
+    
+    // Use invite in test...
+}
+
+func TestCreateEvent(t *testing.T) {
+    event := &models.Event{
+        Title:          "Birthday Party",
+        AllowMaybeRSVP: testutil.BoolPtr(true),
+        EventCapacity:  testutil.IntPtr(50),
+        RSVPDeadline:   testutil.TimePtr(time.Now().Add(7 * 24 * time.Hour)),
+    }
+    
+    // Use event in test...
+}
+```
+
+**Before (with duplicated helpers):**
+```go
+// Every test file had this
+func stringPtr(s string) *string { return &s }
+
+email := stringPtr("test@example.com")
+```
+
+**After (centralized):**
+```go
+import "github.com/lenaxia/tinyrsvp/internal/testutil"
+
+email := testutil.StringPtr("test@example.com")
 ```
 
 ## Development
