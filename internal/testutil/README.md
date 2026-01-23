@@ -47,7 +47,7 @@ See [Epic 12](../../docs/00_BACKLOG/12_EPIC_test_infrastructure.md) for details.
 
 ### Phase 2: Mock Generation (In Progress)
 - [x] Mock generation setup (Story 05) ✅
-- [ ] Generated mocks for repositories (Story 06)
+- [x] Generated mocks for repositories (Story 06) ✅
 - [ ] Generated mocks for services (Story 07)
 - [ ] Generated mocks for utilities (Story 08)
 
@@ -100,8 +100,12 @@ func TestMyService(t *testing.T) {
 ```
 
 **Available Mocks:**
-- `mocks.MockEventRepository` - Event repository interface
-- More mocks will be added in Stories 06-08
+- `mocks.MockDatabase` - Database interface (Exec, Query, QueryRow, etc.)
+- `mocks.MockEventRepository` - Event repository interface (17 methods)
+- `mocks.MockInviteRepository` - Invite repository interface (13 methods)
+- `mocks.MockUserRepository` - User repository interface (12 methods)
+- `mocks.MockAuthorizationChecker` - Authorization checker interface (permission checks)
+- More mocks will be added in Stories 07-08
 
 **Key Features:**
 - Auto-generated from interface definitions

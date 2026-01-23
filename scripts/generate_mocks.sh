@@ -24,12 +24,38 @@ MOCK_DIR="internal/testutil/mocks"
 # Create mocks directory if it doesn't exist
 mkdir -p "$MOCK_DIR"
 
-echo -e "${GREEN}Generating repository mocks...${NC}"
+echo -e "${GREEN}Generating Priority 1 mocks...${NC}"
 
-# Repository interfaces (will be populated in Stories 06-08)
-# Validation test - generate EventRepository mock
+# Story 06: Priority 1 Repository Mocks
+
+# Database interface - foundation for all repositories
+echo "  - Database interface..."
+$MOCKGEN -source=internal/db/db.go \
+    -destination=$MOCK_DIR/mock_database.go \
+    -package=mocks
+
+# EventRepository - 17 methods, widely used
+echo "  - EventRepository..."
 $MOCKGEN -source=internal/db/repositories/event_repository.go \
     -destination=$MOCK_DIR/mock_event_repository.go \
+    -package=mocks
+
+# InviteRepository - 13 methods
+echo "  - InviteRepository..."
+$MOCKGEN -source=internal/db/repositories/invite_repository.go \
+    -destination=$MOCK_DIR/mock_invite_repository.go \
+    -package=mocks
+
+# UserRepository - 12 methods
+echo "  - UserRepository..."
+$MOCKGEN -source=internal/db/repositories/user_repository.go \
+    -destination=$MOCK_DIR/mock_user_repository.go \
+    -package=mocks
+
+# AuthorizationChecker - permission testing
+echo "  - AuthorizationChecker..."
+$MOCKGEN -source=internal/auth/permissions.go \
+    -destination=$MOCK_DIR/mock_authorization.go \
     -package=mocks
 
 echo -e "${GREEN}Mock generation complete!${NC}"
