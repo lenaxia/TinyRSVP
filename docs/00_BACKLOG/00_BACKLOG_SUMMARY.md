@@ -233,6 +233,25 @@ This document provides a comprehensive breakdown of the TinyRSVP v0 implementati
 
 ---
 
+### Epic 12: Test Infrastructure Modernization
+**Priority:** High | **Effort:** 3-4 weeks (20-26 hours) | **Stories:** 20
+
+**Purpose:** Modernize test infrastructure by eliminating 92+ manual mock definitions, consolidating duplicate test helpers, and implementing generated mocks with gomock.
+
+**Key Deliverables:**
+- Centralized `internal/testutil/` package
+- 21+ generated mocks for all interfaces
+- 87% reduction in test infrastructure code (15k → 2k lines)
+- Comprehensive testing documentation
+- Test data builders for complex objects
+- HTTP test helpers
+- All 236 test files passing with improved patterns
+
+**Depends on:** None (can run parallel)  
+**Blocks:** None (improves developer experience)
+
+---
+
 ## Story Count by Epic
 
 | Epic | Stories | Avg per Story | Notes |
@@ -247,6 +266,7 @@ This document provides a comprehensive breakdown of the TinyRSVP v0 implementati
 | 07: Frontend | 21 | 0.5 day | UI components |
 | 08: API | 18 | 0.5 day | Integration |
 | 09: Security | 40 | 0.5 day | Pen testing & hardening |
+| 12: Test Infrastructure | 20 | 1 day | Modernize testing patterns |
 
 **Total:** 155 stories
 
