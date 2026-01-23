@@ -24,9 +24,9 @@ deadline := testutil.TimePtr(time.Now().Add(24 * time.Hour))
 
 ## Contents
 
-- **Pointer Helpers**: `StringPtr()`, `IntPtr()`, etc. (Story 02)
-- **Database Helpers**: `SetupTestDB()`, `CreateTestUser()`, etc. (Story 03)
-- **Context Helpers**: `CreateAdminContext()`, etc. (Story 04)
+- **Pointer Helpers**: `StringPtr()`, `IntPtr()`, etc. (Story 02) ✅
+- **Database Helpers**: `SetupTestDB()`, `CreateTestUser()`, etc. (Story 03) ✅
+- **Context Helpers**: `CreateAdminContext()`, etc. (Story 04) ✅
 - **Generated Mocks**: `mocks/mock_*.go` (Stories 06-08)
 - **Test Builders**: `builders/*_builder.go` (Story 18)
 - **HTTP Helpers**: Request/response builders (Story 19)
@@ -43,7 +43,7 @@ See [Epic 12](../../docs/00_BACKLOG/12_EPIC_test_infrastructure.md) for details.
 ### Phase 1: Foundation (In Progress)
 - [x] Pointer helpers (Story 02) ✅
 - [x] Database helpers (Story 03) ✅
-- [ ] Context helpers (Story 04)
+- [x] Context helpers (Story 04) ✅
 
 ### Phase 2: Mock Generation (Planned)
 - [ ] Generated mocks for repositories (Story 06)
@@ -56,6 +56,111 @@ See [Epic 12](../../docs/00_BACKLOG/12_EPIC_test_infrastructure.md) for details.
 - [ ] Fixture file loaders (Story 20)
 
 ## Usage
+
+### Context Helpers
+
+Context helpers provide easy authentication context creation for testing authenticated operations without duplicating context setup code.
+
+**Available Functions:**
+- `CreateTestContext(user *models.User) context.Context` - Creates context with given user
+- `CreateAdminContext() context.Context` - Creates context with admin user (ID: 1, Role: admin)
+- `CreateEventManagerContext() context.Context` - Creates context with event manager user (ID: 2, Role: event_manager)
+- `CreateAnonymousContext() context.Context` - Creates context with no user (unauthenticated)
+
+**Example:**
+
+```go
+import "github.com/lenaxia/tinyrsvp/internal/testutil"
+
+func TestAdminOperation(t *testing.T) {
+    db := testutil.SetupTestDBWithMigrations(t, "../../migrations/sqlite")
+    service := NewMyService(db)
+    
+    // Test admin-only operation
+    ctx := testutil.CreateAdminContext()
+    err := service.DeleteUser(ctx, userID)
+    
+    if err != nil {
+        t.Fatalf("Expected admin to delete user, got error: %v", err)
+    }
+}
+
+func TestEventManagerOperation(t *testing.T) {
+    db := testutil.SetupTestDBWithMigrations(t, "../../migrations/sqlite")
+    service := NewEventService(db)
+    
+    // Test event manager operation
+    ctx := testutil.CreateEventManagerContext()
+    event, err := service.CreateEvent(ctx, eventData)
+    
+    if err != nil {
+        t.Fatalf("Expected event manager to create event, got error: %v", err)
+    }
+}
+
+func TestAnonymousOperation(t *testing.T) {
+    service := NewPublicService()
+    
+    // Test unauthenticated operation
+    ctx := testutil.CreateAnonymousContext()
+    _, err := service.GetPublicEvents(ctx)
+    
+    if err != nil {
+        t.Fatalf("Expected public operation to work, got error: %v", err)
+    }
+}
+
+func TestCustomUserOperation(t *testing.T) {
+    db := testutil.SetupTestDBWithMigrations(t, "../../migrations/sqlite")
+    
+    // Create a custom user for specific test case
+    user := &models.User{
+        ID:    123,
+        Email: "custom@example.com",
+        Name:  "Custom User",
+        Role:  models.RoleGuest,
+    }
+    
+    ctx := testutil.CreateTestContext(user)
+    
+    // Test operation with custom user...
+}
+```
+
+**Before (duplicated context setup):**
+```go
+func createAdminContext() context.Context {
+    user := &models.User{ID: 1, Email: "admin@test.com", Role: models.RoleAdmin}
+    return auth.WithUser(context.Background(), user)
+}
+
+func TestAdminOperation(t *testing.T) {
+    ctx := createAdminContext()
+    // ... test code
+}
+```
+
+**After (centralized context helpers):**
+```go
+import "github.com/lenaxia/tinyrsvp/internal/testutil"
+
+func TestAdminOperation(t *testing.T) {
+    ctx := testutil.CreateAdminContext()
+    // ... test code
+}
+```
+
+**Key Features:**
+- Consistent test users across all tests (admin has ID: 1, manager has ID: 2)
+- Realistic test emails and names
+- Uses `auth.WithUser()` internally for proper context attachment
+- Supports custom users via `CreateTestContext()`
+- Anonymous context for testing unauthenticated operations
+
+**User Details:**
+- **Admin**: ID: 1, Email: admin@test.example.com, Name: Test Admin, Role: admin
+- **Event Manager**: ID: 2, Email: manager@test.example.com, Name: Test Event Manager, Role: event_manager
+- **Anonymous**: No user attached (unauthenticated context)
 
 ### Database Helpers
 

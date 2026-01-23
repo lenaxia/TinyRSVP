@@ -33,10 +33,10 @@ Modernize TinyRSVP's test infrastructure by eliminating massive duplication in t
 ## User Stories
 
 ### Phase 1: Foundation (4-6 hours)
-- [ ] [`12_TEST_INFRASTRUCTURE/12_STORY_01_testutil_package.md`](12_TEST_INFRASTRUCTURE/12_STORY_01_testutil_package.md) - Create testutil package structure
-- [ ] [`12_TEST_INFRASTRUCTURE/12_STORY_02_pointer_helpers.md`](12_TEST_INFRASTRUCTURE/12_STORY_02_pointer_helpers.md) - Centralize pointer helpers
-- [ ] [`12_TEST_INFRASTRUCTURE/12_STORY_03_database_helpers.md`](12_TEST_INFRASTRUCTURE/12_STORY_03_database_helpers.md) - Database test helpers
-- [ ] [`12_TEST_INFRASTRUCTURE/12_STORY_04_context_helpers.md`](12_TEST_INFRASTRUCTURE/12_STORY_04_context_helpers.md) - Auth context helpers
+- [x] [`12_TEST_INFRASTRUCTURE/12_STORY_01_testutil_package.md`](12_TEST_INFRASTRUCTURE/12_STORY_01_testutil_package.md) - Create testutil package structure ✅
+- [x] [`12_TEST_INFRASTRUCTURE/12_STORY_02_pointer_helpers.md`](12_TEST_INFRASTRUCTURE/12_STORY_02_pointer_helpers.md) - Centralize pointer helpers ✅
+- [x] [`12_TEST_INFRASTRUCTURE/12_STORY_03_database_helpers.md`](12_TEST_INFRASTRUCTURE/12_STORY_03_database_helpers.md) - Database test helpers ✅
+- [x] [`12_TEST_INFRASTRUCTURE/12_STORY_04_context_helpers.md`](12_TEST_INFRASTRUCTURE/12_STORY_04_context_helpers.md) - Auth context helpers ✅
 
 ### Phase 2: Mock Generation Setup (2-3 hours)
 - [ ] [`12_TEST_INFRASTRUCTURE/12_STORY_05_mockgen_setup.md`](12_TEST_INFRASTRUCTURE/12_STORY_05_mockgen_setup.md) - Install and configure mockgen

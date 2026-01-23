@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        * { box-sizing: border-box; }
+        body { margin: 20px; font-family: sans-serif; }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        /* MOBILE FIRST */
+        .layout {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            border: 3px solid blue;
+            padding: 10px;
+        }
+        
+        .details {
+            order: 1;
+            background: lightgreen;
+            padding: 20px;
+            border: 2px solid green;
+        }
+        
+        .theme {
+            order: 2;
+            background: lightcoral;
+            padding: 20px;
+            border: 2px solid red;
+        }
+        
+        .theme-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        
+        .theme-card {
+            background: white;
+            border: 1px solid #ccc;
+            padding: 10px;
+            min-height: 100px;
+        }
+        
+        /* MOBILE 480-767px: 2 theme columns */
+        @media (min-width: 480px) {
+            .theme-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+        
+        /* DESKTOP 1024px+: Side by side */
+        @media (min-width: 1024px) {
+            .layout {
+                flex-direction: row;
+            }
+            
+            /* LEFT: Theme 75% */
+            .theme {
+                order: 1;
+                flex: 0 0 calc(75% - 10px);
+            }
+            
+            /* RIGHT: Details 25% */
+            .details {
+                order: 2;
+                flex: 0 0 calc(25% - 10px);
+            }
+            
+            .theme-grid {
+                grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Layout Test</h1>
+        <p>Resize browser to test responsive behavior</p>
+        <p>Mobile (&lt;1024px): Details on top, Theme below (2 cards/row at 480px+)</p>
+        <p>Desktop (≥1024px): Theme on LEFT (75%), Details on RIGHT (25%)</p>
+        
+        <div class="layout">
+            <div class="details">
+                <h2>Details Column (25% on desktop, RIGHT side)</h2>
+                <p>Event Details</p>
+                <p>Preference Questions</p>
+                <p>Action Buttons</p>
+            </div>
+            
+            <div class="theme">
+                <h2>Theme Column (75% on desktop, LEFT side)</h2>
+                <div class="theme-grid">
+                    <div class="theme-card">Theme 1</div>
+                    <div class="theme-card">Theme 2</div>
+                    <div class="theme-card">Theme 3</div>
+                    <div class="theme-card">Theme 4</div>
+                    <div class="theme-card">Theme 5</div>
+                    <div class="theme-card">Theme 6</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
