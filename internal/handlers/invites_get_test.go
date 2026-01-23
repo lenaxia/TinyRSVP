@@ -12,7 +12,8 @@ import (
 	"github.com/lenaxia/tinyrsvp/internal/auth"
 	"github.com/lenaxia/tinyrsvp/internal/models"
 	"github.com/lenaxia/tinyrsvp/internal/testutil"
-	"github.com/lenaxia/tinyrsvp/internal/testutil/mocks"
+	"github.com/lenaxia/tinyrsvp/internal/testutil/mocks/repositories"
+	"github.com/lenaxia/tinyrsvp/internal/testutil/mocks/services"
 	"go.uber.org/mock/gomock"
 )
 
@@ -43,8 +44,8 @@ func TestGetInvite_Success(t *testing.T) {
 	}
 
 	// Create mocks
-	mockService := mocks.NewMockInviteService(ctrl)
-	mockEventRepo := mocks.NewMockEventRepository(ctrl)
+	mockService := services.NewMockInviteService(ctrl)
+	mockEventRepo := repositories.NewMockEventRepository(ctrl)
 
 	// Set expectations
 	mockService.EXPECT().
@@ -96,8 +97,8 @@ func TestGetInvite_Unauthorized(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	mockService := mocks.NewMockInviteService(ctrl)
-	mockEventRepo := mocks.NewMockEventRepository(ctrl)
+	mockService := services.NewMockInviteService(ctrl)
+	mockEventRepo := repositories.NewMockEventRepository(ctrl)
 	handler := NewGetInviteHandlers(mockService, mockEventRepo)
 
 	req := httptest.NewRequest(http.MethodGet, "/api/invites/1", nil)
@@ -119,8 +120,8 @@ func TestGetInvite_InvalidID(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	mockService := mocks.NewMockInviteService(ctrl)
-	mockEventRepo := mocks.NewMockEventRepository(ctrl)
+	mockService := services.NewMockInviteService(ctrl)
+	mockEventRepo := repositories.NewMockEventRepository(ctrl)
 	handler := NewGetInviteHandlers(mockService, mockEventRepo)
 
 	user := &models.User{
@@ -149,8 +150,8 @@ func TestGetInvite_NotFound(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	mockService := mocks.NewMockInviteService(ctrl)
-	mockEventRepo := mocks.NewMockEventRepository(ctrl)
+	mockService := services.NewMockInviteService(ctrl)
+	mockEventRepo := repositories.NewMockEventRepository(ctrl)
 
 	// Set expectation
 	mockService.EXPECT().
@@ -207,8 +208,8 @@ func TestGetInvite_PermissionDenied(t *testing.T) {
 		Status:    models.EventStatusDraft,
 	}
 
-	mockService := mocks.NewMockInviteService(ctrl)
-	mockEventRepo := mocks.NewMockEventRepository(ctrl)
+	mockService := services.NewMockInviteService(ctrl)
+	mockEventRepo := repositories.NewMockEventRepository(ctrl)
 
 	// Set expectations
 	mockService.EXPECT().

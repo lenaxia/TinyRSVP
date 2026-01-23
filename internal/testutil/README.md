@@ -60,7 +60,16 @@ See [Epic 12](../../docs/00_BACKLOG/12_EPIC_test_infrastructure.md) for details.
 
 ### Generated Mocks
 
-TinyRSVP uses [mockgen](https://github.com/uber-go/mock) to generate mocks for all interfaces. This eliminates manual mock definitions and ensures consistency across tests.
+TinyRSVP uses [mockgen](https://github.com/uber-go/mock) to generate mocks for all interfaces. Mocks are organized into subdirectories to avoid import cycles.
+
+**Mock Package Structure:**
+
+```
+internal/testutil/mocks/
+├── repositories/    - Repository mocks (no import cycles)
+├── services/        - Service mocks (import their packages)
+└── other/           - Database, validators, storage, auth
+```
 
 **Regenerating Mocks:**
 
@@ -72,10 +81,47 @@ When interface definitions change, regenerate mocks:
 
 **Using Generated Mocks:**
 
+#### ✅ Handler Tests (Recommended Pattern)
+
 ```go
 import (
     "testing"
-    "github.com/lenaxia/tinyrsvp/internal/testutil/mocks"
+    "github.com/lenaxia/tinyrsvp/internal/testutil/mocks/repositories"
+    "github.com/lenaxia/tinyrsvp/internal/testutil/mocks/services"
+    "go.uber.org/mock/gomock"
+)
+
+func TestMyHandler(t *testing.T) {
+    ctrl := gomock.NewController(t)
+    defer ctrl.Finish()
+    
+    // Use both repository and service mocks
+    mockEventRepo := repositories.NewMockEventRepository(ctrl)
+    mockInviteService := services.NewMockInviteService(ctrl)
+    
+    // Set expectations
+    mockEventRepo.EXPECT().
+        GetByID(gomock.Any(), int64(123)).
+        Return(&models.Event{ID: 123}, nil)
+    
+    mockInviteService.EXPECT().
+        GetInviteByID(gomock.Any(), int64(1)).
+        Return(&models.Invite{ID: 1}, nil)
+    
+    // Use mocks in handler
+    handler := NewMyHandler(mockInviteService, mockEventRepo)
+    // ... test handler
+}
+```
+
+#### ✅ Service Tests (Use Repository Mocks Only)
+
+```go
+// internal/events/service_test.go
+import (
+    "testing"
+    "github.com/lenaxia/tinyrsvp/internal/testutil/mocks/repositories"
+    // ✅ Don't import mocks/services - would create import cycle!
     "go.uber.org/mock/gomock"
 )
 
@@ -83,41 +129,61 @@ func TestMyService(t *testing.T) {
     ctrl := gomock.NewController(t)
     defer ctrl.Finish()
     
-    // Create mock
-    mockRepo := mocks.NewMockEventRepository(ctrl)
+    // Use repository mocks (no import cycle)
+    mockEventRepo := repositories.NewMockEventRepository(ctrl)
+    mockInviteRepo := repositories.NewMockInviteRepository(ctrl)
     
     // Set expectations
-    mockRepo.EXPECT().
+    mockEventRepo.EXPECT().
         GetByID(gomock.Any(), int64(123)).
-        Return(&models.Event{ID: 123, Title: "Test Event"}, nil)
+        Return(&models.Event{ID: 123}, nil)
     
-    // Use mock in service
-    service := NewMyService(mockRepo)
-    event, err := service.GetEvent(context.Background(), 123)
-    
-    // Assertions...
+    // Use mocks in service
+    service := NewMyService(mockEventRepo, mockInviteRepo)
+    // ... test service
 }
+```
+
+**Import Cycle Warning:**
+
+⚠️ **DO NOT** import `mocks/services` from the same package that defines the service interface:
+
+```go
+// ❌ WRONG: internal/events/service_test.go
+import "github.com/lenaxia/tinyrsvp/internal/testutil/mocks/services"
+// This creates an import cycle: events → mocks/services → events
+
+// ✅ CORRECT: Use repository mocks instead
+import "github.com/lenaxia/tinyrsvp/internal/testutil/mocks/repositories"
 ```
 
 **Available Mocks (20 total):**
 
-**Repositories & Core:**
-- `mocks.MockDatabase` - Database interface (Exec, Query, QueryRow, etc.)
-- `mocks.MockEventRepository` - Event repository interface (17 methods)
-- `mocks.MockInviteRepository` - Invite repository interface (13 methods)
-- `mocks.MockUserRepository` - User repository interface (12 methods)
-- `mocks.MockRSVPRepository` - RSVP repository interface
-- `mocks.MockTemplateRepository` - Template repository interface
-- `mocks.MockAnswerRepository` - Answer repository interface
-- `mocks.MockQuestionRepository` - Question repository interface
-- `mocks.MockConfigRepository` - Config repository interface
-- `mocks.MockSessionRepository` - Session repository interface
-- `mocks.MockEmailQueueRepository` - Email queue repository interface
-- `mocks.MockAuthorizationChecker` - Authorization checker interface (permission checks)
+**Repositories (mocks/repositories/):**
+- `repositories.MockEventRepository` - Event repository (17 methods)
+- `repositories.MockInviteRepository` - Invite repository (13 methods)
+- `repositories.MockUserRepository` - User repository (12 methods)
+- `repositories.MockRSVPRepository` - RSVP repository
+- `repositories.MockTemplateRepository` - Template repository
+- `repositories.MockAnswerRepository` - Answer repository
+- `repositories.MockQuestionRepository` - Question repository
+- `repositories.MockConfigRepository` - Config repository
+- `repositories.MockSessionRepository` - Session repository
+- `repositories.MockEmailQueueRepository` - Email queue repository
 
-**Services:**
-- `mocks.MockEventService` - Event service interface (8 methods)
-- `mocks.MockInviteService` - Invite service interface (16 methods)
+**Services (mocks/services/):**
+- `services.MockEventService` - Event service (8 methods)
+- `services.MockInviteService` - Invite service (16 methods)
+- `services.MockRSVPService` - RSVP service (2 methods)
+- `services.MockTemplateService` - Template service (11 methods)
+- `services.MockEmailService` - Email service (1 method)
+
+**Other (mocks/other/):**
+- `other.MockDatabase` - Database interface
+- `other.MockAuthorizationChecker` - Authorization checker
+- `other.MockEventValidator` - Event validator
+- `other.MockTemplateValidator` - Template validator
+- `other.MockProvider` - Storage provider
 - `mocks.MockRSVPService` - RSVP service interface (2 methods)
 - `mocks.MockTemplateService` - Template service interface (11 methods)
 - `mocks.MockEmailService` - Email service interface (1 method)
