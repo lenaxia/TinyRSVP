@@ -3,7 +3,6 @@ package handlers
 import (
 	"context"
 	"encoding/json"
-	"errors"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -11,77 +10,24 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	"github.com/lenaxia/tinyrsvp/internal/auth"
-	"github.com/lenaxia/tinyrsvp/internal/db/repositories"
 	"github.com/lenaxia/tinyrsvp/internal/models"
+	"github.com/lenaxia/tinyrsvp/internal/testutil"
+	"github.com/lenaxia/tinyrsvp/internal/testutil/mocks"
+	"go.uber.org/mock/gomock"
 )
 
-type mockGetInviteService struct {
-	getInviteByIDFunc func(ctx context.Context, id int64) (*models.Invite, error)
-}
-
-func (m *mockGetInviteService) GetInviteByID(ctx context.Context, id int64) (*models.Invite, error) {
-	if m.getInviteByIDFunc != nil {
-		return m.getInviteByIDFunc(ctx, id)
-	}
-	return nil, errors.New("not implemented")
-}
-
-type mockGetInviteEventRepo struct {
-	getByIDFunc func(ctx context.Context, id int64) (*models.Event, error)
-}
-
-func (m *mockGetInviteEventRepo) GetByID(ctx context.Context, id int64) (*models.Event, error) {
-	if m.getByIDFunc != nil {
-		return m.getByIDFunc(ctx, id)
-	}
-	return nil, errors.New("not implemented")
-}
-
-func (m *mockGetInviteEventRepo) Create(ctx context.Context, event *models.Event) error {
-	return errors.New("not implemented")
-}
-
-func (m *mockGetInviteEventRepo) Update(ctx context.Context, event *models.Event) error {
-	return errors.New("not implemented")
-}
-
-func (m *mockGetInviteEventRepo) Delete(ctx context.Context, id int64) error {
-	return errors.New("not implemented")
-}
-
-func (m *mockGetInviteEventRepo) List(ctx context.Context, filters repositories.ListFilters) ([]*models.Event, error) {
-	return nil, errors.New("not implemented")
-}
-
-func (m *mockGetInviteEventRepo) UpdateWithVersion(ctx context.Context, event *models.Event, expectedVersion int) error {
-	return errors.New("not implemented")
-}
-
-func (m *mockGetInviteEventRepo) UpdateStatus(ctx context.Context, id int64, status models.EventStatus) error {
-	return errors.New("not implemented")
-}
-
-func (m *mockGetInviteEventRepo) GetByStatus(ctx context.Context, status models.EventStatus) ([]*models.Event, error) {
-	return nil, errors.New("not implemented")
-}
-
-func (m *mockGetInviteEventRepo) GetEventsToArchive(ctx context.Context, daysAfterEvent int) ([]*models.Event, error) {
-	return nil, errors.New("not implemented")
-}
-
-func (m *mockGetInviteEventRepo) GetByCreatorID(ctx context.Context, creatorID int64) ([]*models.Event, error) {
-	return nil, errors.New("not implemented")
-}
-
 func TestGetInvite_Success(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
 	now := time.Now()
 	expiresAt := now.Add(30 * 24 * time.Hour)
-	
+
 	invite := &models.Invite{
 		ID:          1,
 		EventID:     100,
-		Email:       stringPtr("test@example.com"),
-		Name:        stringPtr("Test User"),
+		Email:       testutil.StringPtr("test@example.com"),
+		Name:        testutil.StringPtr("Test User"),
 		MaxPlusOnes: 2,
 		Status:      models.InviteStatusDraft,
 		ExpiresAt:   expiresAt,
@@ -96,25 +42,20 @@ func TestGetInvite_Success(t *testing.T) {
 		Status:    models.EventStatusDraft,
 	}
 
-	service := &mockGetInviteService{
-		getInviteByIDFunc: func(ctx context.Context, id int64) (*models.Invite, error) {
-			if id == 1 {
-				return invite, nil
-			}
-			return nil, &models.NotFoundError{Resource: "invite"}
-		},
-	}
+	// Create mocks
+	mockService := mocks.NewMockInviteService(ctrl)
+	mockEventRepo := mocks.NewMockEventRepository(ctrl)
 
-	eventRepo := &mockGetInviteEventRepo{
-		getByIDFunc: func(ctx context.Context, id int64) (*models.Event, error) {
-			if id == 100 {
-				return event, nil
-			}
-			return nil, &models.NotFoundError{Resource: "event"}
-		},
-	}
+	// Set expectations
+	mockService.EXPECT().
+		GetInviteByID(gomock.Any(), int64(1)).
+		Return(invite, nil)
 
-	handler := NewGetInviteHandlers(service, eventRepo)
+	mockEventRepo.EXPECT().
+		GetByID(gomock.Any(), int64(100)).
+		Return(event, nil)
+
+	handler := NewGetInviteHandlers(mockService, mockEventRepo)
 
 	user := &models.User{
 		ID:    1,
@@ -124,7 +65,7 @@ func TestGetInvite_Success(t *testing.T) {
 
 	req := httptest.NewRequest(http.MethodGet, "/api/invites/1", nil)
 	req.Header.Set("Accept", "application/json")
-	
+
 	rctx := chi.NewRouteContext()
 	rctx.URLParams.Add("inviteId", "1")
 	req = req.WithContext(context.WithValue(req.Context(), chi.RouteCtxKey, rctx))
@@ -152,13 +93,16 @@ func TestGetInvite_Success(t *testing.T) {
 }
 
 func TestGetInvite_Unauthorized(t *testing.T) {
-	service := &mockGetInviteService{}
-	eventRepo := &mockGetInviteEventRepo{}
-	handler := NewGetInviteHandlers(service, eventRepo)
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockService := mocks.NewMockInviteService(ctrl)
+	mockEventRepo := mocks.NewMockEventRepository(ctrl)
+	handler := NewGetInviteHandlers(mockService, mockEventRepo)
 
 	req := httptest.NewRequest(http.MethodGet, "/api/invites/1", nil)
 	req.Header.Set("Accept", "application/json")
-	
+
 	rctx := chi.NewRouteContext()
 	rctx.URLParams.Add("inviteId", "1")
 	req = req.WithContext(context.WithValue(req.Context(), chi.RouteCtxKey, rctx))
@@ -172,9 +116,12 @@ func TestGetInvite_Unauthorized(t *testing.T) {
 }
 
 func TestGetInvite_InvalidID(t *testing.T) {
-	service := &mockGetInviteService{}
-	eventRepo := &mockGetInviteEventRepo{}
-	handler := NewGetInviteHandlers(service, eventRepo)
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockService := mocks.NewMockInviteService(ctrl)
+	mockEventRepo := mocks.NewMockEventRepository(ctrl)
+	handler := NewGetInviteHandlers(mockService, mockEventRepo)
 
 	user := &models.User{
 		ID:    1,
@@ -184,7 +131,7 @@ func TestGetInvite_InvalidID(t *testing.T) {
 
 	req := httptest.NewRequest(http.MethodGet, "/api/invites/invalid", nil)
 	req.Header.Set("Accept", "application/json")
-	
+
 	rctx := chi.NewRouteContext()
 	rctx.URLParams.Add("inviteId", "invalid")
 	req = req.WithContext(context.WithValue(req.Context(), chi.RouteCtxKey, rctx))
@@ -199,14 +146,18 @@ func TestGetInvite_InvalidID(t *testing.T) {
 }
 
 func TestGetInvite_NotFound(t *testing.T) {
-	service := &mockGetInviteService{
-		getInviteByIDFunc: func(ctx context.Context, id int64) (*models.Invite, error) {
-			return nil, &models.NotFoundError{Resource: "invite"}
-		},
-	}
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
 
-	eventRepo := &mockGetInviteEventRepo{}
-	handler := NewGetInviteHandlers(service, eventRepo)
+	mockService := mocks.NewMockInviteService(ctrl)
+	mockEventRepo := mocks.NewMockEventRepository(ctrl)
+
+	// Set expectation
+	mockService.EXPECT().
+		GetInviteByID(gomock.Any(), int64(999)).
+		Return(nil, &models.NotFoundError{Resource: "invite"})
+
+	handler := NewGetInviteHandlers(mockService, mockEventRepo)
 
 	user := &models.User{
 		ID:    1,
@@ -216,7 +167,7 @@ func TestGetInvite_NotFound(t *testing.T) {
 
 	req := httptest.NewRequest(http.MethodGet, "/api/invites/999", nil)
 	req.Header.Set("Accept", "application/json")
-	
+
 	rctx := chi.NewRouteContext()
 	rctx.URLParams.Add("inviteId", "999")
 	req = req.WithContext(context.WithValue(req.Context(), chi.RouteCtxKey, rctx))
@@ -231,14 +182,17 @@ func TestGetInvite_NotFound(t *testing.T) {
 }
 
 func TestGetInvite_PermissionDenied(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
 	now := time.Now()
 	expiresAt := now.Add(30 * 24 * time.Hour)
-	
+
 	invite := &models.Invite{
 		ID:          1,
 		EventID:     100,
-		Email:       stringPtr("test@example.com"),
-		Name:        stringPtr("Test User"),
+		Email:       testutil.StringPtr("test@example.com"),
+		Name:        testutil.StringPtr("Test User"),
 		MaxPlusOnes: 2,
 		Status:      models.InviteStatusDraft,
 		ExpiresAt:   expiresAt,
@@ -253,19 +207,19 @@ func TestGetInvite_PermissionDenied(t *testing.T) {
 		Status:    models.EventStatusDraft,
 	}
 
-	service := &mockGetInviteService{
-		getInviteByIDFunc: func(ctx context.Context, id int64) (*models.Invite, error) {
-			return invite, nil
-		},
-	}
+	mockService := mocks.NewMockInviteService(ctrl)
+	mockEventRepo := mocks.NewMockEventRepository(ctrl)
 
-	eventRepo := &mockGetInviteEventRepo{
-		getByIDFunc: func(ctx context.Context, id int64) (*models.Event, error) {
-			return event, nil
-		},
-	}
+	// Set expectations
+	mockService.EXPECT().
+		GetInviteByID(gomock.Any(), int64(1)).
+		Return(invite, nil)
 
-	handler := NewGetInviteHandlers(service, eventRepo)
+	mockEventRepo.EXPECT().
+		GetByID(gomock.Any(), int64(100)).
+		Return(event, nil)
+
+	handler := NewGetInviteHandlers(mockService, mockEventRepo)
 
 	user := &models.User{
 		ID:    1,
@@ -275,7 +229,7 @@ func TestGetInvite_PermissionDenied(t *testing.T) {
 
 	req := httptest.NewRequest(http.MethodGet, "/api/invites/1", nil)
 	req.Header.Set("Accept", "application/json")
-	
+
 	rctx := chi.NewRouteContext()
 	rctx.URLParams.Add("inviteId", "1")
 	req = req.WithContext(context.WithValue(req.Context(), chi.RouteCtxKey, rctx))
@@ -288,27 +242,3 @@ func TestGetInvite_PermissionDenied(t *testing.T) {
 		t.Errorf("Expected status %d, got %d", http.StatusForbidden, w.Code)
 	}
 }
-
-func (m *mockGetInviteEventRepo) CountEvents(ctx context.Context) (int, error) {
-	return 0, errors.New("not implemented")
-}
-
-func (m *mockGetInviteEventRepo) GetComponentOverrides(ctx context.Context, eventID int64) (*models.ComponentOverrides, error) {
-	return nil, nil
-}
-
-func (m *mockGetInviteEventRepo) UpdateComponentOverrides(ctx context.Context, eventID int64, overrides *models.ComponentOverrides) error {
-	return nil
-}
-
-func (m *mockGetInviteEventRepo) DeleteComponentOverrides(ctx context.Context, eventID int64) error {
-	return nil
-}
-func (m *mockGetInviteEventRepo) GetByPublicID(ctx context.Context, publicID string) (*models.Event, error) {
-	return nil, errors.New("not implemented")
-}
-
-func (m *mockGetInviteEventRepo) GetByFriendlyName(ctx context.Context, friendlyName string) (*models.Event, error) {
-	return nil, errors.New("not implemented")
-}
-
