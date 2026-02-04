@@ -1,31 +1,30 @@
 {{define "component_overlay"}}
-<div id="{{.ID}}"
-     class="component-overlay component-{{.Position.Mode}}{{if .ClassName}} {{.ClassName}}{{end}}"
+{{with .Content.Overlay}}
+<div id="{{$.ID}}"
+     class="component-overlay component-{{$.Position.Mode}}{{if $.ClassName}} {{$.ClassName}}{{end}}"
      style="
-        {{if .Visible}}display: block;{{else}}display: none;{{end}}
-        {{if eq .Position.Mode "absolute"}}
+        {{if $.Visible}}display: block;{{else}}display: none;{{end}}
+        {{if eq $.Position.Mode "absolute"}}
             position: absolute;
-            {{if .Position.X}}left: {{.Position.X}};{{end}}
-            {{if .Position.Y}}top: {{.Position.Y}};{{end}}
+            {{if $.Position.X}}left: {{$.Position.X}};{{end}}
+            {{if $.Position.Y}}top: {{$.Position.Y}};{{end}}
         {{end}}
-        width: {{.Dimensions.Width}};
-        height: {{.Dimensions.Height}};
-        z-index: {{.ZIndex}};
-        {{if .Content.backgroundColor}}background-color: {{.Content.backgroundColor}};{{end}}
-        {{if .Content.backgroundImage}}background-image: {{.Content.backgroundImage}};{{end}}
-        {{if .Content.backgroundSize}}background-size: {{.Content.backgroundSize}};{{end}}
-        {{if .Content.backgroundPosition}}background-position: {{.Content.backgroundPosition}};{{end}}
-        {{if .Content.borderRadius}}border-radius: {{.Content.borderRadius}};{{end}}
-        {{if .Content.border}}border: {{.Content.border}};{{end}}
-        {{if .Content.boxShadow}}box-shadow: {{.Content.boxShadow}};{{end}}
-        {{if .Content.clipPath}}clip-path: {{.Content.clipPath}};{{end}}
+        width: {{$.Dimensions.Width}};
+        height: {{$.Dimensions.Height}};
+        z-index: {{$.ZIndex}};
+        {{if .BackgroundColor}}background-color: {{.BackgroundColor}};{{end}}
+        {{if .BackgroundImage}}background-image: {{.BackgroundImage}};{{end}}
+        {{if .BackgroundSize}}background-size: {{.BackgroundSize}};{{end}}
+        {{if .BorderRadius}}border-radius: {{.BorderRadius}};{{end}}
+        {{if .Border}}border: {{.Border}};{{end}}
+        {{if .BoxShadow}}box-shadow: {{.BoxShadow}};{{end}}
+        {{if .ClipPath}}clip-path: {{.ClipPath}};{{end}}
      ">
-    {{if .Content.placeholder}}
-        {{if .Content.placeholder.show}}
-            <div style="display: flex; align-items: center; justify-content: center; height: 100%; color: #999;">
-                {{.Content.placeholder.text}}
-            </div>
-        {{end}}
+    {{if .Placeholder}}
+        <div style="display: flex; align-items: center; justify-content: center; height: 100%; color: #999;">
+            Placeholder
+        </div>
     {{end}}
 </div>
+{{end}}
 {{end}}

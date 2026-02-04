@@ -1,43 +1,38 @@
 {{define "component_image"}}
-<img id="{{.ID}}"
-     class="component-image component-{{.Position.Mode}}{{if .ClassName}} {{.ClassName}}{{end}}{{if .Animation}} animated{{end}}"
-     src="{{.Content.src}}"
-     alt="{{.Content.alt}}"
+{{with .Content.Image}}
+<img id="{{$.ID}}"
+     class="component-image component-{{$.Position.Mode}}{{if $.ClassName}} {{$.ClassName}}{{end}}{{if $.Animation}} animated{{end}}"
+     src="{{.Src}}"
+     alt="{{.Alt}}"
      style="
-        {{if .Visible}}display: block;{{else}}display: none;{{end}}
-        {{if eq .Position.Mode "absolute"}}
+        {{if $.Visible}}display: block;{{else}}display: none;{{end}}
+        {{if eq $.Position.Mode "absolute"}}
             position: absolute;
-            {{if .Position.X}}left: {{.Position.X}};{{end}}
-            {{if .Position.Y}}top: {{.Position.Y}};{{end}}
-        {{else if eq .Position.Mode "relative"}}
+            {{if $.Position.X}}left: {{$.Position.X}};{{end}}
+            {{if $.Position.Y}}top: {{$.Position.Y}};{{end}}
+        {{else if eq $.Position.Mode "relative"}}
             position: relative;
-            {{if .Position.Order}}order: {{.Position.Order}};{{end}}
-        {{else if eq .Position.Mode "flex"}}
-            {{if .Position.Order}}order: {{.Position.Order}};{{end}}
+            {{if $.Position.Order}}order: {{$.Position.Order}};{{end}}
+        {{else if eq $.Position.Mode "flex"}}
+            {{if $.Position.Order}}order: {{$.Position.Order}};{{end}}
         {{end}}
-        width: {{.Dimensions.Width}};
-        height: {{.Dimensions.Height}};
-        z-index: {{.ZIndex}};
-        {{if .Content.objectFit}}object-fit: {{.Content.objectFit}};{{end}}
-        {{if .Content.objectPosition}}object-position: {{.Content.objectPosition}};{{end}}
-        {{if .Content.opacity}}opacity: {{.Content.opacity}};{{end}}
-        {{if .Content.filter}}filter: {{.Content.filter}};{{end}}
-        {{if .Content.transform}}transform: {{.Content.transform}};{{end}}
-        {{if .Content.blendMode}}mix-blend-mode: {{.Content.blendMode}};{{end}}
-        {{if .Content.clipPath}}clip-path: {{.Content.clipPath}};{{end}}
-        {{if .Content.mask}}
-            mask-image: url({{.Content.mask}});
-            -webkit-mask-image: url({{.Content.mask}});
-        {{end}}
+        width: {{$.Dimensions.Width}};
+        height: {{$.Dimensions.Height}};
+        z-index: {{$.ZIndex}};
+        {{if .ObjectFit}}object-fit: {{.ObjectFit}};{{end}}
+        {{if .ObjectPosition}}object-position: {{.ObjectPosition}};{{end}}
+        {{if .Opacity}}opacity: {{.Opacity}};{{end}}
+        {{if .Filter}}filter: {{.Filter}};{{end}}
      "
-     {{if .Animation}}
-     data-animation-type="{{.Animation.Type}}"
-     data-animation-duration="{{.Animation.Duration}}"
-     data-animation-delay="{{.Animation.Delay}}"
-     data-animation-easing="{{.Animation.Easing}}"
-     data-animation-iteration="{{.Animation.Iteration}}"
-     {{if .Animation.IterationCount}}data-animation-count="{{.Animation.IterationCount}}"{{end}}
-     data-animation-direction="{{.Animation.Direction}}"
+     {{if $.Animation}}
+     data-animation-type="{{$.Animation.Type}}"
+     data-animation-duration="{{$.Animation.Duration}}"
+     data-animation-delay="{{$.Animation.Delay}}"
+     data-animation-easing="{{$.Animation.Easing}}"
+     data-animation-iteration="{{$.Animation.Iteration}}"
+     {{if $.Animation.IterationCount}}data-animation-count="{{$.Animation.IterationCount}}"{{end}}
+     data-animation-direction="{{$.Animation.Direction}}"
      {{end}}
      >
+{{end}}
 {{end}}

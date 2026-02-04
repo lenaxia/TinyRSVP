@@ -1,50 +1,44 @@
 {{define "component_textbox"}}
-<div id="{{.ID}}"
-     class="component-textbox component-{{.Position.Mode}}{{if .ClassName}} {{.ClassName}}{{end}}{{if .Animation}} animated{{end}}"
+{{with .Content.TextBox}}
+<div id="{{$.ID}}"
+     class="component-textbox component-{{$.Position.Mode}}{{if $.ClassName}} {{$.ClassName}}{{end}}{{if $.Animation}} animated{{end}}"
      style="
-        {{if .Visible}}display: block;{{else}}display: none;{{end}}
-        {{if eq .Position.Mode "absolute"}}
+        {{if $.Visible}}display: block;{{else}}display: none;{{end}}
+        {{if eq $.Position.Mode "absolute"}}
             position: absolute;
-            {{if .Position.X}}left: {{.Position.X}};{{end}}
-            {{if .Position.Y}}top: {{.Position.Y}};{{end}}
-        {{else if eq .Position.Mode "relative"}}
+            {{if $.Position.X}}left: {{$.Position.X}};{{end}}
+            {{if $.Position.Y}}top: {{$.Position.Y}};{{end}}
+        {{else if eq $.Position.Mode "relative"}}
             position: relative;
-            {{if .Position.Order}}order: {{.Position.Order}};{{end}}
-        {{else if eq .Position.Mode "flex"}}
-            {{if .Position.Order}}order: {{.Position.Order}};{{end}}
+            {{if $.Position.Order}}order: {{$.Position.Order}};{{end}}
+        {{else if eq $.Position.Mode "flex"}}
+            {{if $.Position.Order}}order: {{$.Position.Order}};{{end}}
         {{end}}
-        width: {{.Dimensions.Width}};
-        height: {{.Dimensions.Height}};
-        z-index: {{.ZIndex}};
-        {{if .Content.textAlign}}text-align: {{.Content.textAlign}};{{end}}
-        {{if .Content.fontFamily}}font-family: {{.Content.fontFamily}};{{end}}
-        {{if .Content.fontSize}}font-size: {{.Content.fontSize}};{{end}}
-        {{if .Content.fontWeight}}font-weight: {{.Content.fontWeight}};{{end}}
-        {{if .Content.color}}color: {{.Content.color}};{{end}}
-        {{if .Content.lineHeight}}line-height: {{.Content.lineHeight}};{{end}}
-        {{if .Content.letterSpacing}}letter-spacing: {{.Content.letterSpacing}};{{end}}
-        {{if .Content.textTransform}}text-transform: {{.Content.textTransform}};{{end}}
-        {{if .Content.textShadow}}text-shadow: {{.Content.textShadow}};{{end}}
-        {{if .Content.fontStyle}}font-style: {{.Content.fontStyle}};{{end}}
-        {{if .Content.gradient}}
-            background: {{.Content.gradient}};
-            -webkit-background-clip: text;
-            background-clip: text;
-            -webkit-text-fill-color: transparent;
-        {{end}}
-        {{if .Content.stroke}}-webkit-text-stroke: {{.Content.stroke}};{{end}}
-        {{if .Content.wordSpacing}}word-spacing: {{.Content.wordSpacing}};{{end}}
+        width: {{$.Dimensions.Width}};
+        height: {{$.Dimensions.Height}};
+        z-index: {{$.ZIndex}};
+        {{if .TextAlign}}text-align: {{.TextAlign}};{{end}}
+        {{if .FontFamily}}font-family: {{.FontFamily}};{{end}}
+        {{if .FontSize}}font-size: {{.FontSize}};{{end}}
+        {{if .FontWeight}}font-weight: {{.FontWeight}};{{end}}
+        {{if .Color}}color: {{.Color}};{{end}}
+        {{if .LineHeight}}line-height: {{.LineHeight}};{{end}}
+        {{if .LetterSpacing}}letter-spacing: {{.LetterSpacing}};{{end}}
+        {{if .TextTransform}}text-transform: {{.TextTransform}};{{end}}
+        {{if .TextShadow}}text-shadow: {{.TextShadow}};{{end}}
+        {{if .Padding}}padding: {{.Padding}};{{end}}
      "
-     {{if .Animation}}
-     data-animation-type="{{.Animation.Type}}"
-     data-animation-duration="{{.Animation.Duration}}"
-     data-animation-delay="{{.Animation.Delay}}"
-     data-animation-easing="{{.Animation.Easing}}"
-     data-animation-iteration="{{.Animation.Iteration}}"
-     {{if .Animation.IterationCount}}data-animation-count="{{.Animation.IterationCount}}"{{end}}
-     data-animation-direction="{{.Animation.Direction}}"
+     {{if $.Animation}}
+     data-animation-type="{{$.Animation.Type}}"
+     data-animation-duration="{{$.Animation.Duration}}"
+     data-animation-delay="{{$.Animation.Delay}}"
+     data-animation-easing="{{$.Animation.Easing}}"
+     data-animation-iteration="{{$.Animation.Iteration}}"
+     {{if $.Animation.IterationCount}}data-animation-count="{{$.Animation.IterationCount}}"{{end}}
+     data-animation-direction="{{$.Animation.Direction}}"
      {{end}}
      >
-    {{if .Content.isEvaluated}}{{.Content.evaluatedText}}{{else}}{{.Content.text}}{{end}}
+    {{if .IsEvaluated}}{{.EvaluatedText}}{{else}}{{.Text}}{{end}}
 </div>
+{{end}}
 {{end}}

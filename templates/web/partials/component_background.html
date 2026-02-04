@@ -1,24 +1,25 @@
 {{define "component_background"}}
-<div id="{{.ID}}"
-     class="component-background{{if .ClassName}} {{.ClassName}}{{end}}"
+{{with .Content.Background}}
+<div id="{{$.ID}}"
+     class="component-background{{if $.ClassName}} {{$.ClassName}}{{end}}"
      style="
-        {{if .Visible}}display: block;{{else}}display: none;{{end}}
+        {{if $.Visible}}display: block;{{else}}display: none;{{end}}
         position: absolute;
         left: 0;
         top: 0;
-        width: {{.Dimensions.Width}};
-        height: {{.Dimensions.Height}};
-        z-index: {{.ZIndex}};
-        {{if eq .Content.type "color"}}
-            background-color: {{.Content.color}};
-        {{else if eq .Content.type "gradient"}}
-            background: {{.Content.gradient}};
-        {{else if eq .Content.type "image"}}
-            background-image: url('{{.Content.image.src}}');
-            background-repeat: {{.Content.image.repeat}};
-            background-size: {{.Content.image.size}};
-            background-position: {{.Content.image.position}};
+        width: {{$.Dimensions.Width}};
+        height: {{$.Dimensions.Height}};
+        z-index: {{$.ZIndex}};
+        {{if eq .Type "color"}}
+            background-color: {{.Color}};
+        {{else if eq .Type "gradient"}}
+            background: {{.Gradient}};
+        {{else if eq .Type "image"}}
+            background-image: url('{{.Image}}');
+            {{if .BackgroundSize}}background-size: {{.BackgroundSize}};{{end}}
+            {{if .BackgroundPosition}}background-position: {{.BackgroundPosition}};{{end}}
         {{end}}
      ">
 </div>
+{{end}}
 {{end}}
