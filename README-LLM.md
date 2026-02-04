@@ -1,8 +1,8 @@
 # TinyRSVP - LLM Implementation Guide
 
-**Version:** 1.0  
-**Last Updated:** 2026-01-06  
-**Project Status:** Initial Setup
+**Version:** 2.0  
+**Last Updated:** 2026-02-04  
+**Project Status:** Active Development (75% Complete)
 
 ---
 
@@ -34,9 +34,11 @@ TinyRSVP is a **self-hosted, small-scale RSVP and invitation platform**, designe
 - Docker first experience, this application should only be available in docker
 
 **Primary Source Documents:**
-- [`docs/00_INITIAL_HLD.md`](docs/00_INITIAL_HLD.md) - Authoritative specification
-- [`docs/00_BACKLOG/`](docs/00_BACKLOG/) - Sprint stories and epics
-- [`docs/01_WORKLOG/`](docs/01_WORKLOG/) - Progress updates and handoffs
+- [`docs/02_DESIGN/02_REVISED_HLD.md`](docs/02_DESIGN/02_REVISED_HLD.md) - ⭐ AUTHORITATIVE specification
+- [`docs/02_DESIGN/lld/`](docs/02_DESIGN/lld/) - Low-level designs (8 modules)
+- [`docs/00_BACKLOG/`](docs/00_BACKLOG/) - Sprint stories and epics (150+ stories in 13 epics)
+- [`docs/01_WORKLOG/`](docs/01_WORKLOG/) - Progress updates (141 entries: 0000-0140)
+- [`docs/04_SUMMARIES/PROJECT_STATUS_ASSESSMENT.md`](docs/04_SUMMARIES/PROJECT_STATUS_ASSESSMENT.md) - Latest status
 
 ---
 
@@ -180,8 +182,34 @@ you are about to make fit in within that architecture. Understand the
 goals of what you are trying to achieve and how to go about it. 
 
 ALWAYS review the HLD and relevant LLD(s).
-- docs/02_REVISED_HLD.md
-- docs/lld/
+- docs/02_DESIGN/02_REVISED_HLD.md (AUTHORITATIVE)
+- docs/02_DESIGN/lld/ (Low-level designs)
+
+### 12. Status Documentation Requirements
+
+**MANDATORY:** When marking stories/epics complete:
+- Run all tests
+- Document test pass rate
+- Document known issues
+- Document confidence level
+- Document production readiness
+
+**Status Levels:**
+- ✅ Complete - All tests pass, production ready
+- ⚠️ Complete (with issues) - Tests mostly pass, known issues documented
+- ⚠️ BROKEN - Tests failing, functionality broken
+- ❌ Not Started - No implementation
+
+**Example:**
+```markdown
+**Status:** ⚠️ Complete (with issues)
+**Test Pass Rate:** 90% (3 failures)
+**Confidence:** MEDIUM (75%)
+**Production Ready:** Mostly (requires fixes)
+**Known Issues:**
+- Security headers test failing
+- Template integration broken
+```
 
 ---
 
@@ -231,11 +259,20 @@ TinyRSVP/
 │
 ├── docs/                       # Documentation
 │   ├── README.md               # Documentation index
-│   ├── 00_INITIAL_HLD.md       # High-level design (authoritative)
-│   ├── 00_BACKLOG/             # Sprint stories and epics
+│   ├── 00_BACKLOG/             # Sprint stories and epics (150+ stories)
+│   │   ├── README.md
+│   │   ├── 00_FOUNDATION/     # Epic folders with user stories
+│   │   ├── 01_AUTH/
+│   │   └── ...
+│   ├── 01_WORKLOG/             # Progress updates (0000-0140)
 │   │   └── README.md
-│   └── 01_WORKLOG/             # Progress updates and handoffs
-│       └── README.md
+│   ├── 02_DESIGN/              # Active design documents
+│   │   ├── 02_REVISED_HLD.md  # ⭐ AUTHORITATIVE specification
+│   │   ├── 04_LLD_INDEX.md
+│   │   └── lld/               # Low-level designs (8 files)
+│   ├── 03_REFERENCE/           # Reference documentation
+│   ├── 04_SUMMARIES/           # Project status
+│   └── 99_ARCHIVE/             # Historical documents
 │
 ├── llm-workflows/              # LLM workflow templates
 │   └── README.md               # Workflow index
@@ -430,9 +467,10 @@ TinyRSVP/
 
 **ALWAYS:**
 1. Read the relevant folder's README.md
-2. Check [`docs/00_BACKLOG/`](docs/00_BACKLOG/) for current sprint stories
-3. Check [`docs/01_WORKLOG/`](docs/01_WORKLOG/) for recent progress
-4. Review [`docs/00_INITIAL_HLD.md`](docs/00_INITIAL_HLD.md) for authoritative spec
+2. Check [`docs/00_BACKLOG/`](docs/00_BACKLOG/) for current sprint stories (150+ stories in 13 epics)
+3. Check [`docs/01_WORKLOG/`](docs/01_WORKLOG/) for recent progress (entries 0000-0140)
+4. Review [`docs/02_DESIGN/02_REVISED_HLD.md`](docs/02_DESIGN/02_REVISED_HLD.md) for authoritative spec
+5. Check [`docs/04_SUMMARIES/PROJECT_STATUS_ASSESSMENT.md`](docs/04_SUMMARIES/PROJECT_STATUS_ASSESSMENT.md) for latest status
 
 ### 2. During Work
 
@@ -443,6 +481,13 @@ TinyRSVP/
 4. Update backlog story checklists `[ ]` → `[x]`
 5. Commit regularly (every logical unit of work)
 6. Update architecture diagram in this file if structure changes
+
+**Pre-Commit Hooks:**
+- Pre-commit hooks automatically run before each commit
+- Hooks enforce: go fmt, go vet, tests with -timeout 30s
+- Hooks warn about: debug prints, TODOs, map[string]interface{} usage
+- See `.git/hooks/README.md` for details on bypassing hooks
+- Emergency bypass: `git commit --no-verify` (use sparingly)
 
 ### 3. After Completing Work
 
@@ -598,9 +643,14 @@ docker-compose up -d
 
 ### Design Documents
 
-**Location:** [`docs/`](docs/)
+**Location:** [`docs/02_DESIGN/`](docs/02_DESIGN/)
 
 **Naming:** `XX_DOCUMENT_NAME.md` where XX is creation order (00, 01, 02, etc.)
+
+**Current Active Docs:**
+- `02_REVISED_HLD.md` - ⭐ AUTHORITATIVE high-level design
+- `04_LLD_INDEX.md` - Index of low-level designs
+- `lld/` - Detailed low-level designs (8 modules)
 
 **Purpose:**
 - High-level designs
@@ -613,11 +663,15 @@ docker-compose up -d
 - When making architectural decisions
 - When defining new subsystems
 
+**Historical/Superseded Docs:** Moved to [`docs/99_ARCHIVE/design/`](docs/99_ARCHIVE/design/)
+
 ### Worklog Documents
 
 **Location:** [`docs/01_WORKLOG/`](docs/01_WORKLOG/)
 
-**Naming:** `YYYY-MM-DD_description.md`
+**Naming:** `NNNN_YYYY-MM-DD_description.md` (continuous numbering from 0000)
+
+**Current Count:** 141 entries (0000-0140)
 
 **Purpose:**
 - Progress updates
@@ -631,14 +685,31 @@ docker-compose up -d
 - When handing off to another session
 - When documenting blockers
 
+**Next Entry:** Use `0141_YYYY-MM-DD_description.md`
+
 ### Backlog Stories
 
 **Location:** [`docs/00_BACKLOG/`](docs/00_BACKLOG/)
 
 **Structure:**
-- Epics: High-level features
-- User Stories: Specific functionality
-- Tasks: Defined within user story files using checklists `[ ]`
+- **13 Epic Folders:** Each epic has its own directory (00_FOUNDATION through 12_TEST_INFRASTRUCTURE)
+- **Epic READMEs:** Each folder contains README.md with epic overview
+- **User Stories:** Individual story files within each epic folder
+- **150+ Stories:** Organized across all epics
+
+**Epic Structure:**
+```
+00_BACKLOG/
+├── 00_FOUNDATION/
+│   ├── README.md                           # Epic overview
+│   ├── 00_STORY_01_go_module_setup.md
+│   ├── 00_STORY_02_config_management.md
+│   └── ...
+├── 01_AUTH/
+│   ├── README.md
+│   └── (all 01_STORY_* files)
+└── ...
+```
 
 **Epic 10 - Technical Debt & Improvements:**
 - Epic 10 is reserved for issues, improvements, and technical debt that don't fit into other epics
@@ -674,6 +745,37 @@ docker-compose up -d
 - Performance improvements identified
 - Technical debt that should be addressed but doesn't block current work
 - Cross-cutting concerns that span multiple epics
+
+### Reference Documentation
+
+**Location:** [`docs/03_REFERENCE/`](docs/03_REFERENCE/)
+
+**Active References:**
+- `PERMISSION_REFERENCE.md` - RBAC permission system
+- `THEME_DESIGN_SYSTEM.md` - Theme and styling guidelines
+- `TEMPLATE_EDITOR_API.md` - Template API reference
+- `XSS_PREVENTION.md` - Security guidelines
+
+**Purpose:** Technical references for active features
+
+### Status & Summaries
+
+**Location:** [`docs/04_SUMMARIES/`](docs/04_SUMMARIES/)
+
+**Current Status:** `PROJECT_STATUS_ASSESSMENT.md` (Updated: 2026-02-03)
+
+**Purpose:** Track overall project status, epic completion, and blockers
+
+### Archive
+
+**Location:** [`docs/99_ARCHIVE/`](docs/99_ARCHIVE/)
+
+**Contents:** Historical documents no longer actively used
+- `design/` - Superseded design documents
+- `reference/` - Completed setup guides and plans
+- `summaries/` - Old phase summaries
+
+**Policy:** Documents archived when superseded, completed, or no longer relevant
 
 ### README Files
 
@@ -944,6 +1046,7 @@ A: Set the `Accept: application/json` header in your test requests. Content nego
 | Version | Date | Changes |
 |---------|------|---------|
 | 1.0 | 2026-01-06 | Initial creation |
+| 2.0 | 2026-02-04 | Major documentation reorganization: Added 02_DESIGN/, 03_REFERENCE/, 04_SUMMARIES/, 99_ARCHIVE/ folders. Updated all references to reflect new structure. Changed worklog naming to continuous numbering (0000-NNNN). Organized backlog into epic folders. |
 
 ---
 
