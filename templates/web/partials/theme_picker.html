@@ -1,7 +1,27 @@
 {{define "theme_picker"}}
-<div class="theme-picker">
+<div class="theme-picker" data-mode="gallery">
     <div class="theme-picker-header">
         <h3>Select Theme</h3>
+        <div class="theme-mode-controls" role="tablist" aria-label="Theme selection mode">
+            <button 
+                type="button" 
+                id="gallery-mode-btn" 
+                class="mode-btn" 
+                role="tab" 
+                aria-selected="true" 
+                aria-controls="theme-gallery-container">
+                Gallery View
+            </button>
+            <button 
+                type="button" 
+                id="design-mode-btn" 
+                class="mode-btn" 
+                role="tab" 
+                aria-selected="false" 
+                aria-controls="design-mode-container">
+                Design Mode
+            </button>
+        </div>
         <div class="theme-filter">
             <label for="theme-category-filter">Category:</label>
             <select id="theme-category-filter" class="theme-category-select">
@@ -15,7 +35,7 @@
         </div>
     </div>
     
-    <div class="theme-gallery" role="radiogroup" aria-label="Select theme">
+    <div id="theme-gallery-container" class="theme-gallery" role="tabpanel" aria-labelledby="gallery-mode-btn" role="radiogroup" aria-label="Select theme">
         {{range .Themes}}
         <div class="theme-card {{if eq .ID $.SelectedThemeID}}selected{{end}}" 
              data-theme-id="{{.ID}}"
@@ -65,6 +85,59 @@
             </div>
         </div>
         {{end}}
+    </div>
+    
+    <div id="design-mode-container" class="design-mode-container" role="tabpanel" aria-labelledby="design-mode-btn" hidden aria-hidden="true">
+        <div class="design-mode-controls">
+            <div class="form-group">
+                <label for="design-theme-select">Choose Theme:</label>
+                <select id="design-theme-select" class="form-select">
+                    {{range .Themes}}
+                    <option value="{{.ID}}" {{if eq .ID $.SelectedThemeID}}selected{{end}}>{{.Name}}</option>
+                    {{end}}
+                </select>
+            </div>
+            
+            <div class="mobile-view-toggle" role="tablist" aria-label="Mobile view mode">
+                <button 
+                    type="button" 
+                    id="mobile-edit-btn" 
+                    class="view-btn" 
+                    role="tab" 
+                    aria-selected="true">
+                    Edit
+                </button>
+                <button 
+                    type="button" 
+                    id="mobile-preview-btn" 
+                    class="view-btn" 
+                    role="tab" 
+                    aria-selected="false">
+                    Preview
+                </button>
+            </div>
+        </div>
+        
+        <div class="live-preview-wrapper">
+            <div class="live-preview-loading" role="status" aria-live="polite" hidden>
+                <div class="spinner" aria-hidden="true"></div>
+                <span>Loading preview...</span>
+            </div>
+            
+            <div class="live-preview-error" role="alert" hidden>
+                <p>Unable to load preview</p>
+                <button type="button" class="btn-retry-preview">Retry</button>
+            </div>
+            
+            <iframe 
+                id="live-preview-frame" 
+                class="live-preview-frame" 
+                title="Live preview of invitation theme"
+                sandbox="allow-same-origin allow-scripts"
+                aria-live="polite"
+                src="about:blank">
+            </iframe>
+        </div>
     </div>
     
     <input type="hidden" id="selected-theme-id" name="template_id" value="{{.SelectedThemeID}}">
