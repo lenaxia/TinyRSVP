@@ -2,6 +2,12 @@
     margin: var(--spacing-6) 0;
 }
 
+/* Ensure hidden attribute works properly */
+.theme-gallery[hidden],
+.design-mode-container[hidden] {
+    display: none !important;
+}
+
 .theme-picker-header {
     display: flex;
     justify-content: space-between;

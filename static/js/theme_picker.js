@@ -141,6 +141,7 @@ class ThemePicker {
     }
 
     switchMode(mode) {
+        console.log('[ThemePicker] switchMode called with mode:', mode);
         this.currentMode = mode;
 
         if (this.debounceTimer) {
@@ -149,6 +150,7 @@ class ThemePicker {
         }
 
         if (mode === 'gallery') {
+            console.log('[ThemePicker] Switching to gallery mode');
             if (this.galleryModeBtn) {
                 this.galleryModeBtn.setAttribute('aria-selected', 'true');
             }
@@ -158,10 +160,12 @@ class ThemePicker {
             if (this.galleryContainer) {
                 this.galleryContainer.hidden = false;
                 this.galleryContainer.setAttribute('aria-hidden', 'false');
+                console.log('[ThemePicker] Gallery shown');
             }
             if (this.designContainer) {
                 this.designContainer.hidden = true;
                 this.designContainer.setAttribute('aria-hidden', 'true');
+                console.log('[ThemePicker] Design hidden');
             }
             if (this.picker) {
                 this.picker.setAttribute('data-mode', 'gallery');
@@ -170,6 +174,7 @@ class ThemePicker {
                 this.livePreviewFrame.src = 'about:blank';
             }
         } else {
+            console.log('[ThemePicker] Switching to design mode');
             if (this.galleryModeBtn) {
                 this.galleryModeBtn.setAttribute('aria-selected', 'false');
             }
@@ -179,10 +184,12 @@ class ThemePicker {
             if (this.galleryContainer) {
                 this.galleryContainer.hidden = true;
                 this.galleryContainer.setAttribute('aria-hidden', 'true');
+                console.log('[ThemePicker] Gallery hidden');
             }
             if (this.designContainer) {
                 this.designContainer.hidden = false;
                 this.designContainer.setAttribute('aria-hidden', 'false');
+                console.log('[ThemePicker] Design shown');
             }
             if (this.picker) {
                 this.picker.setAttribute('data-mode', 'design');
@@ -312,6 +319,10 @@ class ThemePicker {
     }
 
     selectTheme(themeId) {
+        console.log('[ThemePicker] selectTheme called with ID:', themeId);
+        console.log('[ThemePicker] currentMode:', this.currentMode);
+        console.log('[ThemePicker] designContainer exists:', !!this.designContainer);
+        
         const previousSelected = this.gallery.querySelector('.theme-card.selected');
         if (previousSelected) {
             previousSelected.classList.remove('selected');
@@ -339,11 +350,13 @@ class ThemePicker {
         // Automatically switch to design mode when a theme is selected
         // Remove focus before hiding gallery to avoid aria-hidden conflict
         if (this.currentMode === 'gallery' && this.designContainer) {
+            console.log('[ThemePicker] Switching to design mode...');
             if (document.activeElement && document.activeElement.closest('.theme-gallery')) {
                 document.activeElement.blur();
             }
             this.switchMode('design');
         } else if (card) {
+            console.log('[ThemePicker] Staying in gallery mode, focusing card');
             // Only focus card if staying in gallery mode
             card.focus();
         }
