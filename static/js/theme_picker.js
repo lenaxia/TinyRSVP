@@ -149,22 +149,44 @@ class ThemePicker {
         }
 
         if (mode === 'gallery') {
-            this.galleryModeBtn.setAttribute('aria-selected', 'true');
-            this.designModeBtn.setAttribute('aria-selected', 'false');
-            this.galleryContainer.hidden = false;
-            this.galleryContainer.setAttribute('aria-hidden', 'false');
-            this.designContainer.hidden = true;
-            this.designContainer.setAttribute('aria-hidden', 'true');
-            this.picker.setAttribute('data-mode', 'gallery');
-            this.livePreviewFrame.src = 'about:blank';
+            if (this.galleryModeBtn) {
+                this.galleryModeBtn.setAttribute('aria-selected', 'true');
+            }
+            if (this.designModeBtn) {
+                this.designModeBtn.setAttribute('aria-selected', 'false');
+            }
+            if (this.galleryContainer) {
+                this.galleryContainer.hidden = false;
+                this.galleryContainer.setAttribute('aria-hidden', 'false');
+            }
+            if (this.designContainer) {
+                this.designContainer.hidden = true;
+                this.designContainer.setAttribute('aria-hidden', 'true');
+            }
+            if (this.picker) {
+                this.picker.setAttribute('data-mode', 'gallery');
+            }
+            if (this.livePreviewFrame) {
+                this.livePreviewFrame.src = 'about:blank';
+            }
         } else {
-            this.galleryModeBtn.setAttribute('aria-selected', 'false');
-            this.designModeBtn.setAttribute('aria-selected', 'true');
-            this.galleryContainer.hidden = true;
-            this.galleryContainer.setAttribute('aria-hidden', 'true');
-            this.designContainer.hidden = false;
-            this.designContainer.setAttribute('aria-hidden', 'false');
-            this.picker.setAttribute('data-mode', 'design');
+            if (this.galleryModeBtn) {
+                this.galleryModeBtn.setAttribute('aria-selected', 'false');
+            }
+            if (this.designModeBtn) {
+                this.designModeBtn.setAttribute('aria-selected', 'true');
+            }
+            if (this.galleryContainer) {
+                this.galleryContainer.hidden = true;
+                this.galleryContainer.setAttribute('aria-hidden', 'true');
+            }
+            if (this.designContainer) {
+                this.designContainer.hidden = false;
+                this.designContainer.setAttribute('aria-hidden', 'false');
+            }
+            if (this.picker) {
+                this.picker.setAttribute('data-mode', 'design');
+            }
             this.updatePreview();
         }
     }
@@ -314,6 +336,11 @@ class ThemePicker {
         }
 
         this.announceSelection(card);
+        
+        // Automatically switch to design mode when a theme is selected
+        if (this.currentMode === 'gallery' && this.designContainer) {
+            this.switchMode('design');
+        }
     }
 
     previewTheme(themeId) {
