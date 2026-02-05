@@ -101,19 +101,52 @@ class ThemePicker {
     attachFormWatchers() {
         if (!this.eventForm) return;
 
+        // Watch text/datetime input fields
         const watchedFields = [
             'title',
             'description',
             'location',
             'start_time',
             'end_time',
+            'timezone',
+            'friendly_name',
+            'rsvp_deadline',
+            'event_capacity',
+            'max_plus_ones',
             'custom_theme_image_url'
         ];
 
         watchedFields.forEach(fieldName => {
-            const field = this.eventForm.querySelector(`[name="${fieldName}"]`);
+            const field = this.eventForm.querySelector(`[name="${fieldName}"]`) || 
+                         document.querySelector(`[name="${fieldName}"]`); // Check in slide panel too
             if (field) {
                 field.addEventListener('input', () => {
+                    if (this.currentMode === 'design') {
+                        this.debouncedUpdatePreview();
+                    }
+                });
+                field.addEventListener('change', () => {
+                    if (this.currentMode === 'design') {
+                        this.debouncedUpdatePreview();
+                    }
+                });
+            }
+        });
+
+        // Watch checkbox fields (RSVP settings)
+        const watchedCheckboxes = [
+            'allow_maybe_rsvp',
+            'private_guest_list',
+            'has_rsvp_deadline',
+            'allow_rsvp_after_deadline',
+            'family_headcount',
+            'has_event_capacity'
+        ];
+
+        watchedCheckboxes.forEach(fieldName => {
+            const field = document.querySelector(`[name="${fieldName}"]`);
+            if (field) {
+                field.addEventListener('change', () => {
                     if (this.currentMode === 'design') {
                         this.debouncedUpdatePreview();
                     }
@@ -254,12 +287,26 @@ class ThemePicker {
             params.set('theme_id', themeId);
         }
 
+        // Helper to get field value from anywhere in document (including slide panels)
+        const getFieldValue = (name) => {
+            const field = document.querySelector(`[name="${name}"]`);
+            if (!field) return null;
+            
+            if (field.type === 'checkbox') {
+                return field.checked ? 'true' : 'false';
+            }
+            return field.value;
+        };
+
+        // Basic event details
         const fields = {
-            title: this.eventForm?.querySelector('[name="title"]')?.value,
-            description: this.eventForm?.querySelector('[name="description"]')?.value,
-            location: this.eventForm?.querySelector('[name="location"]')?.value,
-            start_time: this.eventForm?.querySelector('[name="start_time"]')?.value,
-            end_time: this.eventForm?.querySelector('[name="end_time"]')?.value
+            title: getFieldValue('title'),
+            description: getFieldValue('description'),
+            location: getFieldValue('location'),
+            start_time: getFieldValue('start_time'),
+            end_time: getFieldValue('end_time'),
+            timezone: getFieldValue('timezone'),
+            friendly_name: getFieldValue('friendly_name')
         };
 
         Object.entries(fields).forEach(([key, value]) => {
@@ -268,7 +315,42 @@ class ThemePicker {
             }
         });
 
-        const customImageURL = this.eventForm?.querySelector('[name="custom_theme_image_url"]')?.value;
+        // RSVP settings checkboxes
+        const checkboxFields = {
+            allow_maybe_rsvp: getFieldValue('allow_maybe_rsvp'),
+            private_guest_list: getFieldValue('private_guest_list'),
+            has_rsvp_deadline: getFieldValue('has_rsvp_deadline'),
+            allow_rsvp_after_deadline: getFieldValue('allow_rsvp_after_deadline'),
+            family_headcount: getFieldValue('family_headcount'),
+            has_event_capacity: getFieldValue('has_event_capacity')
+        };
+
+        Object.entries(checkboxFields).forEach(([key, value]) => {
+            if (value !== null) {
+                params.set(key, value);
+            }
+        });
+
+        // RSVP deadline
+        const rsvpDeadline = getFieldValue('rsvp_deadline');
+        if (rsvpDeadline) {
+            params.set('rsvp_deadline', rsvpDeadline);
+        }
+
+        // Event capacity
+        const eventCapacity = getFieldValue('event_capacity');
+        if (eventCapacity) {
+            params.set('event_capacity', eventCapacity);
+        }
+
+        // Plus ones
+        const maxPlusOnes = getFieldValue('max_plus_ones');
+        if (maxPlusOnes) {
+            params.set('max_plus_ones', maxPlusOnes);
+        }
+
+        // Custom theme settings
+        const customImageURL = getFieldValue('custom_theme_image_url');
         if (customImageURL) {
             params.set('custom_image_url', customImageURL);
         }
@@ -278,6 +360,7 @@ class ThemePicker {
             params.set('custom_color', customColor);
         }
 
+        console.log('[ThemePicker] Preview URL params:', params.toString());
         return `/api/themes/preview?${params.toString()}`;
     }
 
