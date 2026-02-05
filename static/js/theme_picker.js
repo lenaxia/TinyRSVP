@@ -324,7 +324,6 @@ class ThemePicker {
             card.classList.add('selected');
             card.setAttribute('aria-checked', 'true');
             card.setAttribute('tabindex', '0');
-            card.focus();
         }
 
         if (this.hiddenInput) {
@@ -338,8 +337,15 @@ class ThemePicker {
         this.announceSelection(card);
         
         // Automatically switch to design mode when a theme is selected
+        // Remove focus before hiding gallery to avoid aria-hidden conflict
         if (this.currentMode === 'gallery' && this.designContainer) {
+            if (document.activeElement && document.activeElement.closest('.theme-gallery')) {
+                document.activeElement.blur();
+            }
             this.switchMode('design');
+        } else if (card) {
+            // Only focus card if staying in gallery mode
+            card.focus();
         }
     }
 
