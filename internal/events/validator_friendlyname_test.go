@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/lenaxia/tinyrsvp/internal/models"
+	"github.com/lenaxia/tinyrsvp/internal/testutil"
 )
 
 func TestValidator_ValidateFriendlyName(t *testing.T) {
@@ -26,17 +27,17 @@ func TestValidator_ValidateFriendlyName(t *testing.T) {
 	}{
 		{
 			name:         "valid friendly name",
-			friendlyName: stringPtr("summer-party-2026"),
+			friendlyName: testutil.StringPtr("summer-party-2026"),
 			wantErr:      false,
 		},
 		{
 			name:         "valid with numbers",
-			friendlyName: stringPtr("event-123"),
+			friendlyName: testutil.StringPtr("event-123"),
 			wantErr:      false,
 		},
 		{
 			name:         "valid all lowercase",
-			friendlyName: stringPtr("myevent"),
+			friendlyName: testutil.StringPtr("myevent"),
 			wantErr:      false,
 		},
 		{
@@ -46,61 +47,61 @@ func TestValidator_ValidateFriendlyName(t *testing.T) {
 		},
 		{
 			name:         "too short",
-			friendlyName: stringPtr("ab"),
+			friendlyName: testutil.StringPtr("ab"),
 			wantErr:      true,
 			errMessage:   "must be between 3 and 100 characters",
 		},
 		{
 			name:         "too long",
-			friendlyName: stringPtr("a" + string(make([]byte, 100))),
+			friendlyName: testutil.StringPtr("a" + string(make([]byte, 100))),
 			wantErr:      true,
 			errMessage:   "must be between 3 and 100 characters",
 		},
 		{
 			name:         "contains uppercase",
-			friendlyName: stringPtr("Summer-Party"),
+			friendlyName: testutil.StringPtr("Summer-Party"),
 			wantErr:      true,
 			errMessage:   "must be lowercase",
 		},
 		{
 			name:         "contains spaces",
-			friendlyName: stringPtr("summer party"),
+			friendlyName: testutil.StringPtr("summer party"),
 			wantErr:      true,
 			errMessage:   "can only contain lowercase letters, numbers, and hyphens",
 		},
 		{
 			name:         "contains special characters",
-			friendlyName: stringPtr("summer_party"),
+			friendlyName: testutil.StringPtr("summer_party"),
 			wantErr:      true,
 			errMessage:   "can only contain lowercase letters, numbers, and hyphens",
 		},
 		{
 			name:         "starts with hyphen",
-			friendlyName: stringPtr("-summer-party"),
+			friendlyName: testutil.StringPtr("-summer-party"),
 			wantErr:      true,
 			errMessage:   "cannot start or end with a hyphen",
 		},
 		{
 			name:         "ends with hyphen",
-			friendlyName: stringPtr("summer-party-"),
+			friendlyName: testutil.StringPtr("summer-party-"),
 			wantErr:      true,
 			errMessage:   "cannot start or end with a hyphen",
 		},
 		{
 			name:         "consecutive hyphens",
-			friendlyName: stringPtr("summer--party"),
+			friendlyName: testutil.StringPtr("summer--party"),
 			wantErr:      true,
 			errMessage:   "cannot contain consecutive hyphens",
 		},
 		{
 			name:         "leading whitespace",
-			friendlyName: stringPtr(" summer-party"),
+			friendlyName: testutil.StringPtr(" summer-party"),
 			wantErr:      true,
 			errMessage:   "cannot have leading or trailing whitespace",
 		},
 		{
 			name:         "trailing whitespace",
-			friendlyName: stringPtr("summer-party "),
+			friendlyName: testutil.StringPtr("summer-party "),
 			wantErr:      true,
 			errMessage:   "cannot have leading or trailing whitespace",
 		},
@@ -160,12 +161,12 @@ func TestValidator_ValidateFriendlyName_InUpdate(t *testing.T) {
 	}{
 		{
 			name:         "valid friendly name in update",
-			friendlyName: stringPtr("updated-event-name"),
+			friendlyName: testutil.StringPtr("updated-event-name"),
 			wantErr:      false,
 		},
 		{
 			name:         "invalid friendly name in update",
-			friendlyName: stringPtr("Invalid-Name"),
+			friendlyName: testutil.StringPtr("Invalid-Name"),
 			wantErr:      true,
 		},
 		{

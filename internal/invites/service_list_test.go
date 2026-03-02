@@ -7,6 +7,7 @@ import (
 
 	"github.com/lenaxia/tinyrsvp/internal/db/repositories"
 	"github.com/lenaxia/tinyrsvp/internal/models"
+	"github.com/lenaxia/tinyrsvp/internal/testutil"
 )
 
 func TestInviteService_ListInvites(t *testing.T) {
@@ -31,8 +32,8 @@ func TestInviteService_ListInvites(t *testing.T) {
 		invite := &models.Invite{
 			ID:          int64(i + 1),
 			EventID:     eventID,
-			Email:       stringPtr("user" + string(rune('0'+i)) + "@example.com"),
-			Name:        stringPtr("User " + string(rune('A'+i))),
+			Email:       testutil.StringPtr("user" + string(rune('0'+i)) + "@example.com"),
+			Name:        testutil.StringPtr("User " + string(rune('A'+i))),
 			TokenHash:   "hash" + string(rune('0'+i)),
 			MaxPlusOnes: 2,
 			Status:      status,
@@ -82,7 +83,7 @@ func TestInviteService_ListInvites(t *testing.T) {
 			name: "list with status filter",
 			req: &ListInvitesRequest{
 				EventID: eventID,
-				Status:  stringPtr("draft"),
+				Status:  testutil.StringPtr("draft"),
 				Limit:   50,
 				Offset:  0,
 			},
@@ -93,7 +94,7 @@ func TestInviteService_ListInvites(t *testing.T) {
 			name: "list with search",
 			req: &ListInvitesRequest{
 				EventID: eventID,
-				Search:  stringPtr("User A"),
+				Search:  testutil.StringPtr("User A"),
 				Limit:   50,
 				Offset:  0,
 			},
@@ -148,7 +149,7 @@ func TestInviteService_ListInvites_InvalidStatus(t *testing.T) {
 
 	req := &ListInvitesRequest{
 		EventID: 1,
-		Status:  stringPtr("invalid_status"),
+		Status:  testutil.StringPtr("invalid_status"),
 		Limit:   50,
 		Offset:  0,
 	}
@@ -171,7 +172,7 @@ func TestInviteService_ListInvites_InvalidSortBy(t *testing.T) {
 
 	req := &ListInvitesRequest{
 		EventID: 1,
-		SortBy:  stringPtr("invalid_field"),
+		SortBy:  testutil.StringPtr("invalid_field"),
 		Limit:   50,
 		Offset:  0,
 	}
@@ -194,7 +195,7 @@ func TestInviteService_ListInvites_InvalidSortOrder(t *testing.T) {
 
 	req := &ListInvitesRequest{
 		EventID:   1,
-		SortOrder: stringPtr("invalid_order"),
+		SortOrder: testutil.StringPtr("invalid_order"),
 		Limit:     50,
 		Offset:    0,
 	}
@@ -277,8 +278,8 @@ func TestInviteService_ListInvites_DefaultValues(t *testing.T) {
 		invite := &models.Invite{
 			ID:          int64(i + 1),
 			EventID:     eventID,
-			Email:       stringPtr("user" + string(rune('0'+i)) + "@example.com"),
-			Name:        stringPtr("User " + string(rune('A'+i))),
+			Email:       testutil.StringPtr("user" + string(rune('0'+i)) + "@example.com"),
+			Name:        testutil.StringPtr("User " + string(rune('A'+i))),
 			TokenHash:   "hash" + string(rune('0'+i)),
 			MaxPlusOnes: 2,
 			Status:      models.InviteStatusDraft,
@@ -376,8 +377,8 @@ func TestInviteService_ListInvites_SortBySentAt(t *testing.T) {
 	invite1 := &models.Invite{
 		ID:          1,
 		EventID:     eventID,
-		Email:       stringPtr("user1@example.com"),
-		Name:        stringPtr("User 1"),
+		Email:       testutil.StringPtr("user1@example.com"),
+		Name:        testutil.StringPtr("User 1"),
 		TokenHash:   "hash1",
 		MaxPlusOnes: 2,
 		Status:      models.InviteStatusSent,
@@ -389,8 +390,8 @@ func TestInviteService_ListInvites_SortBySentAt(t *testing.T) {
 	invite2 := &models.Invite{
 		ID:          2,
 		EventID:     eventID,
-		Email:       stringPtr("user2@example.com"),
-		Name:        stringPtr("User 2"),
+		Email:       testutil.StringPtr("user2@example.com"),
+		Name:        testutil.StringPtr("User 2"),
 		TokenHash:   "hash2",
 		MaxPlusOnes: 2,
 		Status:      models.InviteStatusSent,
@@ -446,8 +447,8 @@ func TestInviteService_ListInvites_SortByViewedAt(t *testing.T) {
 	invite1 := &models.Invite{
 		ID:          1,
 		EventID:     eventID,
-		Email:       stringPtr("user1@example.com"),
-		Name:        stringPtr("User 1"),
+		Email:       testutil.StringPtr("user1@example.com"),
+		Name:        testutil.StringPtr("User 1"),
 		TokenHash:   "hash1",
 		MaxPlusOnes: 2,
 		Status:      models.InviteStatusViewed,
@@ -459,8 +460,8 @@ func TestInviteService_ListInvites_SortByViewedAt(t *testing.T) {
 	invite2 := &models.Invite{
 		ID:          2,
 		EventID:     eventID,
-		Email:       stringPtr("user2@example.com"),
-		Name:        stringPtr("User 2"),
+		Email:       testutil.StringPtr("user2@example.com"),
+		Name:        testutil.StringPtr("User 2"),
 		TokenHash:   "hash2",
 		MaxPlusOnes: 2,
 		Status:      models.InviteStatusViewed,
@@ -524,8 +525,8 @@ func TestInviteService_ListInvites_StatisticsAccuracy(t *testing.T) {
 		invite := &models.Invite{
 			ID:          int64(i + 1),
 			EventID:     eventID,
-			Email:       stringPtr("user" + string(rune('0'+i)) + "@example.com"),
-			Name:        stringPtr("User " + string(rune('A'+i))),
+			Email:       testutil.StringPtr("user" + string(rune('0'+i)) + "@example.com"),
+			Name:        testutil.StringPtr("User " + string(rune('A'+i))),
 			TokenHash:   "hash" + string(rune('0'+i)),
 			MaxPlusOnes: 2,
 			Status:      status,

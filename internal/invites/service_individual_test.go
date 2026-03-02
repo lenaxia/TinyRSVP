@@ -8,6 +8,7 @@ import (
 
 	"github.com/lenaxia/tinyrsvp/internal/db/repositories"
 	"github.com/lenaxia/tinyrsvp/internal/models"
+	"github.com/lenaxia/tinyrsvp/internal/testutil"
 )
 
 type mockEventRepository struct {
@@ -116,7 +117,7 @@ func TestCreateIndividualInvite_Success(t *testing.T) {
 	req := &CreateIndividualInviteRequest{
 		EventID: 1,
 		Email:   "guest@example.com",
-		Name:    stringPtr("John Doe"),
+		Name:    testutil.StringPtr("John Doe"),
 	}
 
 	resp, err := service.CreateIndividualInvite(ctx, user, req)
@@ -565,8 +566,4 @@ func TestCreateIndividualInvite_MaxPlusOnesExceeded(t *testing.T) {
 	if !errors.As(err, &validationErr) {
 		t.Errorf("Expected ValidationError, got %T", err)
 	}
-}
-
-func stringPtr(s string) *string {
-	return &s
 }

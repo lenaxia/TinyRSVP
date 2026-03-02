@@ -885,6 +885,70 @@ func TestInviteTokenGeneration(t *testing.T) {
 }
 ```
 
+### Using Generated Mocks
+
+All major interfaces have generated mocks in `internal/testutil/mocks/`. **Always use generated mocks in handler and service tests.**
+
+```go
+import (
+    mocksvcs "github.com/lenaxia/tinyrsvp/internal/testutil/mocks/services"
+    mockrepos "github.com/lenaxia/tinyrsvp/internal/testutil/mocks/repositories"
+    "go.uber.org/mock/gomock"
+)
+
+func TestMyHandler(t *testing.T) {
+    ctrl := gomock.NewController(t)
+    defer ctrl.Finish()
+
+    mockSvc := mocksvcs.NewMockInviteService(ctrl)
+    mockSvc.EXPECT().
+        GetInviteByID(gomock.Any(), int64(1)).
+        Return(&models.Invite{ID: 1}, nil)
+
+    handler := NewMyHandler(mockSvc)
+    // ... test
+}
+```
+
+**Regenerate mocks after any interface change:**
+```bash
+./scripts/generate_mocks.sh
+```
+
+**When gomock cannot be used** (import cycle — e.g., `internal/auth/*_test.go`, `internal/events/*_test.go`), use the func-field pattern:
+```go
+type mockRepo struct {
+    getByIDFunc func(ctx context.Context, id int64) (*models.Event, error)
+}
+func (m *mockRepo) GetByID(ctx context.Context, id int64) (*models.Event, error) {
+    if m.getByIDFunc != nil { return m.getByIDFunc(ctx, id) }
+    return nil, nil
+}
+```
+
+**Full testing guide:** [`docs/TESTING.md`](docs/TESTING.md)
+
+### Test Utilities
+
+Use `internal/testutil` for common operations — **do not duplicate** pointer helpers or DB setup:
+
+```go
+import "github.com/lenaxia/tinyrsvp/internal/testutil"
+
+// Pointer helpers (replaces local stringPtr/intPtr/etc.)
+email := testutil.StringPtr("test@example.com")
+cap   := testutil.IntPtr(50)
+
+// Auth contexts
+ctx := testutil.CreateAdminContext()
+
+// Real DB (for repository integration tests)
+db := testutil.SetupTestDBWithMigrations(t, "../../migrations/sqlite")
+user := testutil.CreateTestUser(t, db, models.RoleAdmin)
+```
+
+> **Import cycle note:** `internal/db`, `internal/auth`, and `internal/models` packages cannot import `testutil`. Use local helpers in those packages.
+
 ### Test Organization
 
 ```

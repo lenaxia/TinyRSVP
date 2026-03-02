@@ -7,15 +7,8 @@ import (
 	"time"
 
 	"github.com/lenaxia/tinyrsvp/internal/models"
+	"github.com/lenaxia/tinyrsvp/internal/testutil"
 )
-
-func timePtr(t time.Time) *time.Time {
-	return &t
-}
-
-func stringPtr(s string) *string {
-	return &s
-}
 
 func TestEventValidator_ValidateCreate(t *testing.T) {
 	tests := []struct {
@@ -38,13 +31,13 @@ func TestEventValidator_ValidateCreate(t *testing.T) {
 			name: "valid event with all fields",
 			event: &models.Event{
 				Title:        "Conference",
-				Description:  stringPtr("Annual tech conference"),
+				Description:  testutil.StringPtr("Annual tech conference"),
 				StartTime:    time.Now().Add(48 * time.Hour),
-				EndTime:      timePtr(time.Now().Add(50 * time.Hour)),
+				EndTime:      testutil.TimePtr(time.Now().Add(50 * time.Hour)),
 				Timezone:     "America/New_York",
-				Location:     stringPtr("Convention Center"),
+				Location:     testutil.StringPtr("Convention Center"),
 				MaxPlusOnes:  5,
-				RSVPDeadline: timePtr(time.Now().Add(24 * time.Hour)),
+				RSVPDeadline: testutil.TimePtr(time.Now().Add(24 * time.Hour)),
 			},
 			wantErr: false,
 		},
@@ -102,7 +95,7 @@ func TestEventValidator_ValidateCreate(t *testing.T) {
 			name: "description too long",
 			event: &models.Event{
 				Title:       "Event",
-				Description: stringPtr(strings.Repeat("A", 5001)),
+				Description: testutil.StringPtr(strings.Repeat("A", 5001)),
 				StartTime:   time.Now().Add(24 * time.Hour),
 				Timezone:    "America/Los_Angeles",
 			},
@@ -153,7 +146,7 @@ func TestEventValidator_ValidateCreate(t *testing.T) {
 			event: &models.Event{
 				Title:     "Event",
 				StartTime: time.Now().Add(24 * time.Hour),
-				EndTime:   timePtr(time.Now().Add(12 * time.Hour)),
+				EndTime:   testutil.TimePtr(time.Now().Add(12 * time.Hour)),
 				Timezone:  "America/Los_Angeles",
 			},
 			wantErr: true,
@@ -166,7 +159,7 @@ func TestEventValidator_ValidateCreate(t *testing.T) {
 				return &models.Event{
 					Title:     "Event",
 					StartTime: startTime,
-					EndTime:   timePtr(startTime),
+					EndTime:   testutil.TimePtr(startTime),
 					Timezone:  "America/Los_Angeles",
 				}
 			}(),
@@ -178,7 +171,7 @@ func TestEventValidator_ValidateCreate(t *testing.T) {
 			event: &models.Event{
 				Title:     "Event",
 				StartTime: time.Now().Add(24 * time.Hour),
-				EndTime:   timePtr(time.Now().Add(24*time.Hour + 8*24*time.Hour)),
+				EndTime:   testutil.TimePtr(time.Now().Add(24*time.Hour + 8*24*time.Hour)),
 				Timezone:  "America/Los_Angeles",
 			},
 			wantErr: true,
@@ -191,7 +184,7 @@ func TestEventValidator_ValidateCreate(t *testing.T) {
 				return &models.Event{
 					Title:     "Event",
 					StartTime: startTime,
-					EndTime:   timePtr(startTime.Add(7 * 24 * time.Hour)),
+					EndTime:   testutil.TimePtr(startTime.Add(7 * 24 * time.Hour)),
 					Timezone:  "America/Los_Angeles",
 				}
 			}(),
@@ -202,7 +195,7 @@ func TestEventValidator_ValidateCreate(t *testing.T) {
 			event: &models.Event{
 				Title:        "Event",
 				StartTime:    time.Now().Add(24 * time.Hour),
-				RSVPDeadline: timePtr(time.Now().Add(48 * time.Hour)),
+				RSVPDeadline: testutil.TimePtr(time.Now().Add(48 * time.Hour)),
 				Timezone:     "America/Los_Angeles",
 			},
 			wantErr: true,
@@ -213,7 +206,7 @@ func TestEventValidator_ValidateCreate(t *testing.T) {
 			event: &models.Event{
 				Title:        "Event",
 				StartTime:    time.Now().Add(24 * time.Hour),
-				RSVPDeadline: timePtr(time.Now().Add(24 * time.Hour)),
+				RSVPDeadline: testutil.TimePtr(time.Now().Add(24 * time.Hour)),
 				Timezone:     "America/Los_Angeles",
 			},
 			wantErr: true,
@@ -224,7 +217,7 @@ func TestEventValidator_ValidateCreate(t *testing.T) {
 			event: &models.Event{
 				Title:        "Event",
 				StartTime:    time.Now().Add(24 * time.Hour),
-				RSVPDeadline: timePtr(time.Now().Add(-1 * time.Hour)),
+				RSVPDeadline: testutil.TimePtr(time.Now().Add(-1 * time.Hour)),
 				Timezone:     "America/Los_Angeles",
 			},
 			wantErr: true,
@@ -278,7 +271,7 @@ func TestEventValidator_ValidateCreate(t *testing.T) {
 				Title:     "Event",
 				StartTime: time.Now().Add(24 * time.Hour),
 				Timezone:  "America/Los_Angeles",
-				Location:  stringPtr(strings.Repeat("A", 501)),
+				Location:  testutil.StringPtr(strings.Repeat("A", 501)),
 			},
 			wantErr: true,
 			errMsg:  "location cannot exceed 500 characters",
@@ -289,7 +282,7 @@ func TestEventValidator_ValidateCreate(t *testing.T) {
 				Title:     "Event",
 				StartTime: time.Now().Add(24 * time.Hour),
 				Timezone:  "America/Los_Angeles",
-				Location:  stringPtr(strings.Repeat("A", 500)),
+				Location:  testutil.StringPtr(strings.Repeat("A", 500)),
 			},
 			wantErr: false,
 		},
@@ -446,11 +439,11 @@ func TestEventValidator_ValidateUpdate(t *testing.T) {
 			name: "valid published event update non-date fields",
 			event: &models.Event{
 				Title:       "Updated Title",
-				Description: stringPtr("Updated description"),
+				Description: testutil.StringPtr("Updated description"),
 				StartTime:   time.Now().Add(48 * time.Hour),
 				Timezone:    "America/Los_Angeles",
 				Status:      models.EventStatusPublished,
-				Location:    stringPtr("New Location"),
+				Location:    testutil.StringPtr("New Location"),
 				MaxPlusOnes: 5,
 			},
 			wantErr: false,

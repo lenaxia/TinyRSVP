@@ -5,6 +5,8 @@ import (
 	"net/http/httptest"
 	"strings"
 	"testing"
+
+	"github.com/lenaxia/tinyrsvp/internal/testutil"
 )
 
 func TestSecurityHeaders_Integration(t *testing.T) {
@@ -42,7 +44,7 @@ func TestSecurityHeaders_Integration(t *testing.T) {
 		{
 			name: "custom security config",
 			config: &SecurityHeadersConfig{
-				HSTSMaxAge:            intPtr(63072000),
+				HSTSMaxAge:            testutil.IntPtr(63072000),
 				HSTSIncludeSubDomains: true,
 				HSTSPreload:           true,
 				XFrameOptions:         "SAMEORIGIN",
@@ -87,7 +89,7 @@ func TestSecurityHeaders_Integration(t *testing.T) {
 
 func TestSecurityHeaders_WithFullMiddlewareChain(t *testing.T) {
 	config := &SecurityHeadersConfig{
-		HSTSMaxAge:            intPtr(31536000),
+		HSTSMaxAge:            testutil.IntPtr(31536000),
 		HSTSIncludeSubDomains: true,
 	}
 

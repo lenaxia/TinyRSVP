@@ -7,6 +7,7 @@ import (
 
 	"github.com/lenaxia/tinyrsvp/internal/db/repositories"
 	"github.com/lenaxia/tinyrsvp/internal/models"
+	"github.com/lenaxia/tinyrsvp/internal/testutil"
 )
 
 type mockUpdateInviteRepo struct {
@@ -83,8 +84,8 @@ func TestUpdateInvite_Success(t *testing.T) {
 	invite := &models.Invite{
 		ID:          1,
 		EventID:     100,
-		Email:       stringPtr("test@example.com"),
-		Name:        stringPtr("Test User"),
+		Email:       testutil.StringPtr("test@example.com"),
+		Name:        testutil.StringPtr("Test User"),
 		TokenHash:   "dGVzdF90b2tlbl9oYXNoXzEyMzQ1Njc4OTBhYmNkZWZnaGlqa2xtbm9wcXJzdHV2d3h5eg==",
 		MaxPlusOnes: 2,
 		Status:      models.InviteStatusDraft,
@@ -108,8 +109,8 @@ func TestUpdateInvite_Success(t *testing.T) {
 
 	req := &UpdateInviteRequest{
 		InviteID:    1,
-		Name:        stringPtr("Updated Name"),
-		MaxPlusOnes: intPtr(3),
+		Name:        testutil.StringPtr("Updated Name"),
+		MaxPlusOnes: testutil.IntPtr(3),
 	}
 
 	err := service.UpdateInvite(context.Background(), req)
@@ -131,7 +132,7 @@ func TestUpdateInvite_NotFound(t *testing.T) {
 
 	req := &UpdateInviteRequest{
 		InviteID: 999,
-		Name:     stringPtr("Updated Name"),
+		Name:     testutil.StringPtr("Updated Name"),
 	}
 
 	err := service.UpdateInvite(context.Background(), req)
@@ -147,8 +148,8 @@ func TestUpdateInvite_CannotUpdateResponded(t *testing.T) {
 	invite := &models.Invite{
 		ID:          1,
 		EventID:     100,
-		Email:       stringPtr("test@example.com"),
-		Name:        stringPtr("Test User"),
+		Email:       testutil.StringPtr("test@example.com"),
+		Name:        testutil.StringPtr("Test User"),
 		TokenHash:   "dGVzdF90b2tlbl9oYXNoXzEyMzQ1Njc4OTBhYmNkZWZnaGlqa2xtbm9wcXJzdHV2d3h5eg==",
 		MaxPlusOnes: 2,
 		Status:      models.InviteStatusResponded,
@@ -169,7 +170,7 @@ func TestUpdateInvite_CannotUpdateResponded(t *testing.T) {
 
 	req := &UpdateInviteRequest{
 		InviteID: 1,
-		Name:     stringPtr("Updated Name"),
+		Name:     testutil.StringPtr("Updated Name"),
 	}
 
 	err := service.UpdateInvite(context.Background(), req)
@@ -185,8 +186,8 @@ func TestUpdateInvite_CannotUpdateRevoked(t *testing.T) {
 	invite := &models.Invite{
 		ID:          1,
 		EventID:     100,
-		Email:       stringPtr("test@example.com"),
-		Name:        stringPtr("Test User"),
+		Email:       testutil.StringPtr("test@example.com"),
+		Name:        testutil.StringPtr("Test User"),
 		TokenHash:   "dGVzdF90b2tlbl9oYXNoXzEyMzQ1Njc4OTBhYmNkZWZnaGlqa2xtbm9wcXJzdHV2d3h5eg==",
 		MaxPlusOnes: 2,
 		Status:      models.InviteStatusRevoked,
@@ -207,15 +208,11 @@ func TestUpdateInvite_CannotUpdateRevoked(t *testing.T) {
 
 	req := &UpdateInviteRequest{
 		InviteID: 1,
-		Name:     stringPtr("Updated Name"),
+		Name:     testutil.StringPtr("Updated Name"),
 	}
 
 	err := service.UpdateInvite(context.Background(), req)
 	if err == nil {
 		t.Error("Expected error for revoked invite, got nil")
 	}
-}
-
-func intPtr(i int) *int {
-	return &i
 }

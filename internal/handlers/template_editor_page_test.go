@@ -11,6 +11,7 @@ import (
 	"github.com/lenaxia/tinyrsvp/internal/auth"
 	"github.com/lenaxia/tinyrsvp/internal/models"
 	"github.com/lenaxia/tinyrsvp/internal/templates"
+	"github.com/lenaxia/tinyrsvp/internal/testutil"
 )
 
 type mockEditorPageService struct {
@@ -72,8 +73,8 @@ func TestGetEditorPage_Success(t *testing.T) {
 				Visible: true,
 				Position: models.Position{
 					Mode: models.PositionModeAbsolute,
-					X:    stringPtr("50%"),
-					Y:    stringPtr("200px"),
+					X:    testutil.StringPtr("50%"),
+					Y:    testutil.StringPtr("200px"),
 				},
 				Dimensions: models.Dimensions{
 					Width:  "80%",

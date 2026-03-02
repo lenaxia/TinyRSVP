@@ -15,6 +15,7 @@ import (
 	"github.com/lenaxia/tinyrsvp/internal/db/repositories"
 	"github.com/lenaxia/tinyrsvp/internal/invites"
 	"github.com/lenaxia/tinyrsvp/internal/models"
+	"github.com/lenaxia/tinyrsvp/internal/testutil"
 	"github.com/lenaxia/tinyrsvp/pkg/token"
 )
 
@@ -55,8 +56,8 @@ func TestInviteCRUDIntegration(t *testing.T) {
 	endTime := time.Now().Add(31 * 24 * time.Hour)
 	event := &models.Event{
 		Title:       "Test Event",
-		Description: stringPtr("Test Description"),
-		Location:    stringPtr("Test Location"),
+		Description: testutil.StringPtr("Test Description"),
+		Location:    testutil.StringPtr("Test Location"),
 		StartTime:   time.Now().Add(30 * 24 * time.Hour),
 		EndTime:     &endTime,
 		Timezone:    "America/Los_Angeles",
@@ -77,7 +78,7 @@ func TestInviteCRUDIntegration(t *testing.T) {
 	sendHandler := NewSendInviteHandlers(inviteService, eventRepo, emailQueueRepo, "https://rsvp.example.com")
 
 	email := "test@example.com"
-	invite, plainToken, err := inviteService.CreateInvite(ctx, event.ID, stringPtr("Test User"), &email, 2, time.Now().Add(30*24*time.Hour))
+	invite, plainToken, err := inviteService.CreateInvite(ctx, event.ID, testutil.StringPtr("Test User"), &email, 2, time.Now().Add(30*24*time.Hour))
 	if err != nil {
 		t.Fatalf("Failed to create invite: %v", err)
 	}
@@ -176,7 +177,7 @@ func TestInviteCRUDIntegration(t *testing.T) {
 	})
 
 	t.Run("DELETE /api/invites/{id}", func(t *testing.T) {
-		deleteInvite, _, err := inviteService.CreateInvite(ctx, event.ID, stringPtr("Delete Test"), &email, 2, time.Now().Add(30*24*time.Hour))
+		deleteInvite, _, err := inviteService.CreateInvite(ctx, event.ID, testutil.StringPtr("Delete Test"), &email, 2, time.Now().Add(30*24*time.Hour))
 		if err != nil {
 			t.Fatalf("Failed to create invite for deletion: %v", err)
 		}

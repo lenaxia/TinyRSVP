@@ -24,37 +24,22 @@ deadline := testutil.TimePtr(time.Now().Add(24 * time.Hour))
 
 ## Contents
 
-- **Pointer Helpers**: `StringPtr()`, `IntPtr()`, etc. (Story 02) ✅
-- **Database Helpers**: `SetupTestDB()`, `CreateTestUser()`, etc. (Story 03) ✅
-- **Context Helpers**: `CreateAdminContext()`, etc. (Story 04) ✅
-- **Generated Mocks**: `mocks/mock_*.go` (Stories 06-08)
-- **Test Builders**: `builders/*_builder.go` (Story 18)
-- **HTTP Helpers**: Request/response builders (Story 19)
-- **Fixtures**: Load test data from JSON (Story 20)
+- **Pointer Helpers**: `StringPtr()`, `IntPtr()`, `Int64Ptr()`, `BoolPtr()`, `TimePtr()`, `Float64Ptr()` ✅
+- **Database Helpers**: `SetupTestDB()`, `SetupTestDBWithMigrations()`, `CreateTestUser()`, `CreateTestEvent()`, `CreateTestInvite()` ✅
+- **Context Helpers**: `CreateAdminContext()`, `CreateEventManagerContext()`, `CreateAnonymousContext()`, `CreateTestContext()` ✅
+- **Generated Mocks**: 30 mocks across `mocks/repositories/`, `mocks/services/`, `mocks/other/` ✅
+- **Test Builders**: `builders/` — fluent test data builders ✅
+- **HTTP Helpers**: `http.go` — request/response builders ✅
 
-## Package Status
+## Regenerating Mocks
 
-This package is under active development as part of Epic 12: Test Infrastructure Modernization.
+After any interface change, regenerate all mocks:
 
-See [Epic 12](../../docs/00_BACKLOG/12_EPIC_test_infrastructure.md) for details.
+```bash
+./scripts/generate_mocks.sh
+```
 
-## Utilities Available
-
-### Phase 1: Foundation (In Progress)
-- [x] Pointer helpers (Story 02) ✅
-- [x] Database helpers (Story 03) ✅
-- [x] Context helpers (Story 04) ✅
-
-### Phase 2: Mock Generation (Complete)
-- [x] Mock generation setup (Story 05) ✅
-- [x] Generated mocks for repositories (Story 06) ✅
-- [x] Generated mocks for services (Story 07) ✅
-- [x] Generated mocks for utilities (Story 08) ✅
-
-### Phase 5: Advanced Features (Planned)
-- [ ] Test data builders (Story 18)
-- [ ] HTTP test helpers (Story 19)
-- [ ] Fixture file loaders (Story 20)
+Commit the generated files alongside your interface changes.
 
 ## Usage
 
@@ -157,41 +142,43 @@ import "github.com/lenaxia/tinyrsvp/internal/testutil/mocks/services"
 import "github.com/lenaxia/tinyrsvp/internal/testutil/mocks/repositories"
 ```
 
-**Available Mocks (20 total):**
+**Available Mocks (30 total):**
 
-**Repositories (mocks/repositories/):**
-- `repositories.MockEventRepository` - Event repository (17 methods)
-- `repositories.MockInviteRepository` - Invite repository (13 methods)
-- `repositories.MockUserRepository` - User repository (12 methods)
-- `repositories.MockRSVPRepository` - RSVP repository
-- `repositories.MockTemplateRepository` - Template repository
-- `repositories.MockAnswerRepository` - Answer repository
-- `repositories.MockQuestionRepository` - Question repository
-- `repositories.MockConfigRepository` - Config repository
-- `repositories.MockSessionRepository` - Session repository
-- `repositories.MockEmailQueueRepository` - Email queue repository
+**Repositories (`mocks/repositories/`):**
+- `MockEventRepository` — 17 methods
+- `MockInviteRepository` — 13 methods
+- `MockUserRepository` — 12 methods
+- `MockRSVPRepository`
+- `MockTemplateRepository`
+- `MockAnswerRepository`
+- `MockQuestionRepository`
+- `MockConfigRepository`
+- `MockSessionRepository`
+- `MockEmailQueueRepository`
 
-**Services (mocks/services/):**
-- `services.MockEventService` - Event service (8 methods)
-- `services.MockInviteService` - Invite service (16 methods)
-- `services.MockRSVPService` - RSVP service (2 methods)
-- `services.MockTemplateService` - Template service (11 methods)
-- `services.MockEmailService` - Email service (1 method)
+**Services (`mocks/services/`):**
+- `MockEventService`
+- `MockInviteService` — 16 methods
+- `MockRSVPService`
+- `MockTemplateService`
+- `MockEmailService`
+- `MockDashboardService`
+- `MockUserService`
+- `MockAdminDashboardService`
+- `MockUserListService`
 
-**Other (mocks/other/):**
-- `other.MockDatabase` - Database interface
-- `other.MockAuthorizationChecker` - Authorization checker
-- `other.MockEventValidator` - Event validator
-- `other.MockTemplateValidator` - Template validator
-- `other.MockProvider` - Storage provider
-- `mocks.MockRSVPService` - RSVP service interface (2 methods)
-- `mocks.MockTemplateService` - Template service interface (11 methods)
-- `mocks.MockEmailService` - Email service interface (1 method)
-
-**Validators & Utilities:**
-- `mocks.MockEventValidator` - Event validator interface
-- `mocks.MockTemplateValidator` - Template validator interface
-- `mocks.MockProvider` - Storage provider interface
+**Other (`mocks/other/`):**
+- `MockDatabase`
+- `MockUserService` (auth interface)
+- `MockSessionManager`
+- `MockAuthenticator`
+- `MockAuthorizationChecker`
+- `MockEventValidator`
+- `MockTemplateValidator`
+- `MockProvider` (storage)
+- `MockUserCounter`, `MockEventCounter`, `MockInviteCounter` (admin counters)
+- `MockSMTPSender`, `MockRateLimiter`, `MockTemplateRenderer`, `MockEmailMetrics`
+- `MockJobsEventService`
 
 **Key Features:**
 - Auto-generated from interface definitions
@@ -202,8 +189,7 @@ import "github.com/lenaxia/tinyrsvp/internal/testutil/mocks/repositories"
 **Mock Generation Workflow:**
 1. Change an interface definition
 2. Run `./scripts/generate_mocks.sh`
-3. Generated mocks in `internal/testutil/mocks/mock_*.go`
-4. Commit generated mocks with your changes
+3. Commit the regenerated files alongside your changes
 
 ### Context Helpers
 

@@ -13,11 +13,8 @@ import (
 	"github.com/lenaxia/tinyrsvp/internal/auth"
 	"github.com/lenaxia/tinyrsvp/internal/middleware"
 	"github.com/lenaxia/tinyrsvp/internal/models"
+	"github.com/lenaxia/tinyrsvp/internal/testutil"
 )
-
-func timePtr(t time.Time) *time.Time {
-	return &t
-}
 
 func TestEventWebHandlers_EditEventForm_MultiDayDisplay(t *testing.T) {
 	tests := []struct {
@@ -32,7 +29,7 @@ func TestEventWebHandlers_EditEventForm_MultiDayDisplay(t *testing.T) {
 				ID:        1,
 				Title:     "Single Day Event",
 				StartTime: time.Date(2026, 6, 15, 14, 0, 0, 0, time.UTC),
-				EndTime:   timePtr(time.Date(2026, 6, 15, 18, 0, 0, 0, time.UTC)),
+				EndTime:   testutil.TimePtr(time.Date(2026, 6, 15, 18, 0, 0, 0, time.UTC)),
 				Timezone:  "America/Los_Angeles",
 				Status:    models.EventStatusDraft,
 				CreatedBy: 1,
@@ -52,7 +49,7 @@ func TestEventWebHandlers_EditEventForm_MultiDayDisplay(t *testing.T) {
 				ID:        2,
 				Title:     "Multi Day Event",
 				StartTime: time.Date(2026, 6, 15, 14, 0, 0, 0, time.UTC),
-				EndTime:   timePtr(time.Date(2026, 6, 17, 18, 0, 0, 0, time.UTC)),
+				EndTime:   testutil.TimePtr(time.Date(2026, 6, 17, 18, 0, 0, 0, time.UTC)),
 				Timezone:  "America/Los_Angeles",
 				Status:    models.EventStatusDraft,
 				CreatedBy: 1,

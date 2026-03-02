@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/lenaxia/tinyrsvp/internal/models"
+	"github.com/lenaxia/tinyrsvp/internal/testutil"
 )
 
 func TestQuestionValidator_ValidateCreate(t *testing.T) {
@@ -32,7 +33,7 @@ func TestQuestionValidator_ValidateCreate(t *testing.T) {
 				QuestionText: "Will you attend?",
 				QuestionType: models.QuestionTypeSingleChoice,
 				Required:     true,
-				Options:      stringPtr(`["Yes", "No", "Maybe"]`),
+				Options:      testutil.StringPtr(`["Yes", "No", "Maybe"]`),
 			},
 			wantErr: false,
 		},
@@ -43,7 +44,7 @@ func TestQuestionValidator_ValidateCreate(t *testing.T) {
 				QuestionText: "Select dietary restrictions",
 				QuestionType: models.QuestionTypeMultipleChoice,
 				Required:     false,
-				Options:      stringPtr(`["Vegetarian", "Vegan", "Gluten-free", "None"]`),
+				Options:      testutil.StringPtr(`["Vegetarian", "Vegan", "Gluten-free", "None"]`),
 			},
 			wantErr: false,
 		},
@@ -152,7 +153,7 @@ func TestQuestionValidator_ValidateCreate(t *testing.T) {
 				EventID:      1,
 				QuestionText: "What is your name?",
 				QuestionType: models.QuestionTypeText,
-				Options:      stringPtr(`["Option 1", "Option 2"]`),
+				Options:      testutil.StringPtr(`["Option 1", "Option 2"]`),
 			},
 			wantErr: true,
 			errMsg:  "options not allowed for text questions",
@@ -163,7 +164,7 @@ func TestQuestionValidator_ValidateCreate(t *testing.T) {
 				EventID:      1,
 				QuestionText: "Choose one",
 				QuestionType: models.QuestionTypeSingleChoice,
-				Options:      stringPtr(`["Only one"]`),
+				Options:      testutil.StringPtr(`["Only one"]`),
 			},
 			wantErr: true,
 			errMsg:  "must have 2-10 options",
@@ -174,7 +175,7 @@ func TestQuestionValidator_ValidateCreate(t *testing.T) {
 				EventID:      1,
 				QuestionText: "Choose one",
 				QuestionType: models.QuestionTypeSingleChoice,
-				Options:      stringPtr(`["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11"]`),
+				Options:      testutil.StringPtr(`["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11"]`),
 			},
 			wantErr: true,
 			errMsg:  "must have 2-10 options",
@@ -185,7 +186,7 @@ func TestQuestionValidator_ValidateCreate(t *testing.T) {
 				EventID:      1,
 				QuestionText: "Choose one",
 				QuestionType: models.QuestionTypeSingleChoice,
-				Options:      stringPtr(`invalid json`),
+				Options:      testutil.StringPtr(`invalid json`),
 			},
 			wantErr: true,
 			errMsg:  "invalid options JSON",
@@ -196,7 +197,7 @@ func TestQuestionValidator_ValidateCreate(t *testing.T) {
 				EventID:      1,
 				QuestionText: "Choose one",
 				QuestionType: models.QuestionTypeSingleChoice,
-				Options:      stringPtr(`["", "Valid"]`),
+				Options:      testutil.StringPtr(`["", "Valid"]`),
 			},
 			wantErr: true,
 			errMsg:  "each option must be 1-200 characters",
@@ -207,7 +208,7 @@ func TestQuestionValidator_ValidateCreate(t *testing.T) {
 				EventID:      1,
 				QuestionText: "Choose one",
 				QuestionType: models.QuestionTypeSingleChoice,
-				Options:      stringPtr(`["Valid", "` + strings.Repeat("a", 201) + `"]`),
+				Options:      testutil.StringPtr(`["Valid", "` + strings.Repeat("a", 201) + `"]`),
 			},
 			wantErr: true,
 			errMsg:  "each option must be 1-200 characters",
@@ -218,7 +219,7 @@ func TestQuestionValidator_ValidateCreate(t *testing.T) {
 				EventID:      1,
 				QuestionText: "Choose one",
 				QuestionType: models.QuestionTypeSingleChoice,
-				Options:      stringPtr(`["Option 1", "Option 1"]`),
+				Options:      testutil.StringPtr(`["Option 1", "Option 1"]`),
 			},
 			wantErr: true,
 			errMsg:  "duplicate options not allowed",

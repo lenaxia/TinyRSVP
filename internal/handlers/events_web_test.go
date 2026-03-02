@@ -15,6 +15,7 @@ import (
 	"github.com/lenaxia/tinyrsvp/internal/events"
 	"github.com/lenaxia/tinyrsvp/internal/middleware"
 	"github.com/lenaxia/tinyrsvp/internal/models"
+	"github.com/lenaxia/tinyrsvp/internal/testutil"
 )
 
 func TestNewEventWebHandlers(t *testing.T) {
@@ -1172,8 +1173,8 @@ func TestEventWebHandlers_FormDataParsing(t *testing.T) {
 				"max_plus_ones": []string{"2"},
 			},
 			wantTitle: "Test Event",
-			wantDesc:  stringPtr("Test Description"),
-			wantLoc:   stringPtr("Test Location"),
+			wantDesc:  testutil.StringPtr("Test Description"),
+			wantLoc:   testutil.StringPtr("Test Location"),
 			wantMaxPO: 2,
 			wantErr:   false,
 		},
@@ -1251,8 +1252,4 @@ func TestEventWebHandlers_FormDataParsing(t *testing.T) {
 			}
 		})
 	}
-}
-
-func stringPtr(s string) *string {
-	return &s
 }

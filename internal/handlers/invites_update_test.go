@@ -14,6 +14,7 @@ import (
 	"github.com/lenaxia/tinyrsvp/internal/auth"
 	"github.com/lenaxia/tinyrsvp/internal/invites"
 	"github.com/lenaxia/tinyrsvp/internal/models"
+	"github.com/lenaxia/tinyrsvp/internal/testutil"
 	mockrepos "github.com/lenaxia/tinyrsvp/internal/testutil/mocks/repositories"
 	mocksvcs "github.com/lenaxia/tinyrsvp/internal/testutil/mocks/services"
 	"go.uber.org/mock/gomock"
@@ -29,8 +30,8 @@ func TestUpdateInvite_Success(t *testing.T) {
 	invite := &models.Invite{
 		ID:          1,
 		EventID:     100,
-		Email:       stringPtr("test@example.com"),
-		Name:        stringPtr("Test User"),
+		Email:       testutil.StringPtr("test@example.com"),
+		Name:        testutil.StringPtr("Test User"),
 		MaxPlusOnes: 2,
 		Status:      models.InviteStatusDraft,
 		ExpiresAt:   expiresAt,
@@ -210,8 +211,8 @@ func TestUpdateInvite_PermissionDenied(t *testing.T) {
 	invite := &models.Invite{
 		ID:          1,
 		EventID:     100,
-		Email:       stringPtr("test@example.com"),
-		Name:        stringPtr("Test User"),
+		Email:       testutil.StringPtr("test@example.com"),
+		Name:        testutil.StringPtr("Test User"),
 		MaxPlusOnes: 2,
 		Status:      models.InviteStatusDraft,
 		ExpiresAt:   expiresAt,
@@ -260,8 +261,8 @@ func TestUpdateInvite_CannotUpdateRespondedInvite(t *testing.T) {
 	invite := &models.Invite{
 		ID:          1,
 		EventID:     100,
-		Email:       stringPtr("test@example.com"),
-		Name:        stringPtr("Test User"),
+		Email:       testutil.StringPtr("test@example.com"),
+		Name:        testutil.StringPtr("Test User"),
 		MaxPlusOnes: 2,
 		Status:      models.InviteStatusResponded,
 		ExpiresAt:   expiresAt,
@@ -311,8 +312,8 @@ func TestUpdateInvite_CannotUpdateRevokedInvite(t *testing.T) {
 	invite := &models.Invite{
 		ID:          1,
 		EventID:     100,
-		Email:       stringPtr("test@example.com"),
-		Name:        stringPtr("Test User"),
+		Email:       testutil.StringPtr("test@example.com"),
+		Name:        testutil.StringPtr("Test User"),
 		MaxPlusOnes: 2,
 		Status:      models.InviteStatusRevoked,
 		ExpiresAt:   expiresAt,

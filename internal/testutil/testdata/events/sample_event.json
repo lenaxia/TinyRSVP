@@ -1,0 +1,17 @@
+{
+  "id": 1,
+  "title": "Sample Event",
+  "start_time": "2026-06-15T14:00:00Z",
+  "timezone": "UTC",
+  "status": "draft",
+  "created_by": 1,
+  "version": 1,
+  "ics_sequence": 0,
+  "max_plus_ones": 0,
+  "allow_rsvp_after_deadline": false,
+  "allow_maybe_rsvp": false,
+  "private_guest_list": false,
+  "family_headcount": false,
+  "created_at": "2026-01-01T00:00:00Z",
+  "updated_at": "2026-01-01T00:00:00Z"
+}

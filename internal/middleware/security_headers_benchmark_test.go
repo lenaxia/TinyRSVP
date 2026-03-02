@@ -5,6 +5,8 @@ import (
 	"net/http/httptest"
 	"strings"
 	"testing"
+
+	"github.com/lenaxia/tinyrsvp/internal/testutil"
 )
 
 func BenchmarkSecurityHeaders(b *testing.B) {
@@ -25,7 +27,7 @@ func BenchmarkSecurityHeaders(b *testing.B) {
 
 func BenchmarkSecurityHeaders_CustomConfig(b *testing.B) {
 	config := &SecurityHeadersConfig{
-		HSTSMaxAge:            intPtr(63072000),
+		HSTSMaxAge:            testutil.IntPtr(63072000),
 		HSTSIncludeSubDomains: true,
 		HSTSPreload:           true,
 		CSPDefaultSrc:         []string{"'self'", "https://cdn.example.com"},
@@ -86,7 +88,7 @@ func BenchmarkBuildCSP(b *testing.B) {
 
 func BenchmarkBuildHSTS(b *testing.B) {
 	config := &SecurityHeadersConfig{
-		HSTSMaxAge:            intPtr(31536000),
+		HSTSMaxAge:            testutil.IntPtr(31536000),
 		HSTSIncludeSubDomains: true,
 		HSTSPreload:           true,
 	}

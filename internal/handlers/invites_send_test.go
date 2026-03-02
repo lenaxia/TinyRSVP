@@ -13,6 +13,7 @@ import (
 	"github.com/lenaxia/tinyrsvp/internal/auth"
 	"github.com/lenaxia/tinyrsvp/internal/db/repositories"
 	"github.com/lenaxia/tinyrsvp/internal/models"
+	"github.com/lenaxia/tinyrsvp/internal/testutil"
 	mockrepos "github.com/lenaxia/tinyrsvp/internal/testutil/mocks/repositories"
 	mocksvcs "github.com/lenaxia/tinyrsvp/internal/testutil/mocks/services"
 	"go.uber.org/mock/gomock"
@@ -30,7 +31,7 @@ func TestSendInvite_Success(t *testing.T) {
 		ID:          1,
 		EventID:     100,
 		Email:       &email,
-		Name:        stringPtr("Test User"),
+		Name:        testutil.StringPtr("Test User"),
 		TokenHash:   "dGVzdF90b2tlbl9oYXNoXzEyMzQ1Njc4OTBhYmNkZWZnaGlqa2xtbm9wcXJzdHV2d3h5eg==",
 		MaxPlusOnes: 2,
 		Status:      models.InviteStatusDraft,
@@ -178,7 +179,7 @@ func TestSendInvite_PermissionDenied(t *testing.T) {
 		ID:          1,
 		EventID:     100,
 		Email:       &email,
-		Name:        stringPtr("Test User"),
+		Name:        testutil.StringPtr("Test User"),
 		TokenHash:   "dGVzdF90b2tlbl9oYXNoXzEyMzQ1Njc4OTBhYmNkZWZnaGlqa2xtbm9wcXJzdHV2d3h5eg==",
 		MaxPlusOnes: 2,
 		Status:      models.InviteStatusDraft,
@@ -227,7 +228,7 @@ func TestSendInvite_NoEmail(t *testing.T) {
 		ID:          1,
 		EventID:     100,
 		Email:       nil,
-		Name:        stringPtr("Test User"),
+		Name:        testutil.StringPtr("Test User"),
 		TokenHash:   "dGVzdF90b2tlbl9oYXNoXzEyMzQ1Njc4OTBhYmNkZWZnaGlqa2xtbm9wcXJzdHV2d3h5eg==",
 		MaxPlusOnes: 2,
 		Status:      models.InviteStatusDraft,

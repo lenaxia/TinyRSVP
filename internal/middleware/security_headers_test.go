@@ -5,11 +5,9 @@ import (
 	"net/http/httptest"
 	"strings"
 	"testing"
-)
 
-func intPtr(i int) *int {
-	return &i
-}
+	"github.com/lenaxia/tinyrsvp/internal/testutil"
+)
 
 func TestSecurityHeaders(t *testing.T) {
 	tests := []struct {
@@ -37,7 +35,7 @@ func TestSecurityHeaders(t *testing.T) {
 		{
 			name: "custom HSTS",
 			config: &SecurityHeadersConfig{
-				HSTSMaxAge:            intPtr(63072000),
+				HSTSMaxAge:            testutil.IntPtr(63072000),
 				HSTSIncludeSubDomains: true,
 				HSTSPreload:           true,
 			},
@@ -73,7 +71,7 @@ func TestSecurityHeaders(t *testing.T) {
 		{
 			name: "custom all headers",
 			config: &SecurityHeadersConfig{
-				HSTSMaxAge:            intPtr(7776000),
+				HSTSMaxAge:            testutil.IntPtr(7776000),
 				HSTSIncludeSubDomains: false,
 				HSTSPreload:           false,
 				XFrameOptions:         "SAMEORIGIN",
@@ -93,7 +91,7 @@ func TestSecurityHeaders(t *testing.T) {
 		{
 			name: "disabled HSTS",
 			config: &SecurityHeadersConfig{
-				HSTSMaxAge: intPtr(0),
+				HSTSMaxAge: testutil.IntPtr(0),
 			},
 			expectedHSTS: "",
 			expectedCSP:  "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self'; connect-src 'self'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'",
@@ -273,14 +271,14 @@ func TestBuildHSTS(t *testing.T) {
 		{
 			name: "custom max age only",
 			config: &SecurityHeadersConfig{
-				HSTSMaxAge: intPtr(7776000),
+				HSTSMaxAge: testutil.IntPtr(7776000),
 			},
 			expected: "max-age=7776000",
 		},
 		{
 			name: "with includeSubDomains",
 			config: &SecurityHeadersConfig{
-				HSTSMaxAge:            intPtr(31536000),
+				HSTSMaxAge:            testutil.IntPtr(31536000),
 				HSTSIncludeSubDomains: true,
 			},
 			expected: "max-age=31536000; includeSubDomains",
@@ -288,7 +286,7 @@ func TestBuildHSTS(t *testing.T) {
 		{
 			name: "with preload",
 			config: &SecurityHeadersConfig{
-				HSTSMaxAge:            intPtr(31536000),
+				HSTSMaxAge:            testutil.IntPtr(31536000),
 				HSTSIncludeSubDomains: true,
 				HSTSPreload:           true,
 			},
@@ -297,7 +295,7 @@ func TestBuildHSTS(t *testing.T) {
 		{
 			name: "preload without includeSubDomains",
 			config: &SecurityHeadersConfig{
-				HSTSMaxAge:  intPtr(31536000),
+				HSTSMaxAge:  testutil.IntPtr(31536000),
 				HSTSPreload: true,
 			},
 			expected: "max-age=31536000; preload",
@@ -305,7 +303,7 @@ func TestBuildHSTS(t *testing.T) {
 		{
 			name: "zero max age disables HSTS",
 			config: &SecurityHeadersConfig{
-				HSTSMaxAge: intPtr(0),
+				HSTSMaxAge: testutil.IntPtr(0),
 			},
 			expected: "",
 		},
