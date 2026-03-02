@@ -87,17 +87,17 @@ func (m *mockInviteRepository) ListByEventID(ctx context.Context, eventID int64,
 	if m.listByEventIDFunc != nil {
 		return m.listByEventIDFunc(ctx, eventID, filters)
 	}
-	
+
 	var result []*models.Invite
 	for _, invite := range m.invites {
 		if invite.EventID != eventID {
 			continue
 		}
-		
+
 		if filters.Status != nil && invite.Status != *filters.Status {
 			continue
 		}
-		
+
 		if filters.Search != nil && *filters.Search != "" {
 			searchLower := strings.ToLower(*filters.Search)
 			emailMatch := invite.Email != nil && strings.Contains(strings.ToLower(*invite.Email), searchLower)
@@ -106,14 +106,14 @@ func (m *mockInviteRepository) ListByEventID(ctx context.Context, eventID int64,
 				continue
 			}
 		}
-		
+
 		result = append(result, invite)
 	}
-	
+
 	if filters.Limit > 0 && len(result) > filters.Limit {
 		result = result[:filters.Limit]
 	}
-	
+
 	return result, nil
 }
 
@@ -136,19 +136,19 @@ func (m *mockInviteRepository) CountByEventIDWithFilters(ctx context.Context, ev
 		if invite.EventID != eventID {
 			continue
 		}
-		
+
 		if filters.Status != nil && invite.Status != *filters.Status {
 			continue
 		}
-		
+
 		if filters.Unsubscribed != nil && invite.Unsubscribed != *filters.Unsubscribed {
 			continue
 		}
-		
+
 		if filters.EmailInvalid != nil && invite.EmailInvalid != *filters.EmailInvalid {
 			continue
 		}
-		
+
 		if filters.Search != nil && *filters.Search != "" {
 			searchLower := strings.ToLower(*filters.Search)
 			emailMatch := invite.Email != nil && strings.Contains(strings.ToLower(*invite.Email), searchLower)
@@ -157,7 +157,7 @@ func (m *mockInviteRepository) CountByEventIDWithFilters(ctx context.Context, ev
 				continue
 			}
 		}
-		
+
 		count++
 	}
 	return count, nil

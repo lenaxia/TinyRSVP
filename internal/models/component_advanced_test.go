@@ -31,9 +31,9 @@ func TestAnimationType_IsValid(t *testing.T) {
 
 func TestAnimationEasing_IsValid(t *testing.T) {
 	tests := []struct {
-		name    string
-		easing  AnimationEasing
-		want    bool
+		name   string
+		easing AnimationEasing
+		want   bool
 	}{
 		{"valid linear", AnimationEasingLinear, true},
 		{"valid ease-in", AnimationEasingEaseIn, true},
@@ -591,4 +591,3 @@ func TestComponent_WithAnimation(t *testing.T) {
 		t.Errorf("Animation type = %v, want %v", component.Animation.Type, AnimationTypeFade)
 	}
 }
-

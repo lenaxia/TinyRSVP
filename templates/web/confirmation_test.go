@@ -7,6 +7,25 @@ import (
 	"time"
 )
 
+// ConfirmationQuestion mirrors the Question sub-struct used in the template.
+type ConfirmationQuestion struct {
+	Text string
+}
+
+// ConfirmationAnswer mirrors the Answer sub-struct used in the template.
+type ConfirmationAnswer struct {
+	AnswerText   string
+	AnswerOption string
+	// Legacy field kept for tests that pass display text directly.
+	AnswerDisplay string
+}
+
+// ConfirmationAnswerWithQuestion mirrors AnswerWithQuestion used by the template.
+type ConfirmationAnswerWithQuestion struct {
+	Question ConfirmationQuestion
+	Answer   ConfirmationAnswer
+}
+
 type ConfirmationEvent struct {
 	Title       string
 	Description string
@@ -22,32 +41,15 @@ type ConfirmationRSVP struct {
 	Notes    string
 }
 
-type ConfirmationAnswer struct {
-	QuestionText  string
-	AnswerDisplay string
-}
-
 type ConfirmationData struct {
-	Event   ConfirmationEvent
-	RSVP    ConfirmationRSVP
-	Answers []ConfirmationAnswer
-	Token   string
+	Event                ConfirmationEvent
+	RSVP                 ConfirmationRSVP
+	AnswersWithQuestions []ConfirmationAnswerWithQuestion
+	Token                string
 }
 
 func getConfirmationTemplate() (*template.Template, error) {
-	return template.New("confirmation.html").Funcs(template.FuncMap{
-		"lower": strings.ToLower,
-		"upper": strings.ToUpper,
-		"formatDateTime": func(t time.Time) string {
-			return t.Format("January 2, 2006 at 3:04 PM")
-		},
-		"formatTime": func(t *time.Time) string {
-			if t == nil {
-				return ""
-			}
-			return t.Format("3:04 PM")
-		},
-	}).ParseFiles("confirmation.html")
+	return parseWithBase("confirmation.html")
 }
 
 func TestConfirmationTemplateExists(t *testing.T) {
@@ -312,14 +314,14 @@ func TestConfirmationTemplateAnswers(t *testing.T) {
 		RSVP: ConfirmationRSVP{
 			Response: "yes",
 		},
-		Answers: []ConfirmationAnswer{
+		AnswersWithQuestions: []ConfirmationAnswerWithQuestion{
 			{
-				QuestionText:  "Dietary restrictions?",
-				AnswerDisplay: "Vegetarian",
+				Question: ConfirmationQuestion{Text: "Dietary restrictions?"},
+				Answer:   ConfirmationAnswer{AnswerText: "Vegetarian"},
 			},
 			{
-				QuestionText:  "T-shirt size?",
-				AnswerDisplay: "Medium",
+				Question: ConfirmationQuestion{Text: "T-shirt size?"},
+				Answer:   ConfirmationAnswer{AnswerText: "Medium"},
 			},
 		},
 		Token: "test-token",
@@ -362,8 +364,8 @@ func TestConfirmationTemplateNoAnswers(t *testing.T) {
 		RSVP: ConfirmationRSVP{
 			Response: "yes",
 		},
-		Answers: []ConfirmationAnswer{},
-		Token:   "test-token",
+		AnswersWithQuestions: []ConfirmationAnswerWithQuestion{},
+		Token:                "test-token",
 	}
 
 	var buf strings.Builder

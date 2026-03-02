@@ -41,7 +41,7 @@ func TestCSRF_BodyConsumption(t *testing.T) {
 
 	t.Run("CSRF middleware with handler that parses form", func(t *testing.T) {
 		csrfMiddleware := CSRF(32)
-		
+
 		var handlerParsedTitle string
 		handler := csrfMiddleware(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			if err := r.ParseForm(); err != nil {

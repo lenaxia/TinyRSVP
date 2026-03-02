@@ -199,8 +199,14 @@ func TestRequireAuth_MissingSessionCookie(t *testing.T) {
 
 	middleware(handler).ServeHTTP(w, r)
 
-	if w.Code != http.StatusUnauthorized {
-		t.Errorf("Expected status %d, got %d", http.StatusUnauthorized, w.Code)
+	if w.Code != http.StatusSeeOther {
+		t.Errorf("Expected status %d, got %d", http.StatusSeeOther, w.Code)
+	}
+
+	location := w.Header().Get("Location")
+	expectedLocation := "/login?return=%2Fprotected"
+	if location != expectedLocation {
+		t.Errorf("Expected Location header %q, got %q", expectedLocation, location)
 	}
 }
 
@@ -228,8 +234,14 @@ func TestRequireAuth_InvalidSession(t *testing.T) {
 
 	middleware(handler).ServeHTTP(w, r)
 
-	if w.Code != http.StatusUnauthorized {
-		t.Errorf("Expected status %d, got %d", http.StatusUnauthorized, w.Code)
+	if w.Code != http.StatusSeeOther {
+		t.Errorf("Expected status %d, got %d", http.StatusSeeOther, w.Code)
+	}
+
+	location := w.Header().Get("Location")
+	expectedLocation := "/login?return=%2Fprotected"
+	if location != expectedLocation {
+		t.Errorf("Expected Location header %q, got %q", expectedLocation, location)
 	}
 }
 
@@ -266,8 +278,14 @@ func TestRequireAuth_ExpiredSession(t *testing.T) {
 
 	middleware(handler).ServeHTTP(w, r)
 
-	if w.Code != http.StatusUnauthorized {
-		t.Errorf("Expected status %d, got %d", http.StatusUnauthorized, w.Code)
+	if w.Code != http.StatusSeeOther {
+		t.Errorf("Expected status %d, got %d", http.StatusSeeOther, w.Code)
+	}
+
+	location := w.Header().Get("Location")
+	expectedLocation := "/login?return=%2Fprotected"
+	if location != expectedLocation {
+		t.Errorf("Expected Location header %q, got %q", expectedLocation, location)
 	}
 }
 
@@ -305,8 +323,14 @@ func TestRequireAuth_UserNotFound(t *testing.T) {
 
 	middleware(handler).ServeHTTP(w, r)
 
-	if w.Code != http.StatusUnauthorized {
-		t.Errorf("Expected status %d, got %d", http.StatusUnauthorized, w.Code)
+	if w.Code != http.StatusSeeOther {
+		t.Errorf("Expected status %d, got %d", http.StatusSeeOther, w.Code)
+	}
+
+	location := w.Header().Get("Location")
+	expectedLocation := "/login?return=%2Fprotected"
+	if location != expectedLocation {
+		t.Errorf("Expected Location header %q, got %q", expectedLocation, location)
 	}
 }
 
@@ -537,8 +561,14 @@ func TestMiddlewareChaining_AuthFailsBeforeRoleCheck(t *testing.T) {
 
 	chainedHandler.ServeHTTP(w, r)
 
-	if w.Code != http.StatusUnauthorized {
-		t.Errorf("Expected status %d, got %d", http.StatusUnauthorized, w.Code)
+	if w.Code != http.StatusSeeOther {
+		t.Errorf("Expected status %d, got %d", http.StatusSeeOther, w.Code)
+	}
+
+	location := w.Header().Get("Location")
+	expectedLocation := "/login?return=%2Fadmin%2Fendpoint"
+	if location != expectedLocation {
+		t.Errorf("Expected Location header %q, got %q", expectedLocation, location)
 	}
 }
 

@@ -85,7 +85,7 @@ func TestInviteCRUDIntegration(t *testing.T) {
 	t.Run("GET /api/invites/{id}", func(t *testing.T) {
 		req := httptest.NewRequest(http.MethodGet, "/api/invites/1", nil)
 		req.Header.Set("Accept", "application/json")
-		
+
 		rctx := chi.NewRouteContext()
 		rctx.URLParams.Add("inviteId", "1")
 		req = req.WithContext(context.WithValue(req.Context(), chi.RouteCtxKey, rctx))
@@ -118,7 +118,7 @@ func TestInviteCRUDIntegration(t *testing.T) {
 		req := httptest.NewRequest(http.MethodPut, "/api/invites/1", bytes.NewReader(body))
 		req.Header.Set("Accept", "application/json")
 		req.Header.Set("Content-Type", "application/json")
-		
+
 		rctx := chi.NewRouteContext()
 		rctx.URLParams.Add("inviteId", "1")
 		req = req.WithContext(context.WithValue(req.Context(), chi.RouteCtxKey, rctx))
@@ -148,7 +148,7 @@ func TestInviteCRUDIntegration(t *testing.T) {
 	t.Run("POST /api/invites/{id}/send", func(t *testing.T) {
 		req := httptest.NewRequest(http.MethodPost, "/api/invites/1/send", nil)
 		req.Header.Set("Accept", "application/json")
-		
+
 		rctx := chi.NewRouteContext()
 		rctx.URLParams.Add("inviteId", "1")
 		req = req.WithContext(context.WithValue(req.Context(), chi.RouteCtxKey, rctx))
@@ -183,7 +183,7 @@ func TestInviteCRUDIntegration(t *testing.T) {
 
 		req := httptest.NewRequest(http.MethodDelete, "/api/invites/2", nil)
 		req.Header.Set("Accept", "application/json")
-		
+
 		rctx := chi.NewRouteContext()
 		rctx.URLParams.Add("inviteId", "2")
 		req = req.WithContext(context.WithValue(req.Context(), chi.RouteCtxKey, rctx))

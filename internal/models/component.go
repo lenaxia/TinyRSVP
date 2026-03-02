@@ -64,19 +64,19 @@ type Dimensions struct {
 }
 
 type TextBoxContent struct {
-	Text            string `json:"text"`
-	FontFamily      string `json:"fontFamily,omitempty"`
-	FontSize        string `json:"fontSize,omitempty"`
-	FontWeight      string `json:"fontWeight,omitempty"`
-	Color           string `json:"color,omitempty"`
-	TextAlign       string `json:"textAlign,omitempty"`
-	LineHeight      string `json:"lineHeight,omitempty"`
-	LetterSpacing   string `json:"letterSpacing,omitempty"`
-	TextTransform   string `json:"textTransform,omitempty"`
-	Padding         string `json:"padding,omitempty"`
-	TextShadow      string `json:"textShadow,omitempty"`
-	EvaluatedText   string `json:"evaluatedText,omitempty"`
-	IsEvaluated     bool   `json:"isEvaluated,omitempty"`
+	Text          string `json:"text"`
+	FontFamily    string `json:"fontFamily,omitempty"`
+	FontSize      string `json:"fontSize,omitempty"`
+	FontWeight    string `json:"fontWeight,omitempty"`
+	Color         string `json:"color,omitempty"`
+	TextAlign     string `json:"textAlign,omitempty"`
+	LineHeight    string `json:"lineHeight,omitempty"`
+	LetterSpacing string `json:"letterSpacing,omitempty"`
+	TextTransform string `json:"textTransform,omitempty"`
+	Padding       string `json:"padding,omitempty"`
+	TextShadow    string `json:"textShadow,omitempty"`
+	EvaluatedText string `json:"evaluatedText,omitempty"`
+	IsEvaluated   bool   `json:"isEvaluated,omitempty"`
 }
 
 type ImageContent struct {

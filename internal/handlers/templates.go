@@ -609,7 +609,7 @@ func (h *TemplateHandlers) HandleThemePreview(w http.ResponseWriter, r *http.Req
 	       </div>
 	   </body>
 	   </html>`, dataTheme, themeSlug, themeSlug, customColorCSS, headerImageHTML, title, startTime.Format("Monday, January 2, 2006 at 3:04 PM MST"), location, description)
-	   }
+}
 
 func isValidHexColor(color string) bool {
 	if len(color) != 7 {

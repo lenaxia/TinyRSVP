@@ -190,8 +190,8 @@ func TestHandleThemePreview_WithEventData(t *testing.T) {
 		},
 	}
 
-	req := httptest.NewRequest(http.MethodGet, 
-		"/api/themes/preview?theme_id=1&title=My+Event&location=My+Location&description=My+Description&start_time=2026-01-15T10:00:00Z", 
+	req := httptest.NewRequest(http.MethodGet,
+		"/api/themes/preview?theme_id=1&title=My+Event&location=My+Location&description=My+Description&start_time=2026-01-15T10:00:00Z",
 		nil)
 	w := httptest.NewRecorder()
 

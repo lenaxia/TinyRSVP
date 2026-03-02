@@ -116,7 +116,7 @@ func TestDefaultRSVPPageNoHardcodedStyles(t *testing.T) {
 	t.Run("comprehensive: no hardcoded hex colors in style blocks", func(t *testing.T) {
 		lines := strings.Split(html, "\n")
 		inStyleBlock := false
-		
+
 		for i, line := range lines {
 			if strings.Contains(line, "<style>") {
 				inStyleBlock = true
@@ -126,7 +126,7 @@ func TestDefaultRSVPPageNoHardcodedStyles(t *testing.T) {
 				inStyleBlock = false
 				continue
 			}
-			
+
 			if inStyleBlock {
 				if strings.Contains(line, "#") {
 					parts := strings.Split(line, "#")
@@ -140,7 +140,7 @@ func TestDefaultRSVPPageNoHardcodedStyles(t *testing.T) {
 								break
 							}
 						}
-						
+
 						if len(hexPart) == 3 || len(hexPart) == 6 {
 							t.Errorf("Line %d contains hardcoded hex color #%s: %s", i+1, hexPart, strings.TrimSpace(line))
 						}

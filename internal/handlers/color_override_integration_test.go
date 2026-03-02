@@ -15,60 +15,60 @@ import (
 
 func TestColorOverrideSystem_EndToEnd_Integration(t *testing.T) {
 	tests := []struct {
-		name              string
-		customColor       *string
-		expectCSS         bool
+		name               string
+		customColor        *string
+		expectCSS          bool
 		expectedColorInCSS string
-		description       string
+		description        string
 	}{
 		{
-			name:              "valid color generates CSS override",
-			customColor:       ptrString("#007BFF"),
-			expectCSS:         true,
+			name:               "valid color generates CSS override",
+			customColor:        ptrString("#007BFF"),
+			expectCSS:          true,
 			expectedColorInCSS: "#007BFF",
-			description:       "Bootstrap blue passes contrast on both backgrounds",
+			description:        "Bootstrap blue passes contrast on both backgrounds",
 		},
 		{
-			name:              "valid green generates CSS override",
-			customColor:       ptrString("#16A34A"),
-			expectCSS:         true,
+			name:               "valid green generates CSS override",
+			customColor:        ptrString("#16A34A"),
+			expectCSS:          true,
 			expectedColorInCSS: "#16A34A",
-			description:       "Green-600 passes contrast on both backgrounds",
+			description:        "Green-600 passes contrast on both backgrounds",
 		},
 		{
-			name:              "invalid light color rejected",
-			customColor:       ptrString("#FFFF00"),
-			expectCSS:         false,
+			name:               "invalid light color rejected",
+			customColor:        ptrString("#FFFF00"),
+			expectCSS:          false,
 			expectedColorInCSS: "",
-			description:       "Yellow fails contrast on dark background",
+			description:        "Yellow fails contrast on dark background",
 		},
 		{
-			name:              "invalid dark color rejected",
-			customColor:       ptrString("#000080"),
-			expectCSS:         false,
+			name:               "invalid dark color rejected",
+			customColor:        ptrString("#000080"),
+			expectCSS:          false,
 			expectedColorInCSS: "",
-			description:       "Navy fails contrast on dark background",
+			description:        "Navy fails contrast on dark background",
 		},
 		{
-			name:              "no custom color",
-			customColor:       nil,
-			expectCSS:         false,
+			name:               "no custom color",
+			customColor:        nil,
+			expectCSS:          false,
 			expectedColorInCSS: "",
-			description:       "No custom color means no CSS override",
+			description:        "No custom color means no CSS override",
 		},
 		{
-			name:              "empty custom color",
-			customColor:       ptrString(""),
-			expectCSS:         false,
+			name:               "empty custom color",
+			customColor:        ptrString(""),
+			expectCSS:          false,
 			expectedColorInCSS: "",
-			description:       "Empty string means no CSS override",
+			description:        "Empty string means no CSS override",
 		},
 		{
-			name:              "invalid format rejected",
-			customColor:       ptrString("not-a-color"),
-			expectCSS:         false,
+			name:               "invalid format rejected",
+			customColor:        ptrString("not-a-color"),
+			expectCSS:          false,
 			expectedColorInCSS: "",
-			description:       "Invalid format is rejected",
+			description:        "Invalid format is rejected",
 		},
 	}
 

@@ -62,7 +62,7 @@ func TestInviteHandlers_CreateInvite_Success(t *testing.T) {
 
 	req := httptest.NewRequest(http.MethodPost, "/api/events/1/invites", bytes.NewReader(body))
 	req.Header.Set("Content-Type", "application/json")
-			req.Header.Set("Accept", "application/json")
+	req.Header.Set("Accept", "application/json")
 
 	user := &models.User{
 		ID:   100,
@@ -111,7 +111,7 @@ func TestInviteHandlers_CreateInvite_InvalidJSON(t *testing.T) {
 
 	req := httptest.NewRequest(http.MethodPost, "/api/events/1/invites", bytes.NewReader([]byte("invalid json")))
 	req.Header.Set("Content-Type", "application/json")
-			req.Header.Set("Accept", "application/json")
+	req.Header.Set("Accept", "application/json")
 
 	user := &models.User{ID: 100, Role: models.RoleEventManager}
 	ctx := auth.WithUser(req.Context(), user)
@@ -140,7 +140,7 @@ func TestInviteHandlers_CreateInvite_MissingEmail(t *testing.T) {
 
 	req := httptest.NewRequest(http.MethodPost, "/api/events/1/invites", bytes.NewReader(body))
 	req.Header.Set("Content-Type", "application/json")
-			req.Header.Set("Accept", "application/json")
+	req.Header.Set("Accept", "application/json")
 
 	user := &models.User{ID: 100, Role: models.RoleEventManager}
 	ctx := auth.WithUser(req.Context(), user)
@@ -169,7 +169,7 @@ func TestInviteHandlers_CreateInvite_Unauthorized(t *testing.T) {
 
 	req := httptest.NewRequest(http.MethodPost, "/api/events/1/invites", bytes.NewReader(body))
 	req.Header.Set("Content-Type", "application/json")
-			req.Header.Set("Accept", "application/json")
+	req.Header.Set("Accept", "application/json")
 
 	rctx := chi.NewRouteContext()
 	rctx.URLParams.Add("eventId", "1")
@@ -194,7 +194,7 @@ func TestInviteHandlers_CreateInvite_InvalidEventID(t *testing.T) {
 
 	req := httptest.NewRequest(http.MethodPost, "/api/events/invalid/invites", bytes.NewReader(body))
 	req.Header.Set("Content-Type", "application/json")
-			req.Header.Set("Accept", "application/json")
+	req.Header.Set("Accept", "application/json")
 
 	user := &models.User{ID: 100, Role: models.RoleEventManager}
 	ctx := auth.WithUser(req.Context(), user)
@@ -228,7 +228,7 @@ func TestInviteHandlers_CreateInvite_ServiceError_NotFound(t *testing.T) {
 
 	req := httptest.NewRequest(http.MethodPost, "/api/events/999/invites", bytes.NewReader(body))
 	req.Header.Set("Content-Type", "application/json")
-			req.Header.Set("Accept", "application/json")
+	req.Header.Set("Accept", "application/json")
 
 	user := &models.User{ID: 100, Role: models.RoleEventManager}
 	ctx := auth.WithUser(req.Context(), user)
@@ -262,7 +262,7 @@ func TestInviteHandlers_CreateInvite_ServiceError_PermissionDenied(t *testing.T)
 
 	req := httptest.NewRequest(http.MethodPost, "/api/events/1/invites", bytes.NewReader(body))
 	req.Header.Set("Content-Type", "application/json")
-			req.Header.Set("Accept", "application/json")
+	req.Header.Set("Accept", "application/json")
 
 	user := &models.User{ID: 100, Role: models.RoleEventManager}
 	ctx := auth.WithUser(req.Context(), user)
@@ -296,7 +296,7 @@ func TestInviteHandlers_CreateInvite_ServiceError_Conflict(t *testing.T) {
 
 	req := httptest.NewRequest(http.MethodPost, "/api/events/1/invites", bytes.NewReader(body))
 	req.Header.Set("Content-Type", "application/json")
-			req.Header.Set("Accept", "application/json")
+	req.Header.Set("Accept", "application/json")
 
 	user := &models.User{ID: 100, Role: models.RoleEventManager}
 	ctx := auth.WithUser(req.Context(), user)
@@ -330,7 +330,7 @@ func TestInviteHandlers_CreateInvite_ServiceError_Validation(t *testing.T) {
 
 	req := httptest.NewRequest(http.MethodPost, "/api/events/1/invites", bytes.NewReader(body))
 	req.Header.Set("Content-Type", "application/json")
-			req.Header.Set("Accept", "application/json")
+	req.Header.Set("Accept", "application/json")
 
 	user := &models.User{ID: 100, Role: models.RoleEventManager}
 	ctx := auth.WithUser(req.Context(), user)
@@ -364,7 +364,7 @@ func TestInviteHandlers_CreateInvite_ServiceError_Internal(t *testing.T) {
 
 	req := httptest.NewRequest(http.MethodPost, "/api/events/1/invites", bytes.NewReader(body))
 	req.Header.Set("Content-Type", "application/json")
-			req.Header.Set("Accept", "application/json")
+	req.Header.Set("Accept", "application/json")
 
 	user := &models.User{ID: 100, Role: models.RoleEventManager}
 	ctx := auth.WithUser(req.Context(), user)

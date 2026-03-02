@@ -55,7 +55,7 @@ func TestRouter_CSRFWithEventCreation(t *testing.T) {
 
 		if rec2.Code == http.StatusForbidden {
 			t.Errorf("Got 403 with valid CSRF token through full router stack!")
-			
+
 			for _, c := range rec2.Result().Cookies() {
 				t.Logf("Response cookie: %s = %s", c.Name, c.Value)
 			}

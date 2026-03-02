@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"context"
 	"errors"
 	"net/http"
 	"net/http/httptest"
@@ -9,41 +8,22 @@ import (
 
 	"github.com/lenaxia/tinyrsvp/internal/auth"
 	"github.com/lenaxia/tinyrsvp/internal/models"
+	"github.com/lenaxia/tinyrsvp/internal/testutil/mocks/services"
+	"go.uber.org/mock/gomock"
 )
 
-type mockAdminDashboardService struct {
-	stats *AdminDashboardStats
-	err   error
-}
-
-func (m *mockAdminDashboardService) GetAdminStats(ctx context.Context) (*AdminDashboardStats, error) {
-	return m.stats, m.err
-}
-
-type mockUserListService struct {
-	users []*models.User
-	total int
-	err   error
-}
-
-func (m *mockUserListService) ListUsers(ctx context.Context, limit, offset int) ([]*models.User, error) {
-	return m.users, m.err
-}
-
-func (m *mockUserListService) CountUsers(ctx context.Context) (int, error) {
-	return m.total, m.err
-}
-
 func TestAdminDashboardHandler_Success(t *testing.T) {
-	service := &mockAdminDashboardService{
-		stats: &AdminDashboardStats{
-			TotalUsers:   10,
-			TotalEvents:  5,
-			TotalInvites: 50,
-		},
-	}
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
 
-	handler := NewAdminDashboardHandler(service)
+	mockAdminService := services.NewMockAdminDashboardService(ctrl)
+	mockAdminService.EXPECT().GetAdminStats(gomock.Any()).Return(&AdminDashboardStats{
+		TotalUsers:   10,
+		TotalEvents:  5,
+		TotalInvites: 50,
+	}, nil)
+
+	handler := NewAdminDashboardHandler(mockAdminService)
 
 	req := httptest.NewRequest(http.MethodGet, "/admin", nil)
 	user := &models.User{
@@ -64,11 +44,11 @@ func TestAdminDashboardHandler_Success(t *testing.T) {
 }
 
 func TestAdminDashboardHandler_Unauthorized(t *testing.T) {
-	service := &mockAdminDashboardService{
-		stats: &AdminDashboardStats{},
-	}
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
 
-	handler := NewAdminDashboardHandler(service)
+	mockAdminService := services.NewMockAdminDashboardService(ctrl)
+	handler := NewAdminDashboardHandler(mockAdminService)
 
 	req := httptest.NewRequest(http.MethodGet, "/admin", nil)
 	w := httptest.NewRecorder()
@@ -82,11 +62,12 @@ func TestAdminDashboardHandler_Unauthorized(t *testing.T) {
 }
 
 func TestAdminDashboardHandler_ServiceError(t *testing.T) {
-	service := &mockAdminDashboardService{
-		err: errors.New("database error"),
-	}
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
 
-	handler := NewAdminDashboardHandler(service)
+	mockAdminService := services.NewMockAdminDashboardService(ctrl)
+	mockAdminService.EXPECT().GetAdminStats(gomock.Any()).Return(nil, errors.New("database error"))
+	handler := NewAdminDashboardHandler(mockAdminService)
 
 	req := httptest.NewRequest(http.MethodGet, "/admin", nil)
 	user := &models.User{
@@ -107,19 +88,16 @@ func TestAdminDashboardHandler_ServiceError(t *testing.T) {
 }
 
 func TestUserManagementHandler_Success(t *testing.T) {
-	service := &mockUserListService{
-		users: []*models.User{
-			{
-				ID:    1,
-				Email: "user1@example.com",
-				Name:  "User One",
-				Role:  models.RoleEventManager,
-			},
-		},
-		total: 1,
-	}
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
 
-	handler := NewUserManagementHandler(service)
+	mockUserService := services.NewMockUserService(ctrl)
+	mockUserService.EXPECT().ListUsers(gomock.Any(), gomock.Any(), gomock.Any()).Return([]*models.User{
+		{ID: 1, Email: "user1@example.com", Name: "User One", Role: models.RoleEventManager},
+	}, nil)
+	mockUserService.EXPECT().CountUsers(gomock.Any()).Return(1, nil)
+
+	handler := NewUserManagementHandler(mockUserService)
 
 	req := httptest.NewRequest(http.MethodGet, "/admin/users", nil)
 	user := &models.User{
@@ -140,12 +118,11 @@ func TestUserManagementHandler_Success(t *testing.T) {
 }
 
 func TestUserManagementHandler_Unauthorized(t *testing.T) {
-	service := &mockUserListService{
-		users: []*models.User{},
-		total: 0,
-	}
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
 
-	handler := NewUserManagementHandler(service)
+	mockUserService := services.NewMockUserService(ctrl)
+	handler := NewUserManagementHandler(mockUserService)
 
 	req := httptest.NewRequest(http.MethodGet, "/admin/users", nil)
 	w := httptest.NewRecorder()
@@ -159,11 +136,14 @@ func TestUserManagementHandler_Unauthorized(t *testing.T) {
 }
 
 func TestUserManagementHandler_ServiceError(t *testing.T) {
-	service := &mockUserListService{
-		err: errors.New("database error"),
-	}
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
 
-	handler := NewUserManagementHandler(service)
+	mockUserService := services.NewMockUserService(ctrl)
+	mockUserService.EXPECT().ListUsers(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil, errors.New("database error"))
+	mockUserService.EXPECT().CountUsers(gomock.Any()).Return(0, errors.New("database error")).AnyTimes()
+
+	handler := NewUserManagementHandler(mockUserService)
 
 	req := httptest.NewRequest(http.MethodGet, "/admin/users", nil)
 	user := &models.User{
@@ -184,19 +164,16 @@ func TestUserManagementHandler_ServiceError(t *testing.T) {
 }
 
 func TestUserManagementHandler_WithPagination(t *testing.T) {
-	service := &mockUserListService{
-		users: []*models.User{
-			{
-				ID:    1,
-				Email: "user1@example.com",
-				Name:  "User One",
-				Role:  models.RoleEventManager,
-			},
-		},
-		total: 100,
-	}
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
 
-	handler := NewUserManagementHandler(service)
+	mockUserService := services.NewMockUserService(ctrl)
+	mockUserService.EXPECT().ListUsers(gomock.Any(), gomock.Any(), gomock.Any()).Return([]*models.User{
+		{ID: 1, Email: "user1@example.com", Name: "User One", Role: models.RoleEventManager},
+	}, nil)
+	mockUserService.EXPECT().CountUsers(gomock.Any()).Return(100, nil)
+
+	handler := NewUserManagementHandler(mockUserService)
 
 	req := httptest.NewRequest(http.MethodGet, "/admin/users?limit=10&offset=20", nil)
 	user := &models.User{

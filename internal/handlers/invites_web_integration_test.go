@@ -51,7 +51,11 @@ func TestInviteWebHandlers_FullWebUIFlow_Integration(t *testing.T) {
 		},
 	}
 
-	tmpl, err := template.New("invite_list.html").Funcs(funcMap).ParseFiles("../../templates/web/invite_list.html")
+	tmpl, err := template.New("invite_list.html").Funcs(funcMap).ParseFiles(
+		"../../templates/web/invite_list.html",
+		"../../templates/web/partials/base.html",
+		"../../templates/web/partials/navigation.html",
+	)
 	if err != nil {
 		t.Fatalf("Failed to parse template: %v", err)
 	}
@@ -218,7 +222,11 @@ func TestInviteWebHandlers_PermissionEnforcement_Integration(t *testing.T) {
 		},
 	}
 
-	tmpl, err := template.New("invite_list.html").Funcs(funcMap).ParseFiles("../../templates/web/invite_list.html")
+	tmpl, err := template.New("invite_list.html").Funcs(funcMap).ParseFiles(
+		"../../templates/web/invite_list.html",
+		"../../templates/web/partials/base.html",
+		"../../templates/web/partials/navigation.html",
+	)
 	if err != nil {
 		t.Fatalf("Failed to parse template: %v", err)
 	}
@@ -330,7 +338,11 @@ func TestInviteWebHandlers_RouterIntegration(t *testing.T) {
 		},
 	}
 
-	tmpl, err := template.New("invite_list.html").Funcs(funcMap).ParseFiles("../../templates/web/invite_list.html")
+	tmpl, err := template.New("invite_list.html").Funcs(funcMap).ParseFiles(
+		"../../templates/web/invite_list.html",
+		"../../templates/web/partials/base.html",
+		"../../templates/web/partials/navigation.html",
+	)
 	if err != nil {
 		t.Fatalf("Failed to parse template: %v", err)
 	}
@@ -433,7 +445,11 @@ func TestInviteWebHandlers_EmptyState_Integration(t *testing.T) {
 		},
 	}
 
-	tmpl, err := template.New("invite_list.html").Funcs(funcMap).ParseFiles("../../templates/web/invite_list.html")
+	tmpl, err := template.New("invite_list.html").Funcs(funcMap).ParseFiles(
+		"../../templates/web/invite_list.html",
+		"../../templates/web/partials/base.html",
+		"../../templates/web/partials/navigation.html",
+	)
 	if err != nil {
 		t.Fatalf("Failed to parse template: %v", err)
 	}
@@ -486,8 +502,8 @@ func TestInviteWebHandlers_EmptyState_Integration(t *testing.T) {
 		t.Error("Expected empty state message")
 	}
 
-	if !strings.Contains(body, "Create Invite") {
-		t.Error("Expected 'Create Invite' button in empty state")
+	if !strings.Contains(body, "Add Guest") {
+		t.Error("Expected 'Add Guest' button in empty state")
 	}
 }
 
@@ -522,7 +538,11 @@ func TestInviteWebHandlers_StatsDisplay_Integration(t *testing.T) {
 		},
 	}
 
-	tmpl, err := template.New("invite_list.html").Funcs(funcMap).ParseFiles("../../templates/web/invite_list.html")
+	tmpl, err := template.New("invite_list.html").Funcs(funcMap).ParseFiles(
+		"../../templates/web/invite_list.html",
+		"../../templates/web/partials/base.html",
+		"../../templates/web/partials/navigation.html",
+	)
 	if err != nil {
 		t.Fatalf("Failed to parse template: %v", err)
 	}

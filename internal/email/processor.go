@@ -119,7 +119,7 @@ func (p *queueProcessor) Stop(ctx context.Context) error {
 
 func (p *queueProcessor) ProcessBatch(ctx context.Context) error {
 	startTime := time.Now()
-	
+
 	availableSlots := p.rateLimiter.AvailableSlots()
 	if availableSlots == 0 {
 		p.metrics.RecordRateLimitHit()
@@ -153,7 +153,7 @@ func (p *queueProcessor) ProcessBatch(ctx context.Context) error {
 
 func (p *queueProcessor) processEmail(ctx context.Context, email *models.EmailQueue) error {
 	startTime := time.Now()
-	
+
 	if err := p.repo.MarkSending(ctx, email.ID); err != nil {
 		return fmt.Errorf("failed to mark as sending: %w", err)
 	}
@@ -165,7 +165,7 @@ func (p *queueProcessor) processEmail(ctx context.Context, email *models.EmailQu
 		p.metrics.RecordRateLimitHit()
 		p.metrics.RecordRateLimitWait(waitTime)
 		p.logger.RateLimitHit(p.rateLimiter.AvailableSlots(), waitTime)
-		
+
 		if err := p.repo.UpdateStatus(ctx, email.ID, models.EmailStatusPending); err != nil {
 			return fmt.Errorf("failed to reset status: %w", err)
 		}
@@ -216,7 +216,7 @@ func (p *queueProcessor) sendEmail(ctx context.Context, email *models.EmailQueue
 func (p *queueProcessor) handleSendError(ctx context.Context, email *models.EmailQueue, err error) error {
 	p.metrics.RecordEmailFailed(err.Error())
 	p.logger.EmailFailed(email.ID, email.ToEmail, email.Attempts+1, err)
-	
+
 	var permErr *PermanentError
 	if errors.As(err, &permErr) {
 		p.logger.EmailPermanentlyFailed(email.ID, email.ToEmail, email.Attempts+1, err)
@@ -255,7 +255,7 @@ func (p *queueProcessor) handleSendError(ctx context.Context, email *models.Emai
 
 func calculateBackoff(attempt int) time.Duration {
 	var delay time.Duration
-	
+
 	switch attempt {
 	case 1:
 		delay = 1 * time.Minute
@@ -266,7 +266,7 @@ func calculateBackoff(attempt int) time.Duration {
 	default:
 		delay = 30 * time.Minute
 	}
-	
+
 	jitter := time.Duration(float64(delay) * 0.1 * (rand.Float64()*2 - 1))
 	return delay + jitter
 }

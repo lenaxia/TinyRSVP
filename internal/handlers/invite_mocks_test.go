@@ -10,22 +10,22 @@ import (
 )
 
 type FullMockInviteService struct {
-	CreateInviteFunc           func(ctx context.Context, eventID int64, name *string, email *string, maxPlusOnes int, expiresAt time.Time) (*models.Invite, string, error)
-	CreateManualInviteFunc     func(ctx context.Context, req *invites.CreateManualInviteRequest, expiresAt time.Time) (*invites.CreateManualInviteResponse, error)
-	GetInviteByTokenFunc       func(ctx context.Context, token string) (*models.Invite, error)
-	GetInviteByIDFunc          func(ctx context.Context, id int64) (*models.Invite, error)
-	UpdateInviteFunc           func(ctx context.Context, req *invites.UpdateInviteRequest) error
-	DeleteInviteFunc           func(ctx context.Context, inviteID int64) error
-	SendInviteFunc             func(ctx context.Context, req *invites.SendInviteRequest, emailRepo repositories.EmailQueueRepository) error
-	RevokeInviteFunc           func(ctx context.Context, req *invites.RevokeInviteRequest) error
-	RegenerateTokenFunc        func(ctx context.Context, inviteID int64) (*invites.RegenerateTokenResponse, error)
-	ListInvitesFunc            func(ctx context.Context, req *invites.ListInvitesRequest) (*invites.ListInvitesResponse, error)
-	ListInvitesByEventIDFunc   func(ctx context.Context, eventID int64, filters repositories.InviteFilters) ([]*models.Invite, error)
-	ImportCSVFunc              func(ctx context.Context, eventID int64, csvData []byte, defaultMaxPlusOnes int, expiresAt time.Time) (*invites.ImportResult, error)
-	CleanupExpiredTokensFunc   func(ctx context.Context) (int64, error)
-	MarkInviteSentFunc         func(ctx context.Context, inviteID int64) error
-	MarkInviteViewedFunc       func(ctx context.Context, inviteID int64) error
-	MarkInviteRespondedFunc    func(ctx context.Context, inviteID int64) error
+	CreateInviteFunc             func(ctx context.Context, eventID int64, name *string, email *string, maxPlusOnes int, expiresAt time.Time) (*models.Invite, string, error)
+	CreateManualInviteFunc       func(ctx context.Context, req *invites.CreateManualInviteRequest, expiresAt time.Time) (*invites.CreateManualInviteResponse, error)
+	GetInviteByTokenFunc         func(ctx context.Context, token string) (*models.Invite, error)
+	GetInviteByIDFunc            func(ctx context.Context, id int64) (*models.Invite, error)
+	UpdateInviteFunc             func(ctx context.Context, req *invites.UpdateInviteRequest) error
+	DeleteInviteFunc             func(ctx context.Context, inviteID int64) error
+	SendInviteFunc               func(ctx context.Context, req *invites.SendInviteRequest, emailRepo repositories.EmailQueueRepository) error
+	RevokeInviteFunc             func(ctx context.Context, req *invites.RevokeInviteRequest) error
+	RegenerateTokenFunc          func(ctx context.Context, inviteID int64) (*invites.RegenerateTokenResponse, error)
+	ListInvitesFunc              func(ctx context.Context, req *invites.ListInvitesRequest) (*invites.ListInvitesResponse, error)
+	ListInvitesByEventIDFunc     func(ctx context.Context, eventID int64, filters repositories.InviteFilters) ([]*models.Invite, error)
+	ImportCSVFunc                func(ctx context.Context, eventID int64, csvData []byte, defaultMaxPlusOnes int, expiresAt time.Time) (*invites.ImportResult, error)
+	CleanupExpiredTokensFunc     func(ctx context.Context) (int64, error)
+	MarkInviteSentFunc           func(ctx context.Context, inviteID int64) error
+	MarkInviteViewedFunc         func(ctx context.Context, inviteID int64) error
+	MarkInviteRespondedFunc      func(ctx context.Context, inviteID int64) error
 	UnsubscribeFromRemindersFunc func(ctx context.Context, token string) error
 }
 

@@ -175,7 +175,7 @@ func TestScreenReaderJSLiveRegion(t *testing.T) {
 
 	hasStatus := strings.Contains(jsContent, "'status'") || strings.Contains(jsContent, "\"status\"")
 	hasAlert := strings.Contains(jsContent, "'alert'") || strings.Contains(jsContent, "\"alert\"")
-	
+
 	if !hasStatus || !hasAlert {
 		t.Error("Should create live regions with appropriate roles (status and alert)")
 	}

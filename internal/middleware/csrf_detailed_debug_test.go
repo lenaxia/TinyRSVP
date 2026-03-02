@@ -12,9 +12,9 @@ import (
 func TestCSRF_DetailedDebug(t *testing.T) {
 	t.Run("trace exact flow with existing cookie", func(t *testing.T) {
 		existingToken := "94sNayaLR2RyTkeWcUSXHH6T9hwxtUmJZAjD-6UGLYQ="
-		
+
 		csrfMiddleware := CSRF(32)
-		
+
 		var contextToken string
 		handler := csrfMiddleware(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			contextToken = GetCSRFToken(r.Context())
@@ -52,7 +52,7 @@ func TestCSRF_DetailedDebug(t *testing.T) {
 
 	t.Run("manual validation test", func(t *testing.T) {
 		token := "94sNayaLR2RyTkeWcUSXHH6T9hwxtUmJZAjD-6UGLYQ="
-		
+
 		cookie := &http.Cookie{
 			Name:  CSRFCookieName,
 			Value: token,
@@ -84,11 +84,11 @@ func TestCSRF_DetailedDebug(t *testing.T) {
 
 	t.Run("test with context value", func(t *testing.T) {
 		token := "test-token-12345"
-		
+
 		ctx := context.WithValue(context.Background(), csrfTokenKey, token)
-		
+
 		retrievedToken := GetCSRFToken(ctx)
-		
+
 		if retrievedToken != token {
 			t.Errorf("Expected token %s, got %s", token, retrievedToken)
 		}

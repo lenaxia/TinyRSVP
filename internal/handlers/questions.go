@@ -34,17 +34,17 @@ func (h *QuestionHandlers) RegisterRoutes(r chi.Router) {
 }
 
 type CreateQuestionRequest struct {
-	QuestionText string               `json:"question_text"`
-	QuestionType models.QuestionType  `json:"question_type"`
-	Required     bool                 `json:"required"`
-	Options      []string             `json:"options,omitempty"`
+	QuestionText string              `json:"question_text"`
+	QuestionType models.QuestionType `json:"question_type"`
+	Required     bool                `json:"required"`
+	Options      []string            `json:"options,omitempty"`
 }
 
 type UpdateQuestionRequest struct {
-	QuestionText string               `json:"question_text"`
-	QuestionType models.QuestionType  `json:"question_type"`
-	Required     bool                 `json:"required"`
-	Options      []string             `json:"options,omitempty"`
+	QuestionText string              `json:"question_text"`
+	QuestionType models.QuestionType `json:"question_type"`
+	Required     bool                `json:"required"`
+	Options      []string            `json:"options,omitempty"`
 }
 
 type ReorderQuestionsRequest struct {
@@ -192,4 +192,3 @@ func (h *QuestionHandlers) ReorderQuestions(w http.ResponseWriter, r *http.Reque
 
 	w.WriteHeader(http.StatusOK)
 }
-

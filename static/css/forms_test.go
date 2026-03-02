@@ -213,7 +213,7 @@ func TestFormsCSS(t *testing.T) {
 	t.Run("TouchFriendlyMinimumSize", func(t *testing.T) {
 		checkboxMatch := regexp.MustCompile(`\.form-checkbox[^}]*height:\s*20px`).FindString(css)
 		radioMatch := regexp.MustCompile(`\.form-radio[^}]*height:\s*20px`).FindString(css)
-		
+
 		if checkboxMatch == "" {
 			t.Error(".form-checkbox should have minimum 20px height for touch targets")
 		}
@@ -330,10 +330,10 @@ func TestFormsValidation(t *testing.T) {
 	t.Run("NoHardcodedColors", func(t *testing.T) {
 		hexColorPattern := regexp.MustCompile(`(?i)#[0-9a-f]{3,6}`)
 		rgbPattern := regexp.MustCompile(`(?i)rgb\(`)
-		
+
 		hexMatches := hexColorPattern.FindAllString(css, -1)
 		rgbMatches := rgbPattern.FindAllString(css, -1)
-		
+
 		if len(hexMatches) > 0 {
 			t.Errorf("Found hardcoded hex colors: %v. Use CSS variables instead", hexMatches)
 		}

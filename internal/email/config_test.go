@@ -17,20 +17,20 @@ func TestConfig_LoadConfig(t *testing.T) {
 		{
 			name: "valid configuration with all fields",
 			envVars: map[string]string{
-				"SMTP_HOST":            "smtp.gmail.com",
-				"SMTP_PORT":            "587",
-				"SMTP_USERNAME":        "user@gmail.com",
-				"SMTP_PASSWORD":        "secret123",
-				"EMAIL_FROM":      "noreply@example.com",
+				"SMTP_HOST":             "smtp.gmail.com",
+				"SMTP_PORT":             "587",
+				"SMTP_USERNAME":         "user@gmail.com",
+				"SMTP_PASSWORD":         "secret123",
+				"EMAIL_FROM":            "noreply@example.com",
 				"EMAIL_FROM_NAME":       "TinyRSVP",
-				"SMTP_TLS":             "true",
-				"SMTP_SKIP_VERIFY":     "false",
-				"SMTP_TIMEOUT":         "45s",
-				"EMAIL_RATE_LIMIT":     "100",
+				"SMTP_TLS":              "true",
+				"SMTP_SKIP_VERIFY":      "false",
+				"SMTP_TIMEOUT":          "45s",
+				"EMAIL_RATE_LIMIT":      "100",
 				"EMAIL_TEST_ON_STARTUP": "false",
-				"MAX_RETRY_ATTEMPTS":   "5",
-				"QUEUE_POLL_INTERVAL":  "30s",
-				"QUEUE_BATCH_SIZE":     "25",
+				"MAX_RETRY_ATTEMPTS":    "5",
+				"QUEUE_POLL_INTERVAL":   "30s",
+				"QUEUE_BATCH_SIZE":      "25",
 			},
 			want: &Config{
 				SMTPHost:          "smtp.gmail.com",
@@ -54,7 +54,7 @@ func TestConfig_LoadConfig(t *testing.T) {
 		{
 			name: "minimal valid configuration with defaults",
 			envVars: map[string]string{
-				"SMTP_HOST":       "smtp.example.com",
+				"SMTP_HOST":  "smtp.example.com",
 				"EMAIL_FROM": "test@example.com",
 			},
 			want: &Config{
@@ -90,8 +90,8 @@ func TestConfig_LoadConfig(t *testing.T) {
 		{
 			name: "invalid port",
 			envVars: map[string]string{
-				"SMTP_HOST":       "smtp.example.com",
-				"SMTP_PORT":       "invalid",
+				"SMTP_HOST":  "smtp.example.com",
+				"SMTP_PORT":  "invalid",
 				"EMAIL_FROM": "test@example.com",
 			},
 			wantErr: true,
@@ -99,9 +99,9 @@ func TestConfig_LoadConfig(t *testing.T) {
 		{
 			name: "invalid timeout",
 			envVars: map[string]string{
-				"SMTP_HOST":       "smtp.example.com",
-				"EMAIL_FROM": "test@example.com",
-				"SMTP_TIMEOUT":    "invalid",
+				"SMTP_HOST":    "smtp.example.com",
+				"EMAIL_FROM":   "test@example.com",
+				"SMTP_TIMEOUT": "invalid",
 			},
 			wantErr: true,
 		},
@@ -109,7 +109,7 @@ func TestConfig_LoadConfig(t *testing.T) {
 			name: "invalid rate limit",
 			envVars: map[string]string{
 				"SMTP_HOST":        "smtp.example.com",
-				"EMAIL_FROM":  "test@example.com",
+				"EMAIL_FROM":       "test@example.com",
 				"EMAIL_RATE_LIMIT": "invalid",
 			},
 			wantErr: true,

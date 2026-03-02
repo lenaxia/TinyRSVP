@@ -10,7 +10,7 @@ func TestTimezoneValidator_AmericaLosAngeles(t *testing.T) {
 
 	t.Run("America/Los_Angeles is valid", func(t *testing.T) {
 		tz := "America/Los_Angeles"
-		
+
 		loc, err := time.LoadLocation(tz)
 		if err != nil {
 			t.Fatalf("time.LoadLocation failed for %s: %v", tz, err)

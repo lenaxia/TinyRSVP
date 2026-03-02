@@ -35,7 +35,7 @@ func (h *TemplateEditorHandlers) RegisterRoutes(r chi.Router) {
 		r.Post("/preview", h.PreviewComponents)
 		r.Get("/validate", h.ValidateComponents)
 	})
-	
+
 	r.Get("/templates/{id}/edit", h.GetEditorPage)
 }
 
@@ -50,7 +50,7 @@ type PreviewComponentsRequest struct {
 }
 
 type ComponentConfigResponse struct {
-	Template        *TemplateResponse               `json:"template"`
+	Template        *TemplateResponse              `json:"template"`
 	ComponentConfig *models.ComponentConfiguration `json:"component_config"`
 }
 

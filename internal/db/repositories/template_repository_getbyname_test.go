@@ -62,7 +62,7 @@ func TestTemplateRepository_GetByNameAndType_NotFound(t *testing.T) {
 	ctx := context.Background()
 
 	_, err := repo.GetByNameAndType(ctx, "Nonexistent Theme", models.TemplateTypeRSVPPage)
-	
+
 	if err == nil {
 		t.Fatal("Expected error for nonexistent template")
 	}

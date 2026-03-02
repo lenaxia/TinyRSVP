@@ -365,7 +365,7 @@ type failingSender struct {
 func (s *failingSender) Send(ctx context.Context, msg *SMTPMessage) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
-	
+
 	s.attempts++
 	if s.attempts <= s.failCount {
 		return sql.ErrConnDone

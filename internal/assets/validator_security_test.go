@@ -128,9 +128,9 @@ func TestImageValidator_Validate_PolyglotFiles(t *testing.T) {
 
 	jpegHeader := []byte{0xFF, 0xD8, 0xFF, 0xE0, 0x00, 0x10, 0x4A, 0x46, 0x49, 0x46, 0x00, 0x01}
 	scriptPayload := []byte(`<script>alert('XSS')</script>`)
-	
+
 	polyglot := append(jpegHeader, scriptPayload...)
-	
+
 	_, err := validator.Validate(polyglot)
 	if err == nil {
 		t.Error("Expected validation to fail for polyglot file with script payload")
@@ -320,7 +320,7 @@ func TestImageValidator_Validate_BoundaryConditions(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			data := createTestJPEG(t, tt.width, tt.height)
-			
+
 			if len(data) < tt.size {
 				padding := make([]byte, tt.size-len(data))
 				data = append(data, padding...)

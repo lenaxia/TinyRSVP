@@ -278,13 +278,13 @@ func (h *RSVPHandler) renderPage(w http.ResponseWriter, status int, data *RSVPPa
 					mergedConfig = customization.MergedConfig
 				}
 			}
-			
+
 			if mergedConfig != nil {
 				mergedTemplate := *theme
 				configJSON, _ := json.Marshal(mergedConfig)
 				configStr := string(configJSON)
 				mergedTemplate.ComponentConfig = &configStr
-				
+
 				var buf bytes.Buffer
 				if err := h.templateService.RenderRSVPPage(&buf, data.Event, &mergedTemplate); err == nil {
 					w.Write(buf.Bytes())
@@ -382,7 +382,7 @@ func (h *RSVPHandler) getThemeColor(event *models.Event) template.HTML {
 
 func (h *RSVPHandler) parseRSVPRequest(r *http.Request) (*rsvp.SubmitRSVPRequest, error) {
 	contentType := r.Header.Get("Content-Type")
-	
+
 	if strings.Contains(contentType, "application/json") {
 		var req rsvp.SubmitRSVPRequest
 		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
@@ -390,16 +390,16 @@ func (h *RSVPHandler) parseRSVPRequest(r *http.Request) (*rsvp.SubmitRSVPRequest
 		}
 		return &req, nil
 	}
-	
+
 	if err := r.ParseForm(); err != nil {
 		return nil, err
 	}
-	
+
 	req := &rsvp.SubmitRSVPRequest{
 		Response: r.FormValue("response"),
 		Answers:  []rsvp.AnswerRequest{},
 	}
-	
+
 	if plusOnesStr := r.FormValue("plus_ones"); plusOnesStr != "" {
 		plusOnes, err := strconv.Atoi(plusOnesStr)
 		if err != nil {
@@ -407,7 +407,7 @@ func (h *RSVPHandler) parseRSVPRequest(r *http.Request) (*rsvp.SubmitRSVPRequest
 		}
 		req.PlusOnes = plusOnes
 	}
-	
+
 	if adultsStr := r.FormValue("adults_count"); adultsStr != "" {
 		adults, err := strconv.Atoi(adultsStr)
 		if err != nil {
@@ -415,7 +415,7 @@ func (h *RSVPHandler) parseRSVPRequest(r *http.Request) (*rsvp.SubmitRSVPRequest
 		}
 		req.AdultsCount = &adults
 	}
-	
+
 	if kidsStr := r.FormValue("kids_count"); kidsStr != "" {
 		kids, err := strconv.Atoi(kidsStr)
 		if err != nil {
@@ -423,39 +423,39 @@ func (h *RSVPHandler) parseRSVPRequest(r *http.Request) (*rsvp.SubmitRSVPRequest
 		}
 		req.KidsCount = &kids
 	}
-	
+
 	answerMap := make(map[int64]*rsvp.AnswerRequest)
-	
+
 	for key, values := range r.Form {
 		if !strings.HasPrefix(key, "answers[") {
 			continue
 		}
-		
+
 		key = strings.TrimPrefix(key, "answers[")
 		closeBracket := strings.Index(key, "]")
 		if closeBracket == -1 {
 			continue
 		}
-		
+
 		questionIDStr := key[:closeBracket]
 		questionID, err := strconv.ParseInt(questionIDStr, 10, 64)
 		if err != nil {
 			continue
 		}
-		
+
 		fieldType := key[closeBracket+1:]
 		fieldType = strings.TrimPrefix(fieldType, "[")
 		fieldType = strings.TrimSuffix(fieldType, "]")
 		fieldType = strings.TrimSuffix(fieldType, "[]")
-		
+
 		if _, exists := answerMap[questionID]; !exists {
 			answerMap[questionID] = &rsvp.AnswerRequest{
 				QuestionID: questionID,
 			}
 		}
-		
+
 		answer := answerMap[questionID]
-		
+
 		switch fieldType {
 		case "text":
 			if len(values) > 0 && values[0] != "" {
@@ -474,11 +474,11 @@ func (h *RSVPHandler) parseRSVPRequest(r *http.Request) (*rsvp.SubmitRSVPRequest
 			}
 		}
 	}
-	
+
 	for _, answer := range answerMap {
 		req.Answers = append(req.Answers, *answer)
 	}
-	
+
 	return req, nil
 }
 
@@ -501,7 +501,7 @@ func (h *RSVPHandler) SubmitRSVP(w http.ResponseWriter, r *http.Request) {
 
 	var existingRSVP *models.RSVP
 	var result *models.RSVP
-	
+
 	if h.rsvpRepo != nil {
 		invite, inviteErr := h.inviteService.GetInviteByToken(r.Context(), token)
 		if inviteErr != nil {
@@ -537,7 +537,7 @@ func (h *RSVPHandler) SubmitRSVP(w http.ResponseWriter, r *http.Request) {
 
 	acceptHeader := r.Header.Get("Accept")
 	contentType := r.Header.Get("Content-Type")
-	
+
 	if strings.Contains(acceptHeader, "application/json") || strings.Contains(contentType, "application/json") {
 		statusCode := http.StatusCreated
 		if existingRSVP != nil {
@@ -549,7 +549,7 @@ func (h *RSVPHandler) SubmitRSVP(w http.ResponseWriter, r *http.Request) {
 		})
 		return
 	}
-	
+
 	http.Redirect(w, r, fmt.Sprintf("/rsvp/%s/confirmation", token), http.StatusSeeOther)
 }
 
@@ -636,7 +636,7 @@ func (h *RSVPHandler) UpdateRSVP(w http.ResponseWriter, r *http.Request) {
 
 	acceptHeader := r.Header.Get("Accept")
 	contentType := r.Header.Get("Content-Type")
-	
+
 	if strings.Contains(acceptHeader, "application/json") || strings.Contains(contentType, "application/json") {
 		h.respondJSON(w, http.StatusOK, map[string]interface{}{
 			"rsvp":    result,
@@ -644,7 +644,7 @@ func (h *RSVPHandler) UpdateRSVP(w http.ResponseWriter, r *http.Request) {
 		})
 		return
 	}
-	
+
 	http.Redirect(w, r, fmt.Sprintf("/rsvp/%s/confirmation", token), http.StatusSeeOther)
 }
 

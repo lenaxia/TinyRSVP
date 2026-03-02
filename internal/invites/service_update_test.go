@@ -79,7 +79,7 @@ func (m *mockUpdateInviteRepo) CountInvites(ctx context.Context) (int, error) {
 func TestUpdateInvite_Success(t *testing.T) {
 	now := time.Now()
 	expiresAt := now.Add(30 * 24 * time.Hour)
-	
+
 	invite := &models.Invite{
 		ID:          1,
 		EventID:     100,
@@ -143,7 +143,7 @@ func TestUpdateInvite_NotFound(t *testing.T) {
 func TestUpdateInvite_CannotUpdateResponded(t *testing.T) {
 	now := time.Now()
 	expiresAt := now.Add(30 * 24 * time.Hour)
-	
+
 	invite := &models.Invite{
 		ID:          1,
 		EventID:     100,
@@ -181,7 +181,7 @@ func TestUpdateInvite_CannotUpdateResponded(t *testing.T) {
 func TestUpdateInvite_CannotUpdateRevoked(t *testing.T) {
 	now := time.Now()
 	expiresAt := now.Add(30 * 24 * time.Hour)
-	
+
 	invite := &models.Invite{
 		ID:          1,
 		EventID:     100,

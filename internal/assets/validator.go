@@ -124,7 +124,7 @@ func detectContentType(data []byte) string {
 
 func detectMaliciousPatterns(data []byte) error {
 	dataLower := bytes.ToLower(data)
-	
+
 	maliciousPatterns := []struct {
 		pattern []byte
 		message string
@@ -139,7 +139,7 @@ func detectMaliciousPatterns(data []byte) error {
 		{[]byte("<?php"), "File contains PHP code"},
 		{[]byte("#!/"), "File contains shell script"},
 	}
-	
+
 	for _, mp := range maliciousPatterns {
 		if bytes.Contains(dataLower, mp.pattern) {
 			return &ValidationError{
@@ -148,7 +148,7 @@ func detectMaliciousPatterns(data []byte) error {
 			}
 		}
 	}
-	
+
 	return nil
 }
 

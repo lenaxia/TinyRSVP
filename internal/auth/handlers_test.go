@@ -101,8 +101,8 @@ func TestCallbackHandler_Success(t *testing.T) {
 	}
 
 	location := w.Header().Get("Location")
-	if location != "/dashboard" {
-		t.Errorf("Expected redirect to /dashboard, got %s", location)
+	if location != "/" {
+		t.Errorf("Expected redirect to /, got %s", location)
 	}
 
 	cookies := w.Result().Cookies()
@@ -259,4 +259,129 @@ func (m *MockAuthenticator) HandleLogout(w http.ResponseWriter, r *http.Request)
 		return m.HandleLogoutFunc(w, r)
 	}
 	return nil
+}
+
+func TestLoginHandler_OpenRedirectPrevention(t *testing.T) {
+	tests := []struct {
+		name         string
+		returnParam  string
+		wantLocation string
+	}{
+		{"no param defaults to root", "", "/"},
+		{"relative path allowed", "/events", "/events"},
+		{"absolute URL blocked", "http://evil.com", "/"},
+		{"protocol relative blocked", "//evil.com", "/"},
+		{"javascript blocked", "javascript:alert(1)", "/"},
+		{"backslash blocked", "\\evil.com", "/"},
+		{"mixed slashes blocked", "/\\evil.com", "/"},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mockAuth := &MockAuthenticator{
+				HandleLoginFunc: func(w http.ResponseWriter, r *http.Request) error {
+					return nil
+				},
+			}
+
+			handler := NewLoginHandler(mockAuth)
+
+			w := httptest.NewRecorder()
+			url := "/login"
+			if tt.returnParam != "" {
+				url += "?return=" + tt.returnParam
+			}
+			r := httptest.NewRequest("GET", url, nil)
+
+			handler.ServeHTTP(w, r)
+
+			if w.Code != http.StatusFound {
+				t.Errorf("Expected status %d, got %d", http.StatusFound, w.Code)
+			}
+
+			location := w.Header().Get("Location")
+			if location != tt.wantLocation {
+				t.Errorf("Expected redirect to %s, got %s", tt.wantLocation, location)
+			}
+		})
+	}
+}
+
+func TestCallbackHandler_OpenRedirectPrevention(t *testing.T) {
+	tests := []struct {
+		name         string
+		returnParam  string
+		wantLocation string
+	}{
+		{"no param defaults to root", "", "/"},
+		{"relative path allowed", "/events", "/events"},
+		{"absolute URL blocked", "http://evil.com", "/"},
+		{"protocol relative blocked", "//evil.com", "/"},
+		{"javascript blocked", "javascript:alert(1)", "/"},
+		{"backslash blocked", "\\evil.com", "/"},
+		{"mixed slashes blocked", "/\\evil.com", "/"},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			subject := "user123"
+			mockAuth := &MockAuthenticator{
+				HandleCallbackFunc: func(w http.ResponseWriter, r *http.Request) (*AuthResult, error) {
+					return &AuthResult{
+						Email:       "user@example.com",
+						Name:        "Test User",
+						OIDCSubject: &subject,
+					}, nil
+				},
+			}
+
+			mockUserService := &MockUserService{
+				GetOrCreateUserFunc: func(ctx context.Context, email, name string, oidcSubject *string) (*models.User, error) {
+					return &models.User{
+						ID:          1,
+						Email:       email,
+						Name:        name,
+						Role:        models.RoleAdmin,
+						OIDCSubject: oidcSubject,
+					}, nil
+				},
+			}
+
+			mockSessionMgr := &MockSessionManager{
+				CreateSessionFunc: func(ctx context.Context, userID int64, r *http.Request) (*models.Session, error) {
+					return &models.Session{
+						ID:     "session-123",
+						UserID: userID,
+					}, nil
+				},
+				SetSessionCookieFunc: func(w http.ResponseWriter, sessionID string) error {
+					http.SetCookie(w, &http.Cookie{
+						Name:  SessionCookieName,
+						Value: sessionID,
+					})
+					return nil
+				},
+			}
+
+			handler := NewCallbackHandler(mockAuth, mockUserService, mockSessionMgr)
+
+			w := httptest.NewRecorder()
+			url := "/auth/callback?code=test&state=abc"
+			if tt.returnParam != "" {
+				url += "&return=" + tt.returnParam
+			}
+			r := httptest.NewRequest("GET", url, nil)
+
+			handler.ServeHTTP(w, r)
+
+			if w.Code != http.StatusFound {
+				t.Errorf("Expected status %d, got %d", http.StatusFound, w.Code)
+			}
+
+			location := w.Header().Get("Location")
+			if location != tt.wantLocation {
+				t.Errorf("Expected redirect to %s, got %s", tt.wantLocation, location)
+			}
+		})
+	}
 }

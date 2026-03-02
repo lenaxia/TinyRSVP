@@ -11,7 +11,7 @@ type Service interface {
 }
 
 type MockService struct {
-	SendConfirmationEmailFunc func(ctx context.Context, token string, rsvp *models.RSVP, invite *models.Invite, event *models.Event, answers []*models.RSVPAnswer) error
+	SendConfirmationEmailFunc  func(ctx context.Context, token string, rsvp *models.RSVP, invite *models.Invite, event *models.Event, answers []*models.RSVPAnswer) error
 	SendConfirmationEmailCalls int
 }
 

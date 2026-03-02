@@ -1,7 +1,6 @@
 package web
 
 import (
-	"html/template"
 	"strings"
 	"testing"
 	"time"
@@ -10,7 +9,7 @@ import (
 )
 
 func TestEventDetailTemplate(t *testing.T) {
-	tmpl, err := template.New("event_detail.html").ParseFiles("event_detail.html")
+	tmpl, err := parseWithBase("event_detail.html")
 	if err != nil {
 		t.Fatalf("Failed to parse template: %v", err)
 	}
@@ -115,7 +114,7 @@ func TestEventDetailTemplate(t *testing.T) {
 }
 
 func TestEventDetailTemplate_CSRFToken(t *testing.T) {
-	tmpl, err := template.New("event_detail.html").ParseFiles("event_detail.html")
+	tmpl, err := parseWithBase("event_detail.html")
 	if err != nil {
 		t.Fatalf("Failed to parse template: %v", err)
 	}
@@ -148,7 +147,7 @@ func TestEventDetailTemplate_CSRFToken(t *testing.T) {
 }
 
 func TestEventDetailTemplate_ActionButtons(t *testing.T) {
-	tmpl, err := template.New("event_detail.html").ParseFiles("event_detail.html")
+	tmpl, err := parseWithBase("event_detail.html")
 	if err != nil {
 		t.Fatalf("Failed to parse template: %v", err)
 	}

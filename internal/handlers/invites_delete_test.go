@@ -11,85 +11,25 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	"github.com/lenaxia/tinyrsvp/internal/auth"
-	"github.com/lenaxia/tinyrsvp/internal/db/repositories"
 	"github.com/lenaxia/tinyrsvp/internal/models"
+	"github.com/lenaxia/tinyrsvp/internal/testutil"
+	"github.com/lenaxia/tinyrsvp/internal/testutil/mocks/repositories"
+	"github.com/lenaxia/tinyrsvp/internal/testutil/mocks/services"
+	"go.uber.org/mock/gomock"
 )
 
-type mockDeleteInviteService struct {
-	getInviteByIDFunc func(ctx context.Context, id int64) (*models.Invite, error)
-	deleteInviteFunc  func(ctx context.Context, inviteID int64) error
-}
-
-func (m *mockDeleteInviteService) GetInviteByID(ctx context.Context, id int64) (*models.Invite, error) {
-	if m.getInviteByIDFunc != nil {
-		return m.getInviteByIDFunc(ctx, id)
-	}
-	return nil, errors.New("not implemented")
-}
-
-func (m *mockDeleteInviteService) DeleteInvite(ctx context.Context, inviteID int64) error {
-	if m.deleteInviteFunc != nil {
-		return m.deleteInviteFunc(ctx, inviteID)
-	}
-	return errors.New("not implemented")
-}
-
-type mockDeleteInviteEventRepo struct {
-	getByIDFunc func(ctx context.Context, id int64) (*models.Event, error)
-}
-
-func (m *mockDeleteInviteEventRepo) GetByID(ctx context.Context, id int64) (*models.Event, error) {
-	if m.getByIDFunc != nil {
-		return m.getByIDFunc(ctx, id)
-	}
-	return nil, errors.New("not implemented")
-}
-
-func (m *mockDeleteInviteEventRepo) Create(ctx context.Context, event *models.Event) error {
-	return errors.New("not implemented")
-}
-
-func (m *mockDeleteInviteEventRepo) Update(ctx context.Context, event *models.Event) error {
-	return errors.New("not implemented")
-}
-
-func (m *mockDeleteInviteEventRepo) Delete(ctx context.Context, id int64) error {
-	return errors.New("not implemented")
-}
-
-func (m *mockDeleteInviteEventRepo) List(ctx context.Context, filters repositories.ListFilters) ([]*models.Event, error) {
-	return nil, errors.New("not implemented")
-}
-
-func (m *mockDeleteInviteEventRepo) UpdateWithVersion(ctx context.Context, event *models.Event, expectedVersion int) error {
-	return errors.New("not implemented")
-}
-
-func (m *mockDeleteInviteEventRepo) UpdateStatus(ctx context.Context, id int64, status models.EventStatus) error {
-	return errors.New("not implemented")
-}
-
-func (m *mockDeleteInviteEventRepo) GetByStatus(ctx context.Context, status models.EventStatus) ([]*models.Event, error) {
-	return nil, errors.New("not implemented")
-}
-
-func (m *mockDeleteInviteEventRepo) GetEventsToArchive(ctx context.Context, daysAfterEvent int) ([]*models.Event, error) {
-	return nil, errors.New("not implemented")
-}
-
-func (m *mockDeleteInviteEventRepo) GetByCreatorID(ctx context.Context, creatorID int64) ([]*models.Event, error) {
-	return nil, errors.New("not implemented")
-}
-
 func TestDeleteInvite_Success(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
 	now := time.Now()
 	expiresAt := now.Add(30 * 24 * time.Hour)
-	
+
 	invite := &models.Invite{
 		ID:          1,
 		EventID:     100,
-		Email:       stringPtr("test@example.com"),
-		Name:        stringPtr("Test User"),
+		Email:       testutil.StringPtr("test@example.com"),
+		Name:        testutil.StringPtr("Test User"),
 		TokenHash:   "dGVzdF90b2tlbl9oYXNoXzEyMzQ1Njc4OTBhYmNkZWZnaGlqa2xtbm9wcXJzdHV2d3h5eg==",
 		MaxPlusOnes: 2,
 		Status:      models.InviteStatusDraft,
@@ -105,38 +45,20 @@ func TestDeleteInvite_Success(t *testing.T) {
 		Status:    models.EventStatusDraft,
 	}
 
-	service := &mockDeleteInviteService{
-		getInviteByIDFunc: func(ctx context.Context, id int64) (*models.Invite, error) {
-			if id == 1 {
-				return invite, nil
-			}
-			return nil, &models.NotFoundError{Resource: "invite"}
-		},
-		deleteInviteFunc: func(ctx context.Context, inviteID int64) error {
-			return nil
-		},
-	}
+	mockSvc := services.NewMockInviteService(ctrl)
+	mockEventRepo := repositories.NewMockEventRepository(ctrl)
 
-	eventRepo := &mockDeleteInviteEventRepo{
-		getByIDFunc: func(ctx context.Context, id int64) (*models.Event, error) {
-			if id == 100 {
-				return event, nil
-			}
-			return nil, &models.NotFoundError{Resource: "event"}
-		},
-	}
+	mockSvc.EXPECT().GetInviteByID(gomock.Any(), int64(1)).Return(invite, nil)
+	mockEventRepo.EXPECT().GetByID(gomock.Any(), int64(100)).Return(event, nil)
+	mockSvc.EXPECT().DeleteInvite(gomock.Any(), int64(1)).Return(nil)
 
-	handler := NewDeleteInviteHandlers(service, eventRepo)
+	handler := NewDeleteInviteHandlers(mockSvc, mockEventRepo)
 
-	user := &models.User{
-		ID:    1,
-		Email: "admin@example.com",
-		Role:  models.RoleAdmin,
-	}
+	user := &models.User{ID: 1, Email: "admin@example.com", Role: models.RoleAdmin}
 
 	req := httptest.NewRequest(http.MethodDelete, "/api/invites/1", nil)
 	req.Header.Set("Accept", "application/json")
-	
+
 	rctx := chi.NewRouteContext()
 	rctx.URLParams.Add("inviteId", "1")
 	req = req.WithContext(context.WithValue(req.Context(), chi.RouteCtxKey, rctx))
@@ -160,13 +82,16 @@ func TestDeleteInvite_Success(t *testing.T) {
 }
 
 func TestDeleteInvite_Unauthorized(t *testing.T) {
-	service := &mockDeleteInviteService{}
-	eventRepo := &mockDeleteInviteEventRepo{}
-	handler := NewDeleteInviteHandlers(service, eventRepo)
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockSvc := services.NewMockInviteService(ctrl)
+	mockEventRepo := repositories.NewMockEventRepository(ctrl)
+	handler := NewDeleteInviteHandlers(mockSvc, mockEventRepo)
 
 	req := httptest.NewRequest(http.MethodDelete, "/api/invites/1", nil)
 	req.Header.Set("Accept", "application/json")
-	
+
 	rctx := chi.NewRouteContext()
 	rctx.URLParams.Add("inviteId", "1")
 	req = req.WithContext(context.WithValue(req.Context(), chi.RouteCtxKey, rctx))
@@ -180,19 +105,18 @@ func TestDeleteInvite_Unauthorized(t *testing.T) {
 }
 
 func TestDeleteInvite_InvalidID(t *testing.T) {
-	service := &mockDeleteInviteService{}
-	eventRepo := &mockDeleteInviteEventRepo{}
-	handler := NewDeleteInviteHandlers(service, eventRepo)
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
 
-	user := &models.User{
-		ID:    1,
-		Email: "admin@example.com",
-		Role:  models.RoleAdmin,
-	}
+	mockSvc := services.NewMockInviteService(ctrl)
+	mockEventRepo := repositories.NewMockEventRepository(ctrl)
+	handler := NewDeleteInviteHandlers(mockSvc, mockEventRepo)
+
+	user := &models.User{ID: 1, Email: "admin@example.com", Role: models.RoleAdmin}
 
 	req := httptest.NewRequest(http.MethodDelete, "/api/invites/invalid", nil)
 	req.Header.Set("Accept", "application/json")
-	
+
 	rctx := chi.NewRouteContext()
 	rctx.URLParams.Add("inviteId", "invalid")
 	req = req.WithContext(context.WithValue(req.Context(), chi.RouteCtxKey, rctx))
@@ -207,24 +131,21 @@ func TestDeleteInvite_InvalidID(t *testing.T) {
 }
 
 func TestDeleteInvite_NotFound(t *testing.T) {
-	service := &mockDeleteInviteService{
-		getInviteByIDFunc: func(ctx context.Context, id int64) (*models.Invite, error) {
-			return nil, &models.NotFoundError{Resource: "invite"}
-		},
-	}
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
 
-	eventRepo := &mockDeleteInviteEventRepo{}
-	handler := NewDeleteInviteHandlers(service, eventRepo)
+	mockSvc := services.NewMockInviteService(ctrl)
+	mockEventRepo := repositories.NewMockEventRepository(ctrl)
 
-	user := &models.User{
-		ID:    1,
-		Email: "admin@example.com",
-		Role:  models.RoleAdmin,
-	}
+	mockSvc.EXPECT().GetInviteByID(gomock.Any(), int64(999)).Return(nil, &models.NotFoundError{Resource: "invite"})
+
+	handler := NewDeleteInviteHandlers(mockSvc, mockEventRepo)
+
+	user := &models.User{ID: 1, Email: "admin@example.com", Role: models.RoleAdmin}
 
 	req := httptest.NewRequest(http.MethodDelete, "/api/invites/999", nil)
 	req.Header.Set("Accept", "application/json")
-	
+
 	rctx := chi.NewRouteContext()
 	rctx.URLParams.Add("inviteId", "999")
 	req = req.WithContext(context.WithValue(req.Context(), chi.RouteCtxKey, rctx))
@@ -239,14 +160,17 @@ func TestDeleteInvite_NotFound(t *testing.T) {
 }
 
 func TestDeleteInvite_PermissionDenied(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
 	now := time.Now()
 	expiresAt := now.Add(30 * 24 * time.Hour)
-	
+
 	invite := &models.Invite{
 		ID:          1,
 		EventID:     100,
-		Email:       stringPtr("test@example.com"),
-		Name:        stringPtr("Test User"),
+		Email:       testutil.StringPtr("test@example.com"),
+		Name:        testutil.StringPtr("Test User"),
 		TokenHash:   "dGVzdF90b2tlbl9oYXNoXzEyMzQ1Njc4OTBhYmNkZWZnaGlqa2xtbm9wcXJzdHV2d3h5eg==",
 		MaxPlusOnes: 2,
 		Status:      models.InviteStatusDraft,
@@ -255,36 +179,21 @@ func TestDeleteInvite_PermissionDenied(t *testing.T) {
 		UpdatedAt:   now,
 	}
 
-	event := &models.Event{
-		ID:        100,
-		Title:     "Test Event",
-		CreatedBy: 999,
-		Status:    models.EventStatusDraft,
-	}
+	event := &models.Event{ID: 100, Title: "Test Event", CreatedBy: 999, Status: models.EventStatusDraft}
 
-	service := &mockDeleteInviteService{
-		getInviteByIDFunc: func(ctx context.Context, id int64) (*models.Invite, error) {
-			return invite, nil
-		},
-	}
+	mockSvc := services.NewMockInviteService(ctrl)
+	mockEventRepo := repositories.NewMockEventRepository(ctrl)
 
-	eventRepo := &mockDeleteInviteEventRepo{
-		getByIDFunc: func(ctx context.Context, id int64) (*models.Event, error) {
-			return event, nil
-		},
-	}
+	mockSvc.EXPECT().GetInviteByID(gomock.Any(), int64(1)).Return(invite, nil)
+	mockEventRepo.EXPECT().GetByID(gomock.Any(), int64(100)).Return(event, nil)
 
-	handler := NewDeleteInviteHandlers(service, eventRepo)
+	handler := NewDeleteInviteHandlers(mockSvc, mockEventRepo)
 
-	user := &models.User{
-		ID:    1,
-		Email: "user@example.com",
-		Role:  models.RoleEventManager,
-	}
+	user := &models.User{ID: 1, Email: "user@example.com", Role: models.RoleEventManager}
 
 	req := httptest.NewRequest(http.MethodDelete, "/api/invites/1", nil)
 	req.Header.Set("Accept", "application/json")
-	
+
 	rctx := chi.NewRouteContext()
 	rctx.URLParams.Add("inviteId", "1")
 	req = req.WithContext(context.WithValue(req.Context(), chi.RouteCtxKey, rctx))
@@ -299,14 +208,17 @@ func TestDeleteInvite_PermissionDenied(t *testing.T) {
 }
 
 func TestDeleteInvite_CannotDeleteRespondedInvite(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
 	now := time.Now()
 	expiresAt := now.Add(30 * 24 * time.Hour)
-	
+
 	invite := &models.Invite{
 		ID:          1,
 		EventID:     100,
-		Email:       stringPtr("test@example.com"),
-		Name:        stringPtr("Test User"),
+		Email:       testutil.StringPtr("test@example.com"),
+		Name:        testutil.StringPtr("Test User"),
 		TokenHash:   "dGVzdF90b2tlbl9oYXNoXzEyMzQ1Njc4OTBhYmNkZWZnaGlqa2xtbm9wcXJzdHV2d3h5eg==",
 		MaxPlusOnes: 2,
 		Status:      models.InviteStatusResponded,
@@ -315,39 +227,22 @@ func TestDeleteInvite_CannotDeleteRespondedInvite(t *testing.T) {
 		UpdatedAt:   now,
 	}
 
-	event := &models.Event{
-		ID:        100,
-		Title:     "Test Event",
-		CreatedBy: 1,
-		Status:    models.EventStatusDraft,
-	}
+	event := &models.Event{ID: 100, Title: "Test Event", CreatedBy: 1, Status: models.EventStatusDraft}
 
-	service := &mockDeleteInviteService{
-		getInviteByIDFunc: func(ctx context.Context, id int64) (*models.Invite, error) {
-			return invite, nil
-		},
-		deleteInviteFunc: func(ctx context.Context, inviteID int64) error {
-			return errors.New("cannot delete responded invite")
-		},
-	}
+	mockSvc := services.NewMockInviteService(ctrl)
+	mockEventRepo := repositories.NewMockEventRepository(ctrl)
 
-	eventRepo := &mockDeleteInviteEventRepo{
-		getByIDFunc: func(ctx context.Context, id int64) (*models.Event, error) {
-			return event, nil
-		},
-	}
+	mockSvc.EXPECT().GetInviteByID(gomock.Any(), int64(1)).Return(invite, nil)
+	mockEventRepo.EXPECT().GetByID(gomock.Any(), int64(100)).Return(event, nil)
+	mockSvc.EXPECT().DeleteInvite(gomock.Any(), int64(1)).Return(errors.New("cannot delete responded invite"))
 
-	handler := NewDeleteInviteHandlers(service, eventRepo)
+	handler := NewDeleteInviteHandlers(mockSvc, mockEventRepo)
 
-	user := &models.User{
-		ID:    1,
-		Email: "admin@example.com",
-		Role:  models.RoleAdmin,
-	}
+	user := &models.User{ID: 1, Email: "admin@example.com", Role: models.RoleAdmin}
 
 	req := httptest.NewRequest(http.MethodDelete, "/api/invites/1", nil)
 	req.Header.Set("Accept", "application/json")
-	
+
 	rctx := chi.NewRouteContext()
 	rctx.URLParams.Add("inviteId", "1")
 	req = req.WithContext(context.WithValue(req.Context(), chi.RouteCtxKey, rctx))
@@ -360,27 +255,3 @@ func TestDeleteInvite_CannotDeleteRespondedInvite(t *testing.T) {
 		t.Errorf("Expected status %d, got %d", http.StatusBadRequest, w.Code)
 	}
 }
-
-func (m *mockDeleteInviteEventRepo) CountEvents(ctx context.Context) (int, error) {
-	return 0, errors.New("not implemented")
-}
-
-func (m *mockDeleteInviteEventRepo) GetComponentOverrides(ctx context.Context, eventID int64) (*models.ComponentOverrides, error) {
-	return nil, nil
-}
-
-func (m *mockDeleteInviteEventRepo) UpdateComponentOverrides(ctx context.Context, eventID int64, overrides *models.ComponentOverrides) error {
-	return nil
-}
-
-func (m *mockDeleteInviteEventRepo) DeleteComponentOverrides(ctx context.Context, eventID int64) error {
-	return nil
-}
-func (m *mockDeleteInviteEventRepo) GetByPublicID(ctx context.Context, publicID string) (*models.Event, error) {
-	return nil, errors.New("not implemented")
-}
-
-func (m *mockDeleteInviteEventRepo) GetByFriendlyName(ctx context.Context, friendlyName string) (*models.Event, error) {
-	return nil, errors.New("not implemented")
-}
-

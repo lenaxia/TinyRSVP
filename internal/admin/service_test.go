@@ -1,46 +1,28 @@
 package admin
 
 import (
-	"context"
 	"errors"
 	"testing"
+
+	"github.com/lenaxia/tinyrsvp/internal/testutil/mocks/other"
+	"go.uber.org/mock/gomock"
 )
 
-type mockUserCounter struct {
-	count int
-	err   error
-}
-
-func (m *mockUserCounter) CountUsers(ctx context.Context) (int, error) {
-	return m.count, m.err
-}
-
-type mockEventCounter struct {
-	count int
-	err   error
-}
-
-func (m *mockEventCounter) CountEvents(ctx context.Context) (int, error) {
-	return m.count, m.err
-}
-
-type mockInviteCounter struct {
-	count int
-	err   error
-}
-
-func (m *mockInviteCounter) CountInvites(ctx context.Context) (int, error) {
-	return m.count, m.err
-}
-
 func TestAdminService_GetStats_Success(t *testing.T) {
-	userCounter := &mockUserCounter{count: 10}
-	eventCounter := &mockEventCounter{count: 5}
-	inviteCounter := &mockInviteCounter{count: 50}
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
 
-	service := NewAdminService(userCounter, eventCounter, inviteCounter)
+	mockUserCounter := other.NewMockUserCounter(ctrl)
+	mockEventCounter := other.NewMockEventCounter(ctrl)
+	mockInviteCounter := other.NewMockInviteCounter(ctrl)
 
-	stats, err := service.GetAdminStats(context.Background())
+	mockUserCounter.EXPECT().CountUsers(gomock.Any()).Return(10, nil)
+	mockEventCounter.EXPECT().CountEvents(gomock.Any()).Return(5, nil)
+	mockInviteCounter.EXPECT().CountInvites(gomock.Any()).Return(50, nil)
+
+	service := NewAdminService(mockUserCounter, mockEventCounter, mockInviteCounter)
+
+	stats, err := service.GetAdminStats(t.Context())
 	if err != nil {
 		t.Fatalf("Expected no error, got %v", err)
 	}
@@ -57,52 +39,77 @@ func TestAdminService_GetStats_Success(t *testing.T) {
 }
 
 func TestAdminService_GetStats_UserCountError(t *testing.T) {
-	userCounter := &mockUserCounter{err: errors.New("user count error")}
-	eventCounter := &mockEventCounter{count: 5}
-	inviteCounter := &mockInviteCounter{count: 50}
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
 
-	service := NewAdminService(userCounter, eventCounter, inviteCounter)
+	mockUserCounter := other.NewMockUserCounter(ctrl)
+	mockEventCounter := other.NewMockEventCounter(ctrl)
+	mockInviteCounter := other.NewMockInviteCounter(ctrl)
 
-	_, err := service.GetAdminStats(context.Background())
+	mockUserCounter.EXPECT().CountUsers(gomock.Any()).Return(0, errors.New("user count error"))
+
+	service := NewAdminService(mockUserCounter, mockEventCounter, mockInviteCounter)
+
+	_, err := service.GetAdminStats(t.Context())
 	if err == nil {
 		t.Error("Expected error, got nil")
 	}
 }
 
 func TestAdminService_GetStats_EventCountError(t *testing.T) {
-	userCounter := &mockUserCounter{count: 10}
-	eventCounter := &mockEventCounter{err: errors.New("event count error")}
-	inviteCounter := &mockInviteCounter{count: 50}
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
 
-	service := NewAdminService(userCounter, eventCounter, inviteCounter)
+	mockUserCounter := other.NewMockUserCounter(ctrl)
+	mockEventCounter := other.NewMockEventCounter(ctrl)
+	mockInviteCounter := other.NewMockInviteCounter(ctrl)
 
-	_, err := service.GetAdminStats(context.Background())
+	mockUserCounter.EXPECT().CountUsers(gomock.Any()).Return(10, nil)
+	mockEventCounter.EXPECT().CountEvents(gomock.Any()).Return(0, errors.New("event count error"))
+
+	service := NewAdminService(mockUserCounter, mockEventCounter, mockInviteCounter)
+
+	_, err := service.GetAdminStats(t.Context())
 	if err == nil {
 		t.Error("Expected error, got nil")
 	}
 }
 
 func TestAdminService_GetStats_InviteCountError(t *testing.T) {
-	userCounter := &mockUserCounter{count: 10}
-	eventCounter := &mockEventCounter{count: 5}
-	inviteCounter := &mockInviteCounter{err: errors.New("invite count error")}
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
 
-	service := NewAdminService(userCounter, eventCounter, inviteCounter)
+	mockUserCounter := other.NewMockUserCounter(ctrl)
+	mockEventCounter := other.NewMockEventCounter(ctrl)
+	mockInviteCounter := other.NewMockInviteCounter(ctrl)
 
-	_, err := service.GetAdminStats(context.Background())
+	mockUserCounter.EXPECT().CountUsers(gomock.Any()).Return(10, nil)
+	mockEventCounter.EXPECT().CountEvents(gomock.Any()).Return(5, nil)
+	mockInviteCounter.EXPECT().CountInvites(gomock.Any()).Return(0, errors.New("invite count error"))
+
+	service := NewAdminService(mockUserCounter, mockEventCounter, mockInviteCounter)
+
+	_, err := service.GetAdminStats(t.Context())
 	if err == nil {
 		t.Error("Expected error, got nil")
 	}
 }
 
 func TestAdminService_GetStats_ZeroCounts(t *testing.T) {
-	userCounter := &mockUserCounter{count: 0}
-	eventCounter := &mockEventCounter{count: 0}
-	inviteCounter := &mockInviteCounter{count: 0}
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
 
-	service := NewAdminService(userCounter, eventCounter, inviteCounter)
+	mockUserCounter := other.NewMockUserCounter(ctrl)
+	mockEventCounter := other.NewMockEventCounter(ctrl)
+	mockInviteCounter := other.NewMockInviteCounter(ctrl)
 
-	stats, err := service.GetAdminStats(context.Background())
+	mockUserCounter.EXPECT().CountUsers(gomock.Any()).Return(0, nil)
+	mockEventCounter.EXPECT().CountEvents(gomock.Any()).Return(0, nil)
+	mockInviteCounter.EXPECT().CountInvites(gomock.Any()).Return(0, nil)
+
+	service := NewAdminService(mockUserCounter, mockEventCounter, mockInviteCounter)
+
+	stats, err := service.GetAdminStats(t.Context())
 	if err != nil {
 		t.Fatalf("Expected no error, got %v", err)
 	}

@@ -19,11 +19,11 @@ type CustomizationService interface {
 }
 
 type EventCustomizationData struct {
-	Event          *models.Event                   `json:"event"`
-	Template       *models.Template                `json:"template"`
-	TemplateConfig *models.ComponentConfiguration  `json:"templateConfig"`
-	EventOverrides *models.ComponentOverrides      `json:"eventOverrides,omitempty"`
-	MergedConfig   *models.ComponentConfiguration  `json:"mergedConfig"`
+	Event          *models.Event                  `json:"event"`
+	Template       *models.Template               `json:"template"`
+	TemplateConfig *models.ComponentConfiguration `json:"templateConfig"`
+	EventOverrides *models.ComponentOverrides     `json:"eventOverrides,omitempty"`
+	MergedConfig   *models.ComponentConfiguration `json:"mergedConfig"`
 }
 
 type customizationService struct {

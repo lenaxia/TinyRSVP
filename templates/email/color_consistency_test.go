@@ -52,8 +52,8 @@ func TestEmailTemplateColorConsistency(t *testing.T) {
 	}
 }
 
-func parseCSSVariables(content string) map[string]string {
-	vars := make(map[string]string)
+func parseCSSVariables(content string) map[string][]string {
+	vars := make(map[string][]string)
 	re := regexp.MustCompile(`--([a-z0-9-]+):\s*(#[0-9a-fA-F]{3,6}|rgba?\([^)]+\));`)
 	matches := re.FindAllStringSubmatch(content, -1)
 
@@ -61,14 +61,14 @@ func parseCSSVariables(content string) map[string]string {
 		if len(match) >= 3 {
 			varName := match[1]
 			varValue := strings.ToLower(strings.TrimSpace(match[2]))
-			vars[varName] = varValue
+			vars[varName] = append(vars[varName], varValue)
 		}
 	}
 
 	return vars
 }
 
-func validateTemplateColors(t *testing.T, content string, cssVars map[string]string, templateName string) {
+func validateTemplateColors(t *testing.T, content string, cssVars map[string][]string, templateName string) {
 	colorMap := map[string][]string{
 		"#f5f5f5": {"color-surface-disabled"},
 		"#111827": {"color-text-primary", "color-gray-900"},
@@ -79,6 +79,7 @@ func validateTemplateColors(t *testing.T, content string, cssVars map[string]str
 		"#2563eb": {"color-primary-600"},
 		"#1d4ed8": {"color-primary-700"},
 		"#92400e": {"color-warning-dark"},
+		"#d97706": {"color-warning"},
 		"#f59e0b": {"color-warning"},
 		"#fef3c7": {"color-warning-light"},
 		"#e5e7eb": {"color-border", "color-gray-200"},
@@ -108,16 +109,21 @@ func validateTemplateColors(t *testing.T, content string, cssVars map[string]str
 
 		found := false
 		for _, varName := range expectedVars {
-			if cssValue, ok := cssVars[varName]; ok {
-				if normalizeColor(cssValue) == normalizeColor(color) {
-					found = true
+			if cssValues, ok := cssVars[varName]; ok {
+				for _, cssValue := range cssValues {
+					if normalizeColor(cssValue) == normalizeColor(color) {
+						found = true
+						break
+					}
+				}
+				if found {
 					break
 				}
 			}
 		}
 
 		if !found {
-			t.Errorf("Template %s uses color %s but it doesn't match any of the expected CSS variables: %v", 
+			t.Errorf("Template %s uses color %s but it doesn't match any of the expected CSS variables: %v",
 				templateName, color, expectedVars)
 		}
 	}
@@ -130,14 +136,14 @@ func validateTemplateColors(t *testing.T, content string, cssVars map[string]str
 
 func normalizeColor(color string) string {
 	color = strings.ToLower(strings.TrimSpace(color))
-	
+
 	if len(color) == 4 && color[0] == '#' {
 		r := string(color[1])
 		g := string(color[2])
 		b := string(color[3])
 		color = "#" + r + r + g + g + b + b
 	}
-	
+
 	return color
 }
 
@@ -181,10 +187,19 @@ func TestParseCSSVariables(t *testing.T) {
 	}
 
 	for key, expectedValue := range expectedVars {
-		if value, ok := vars[key]; !ok {
+		if values, ok := vars[key]; !ok {
 			t.Errorf("Expected CSS variable %s not found", key)
-		} else if value != expectedValue {
-			t.Errorf("CSS variable %s = %s, want %s", key, value, expectedValue)
+		} else {
+			found := false
+			for _, v := range values {
+				if v == expectedValue {
+					found = true
+					break
+				}
+			}
+			if !found {
+				t.Errorf("CSS variable %s = %v, want to contain %s", key, values, expectedValue)
+			}
 		}
 	}
 }

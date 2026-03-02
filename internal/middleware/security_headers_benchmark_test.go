@@ -65,15 +65,15 @@ func BenchmarkCSPReportHandler(b *testing.B) {
 
 func BenchmarkBuildCSP(b *testing.B) {
 	config := &SecurityHeadersConfig{
-		CSPDefaultSrc:  []string{"'self'", "https://cdn.example.com"},
-		CSPScriptSrc:   []string{"'self'", "'nonce-abc123'"},
-		CSPStyleSrc:    []string{"'self'", "https://fonts.googleapis.com"},
-		CSPImgSrc:      []string{"'self'", "data:", "https:", "blob:"},
-		CSPFontSrc:     []string{"'self'", "https://fonts.gstatic.com"},
-		CSPConnectSrc:  []string{"'self'", "https://api.example.com"},
+		CSPDefaultSrc:     []string{"'self'", "https://cdn.example.com"},
+		CSPScriptSrc:      []string{"'self'", "'nonce-abc123'"},
+		CSPStyleSrc:       []string{"'self'", "https://fonts.googleapis.com"},
+		CSPImgSrc:         []string{"'self'", "data:", "https:", "blob:"},
+		CSPFontSrc:        []string{"'self'", "https://fonts.gstatic.com"},
+		CSPConnectSrc:     []string{"'self'", "https://api.example.com"},
 		CSPFrameAncestors: []string{"'self'"},
-		CSPBaseURI:     []string{"'self'"},
-		CSPFormAction:  []string{"'self'", "https://form.example.com"},
+		CSPBaseURI:        []string{"'self'"},
+		CSPFormAction:     []string{"'self'", "https://form.example.com"},
 	}
 
 	b.ResetTimer()

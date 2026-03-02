@@ -748,7 +748,7 @@ func main() {
 	rateLimiter := email.NewRateLimiter(emailConfig.RateLimit)
 	emailMetrics := email.NewNoOpMetrics()
 	emailLogger := email.NewLogger(logger)
-	
+
 	emailProcessor := email.NewQueueProcessor(
 		emailQueueRepo,
 		smtpSender,

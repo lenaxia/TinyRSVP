@@ -93,6 +93,13 @@ $MOCKGEN -source=internal/events/service.go \
     -package=services \
     -mock_names=Service=MockEventService
 
+echo "  - DashboardService..."
+$MOCKGEN -source=internal/events/dashboard_service.go \
+    -destination=$MOCK_BASE/services/mock_dashboard_service.go \
+    -package=services \
+    -mock_names=DashboardService=MockDashboardService \
+    -exclude_interfaces=DashboardEventRepository,DashboardInviteRepository,DashboardRSVPRepository
+
 echo "  - InviteService..."
 $MOCKGEN -source=internal/invites/service.go \
     -destination=$MOCK_BASE/services/mock_invite_service.go \
@@ -117,20 +124,19 @@ $MOCKGEN -source=internal/email/service.go \
     -package=services \
     -mock_names=Service=MockEmailService
 
-echo -e "${GREEN}Generating other mocks...${NC}"
+echo "  - UserService (for services package, used by handlers)..."
+$MOCKGEN -source=internal/auth/oidc.go \
+    -destination=$MOCK_BASE/services/mock_user_service.go \
+    -package=services \
+    -mock_names=UserService=MockUserService \
+    -exclude_interfaces=Authenticator,SessionManager
 
-# Other mocks → mocks/other/
-# Database, validators, storage, auth
-
-echo "  - Database..."
-$MOCKGEN -source=internal/db/db.go \
-    -destination=$MOCK_BASE/other/mock_database.go \
-    -package=other
-
-echo "  - AuthorizationChecker..."
-$MOCKGEN -source=internal/auth/permissions.go \
-    -destination=$MOCK_BASE/other/mock_authorization.go \
-    -package=other
+echo "  - Handler-local service interfaces (AdminDashboardService, etc.)..."
+$MOCKGEN -source=internal/handlers/admin.go \
+    -destination=$MOCK_BASE/services/mock_admin_handler_services.go \
+    -package=services \
+    -mock_names=AdminDashboardService=MockAdminDashboardService,UserListService=MockUserListService \
+    -exclude_interfaces=AdminDashboardHandler,UserManagementHandler
 
 echo "  - EventValidator..."
 $MOCKGEN -source=internal/events/validator.go \
@@ -149,8 +155,41 @@ $MOCKGEN -source=internal/storage/provider.go \
     -destination=$MOCK_BASE/other/mock_storage_provider.go \
     -package=other
 
+echo "  - Admin counters (UserCounter, EventCounter, InviteCounter) and AdminService..."
+$MOCKGEN -source=internal/admin/service.go \
+    -destination=$MOCK_BASE/other/mock_admin_counters.go \
+    -package=other \
+    -mock_names=UserCounter=MockUserCounter,EventCounter=MockEventCounter,InviteCounter=MockInviteCounter,AdminService=MockAdminService
+
+echo "  - Email SMTPSender / RateLimiter / TemplateRenderer / Metrics..."
+$MOCKGEN -source=internal/email/processor.go \
+    -destination=$MOCK_BASE/other/mock_email_processor.go \
+    -package=other \
+    -exclude_interfaces=QueueProcessor
+
+$MOCKGEN -source=internal/email/renderer.go \
+    -destination=$MOCK_BASE/other/mock_email_renderer.go \
+    -package=other
+
+$MOCKGEN -source=internal/email/metrics.go \
+    -destination=$MOCK_BASE/other/mock_email_metrics.go \
+    -package=other \
+    -mock_names=Metrics=MockEmailMetrics
+
+echo "  - Jobs EventService..."
+$MOCKGEN -source=internal/jobs/archiver.go \
+    -destination=$MOCK_BASE/other/mock_jobs_event_service.go \
+    -package=other \
+    -mock_names=EventService=MockJobsEventService \
+    -exclude_interfaces=Archiver
+
+echo "  - Middleware SessionManager / UserService..."
+$MOCKGEN -source=internal/middleware/rbac.go \
+    -destination=$MOCK_BASE/other/mock_middleware_rbac.go \
+    -package=other 2>/dev/null || true
+
 echo -e "${GREEN}Mock generation complete!${NC}"
 echo -e "Generated mocks organized in:"
 echo -e "  - $MOCK_BASE/repositories/ (10 mocks)"
 echo -e "  - $MOCK_BASE/services/ (5 mocks)"
-echo -e "  - $MOCK_BASE/other/ (5 mocks)"
+echo -e "  - $MOCK_BASE/other/ (14 mocks)"

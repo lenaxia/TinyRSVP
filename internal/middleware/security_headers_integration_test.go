@@ -9,11 +9,11 @@ import (
 
 func TestSecurityHeaders_Integration(t *testing.T) {
 	tests := []struct {
-		name           string
-		config         *SecurityHeadersConfig
-		path           string
-		method         string
-		checkHeaders   map[string]string
+		name         string
+		config       *SecurityHeadersConfig
+		path         string
+		method       string
+		checkHeaders map[string]string
 	}{
 		{
 			name:   "GET request with default config",
@@ -55,7 +55,7 @@ func TestSecurityHeaders_Integration(t *testing.T) {
 			},
 		},
 		{
-			name: "static assets",
+			name:   "static assets",
 			config: nil,
 			path:   "/static/css/main.css",
 			method: http.MethodGet,
@@ -157,7 +157,7 @@ func TestSecurityHeaders_CSPViolationScenarios(t *testing.T) {
 			},
 		},
 		{
-			name: "allows data URIs for images",
+			name:   "allows data URIs for images",
 			config: nil,
 			verify: func(t *testing.T, csp string) {
 				if !contains(csp, "img-src 'self' data: https:") {
@@ -166,7 +166,7 @@ func TestSecurityHeaders_CSPViolationScenarios(t *testing.T) {
 			},
 		},
 		{
-			name: "prevents framing",
+			name:   "prevents framing",
 			config: nil,
 			verify: func(t *testing.T, csp string) {
 				if !contains(csp, "frame-ancestors 'none'") {

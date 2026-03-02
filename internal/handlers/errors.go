@@ -348,4 +348,3 @@ func HandleError(w http.ResponseWriter, r *http.Request, err error) {
 		writeHTMLError(w, r, apiErr)
 	}
 }
-

@@ -50,9 +50,9 @@ func TestGridColumnClasses(t *testing.T) {
 	cssContent := string(content)
 
 	tests := []struct {
-		name     string
-		class    string
-		columns  string
+		name    string
+		class   string
+		columns string
 	}{
 		{"1 column", ".grid-cols-1", "1"},
 		{"2 columns", ".grid-cols-2", "2"},

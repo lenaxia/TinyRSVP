@@ -31,9 +31,9 @@ type ComponentUpdate struct {
 }
 
 type ComponentChanges struct {
-	Updates   []ComponentUpdate `json:"updates"`
+	Updates   []ComponentUpdate  `json:"updates"`
 	Additions []models.Component `json:"additions"`
-	Removals  []string          `json:"removals"`
+	Removals  []string           `json:"removals"`
 }
 
 type editorService struct {
@@ -503,29 +503,29 @@ func (s *editorService) deepCopyContent(content *models.ComponentContent) *model
 	if content == nil {
 		return nil
 	}
-	
+
 	copied := &models.ComponentContent{}
-	
+
 	if content.TextBox != nil {
 		textBox := *content.TextBox
 		copied.TextBox = &textBox
 	}
-	
+
 	if content.Image != nil {
 		image := *content.Image
 		copied.Image = &image
 	}
-	
+
 	if content.Background != nil {
 		background := *content.Background
 		copied.Background = &background
 	}
-	
+
 	if content.Overlay != nil {
 		overlay := *content.Overlay
 		copied.Overlay = &overlay
 	}
-	
+
 	return copied
 }
 
@@ -533,7 +533,7 @@ func (s *editorService) deepCopyLayout(layout *models.ContainerLayout) *models.C
 	if layout == nil {
 		return nil
 	}
-	
+
 	copied := &models.ContainerLayout{
 		Display:        layout.Display,
 		FlexDirection:  layout.FlexDirection,
@@ -542,12 +542,12 @@ func (s *editorService) deepCopyLayout(layout *models.ContainerLayout) *models.C
 		Gap:            layout.Gap,
 		Padding:        layout.Padding,
 	}
-	
+
 	if layout.Children != nil {
 		copied.Children = make([]string, len(layout.Children))
 		copy(copied.Children, layout.Children)
 	}
-	
+
 	return copied
 }
 
@@ -555,7 +555,7 @@ func (s *editorService) deepCopyStyle(style *models.DividerStyle) *models.Divide
 	if style == nil {
 		return nil
 	}
-	
+
 	return &models.DividerStyle{
 		BackgroundColor: style.BackgroundColor,
 		Height:          style.Height,
@@ -568,24 +568,24 @@ func (s *editorService) deepCopyResponsive(responsive *models.ResponsiveConfig) 
 	if responsive == nil {
 		return nil
 	}
-	
+
 	copied := &models.ResponsiveConfig{}
-	
+
 	if responsive.Mobile != nil {
 		mobile := *responsive.Mobile
 		copied.Mobile = &mobile
 	}
-	
+
 	if responsive.Tablet != nil {
 		tablet := *responsive.Tablet
 		copied.Tablet = &tablet
 	}
-	
+
 	if responsive.Desktop != nil {
 		desktop := *responsive.Desktop
 		copied.Desktop = &desktop
 	}
-	
+
 	return copied
 }
 

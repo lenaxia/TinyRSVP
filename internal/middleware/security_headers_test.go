@@ -13,26 +13,26 @@ func intPtr(i int) *int {
 
 func TestSecurityHeaders(t *testing.T) {
 	tests := []struct {
-		name           string
-		config         *SecurityHeadersConfig
-		expectedHSTS   string
-		expectedCSP    string
-		expectedXCTO   string
-		expectedXFO    string
-		expectedXXSS   string
-		expectedRP     string
-		expectedPP     string
+		name         string
+		config       *SecurityHeadersConfig
+		expectedHSTS string
+		expectedCSP  string
+		expectedXCTO string
+		expectedXFO  string
+		expectedXXSS string
+		expectedRP   string
+		expectedPP   string
 	}{
 		{
-			name:           "default headers",
-			config:         nil,
-			expectedHSTS:   "max-age=31536000; includeSubDomains",
-			expectedCSP:    "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self'; connect-src 'self'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'",
-			expectedXCTO:   "nosniff",
-			expectedXFO:    "DENY",
-			expectedXXSS:   "1; mode=block",
-			expectedRP:     "strict-origin-when-cross-origin",
-			expectedPP:     "geolocation=(), microphone=(), camera=()",
+			name:         "default headers",
+			config:       nil,
+			expectedHSTS: "max-age=31536000; includeSubDomains",
+			expectedCSP:  "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self'; connect-src 'self'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'",
+			expectedXCTO: "nosniff",
+			expectedXFO:  "DENY",
+			expectedXXSS: "1; mode=block",
+			expectedRP:   "strict-origin-when-cross-origin",
+			expectedPP:   "geolocation=(), microphone=(), camera=()",
 		},
 		{
 			name: "custom HSTS",
@@ -52,15 +52,15 @@ func TestSecurityHeaders(t *testing.T) {
 		{
 			name: "custom CSP",
 			config: &SecurityHeadersConfig{
-				CSPDefaultSrc:  []string{"'self'", "https://trusted.com"},
-				CSPScriptSrc:   []string{"'self'"},
-				CSPStyleSrc:    []string{"'self'"},
-				CSPImgSrc:      []string{"'self'", "data:", "https:"},
-				CSPFontSrc:     []string{"'self'"},
-				CSPConnectSrc:  []string{"'self'"},
+				CSPDefaultSrc:     []string{"'self'", "https://trusted.com"},
+				CSPScriptSrc:      []string{"'self'"},
+				CSPStyleSrc:       []string{"'self'"},
+				CSPImgSrc:         []string{"'self'", "data:", "https:"},
+				CSPFontSrc:        []string{"'self'"},
+				CSPConnectSrc:     []string{"'self'"},
 				CSPFrameAncestors: []string{"'none'"},
-				CSPBaseURI:     []string{"'self'"},
-				CSPFormAction:  []string{"'self'"},
+				CSPBaseURI:        []string{"'self'"},
+				CSPFormAction:     []string{"'self'"},
 			},
 			expectedHSTS: "max-age=31536000; includeSubDomains",
 			expectedCSP:  "default-src 'self' https://trusted.com; script-src 'self'; style-src 'self'; img-src 'self' data: https:; font-src 'self'; connect-src 'self'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'",
@@ -215,22 +215,22 @@ func TestBuildCSP(t *testing.T) {
 			expected: "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self'; connect-src 'self'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'",
 		},
 		{
-			name: "empty config uses defaults",
-			config: &SecurityHeadersConfig{},
+			name:     "empty config uses defaults",
+			config:   &SecurityHeadersConfig{},
 			expected: "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self'; connect-src 'self'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'",
 		},
 		{
 			name: "custom directives",
 			config: &SecurityHeadersConfig{
-				CSPDefaultSrc:  []string{"'self'", "https://cdn.example.com"},
-				CSPScriptSrc:   []string{"'self'", "'nonce-abc123'"},
-				CSPStyleSrc:    []string{"'self'", "https://fonts.googleapis.com"},
-				CSPImgSrc:      []string{"'self'", "data:", "https:", "blob:"},
-				CSPFontSrc:     []string{"'self'", "https://fonts.gstatic.com"},
-				CSPConnectSrc:  []string{"'self'", "https://api.example.com"},
+				CSPDefaultSrc:     []string{"'self'", "https://cdn.example.com"},
+				CSPScriptSrc:      []string{"'self'", "'nonce-abc123'"},
+				CSPStyleSrc:       []string{"'self'", "https://fonts.googleapis.com"},
+				CSPImgSrc:         []string{"'self'", "data:", "https:", "blob:"},
+				CSPFontSrc:        []string{"'self'", "https://fonts.gstatic.com"},
+				CSPConnectSrc:     []string{"'self'", "https://api.example.com"},
 				CSPFrameAncestors: []string{"'self'"},
-				CSPBaseURI:     []string{"'self'"},
-				CSPFormAction:  []string{"'self'", "https://form.example.com"},
+				CSPBaseURI:        []string{"'self'"},
+				CSPFormAction:     []string{"'self'", "https://form.example.com"},
 			},
 			expected: "default-src 'self' https://cdn.example.com; script-src 'self' 'nonce-abc123'; style-src 'self' https://fonts.googleapis.com; img-src 'self' data: https: blob:; font-src 'self' https://fonts.gstatic.com; connect-src 'self' https://api.example.com; frame-ancestors 'self'; base-uri 'self'; form-action 'self' https://form.example.com",
 		},

@@ -158,7 +158,7 @@ func TestFocusManagementNoHardcodedColors(t *testing.T) {
 
 	hexColorPattern := regexp.MustCompile(`#[0-9a-fA-F]{3,6}`)
 	matches := hexColorPattern.FindAllString(cssContent, -1)
-	
+
 	for _, match := range matches {
 		if match != "#fff" && match != "#ffffff" && match != "#000" && match != "#000000" {
 			t.Errorf("Focus management should not use hardcoded hex colors except pure black/white, found: %s", match)

@@ -110,14 +110,14 @@ func extractStoragePathFromURL(url string) string {
 	if url == "" {
 		return ""
 	}
-	
+
 	parts := []string{"/assets/", "/static/"}
 	for _, part := range parts {
 		if idx := findSubstring(url, part); idx >= 0 {
 			return url[idx+len(part):]
 		}
 	}
-	
+
 	return ""
 }
 

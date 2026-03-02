@@ -77,9 +77,9 @@ func BenchmarkRateLimit_Middleware_Anonymous(b *testing.B) {
 	})
 
 	middleware := RateLimit(limiter, RateLimitConfig{
-		AnonymousLimit:      10000,
-		AuthenticatedLimit:  10000,
-		AdminLimit:          10000,
+		AnonymousLimit:     10000,
+		AuthenticatedLimit: 10000,
+		AdminLimit:         10000,
 	})
 
 	wrappedHandler := middleware(handler)
@@ -108,9 +108,9 @@ func BenchmarkRateLimit_Middleware_Authenticated(b *testing.B) {
 	})
 
 	middleware := RateLimit(limiter, RateLimitConfig{
-		AnonymousLimit:      10000,
-		AuthenticatedLimit:  10000,
-		AdminLimit:          10000,
+		AnonymousLimit:     10000,
+		AuthenticatedLimit: 10000,
+		AdminLimit:         10000,
 	})
 
 	wrappedHandler := middleware(handler)
@@ -145,9 +145,9 @@ func BenchmarkRateLimit_Middleware_Admin(b *testing.B) {
 	})
 
 	middleware := RateLimit(limiter, RateLimitConfig{
-		AnonymousLimit:      10000,
-		AuthenticatedLimit:  10000,
-		AdminLimit:          10000,
+		AnonymousLimit:     10000,
+		AuthenticatedLimit: 10000,
+		AdminLimit:         10000,
 	})
 
 	wrappedHandler := middleware(handler)
@@ -186,9 +186,9 @@ func BenchmarkRateLimit_Middleware_FullChain(b *testing.B) {
 		RequestID,
 		RealIP,
 		RateLimit(limiter, RateLimitConfig{
-			AnonymousLimit:      10000,
-			AuthenticatedLimit:  10000,
-			AdminLimit:          10000,
+			AnonymousLimit:     10000,
+			AuthenticatedLimit: 10000,
+			AdminLimit:         10000,
 		}),
 	)(handler)
 
@@ -215,9 +215,9 @@ func BenchmarkRateLimit_Middleware_RateLimited(b *testing.B) {
 	})
 
 	middleware := RateLimit(limiter, RateLimitConfig{
-		AnonymousLimit:      1,
-		AuthenticatedLimit:  10,
-		AdminLimit:          100,
+		AnonymousLimit:     1,
+		AuthenticatedLimit: 10,
+		AdminLimit:         100,
 	})
 
 	wrappedHandler := middleware(handler)

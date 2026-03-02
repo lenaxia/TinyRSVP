@@ -28,8 +28,8 @@ func TestHandleThemePreview_WithCustomImage(t *testing.T) {
 	}
 
 	customImageURL := "https://example.com/images/123/custom.jpg"
-	req := httptest.NewRequest(http.MethodGet, 
-		"/api/themes/preview?theme_id=1&custom_image_url="+customImageURL, 
+	req := httptest.NewRequest(http.MethodGet,
+		"/api/themes/preview?theme_id=1&custom_image_url="+customImageURL,
 		nil)
 	w := httptest.NewRecorder()
 
@@ -63,8 +63,8 @@ func TestHandleThemePreview_CustomImageInHeader(t *testing.T) {
 	}
 
 	customImageURL := "https://example.com/images/456/header.png"
-	req := httptest.NewRequest(http.MethodGet, 
-		"/api/themes/preview?theme_id=1&custom_image_url="+customImageURL, 
+	req := httptest.NewRequest(http.MethodGet,
+		"/api/themes/preview?theme_id=1&custom_image_url="+customImageURL,
 		nil)
 	w := httptest.NewRecorder()
 
@@ -100,8 +100,8 @@ func TestHandleThemePreview_NoCustomImage_UsesThemeDefault(t *testing.T) {
 		},
 	}
 
-	req := httptest.NewRequest(http.MethodGet, 
-		"/api/themes/preview?theme_id=1", 
+	req := httptest.NewRequest(http.MethodGet,
+		"/api/themes/preview?theme_id=1",
 		nil)
 	w := httptest.NewRecorder()
 
@@ -134,8 +134,8 @@ func TestHandleThemePreview_EmptyCustomImageURL(t *testing.T) {
 		},
 	}
 
-	req := httptest.NewRequest(http.MethodGet, 
-		"/api/themes/preview?theme_id=1&custom_image_url=", 
+	req := httptest.NewRequest(http.MethodGet,
+		"/api/themes/preview?theme_id=1&custom_image_url=",
 		nil)
 	w := httptest.NewRecorder()
 
@@ -164,9 +164,9 @@ func TestHandleThemePreview_CustomImageWithAllEventData(t *testing.T) {
 	}
 
 	customImageURL := "https://example.com/images/789/wedding.jpg"
-	req := httptest.NewRequest(http.MethodGet, 
+	req := httptest.NewRequest(http.MethodGet,
 		"/api/themes/preview?theme_id=1&custom_image_url="+customImageURL+
-		"&title=My+Wedding&location=Beach&description=Join+us", 
+			"&title=My+Wedding&location=Beach&description=Join+us",
 		nil)
 	w := httptest.NewRecorder()
 
@@ -217,9 +217,9 @@ func TestHandleThemePreview_CustomImageWithLightAndDarkMode(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			req := httptest.NewRequest(http.MethodGet, 
+			req := httptest.NewRequest(http.MethodGet,
 				"/api/themes/preview?theme_id=1&custom_image_url="+customImageURL+
-				"&theme_mode="+tt.themeMode, 
+					"&theme_mode="+tt.themeMode,
 				nil)
 			w := httptest.NewRecorder()
 
@@ -258,8 +258,8 @@ func TestHandleThemePreview_CustomImageURLEncoding(t *testing.T) {
 	}
 
 	customImageURL := "https://example.com/images/123/my%20image.jpg"
-	req := httptest.NewRequest(http.MethodGet, 
-		"/api/themes/preview?theme_id=1&custom_image_url="+customImageURL, 
+	req := httptest.NewRequest(http.MethodGet,
+		"/api/themes/preview?theme_id=1&custom_image_url="+customImageURL,
 		nil)
 	w := httptest.NewRecorder()
 

@@ -92,7 +92,7 @@ func TestEventCustomizationHandlers_GetCustomization(t *testing.T) {
 
 			req := httptest.NewRequest(http.MethodGet, "/api/events/"+tt.eventID+"/template/customization", nil)
 			req.Header.Set("Accept", "application/json")
-			
+
 			if tt.user != nil {
 				req = req.WithContext(auth.WithUser(req.Context(), tt.user))
 			}
@@ -210,7 +210,7 @@ func TestEventCustomizationHandlers_UpdateCustomization(t *testing.T) {
 			req := httptest.NewRequest(http.MethodPut, "/api/events/"+tt.eventID+"/template/customization", bytes.NewReader(bodyBytes))
 			req.Header.Set("Content-Type", "application/json")
 			req.Header.Set("Accept", "application/json")
-			
+
 			if tt.user != nil {
 				req = req.WithContext(auth.WithUser(req.Context(), tt.user))
 			}
@@ -302,7 +302,7 @@ func TestEventCustomizationHandlers_PreviewCustomization(t *testing.T) {
 			req := httptest.NewRequest(http.MethodPost, "/api/events/"+tt.eventID+"/template/customization/preview", bytes.NewReader(bodyBytes))
 			req.Header.Set("Content-Type", "application/json")
 			req.Header.Set("Accept", "application/json")
-			
+
 			if tt.user != nil {
 				req = req.WithContext(auth.WithUser(req.Context(), tt.user))
 			}
@@ -384,7 +384,7 @@ func TestEventCustomizationHandlers_ResetCustomization(t *testing.T) {
 
 			req := httptest.NewRequest(http.MethodDelete, "/api/events/"+tt.eventID+"/template/customization", nil)
 			req.Header.Set("Accept", "application/json")
-			
+
 			if tt.user != nil {
 				req = req.WithContext(auth.WithUser(req.Context(), tt.user))
 			}
@@ -404,10 +404,10 @@ func TestEventCustomizationHandlers_ResetCustomization(t *testing.T) {
 }
 
 type mockCustomizationService struct {
-	GetEventCustomizationFunc     func(ctx context.Context, eventID int64) (*events.EventCustomizationData, error)
-	UpdateEventCustomizationFunc  func(ctx context.Context, eventID int64, overrides *models.ComponentOverrides) error
-	PreviewEventCustomizationFunc func(ctx context.Context, eventID int64, overrides *models.ComponentOverrides) (*models.ComponentConfiguration, error)
-	ResetEventCustomizationFunc   func(ctx context.Context, eventID int64) error
+	GetEventCustomizationFunc      func(ctx context.Context, eventID int64) (*events.EventCustomizationData, error)
+	UpdateEventCustomizationFunc   func(ctx context.Context, eventID int64, overrides *models.ComponentOverrides) error
+	PreviewEventCustomizationFunc  func(ctx context.Context, eventID int64, overrides *models.ComponentOverrides) (*models.ComponentConfiguration, error)
+	ResetEventCustomizationFunc    func(ctx context.Context, eventID int64) error
 	ValidateEventCustomizationFunc func(overrides *models.ComponentOverrides) error
 }
 

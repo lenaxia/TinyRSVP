@@ -248,9 +248,9 @@ func TestRateLimit_Middleware_Anonymous(t *testing.T) {
 	})
 
 	middleware := RateLimit(limiter, RateLimitConfig{
-		AnonymousLimit:      2,
-		AuthenticatedLimit:  10,
-		AdminLimit:          100,
+		AnonymousLimit:     2,
+		AuthenticatedLimit: 10,
+		AdminLimit:         100,
 	})
 
 	wrappedHandler := middleware(handler)
@@ -300,9 +300,9 @@ func TestRateLimit_Middleware_Authenticated(t *testing.T) {
 	})
 
 	middleware := RateLimit(limiter, RateLimitConfig{
-		AnonymousLimit:      2,
-		AuthenticatedLimit:  5,
-		AdminLimit:          100,
+		AnonymousLimit:     2,
+		AuthenticatedLimit: 5,
+		AdminLimit:         100,
 	})
 
 	wrappedHandler := middleware(handler)
@@ -350,9 +350,9 @@ func TestRateLimit_Middleware_Admin(t *testing.T) {
 	})
 
 	middleware := RateLimit(limiter, RateLimitConfig{
-		AnonymousLimit:      2,
-		AuthenticatedLimit:  5,
-		AdminLimit:          10,
+		AnonymousLimit:     2,
+		AuthenticatedLimit: 5,
+		AdminLimit:         10,
 	})
 
 	wrappedHandler := middleware(handler)
@@ -400,9 +400,9 @@ func TestRateLimit_Middleware_Headers(t *testing.T) {
 	})
 
 	middleware := RateLimit(limiter, RateLimitConfig{
-		AnonymousLimit:      5,
-		AuthenticatedLimit:  10,
-		AdminLimit:          100,
+		AnonymousLimit:     5,
+		AuthenticatedLimit: 10,
+		AdminLimit:         100,
 	})
 
 	wrappedHandler := middleware(handler)
@@ -439,9 +439,9 @@ func TestRateLimit_Middleware_RetryAfter(t *testing.T) {
 	})
 
 	middleware := RateLimit(limiter, RateLimitConfig{
-		AnonymousLimit:      1,
-		AuthenticatedLimit:  10,
-		AdminLimit:          100,
+		AnonymousLimit:     1,
+		AuthenticatedLimit: 10,
+		AdminLimit:         100,
 	})
 
 	wrappedHandler := middleware(handler)
@@ -490,9 +490,9 @@ func TestRateLimit_Middleware_NoRealIP(t *testing.T) {
 	})
 
 	middleware := RateLimit(limiter, RateLimitConfig{
-		AnonymousLimit:      10,
-		AuthenticatedLimit:  20,
-		AdminLimit:          100,
+		AnonymousLimit:     10,
+		AuthenticatedLimit: 20,
+		AdminLimit:         100,
 	})
 
 	wrappedHandler := middleware(handler)
@@ -519,9 +519,9 @@ func TestRateLimit_Middleware_WhitelistedIP(t *testing.T) {
 	})
 
 	middleware := RateLimit(limiter, RateLimitConfig{
-		AnonymousLimit:      1,
-		AuthenticatedLimit:  10,
-		AdminLimit:          100,
+		AnonymousLimit:     1,
+		AuthenticatedLimit: 10,
+		AdminLimit:         100,
 	})
 
 	wrappedHandler := middleware(handler)
@@ -552,9 +552,9 @@ func TestRateLimit_Middleware_BlacklistedIP(t *testing.T) {
 	})
 
 	middleware := RateLimit(limiter, RateLimitConfig{
-		AnonymousLimit:      100,
-		AuthenticatedLimit:  100,
-		AdminLimit:          100,
+		AnonymousLimit:     100,
+		AuthenticatedLimit: 100,
+		AdminLimit:         100,
 	})
 
 	wrappedHandler := middleware(handler)

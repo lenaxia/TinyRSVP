@@ -19,7 +19,7 @@ import (
 )
 
 type mockRevokeInviteService struct {
-	revokeInviteFunc func(ctx context.Context, req *invites.RevokeInviteRequest) error
+	revokeInviteFunc  func(ctx context.Context, req *invites.RevokeInviteRequest) error
 	getInviteByIDFunc func(ctx context.Context, id int64) (*models.Invite, error)
 }
 
@@ -250,8 +250,8 @@ func TestRevokeInviteHandlers_RevokeInvite(t *testing.T) {
 			wantStatus: http.StatusOK,
 		},
 		{
-			name:     "successful revocation without reason",
-			inviteID: "1",
+			name:        "successful revocation without reason",
+			inviteID:    "1",
 			requestBody: map[string]interface{}{},
 			user: &models.User{
 				ID:    1,
@@ -291,18 +291,18 @@ func TestRevokeInviteHandlers_RevokeInvite(t *testing.T) {
 			wantStatus: http.StatusOK,
 		},
 		{
-			name:        "missing authentication",
-			inviteID:    "1",
-			requestBody: map[string]interface{}{},
-			user:        nil,
-			mockService: &mockRevokeInviteService{},
-			mockEventRepo: &mockRevokeEventRepository{},
+			name:           "missing authentication",
+			inviteID:       "1",
+			requestBody:    map[string]interface{}{},
+			user:           nil,
+			mockService:    &mockRevokeInviteService{},
+			mockEventRepo:  &mockRevokeEventRepository{},
 			wantStatus:     http.StatusUnauthorized,
 			wantErrMessage: "authentication required",
 		},
 		{
-			name:     "invalid invite ID",
-			inviteID: "invalid",
+			name:        "invalid invite ID",
+			inviteID:    "invalid",
 			requestBody: map[string]interface{}{},
 			user: &models.User{
 				ID:    1,
@@ -315,8 +315,8 @@ func TestRevokeInviteHandlers_RevokeInvite(t *testing.T) {
 			wantErrMessage: "invalid invite ID",
 		},
 		{
-			name:     "invite not found",
-			inviteID: "999",
+			name:        "invite not found",
+			inviteID:    "999",
 			requestBody: map[string]interface{}{},
 			user: &models.User{
 				ID:    1,
@@ -333,8 +333,8 @@ func TestRevokeInviteHandlers_RevokeInvite(t *testing.T) {
 			wantErrMessage: "invite not found",
 		},
 		{
-			name:     "event not found",
-			inviteID: "1",
+			name:        "event not found",
+			inviteID:    "1",
 			requestBody: map[string]interface{}{},
 			user: &models.User{
 				ID:    1,
@@ -363,8 +363,8 @@ func TestRevokeInviteHandlers_RevokeInvite(t *testing.T) {
 			wantErrMessage: "event not found",
 		},
 		{
-			name:     "permission denied - not event creator or admin",
-			inviteID: "1",
+			name:        "permission denied - not event creator or admin",
+			inviteID:    "1",
 			requestBody: map[string]interface{}{},
 			user: &models.User{
 				ID:    2,
@@ -399,8 +399,8 @@ func TestRevokeInviteHandlers_RevokeInvite(t *testing.T) {
 			wantErrMessage: "permission denied",
 		},
 		{
-			name:     "cannot revoke responded invite",
-			inviteID: "1",
+			name:        "cannot revoke responded invite",
+			inviteID:    "1",
 			requestBody: map[string]interface{}{},
 			user: &models.User{
 				ID:    1,
@@ -438,8 +438,8 @@ func TestRevokeInviteHandlers_RevokeInvite(t *testing.T) {
 			wantErrMessage: "cannot transition from responded to revoked",
 		},
 		{
-			name:     "cannot revoke already revoked invite",
-			inviteID: "1",
+			name:        "cannot revoke already revoked invite",
+			inviteID:    "1",
 			requestBody: map[string]interface{}{},
 			user: &models.User{
 				ID:    1,
@@ -477,8 +477,8 @@ func TestRevokeInviteHandlers_RevokeInvite(t *testing.T) {
 			wantErrMessage: "cannot transition from revoked to revoked",
 		},
 		{
-			name:     "invalid JSON body",
-			inviteID: "1",
+			name:        "invalid JSON body",
+			inviteID:    "1",
 			requestBody: "invalid json",
 			user: &models.User{
 				ID:    1,
@@ -551,8 +551,6 @@ func TestRevokeInviteHandlers_RevokeInvite(t *testing.T) {
 	}
 }
 
-
-
 func (m *mockRevokeEventRepository) CountEvents(ctx context.Context) (int, error) {
 	return 0, nil
 }
@@ -575,4 +573,3 @@ func (m *mockRevokeEventRepository) GetByPublicID(ctx context.Context, publicID 
 func (m *mockRevokeEventRepository) GetByFriendlyName(ctx context.Context, friendlyName string) (*models.Event, error) {
 	return nil, errors.New("not implemented")
 }
-

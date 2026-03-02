@@ -2,10 +2,29 @@
 
 **Epic:** [11_EPIC_rsvp_themes.md](11_EPIC_rsvp_themes.md)
 **Priority:** High
-**Status:** ✅ Complete
+**Status:** ❌ BROKEN (Tests Failing)
 **Estimated Effort:** 2-3 days
 **Owner:** LLM
 **Completed:** 2026-01-11
+**Broken:** 2026-01-12
+**Test Status:** 0% passing
+
+---
+
+## CRITICAL ISSUE
+
+**All integration tests are failing due to component system breakage.**
+
+**Test Results:**
+- Theme rendering tests: ALL FAILING
+- Component integration: ALL FAILING
+- Theme with overrides: ALL FAILING
+- Test pass rate: 0%
+
+**Root Cause:**
+Component system broken - see [11_FIX_PLAN_component_system.md](11_FIX_PLAN_component_system.md)
+
+Template field access mismatch between struct design and template expectations. Tests were passing on 2026-01-11 but broke after component refactoring on 2026-01-12.
 
 ---
 
@@ -34,12 +53,12 @@ Integration tests must verify the complete end-to-end flow and all component int
 ## Acceptance Criteria
 
 ### End-to-End Flow Tests
-- [x] Test complete flow: select theme → preview → create event → view RSVP
-- [x] Test theme selection persists to database
-- [x] Test RSVP page renders with correct theme
-- [x] Test theme works in light mode
-- [x] Test theme works in dark mode
-- [x] Test theme switching between light/dark
+- [x] Test complete flow: select theme → preview → create event → view RSVP - ❌ NOW FAILING
+- [x] Test theme selection persists to database - ⚠️ PARTIAL (DB works, rendering broken)
+- [x] Test RSVP page renders with correct theme - ❌ NOW FAILING
+- [x] Test theme works in light mode - ❌ NOW FAILING
+- [x] Test theme works in dark mode - ❌ NOW FAILING
+- [x] Test theme switching between light/dark - ❌ NOW FAILING
 
 ### Theme Picker Tests
 - [ ] Test theme gallery displays all themes
@@ -58,13 +77,13 @@ Integration tests must verify the complete end-to-end flow and all component int
 - [ ] Test preview close functionality
 
 ### Theme Rendering Tests
-- [x] Test each theme renders correctly
-- [x] Test theme with minimal event data
-- [x] Test theme with complete event data
-- [x] Test theme with long text content
-- [x] Test theme with many preference questions
-- [x] Test custom image override
-- [x] Test custom color override
+- [x] Test each theme renders correctly - ❌ NOW FAILING
+- [x] Test theme with minimal event data - ❌ NOW FAILING
+- [x] Test theme with complete event data - ❌ NOW FAILING
+- [x] Test theme with long text content - ❌ NOW FAILING
+- [x] Test theme with many preference questions - ❌ NOW FAILING
+- [x] Test custom image override - ❌ NOW FAILING
+- [x] Test custom color override - ❌ NOW FAILING
 
 ### Cross-Browser Tests
 - [ ] Test on Chrome/Chromium
@@ -74,8 +93,8 @@ Integration tests must verify the complete end-to-end flow and all component int
 - [ ] Test on different screen sizes
 
 ### Performance Tests
-- [x] Test page load time <2 seconds
-- [x] Test theme switching performance
+- [x] Test page load time <2 seconds - ⚠️ CANNOT TEST (rendering broken)
+- [x] Test theme switching performance - ⚠️ CANNOT TEST (rendering broken)
 - [ ] Test with slow network (throttling) - Requires browser automation
 - [ ] Test memory usage - Requires browser automation
 - [ ] Test no memory leaks - Requires browser automation
@@ -438,15 +457,17 @@ func TestThemeVisualRegression(t *testing.T) {
 
 ## Definition of Done
 
-- [x] All acceptance criteria met
+- [x] All acceptance criteria met - ❌ WAS MET, NOW BROKEN
 - [x] Integration test suite created
 - [ ] Visual regression tests created - Deferred (requires browser automation)
-- [x] Performance tests created
+- [x] Performance tests created - ⚠️ CANNOT RUN (rendering broken)
 - [x] Accessibility tests created (server-side validation)
-- [x] All tests passing (10 tests, 26 test cases)
+- [x] All tests passing (10 tests, 26 test cases) - ❌ NOW ALL FAILING
 - [x] Test coverage >80%
 - [x] Documentation complete
 - [x] Changes committed to git
+
+**Status:** Tests were passing on 2026-01-11, but all broke after component refactoring on 2026-01-12. Requires fix per [11_FIX_PLAN_component_system.md](11_FIX_PLAN_component_system.md).
 
 ---
 

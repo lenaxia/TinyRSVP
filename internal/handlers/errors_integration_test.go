@@ -171,9 +171,9 @@ func TestErrorHandling_Integration_HTML(t *testing.T) {
 
 func TestErrorHandling_Integration_ContentNegotiation(t *testing.T) {
 	tests := []struct {
-		name        string
+		name         string
 		acceptHeader string
-		wantJSON    bool
+		wantJSON     bool
 	}{
 		{
 			name:         "prefers JSON",
@@ -485,4 +485,3 @@ func TestErrorHandling_Integration_RouterErrorHandlers(t *testing.T) {
 		})
 	}
 }
-

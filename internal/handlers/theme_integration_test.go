@@ -246,7 +246,7 @@ func TestThemeSystem_AllThemesRender_Integration(t *testing.T) {
 				CreatedBy:   manager.ID,
 			}
 
-	ctx = auth.WithUser(ctx, manager)
+			ctx = auth.WithUser(ctx, manager)
 			if err := eventService.CreateEvent(ctx, event); err != nil {
 				t.Fatalf("Failed to create event: %v", err)
 			}
@@ -554,7 +554,7 @@ func TestThemeSystem_CustomOverrides_Integration(t *testing.T) {
 
 func TestThemeSystem_FallbackBehavior_Integration(t *testing.T) {
 	t.Skip("Skipping due to SQLite foreign key constraint issue in test environment. Fallback behavior is covered by unit tests in rsvp_theme_test.go")
-	
+
 	database := setupIntegrationTestDB(t)
 	defer database.Close()
 

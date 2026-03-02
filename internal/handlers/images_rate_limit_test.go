@@ -80,23 +80,23 @@ func TestImageUpload_RateLimiting(t *testing.T) {
 	for i := 0; i < 10; i++ {
 		body := &bytes.Buffer{}
 		writer := multipart.NewWriter(body)
-		
+
 		part, err := writer.CreateFormFile("file", "test.jpg")
 		if err != nil {
 			t.Fatalf("Failed to create form file: %v", err)
 		}
-		
+
 		img := createTestImage(100, 100)
 		if err := jpeg.Encode(part, img, nil); err != nil {
 			t.Fatalf("Failed to encode image: %v", err)
 		}
-		
+
 		writer.Close()
 
 		req := httptest.NewRequest("POST", "/api/events/1/images", body)
 		req.Header.Set("Content-Type", writer.FormDataContentType())
 		req.Header.Set("X-Real-IP", "192.168.1.1")
-		
+
 		req = req.WithContext(auth.WithUser(req.Context(), user))
 
 		w := httptest.NewRecorder()
@@ -106,7 +106,7 @@ func TestImageUpload_RateLimiting(t *testing.T) {
 			successCount++
 		} else if w.Code == http.StatusTooManyRequests {
 			rateLimitCount++
-			
+
 			if w.Header().Get("Retry-After") == "" {
 				t.Error("Expected Retry-After header on rate limit response")
 			}
@@ -181,30 +181,30 @@ func TestImageUpload_RateLimitByIP(t *testing.T) {
 	}
 
 	ips := []string{"192.168.1.1", "192.168.1.2"}
-	
+
 	for _, ip := range ips {
 		successCount := 0
-		
+
 		for i := 0; i < 5; i++ {
 			body := &bytes.Buffer{}
 			writer := multipart.NewWriter(body)
-			
+
 			part, err := writer.CreateFormFile("file", "test.jpg")
 			if err != nil {
 				t.Fatalf("Failed to create form file: %v", err)
 			}
-			
+
 			img := createTestImage(100, 100)
 			if err := jpeg.Encode(part, img, nil); err != nil {
 				t.Fatalf("Failed to encode image: %v", err)
 			}
-			
+
 			writer.Close()
 
 			req := httptest.NewRequest("POST", "/api/events/1/images", body)
 			req.Header.Set("Content-Type", writer.FormDataContentType())
 			req.Header.Set("X-Real-IP", ip)
-			
+
 			req = req.WithContext(auth.WithUser(req.Context(), user))
 
 			w := httptest.NewRecorder()

@@ -12,12 +12,12 @@ import (
 )
 
 type MockEmailQueueRepository struct {
-	GetPendingFunc      func(ctx context.Context, maxCount int) ([]*models.EmailQueue, error)
-	MarkSendingFunc     func(ctx context.Context, id int64) error
-	MarkSentFunc        func(ctx context.Context, id int64) error
-	MarkFailedFunc      func(ctx context.Context, id int64, errorMsg string) error
+	GetPendingFunc        func(ctx context.Context, maxCount int) ([]*models.EmailQueue, error)
+	MarkSendingFunc       func(ctx context.Context, id int64) error
+	MarkSentFunc          func(ctx context.Context, id int64) error
+	MarkFailedFunc        func(ctx context.Context, id int64, errorMsg string) error
 	IncrementAttemptsFunc func(ctx context.Context, id int64, errorMsg string) error
-	RescheduleFunc      func(ctx context.Context, id int64, scheduledFor time.Time) error
+	RescheduleFunc        func(ctx context.Context, id int64, scheduledFor time.Time) error
 }
 
 func (m *MockEmailQueueRepository) Create(ctx context.Context, email *models.EmailQueue) error {
@@ -496,7 +496,7 @@ func TestCalculateBackoff(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			got := calculateBackoff(tt.attempt)
-			
+
 			maxJitter := time.Duration(float64(tt.base) * 0.1)
 			minDelay := tt.base - maxJitter
 			maxDelay := tt.base + maxJitter

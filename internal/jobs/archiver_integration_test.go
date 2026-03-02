@@ -49,9 +49,9 @@ func setupIntegrationTestDB(t *testing.T) db.Database {
 
 type mockAuthz struct{}
 
-func (m *mockAuthz) IsAdmin(user *models.User) bool                                  { return true }
-func (m *mockAuthz) IsEventManager(user *models.User) bool                           { return true }
-func (m *mockAuthz) CanCreateEvent(ctx context.Context, user *models.User) bool      { return true }
+func (m *mockAuthz) IsAdmin(user *models.User) bool                             { return true }
+func (m *mockAuthz) IsEventManager(user *models.User) bool                      { return true }
+func (m *mockAuthz) CanCreateEvent(ctx context.Context, user *models.User) bool { return true }
 func (m *mockAuthz) CanViewEvent(ctx context.Context, user *models.User, event *models.Event) bool {
 	return true
 }

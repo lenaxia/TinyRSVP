@@ -166,10 +166,10 @@ func TestListPresets(t *testing.T) {
 	}
 
 	expectedPresets := map[string]bool{
-		"hero-section":    false,
-		"call-to-action":  false,
-		"image-gallery":   false,
-		"testimonial":     false,
+		"hero-section":   false,
+		"call-to-action": false,
+		"image-gallery":  false,
+		"testimonial":    false,
 	}
 
 	for _, preset := range presets {

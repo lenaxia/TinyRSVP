@@ -27,9 +27,9 @@ func TestRateLimit_Integration_FullChain(t *testing.T) {
 		RequestID,
 		RealIP,
 		RateLimit(limiter, RateLimitConfig{
-			AnonymousLimit:      5,
-			AuthenticatedLimit:  10,
-			AdminLimit:          100,
+			AnonymousLimit:     5,
+			AuthenticatedLimit: 10,
+			AdminLimit:         100,
 		}),
 	)(handler)
 
@@ -85,9 +85,9 @@ func TestRateLimit_Integration_WithAuth(t *testing.T) {
 	})
 
 	rateLimitMiddleware := RateLimit(limiter, RateLimitConfig{
-		AnonymousLimit:      2,
-		AuthenticatedLimit:  5,
-		AdminLimit:          100,
+		AnonymousLimit:     2,
+		AuthenticatedLimit: 5,
+		AdminLimit:         100,
 	})
 
 	chain := Chain(
@@ -147,9 +147,9 @@ func TestRateLimit_Integration_AdminHigherLimit(t *testing.T) {
 	})
 
 	rateLimitMiddleware := RateLimit(limiter, RateLimitConfig{
-		AnonymousLimit:      2,
-		AuthenticatedLimit:  5,
-		AdminLimit:          20,
+		AnonymousLimit:     2,
+		AuthenticatedLimit: 5,
+		AdminLimit:         20,
 	})
 
 	chain := Chain(
@@ -213,9 +213,9 @@ func TestRateLimit_Integration_MultipleIPs(t *testing.T) {
 		RequestID,
 		RealIP,
 		RateLimit(limiter, RateLimitConfig{
-			AnonymousLimit:      3,
-			AuthenticatedLimit:  10,
-			AdminLimit:          100,
+			AnonymousLimit:     3,
+			AuthenticatedLimit: 10,
+			AdminLimit:         100,
 		}),
 	)(handler)
 
@@ -263,9 +263,9 @@ func TestRateLimit_Integration_WhitelistBypass(t *testing.T) {
 		RequestID,
 		RealIP,
 		RateLimit(limiter, RateLimitConfig{
-			AnonymousLimit:      1,
-			AuthenticatedLimit:  10,
-			AdminLimit:          100,
+			AnonymousLimit:     1,
+			AuthenticatedLimit: 10,
+			AdminLimit:         100,
 		}),
 	)(handler)
 
@@ -300,9 +300,9 @@ func TestRateLimit_Integration_BlacklistBlock(t *testing.T) {
 		RequestID,
 		RealIP,
 		RateLimit(limiter, RateLimitConfig{
-			AnonymousLimit:      1000,
-			AuthenticatedLimit:  1000,
-			AdminLimit:          1000,
+			AnonymousLimit:     1000,
+			AuthenticatedLimit: 1000,
+			AdminLimit:         1000,
 		}),
 	)(handler)
 
@@ -334,9 +334,9 @@ func TestRateLimit_Integration_WindowReset(t *testing.T) {
 		RequestID,
 		RealIP,
 		RateLimit(limiter, RateLimitConfig{
-			AnonymousLimit:      2,
-			AuthenticatedLimit:  10,
-			AdminLimit:          100,
+			AnonymousLimit:     2,
+			AuthenticatedLimit: 10,
+			AdminLimit:         100,
 		}),
 	)(handler)
 
@@ -391,9 +391,9 @@ func TestRateLimit_Integration_Metrics(t *testing.T) {
 		RequestID,
 		RealIP,
 		RateLimit(limiter, RateLimitConfig{
-			AnonymousLimit:      3,
-			AuthenticatedLimit:  10,
-			AdminLimit:          100,
+			AnonymousLimit:     3,
+			AuthenticatedLimit: 10,
+			AdminLimit:         100,
 		}),
 	)(handler)
 

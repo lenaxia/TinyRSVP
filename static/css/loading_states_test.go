@@ -330,12 +330,12 @@ func TestLoadingStatesNoHardcodedColors(t *testing.T) {
 
 	hexColorPattern := regexp.MustCompile(`#[0-9a-fA-F]{3,6}`)
 	matches := hexColorPattern.FindAllString(cssContent, -1)
-	
+
 	allowedColors := map[string]bool{
 		"#f0f0f0": true,
 		"#e0e0e0": true,
 	}
-	
+
 	for _, match := range matches {
 		if !allowedColors[strings.ToLower(match)] {
 			t.Errorf("Loading states should minimize hardcoded hex colors, found: %s (use CSS variables instead)", match)

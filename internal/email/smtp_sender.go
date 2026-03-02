@@ -202,7 +202,6 @@ func (s *smtpSender) Close() error {
 	return nil
 }
 
-
 func classifyError(err error) error {
 	errStr := err.Error()
 

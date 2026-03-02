@@ -85,14 +85,14 @@ func createTestQuestion(t *testing.T, db db.Database, eventID int64, questionTyp
 	t.Helper()
 
 	ctx := context.Background()
-	
+
 	validType := questionType
 	if questionType == "select" {
 		validType = "single_choice"
 	} else if questionType == "boolean" {
 		validType = "single_choice"
 	}
-	
+
 	result, err := db.Exec(ctx, `
 		INSERT INTO preference_questions (event_id, question_text, question_type, required, display_order)
 		VALUES (?, 'Test Question', ?, 0, 0)
@@ -202,7 +202,7 @@ func TestAnswerRepository_GetByRSVPID(t *testing.T) {
 
 	repo := NewAnswerRepository(database)
 	eventID, _, rsvpID := createTestRSVP(t, database)
-	
+
 	q1 := createTestQuestion(t, database, eventID, "text")
 	q2 := createTestQuestion(t, database, eventID, "boolean")
 
@@ -314,7 +314,7 @@ func TestAnswerRepository_DeleteByRSVPID(t *testing.T) {
 
 	repo := NewAnswerRepository(database)
 	eventID, _, rsvpID := createTestRSVP(t, database)
-	
+
 	q1 := createTestQuestion(t, database, eventID, "text")
 	q2 := createTestQuestion(t, database, eventID, "boolean")
 

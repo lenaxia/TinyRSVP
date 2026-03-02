@@ -120,13 +120,14 @@ func TestIntegration_RequireAuth_Unauthorized_WithRealDatabase(t *testing.T) {
 
 	middleware(handler).ServeHTTP(w, r)
 
-	if w.Code != http.StatusUnauthorized {
-		t.Errorf("Expected status %d, got %d", http.StatusUnauthorized, w.Code)
+	if w.Code != http.StatusSeeOther {
+		t.Errorf("Expected status %d, got %d", http.StatusSeeOther, w.Code)
 	}
 
-	wwwAuth := w.Header().Get("WWW-Authenticate")
-	if wwwAuth != "Cookie" {
-		t.Errorf("Expected WWW-Authenticate header 'Cookie', got %q", wwwAuth)
+	location := w.Header().Get("Location")
+	expectedLocation := "/login?return=%2Fprotected"
+	if location != expectedLocation {
+		t.Errorf("Expected Location header %q, got %q", expectedLocation, location)
 	}
 }
 

@@ -641,12 +641,12 @@ func (r *inviteRepository) GetByEventIDs(ctx context.Context, eventIDs []int64) 
 
 func (r *inviteRepository) CountInvites(ctx context.Context) (int, error) {
 	query := `SELECT COUNT(*) FROM invites`
-	
+
 	var count int
 	err := r.db.QueryRow(ctx, query).Scan(&count)
 	if err != nil {
 		return 0, fmt.Errorf("failed to count invites: %w", err)
 	}
-	
+
 	return count, nil
 }

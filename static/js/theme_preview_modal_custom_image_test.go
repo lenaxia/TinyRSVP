@@ -76,8 +76,8 @@ func TestThemePreviewModal_CustomImageURLWithEventData(t *testing.T) {
 	server := httptest.NewServer(handler)
 	defer server.Close()
 
-	req := httptest.NewRequest(http.MethodGet, 
-		server.URL+"/api/themes/preview?theme_id=1&custom_image_url=https://example.com/image.jpg&title=Test&location=Here", 
+	req := httptest.NewRequest(http.MethodGet,
+		server.URL+"/api/themes/preview?theme_id=1&custom_image_url=https://example.com/image.jpg&title=Test&location=Here",
 		nil)
 	w := httptest.NewRecorder()
 

@@ -449,7 +449,7 @@ func TestNavigationDarkModeSupport(t *testing.T) {
 	if darkModeIdx == -1 {
 		t.Fatal("Could not find [data-theme=\"dark\"] section in variables.css")
 	}
-	
+
 	darkModeSection := vars[darkModeIdx:]
 
 	for _, colorVar := range colorVarsInNav {

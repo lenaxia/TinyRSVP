@@ -483,10 +483,10 @@ func TestBuildConfirmationPageData(t *testing.T) {
 			AnswerText: &answerText,
 		},
 		{
-			ID:            2,
-			RSVPID:        1,
-			QuestionID:    2,
-			AnswerOption:  &answerOption,
+			ID:           2,
+			RSVPID:       1,
+			QuestionID:   2,
+			AnswerOption: &answerOption,
 		},
 		{
 			ID:            3,

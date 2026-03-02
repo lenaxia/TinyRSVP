@@ -175,11 +175,11 @@ func BuildConfirmationPageData(event *models.Event, rsvp *models.RSVP, answers [
 		ansData := AnswerData{
 			AnswerDisplay: formatAnswer(ans),
 		}
-		
+
 		if q, ok := questions[ans.QuestionID]; ok {
 			ansData.QuestionText = q.QuestionText
 		}
-		
+
 		data.Answers = append(data.Answers, ansData)
 	}
 

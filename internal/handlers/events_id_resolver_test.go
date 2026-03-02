@@ -11,7 +11,7 @@ import (
 func TestResolveEventID(t *testing.T) {
 	publicID := "aBcD123456"
 	friendlyName := "summer-party"
-	
+
 	mockRepo := &mockEventIDResolverRepo{
 		getByIDFunc: func(ctx context.Context, id int64) (*models.Event, error) {
 			if id == 123 {
@@ -111,7 +111,7 @@ func TestResolveEventID_PriorityOrder(t *testing.T) {
 	// Test that public_id is tried before friendly_name when both could match
 	// Use a valid 10-character public_id format
 	ambiguousID := "abc1234567"
-	
+
 	mockRepo := &mockEventIDResolverRepo{
 		getByIDFunc: func(ctx context.Context, id int64) (*models.Event, error) {
 			return nil, &models.NotFoundError{Resource: "Event", ID: id}

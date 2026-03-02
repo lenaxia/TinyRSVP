@@ -162,40 +162,6 @@ class ThemePicker {
                 }
             });
         }
-
-        // Watch hidden datetime inputs using MutationObserver
-        // Datetime picker updates these hidden fields programmatically
-        const hiddenDatetimeFields = ['start_time', 'end_time', 'rsvp_deadline'];
-        hiddenDatetimeFields.forEach(fieldName => {
-            const field = document.querySelector(`[name="${fieldName}"]`);
-            if (field && field.type === 'hidden') {
-                const observer = new MutationObserver(() => {
-                    if (this.currentMode === 'design') {
-                        console.log('[ThemePicker] Datetime field changed:', fieldName, field.value);
-                        this.debouncedUpdatePreview();
-                    }
-                });
-                observer.observe(field, { 
-                    attributes: true, 
-                    attributeFilter: ['value'] 
-                });
-
-                // Also watch for value property changes
-                const originalSet = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value').set;
-                Object.defineProperty(field, 'value', {
-                    set: function(val) {
-                        originalSet.call(this, val);
-                        if (window.themePicker && window.themePicker.currentMode === 'design') {
-                            console.log('[ThemePicker] Datetime value changed:', fieldName, val);
-                            window.themePicker.debouncedUpdatePreview();
-                        }
-                    },
-                    get: function() {
-                        return this.getAttribute('value');
-                    }
-                });
-            }
-        });
     }
 
     debouncedUpdatePreview() {

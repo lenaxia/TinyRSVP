@@ -148,7 +148,7 @@ func TestSendInvite_Success(t *testing.T) {
 	now := time.Now()
 	expiresAt := now.Add(30 * 24 * time.Hour)
 	email := "test@example.com"
-	
+
 	invite := &models.Invite{
 		ID:          1,
 		EventID:     100,
@@ -197,7 +197,7 @@ func TestSendInvite_Success(t *testing.T) {
 func TestSendInvite_NoEmail(t *testing.T) {
 	now := time.Now()
 	expiresAt := now.Add(30 * 24 * time.Hour)
-	
+
 	invite := &models.Invite{
 		ID:          1,
 		EventID:     100,
@@ -240,7 +240,7 @@ func TestSendInvite_RevokedInvite(t *testing.T) {
 	now := time.Now()
 	expiresAt := now.Add(30 * 24 * time.Hour)
 	email := "test@example.com"
-	
+
 	invite := &models.Invite{
 		ID:          1,
 		EventID:     100,

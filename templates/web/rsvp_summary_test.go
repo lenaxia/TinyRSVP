@@ -12,15 +12,15 @@ import (
 )
 
 type RSVPSummaryData struct {
-	ActivePage     string
-	Event          *models.Event
-	Stats          *repositories.RSVPStats
-	RSVPs          []*models.RSVP
-	ResponseRate   float64
-	QuestionStats  map[int64]*QuestionStat
-	EventID        int64
-	Error          string
-	Loading        bool
+	ActivePage    string
+	Event         *models.Event
+	Stats         *repositories.RSVPStats
+	RSVPs         []*models.RSVP
+	ResponseRate  float64
+	QuestionStats map[int64]*QuestionStat
+	EventID       int64
+	Error         string
+	Loading       bool
 }
 
 type QuestionStat struct {
@@ -40,7 +40,7 @@ func parseRSVPSummaryTemplate() (*template.Template, error) {
 			return a / b
 		},
 	}
-	
+
 	return template.New("rsvp_summary.html").Funcs(funcMap).ParseFiles(
 		"partials/base.html",
 		"partials/navigation.html",
@@ -161,8 +161,8 @@ func TestRSVPSummaryTemplate_ErrorState(t *testing.T) {
 	}
 
 	data := &RSVPSummaryData{
-		ActivePage:   "events",
-		Error: "Failed to load RSVP data",
+		ActivePage: "events",
+		Error:      "Failed to load RSVP data",
 	}
 
 	var buf bytes.Buffer
@@ -185,8 +185,8 @@ func TestRSVPSummaryTemplate_LoadingState(t *testing.T) {
 	}
 
 	data := &RSVPSummaryData{
-		ActivePage:   "events",
-		Loading: true,
+		ActivePage: "events",
+		Loading:    true,
 	}
 
 	var buf bytes.Buffer
@@ -245,7 +245,7 @@ func TestRSVPSummaryTemplate_WithQuestionStats(t *testing.T) {
 	}
 
 	data := &RSVPSummaryData{
-		ActivePage:   "events",
+		ActivePage:    "events",
 		Event:         event,
 		Stats:         stats,
 		ResponseRate:  90.0,

@@ -113,11 +113,11 @@ func TestLoadingStatesJSIntegrationARIAImplementation(t *testing.T) {
 	jsContent := string(content)
 
 	ariaAttributes := map[string]string{
-		"aria-busy":      "setAttribute",
-		"aria-live":      "setAttribute",
-		"aria-label":     "setAttribute",
-		"aria-valuenow":  "setAttribute",
-		"role":           "setAttribute",
+		"aria-busy":     "setAttribute",
+		"aria-live":     "setAttribute",
+		"aria-label":    "setAttribute",
+		"aria-valuenow": "setAttribute",
+		"role":          "setAttribute",
 	}
 
 	for attr, method := range ariaAttributes {

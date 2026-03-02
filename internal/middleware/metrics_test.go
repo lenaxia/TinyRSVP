@@ -135,14 +135,14 @@ func TestPrometheusMetrics_HandlesNilMetrics(t *testing.T) {
 
 func TestMetricsHandler_ReturnsPrometheusFormat(t *testing.T) {
 	metrics := NewPrometheusMetrics()
-	
+
 	handler := PrometheusMetrics(metrics)(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
 	}))
 	req := httptest.NewRequest(http.MethodGet, "/test", nil)
 	w := httptest.NewRecorder()
 	handler.ServeHTTP(w, req)
-	
+
 	metricsHandler := MetricsHandler(metrics)
 	metricsReq := httptest.NewRequest(http.MethodGet, "/metrics", nil)
 	metricsW := httptest.NewRecorder()
@@ -166,7 +166,7 @@ func TestMetricsHandler_ReturnsPrometheusFormat(t *testing.T) {
 
 func TestMetricsHandler_IncludesStandardMetrics(t *testing.T) {
 	metrics := NewPrometheusMetrics()
-	
+
 	handler := PrometheusMetrics(metrics)(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
 	}))
@@ -180,7 +180,7 @@ func TestMetricsHandler_IncludesStandardMetrics(t *testing.T) {
 	metricsHandler.ServeHTTP(metricsW, metricsReq)
 
 	body := metricsW.Body.String()
-	
+
 	expectedMetrics := []string{
 		"http_requests_total",
 		"http_request_duration_seconds",

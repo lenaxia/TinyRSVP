@@ -1,13 +1,12 @@
 package web
 
 import (
-	"html/template"
 	"strings"
 	"testing"
 )
 
 func TestAdminDashboard_RendersSuccessfully(t *testing.T) {
-	tmpl, err := template.ParseFiles("admin_dashboard.html")
+	tmpl, err := parseWithBase("admin_dashboard.html")
 	if err != nil {
 		t.Fatalf("Failed to parse template: %v", err)
 	}
@@ -19,8 +18,8 @@ func TestAdminDashboard_RendersSuccessfully(t *testing.T) {
 			"Role":  "admin",
 		},
 		"Stats": map[string]interface{}{
-			"TotalUsers":  10,
-			"TotalEvents": 5,
+			"TotalUsers":   10,
+			"TotalEvents":  5,
 			"TotalInvites": 50,
 		},
 	}
@@ -37,7 +36,7 @@ func TestAdminDashboard_RendersSuccessfully(t *testing.T) {
 }
 
 func TestAdminDashboard_ContainsRequiredElements(t *testing.T) {
-	tmpl, err := template.ParseFiles("admin_dashboard.html")
+	tmpl, err := parseWithBase("admin_dashboard.html")
 	if err != nil {
 		t.Fatalf("Failed to parse template: %v", err)
 	}
@@ -49,8 +48,8 @@ func TestAdminDashboard_ContainsRequiredElements(t *testing.T) {
 			"Role":  "admin",
 		},
 		"Stats": map[string]interface{}{
-			"TotalUsers":  10,
-			"TotalEvents": 5,
+			"TotalUsers":   10,
+			"TotalEvents":  5,
 			"TotalInvites": 50,
 		},
 	}
@@ -81,7 +80,7 @@ func TestAdminDashboard_ContainsRequiredElements(t *testing.T) {
 }
 
 func TestAdminDashboard_DisplaysStats(t *testing.T) {
-	tmpl, err := template.ParseFiles("admin_dashboard.html")
+	tmpl, err := parseWithBase("admin_dashboard.html")
 	if err != nil {
 		t.Fatalf("Failed to parse template: %v", err)
 	}
@@ -93,8 +92,8 @@ func TestAdminDashboard_DisplaysStats(t *testing.T) {
 			"Role":  "admin",
 		},
 		"Stats": map[string]interface{}{
-			"TotalUsers":  10,
-			"TotalEvents": 5,
+			"TotalUsers":   10,
+			"TotalEvents":  5,
 			"TotalInvites": 50,
 		},
 	}
@@ -118,7 +117,7 @@ func TestAdminDashboard_DisplaysStats(t *testing.T) {
 }
 
 func TestAdminDashboard_ContainsNavigationLinks(t *testing.T) {
-	tmpl, err := template.ParseFiles("admin_dashboard.html")
+	tmpl, err := parseWithBase("admin_dashboard.html")
 	if err != nil {
 		t.Fatalf("Failed to parse template: %v", err)
 	}
@@ -130,8 +129,8 @@ func TestAdminDashboard_ContainsNavigationLinks(t *testing.T) {
 			"Role":  "admin",
 		},
 		"Stats": map[string]interface{}{
-			"TotalUsers":  10,
-			"TotalEvents": 5,
+			"TotalUsers":   10,
+			"TotalEvents":  5,
 			"TotalInvites": 50,
 		},
 	}
@@ -156,7 +155,7 @@ func TestAdminDashboard_ContainsNavigationLinks(t *testing.T) {
 }
 
 func TestAdminDashboard_HandlesEmptyStats(t *testing.T) {
-	tmpl, err := template.ParseFiles("admin_dashboard.html")
+	tmpl, err := parseWithBase("admin_dashboard.html")
 	if err != nil {
 		t.Fatalf("Failed to parse template: %v", err)
 	}
@@ -168,8 +167,8 @@ func TestAdminDashboard_HandlesEmptyStats(t *testing.T) {
 			"Role":  "admin",
 		},
 		"Stats": map[string]interface{}{
-			"TotalUsers":  0,
-			"TotalEvents": 0,
+			"TotalUsers":   0,
+			"TotalEvents":  0,
 			"TotalInvites": 0,
 		},
 	}
@@ -186,7 +185,7 @@ func TestAdminDashboard_HandlesEmptyStats(t *testing.T) {
 }
 
 func TestAdminDashboard_AccessibilityFeatures(t *testing.T) {
-	tmpl, err := template.ParseFiles("admin_dashboard.html")
+	tmpl, err := parseWithBase("admin_dashboard.html")
 	if err != nil {
 		t.Fatalf("Failed to parse template: %v", err)
 	}
@@ -198,8 +197,8 @@ func TestAdminDashboard_AccessibilityFeatures(t *testing.T) {
 			"Role":  "admin",
 		},
 		"Stats": map[string]interface{}{
-			"TotalUsers":  10,
-			"TotalEvents": 5,
+			"TotalUsers":   10,
+			"TotalEvents":  5,
 			"TotalInvites": 50,
 		},
 	}

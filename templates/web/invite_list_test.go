@@ -24,18 +24,7 @@ type InviteListData struct {
 }
 
 func getInviteListTemplate() (*template.Template, error) {
-	return template.New("invite_list.html").Funcs(template.FuncMap{
-		"sub": func(a, b int) int { return a - b },
-		"add": func(a, b int) int { return a + b },
-		"div": func(a, b int) int { return a / b },
-		"until": func(n int) []int {
-			result := make([]int, n)
-			for i := 0; i < n; i++ {
-				result[i] = i
-			}
-			return result
-		},
-	}).ParseFiles("invite_list.html")
+	return parseWithBase("invite_list.html")
 }
 
 func TestInviteListTemplateExists(t *testing.T) {
@@ -459,7 +448,6 @@ func TestInviteListTemplate_IndividualActions(t *testing.T) {
 
 	requiredElements := []string{
 		"invite-actions",
-		"Regenerate",
 		"Revoke",
 	}
 

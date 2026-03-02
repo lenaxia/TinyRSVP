@@ -277,7 +277,7 @@ func (s *inviteService) SendInvite(ctx context.Context, req *SendInviteRequest, 
 	}
 
 	rsvpURL := fmt.Sprintf("%s/rsvp/%s", req.BaseURL, plainToken)
-	
+
 	name := "Guest"
 	if invite.Name != nil {
 		name = *invite.Name

@@ -18,8 +18,8 @@ type Validator interface {
 }
 
 type validator struct {
-	engine        *Engine
-	cssSanitizer  CSSSanitizer
+	engine       *Engine
+	cssSanitizer CSSSanitizer
 }
 
 func NewValidator(engine *Engine) Validator {
@@ -398,8 +398,8 @@ func createTestData(templateType models.TemplateType) interface{} {
 			RSVP        RSVP
 			Questions   []Question
 		}{
-			Event: event,
-			Token: "test-token",
+			Event:       event,
+			Token:       "test-token",
 			MaxPlusOnes: 2,
 			RSVP: RSVP{
 				Response: "yes",

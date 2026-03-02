@@ -23,7 +23,7 @@ import (
 func TestImageUpload_Integration_CompleteFlow(t *testing.T) {
 	storageProvider := storage.NewMockProvider()
 	imageService := assets.NewImageService(storageProvider)
-	
+
 	var updatedEvent *models.Event
 	eventService := &mockImageEventServiceWithUpdate{
 		GetEventFunc: func(ctx context.Context, id int64) (*models.Event, error) {
@@ -38,7 +38,7 @@ func TestImageUpload_Integration_CompleteFlow(t *testing.T) {
 			return nil
 		},
 	}
-	
+
 	authz := &mockImageAuthz{
 		CanEditEventFunc: func(ctx context.Context, user *models.User, event *models.Event) bool {
 			return user.ID == event.CreatedBy
@@ -55,7 +55,7 @@ func TestImageUpload_Integration_CompleteFlow(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Failed to create form file: %v", err)
 	}
-	
+
 	if _, err := part.Write(jpegData); err != nil {
 		t.Fatalf("Failed to write file data: %v", err)
 	}
@@ -121,15 +121,15 @@ func TestImageUpload_Integration_CompleteFlow(t *testing.T) {
 func TestImageUpload_Integration_ReplaceExistingImage(t *testing.T) {
 	storageProvider := storage.NewMockProvider()
 	imageService := assets.NewImageService(storageProvider)
-	
+
 	oldImageURL := "http://localhost:8080/assets/images/123/old-image.jpg"
 	ctx := context.Background()
-	
+
 	oldImageData := []byte{0xFF, 0xD8, 0xFF, 0xD9}
 	if err := storageProvider.PutObject(ctx, "images/123/old-image.jpg", bytes.NewReader(oldImageData), "image/jpeg"); err != nil {
 		t.Fatalf("Failed to setup old image: %v", err)
 	}
-	
+
 	var updatedEvent *models.Event
 	eventService := &mockImageEventServiceWithUpdate{
 		GetEventFunc: func(ctx context.Context, id int64) (*models.Event, error) {
@@ -145,7 +145,7 @@ func TestImageUpload_Integration_ReplaceExistingImage(t *testing.T) {
 			return nil
 		},
 	}
-	
+
 	authz := &mockImageAuthz{
 		CanEditEventFunc: func(ctx context.Context, user *models.User, event *models.Event) bool {
 			return user.ID == event.CreatedBy
@@ -209,11 +209,11 @@ func TestImageUpload_Integration_ReplaceExistingImage(t *testing.T) {
 
 func TestImageUpload_Integration_ValidationErrors(t *testing.T) {
 	tests := []struct {
-		name        string
-		fileData    []byte
-		filename    string
-		wantStatus  int
-		wantErrMsg  string
+		name       string
+		fileData   []byte
+		filename   string
+		wantStatus int
+		wantErrMsg string
 	}{
 		{
 			name:       "file too large",
@@ -242,7 +242,7 @@ func TestImageUpload_Integration_ValidationErrors(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			storageProvider := storage.NewMockProvider()
 			imageService := assets.NewImageService(storageProvider)
-			
+
 			eventService := &mockImageEventServiceWithUpdate{
 				GetEventFunc: func(ctx context.Context, id int64) (*models.Event, error) {
 					return &models.Event{
@@ -256,7 +256,7 @@ func TestImageUpload_Integration_ValidationErrors(t *testing.T) {
 					return nil
 				},
 			}
-			
+
 			authz := &mockImageAuthz{
 				CanEditEventFunc: func(ctx context.Context, user *models.User, event *models.Event) bool {
 					return true
@@ -299,17 +299,17 @@ func TestImageUpload_Integration_ValidationErrors(t *testing.T) {
 
 func createValidJPEG() []byte {
 	img := image.NewRGBA(image.Rect(0, 0, 100, 100))
-	
+
 	for y := 0; y < 100; y++ {
 		for x := 0; x < 100; x++ {
 			img.Set(x, y, color.RGBA{R: 255, G: 0, B: 0, A: 255})
 		}
 	}
-	
+
 	var buf bytes.Buffer
 	if err := jpeg.Encode(&buf, img, &jpeg.Options{Quality: 90}); err != nil {
 		panic(err)
 	}
-	
+
 	return buf.Bytes()
 }

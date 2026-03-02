@@ -83,14 +83,14 @@ func TestMigratedThemes_ComponentStructure(t *testing.T) {
 	migrator := NewThemeMigrator()
 
 	themes := []struct {
-		name              string
-		migrate           func() (*models.ComponentConfiguration, error)
-		expectedMinComps  int
-		hasHeaderImage    bool
-		hasTitleText      bool
-		hasDateText       bool
-		hasLocationText   bool
-		hasBackground     bool
+		name             string
+		migrate          func() (*models.ComponentConfiguration, error)
+		expectedMinComps int
+		hasHeaderImage   bool
+		hasTitleText     bool
+		hasDateText      bool
+		hasLocationText  bool
+		hasBackground    bool
 	}{
 		{
 			name:             "Plain Text",

@@ -11,9 +11,9 @@ import (
 )
 
 type MockTemplateRepository struct {
-	GetByIDFunc                func(ctx context.Context, id int64) (*models.Template, error)
-	GetComponentConfigFunc     func(ctx context.Context, templateID int64) (*models.ComponentConfiguration, error)
-	UpdateComponentConfigFunc  func(ctx context.Context, templateID int64, config *models.ComponentConfiguration) error
+	GetByIDFunc                 func(ctx context.Context, id int64) (*models.Template, error)
+	GetComponentConfigFunc      func(ctx context.Context, templateID int64) (*models.ComponentConfiguration, error)
+	UpdateComponentConfigFunc   func(ctx context.Context, templateID int64, config *models.ComponentConfiguration) error
 	ValidateComponentConfigFunc func(ctx context.Context, config *models.ComponentConfiguration) error
 }
 

@@ -917,7 +917,6 @@ func TestInviteRepository_DeleteExpired(t *testing.T) {
 	}
 }
 
-
 func TestInviteRepository_CountInvites(t *testing.T) {
 	database := setupInviteTestDB(t)
 	defer database.Close()

@@ -46,7 +46,6 @@ func setupRSVPTestDB(t *testing.T) db.Database {
 	return database
 }
 
-
 func createTestEventForRSVP(t *testing.T, db db.Database) int64 {
 	t.Helper()
 

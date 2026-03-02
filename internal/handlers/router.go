@@ -32,46 +32,46 @@ type Router struct {
 
 type RouterHandlers struct {
 	AuthHandlers     *AuthHandlers
-	LoginHandler    http.Handler
-	CallbackHandler http.Handler
-	LogoutHandler   http.Handler
-	HealthHandler   http.Handler
+	LoginHandler     http.Handler
+	CallbackHandler  http.Handler
+	LogoutHandler    http.Handler
+	HealthHandler    http.Handler
 	ReadinessHandler http.Handler
-	
-	DashboardHandler DashboardHandlerInterface
-	EventHandlers    EventHandlerInterface
-	EventWebHandlers EventWebHandlerInterface
-	QuestionHandlers QuestionHandlerInterface
-	InviteHandlers   InviteHandlerInterface
-	InviteWebHandlers InviteWebHandlerInterface
-	ImportInviteHandlers ImportInviteHandlerInterface
-	ManualInviteHandlers ManualInviteHandlerInterface
-	RevokeInviteHandlers RevokeInviteHandlerInterface
+
+	DashboardHandler         DashboardHandlerInterface
+	EventHandlers            EventHandlerInterface
+	EventWebHandlers         EventWebHandlerInterface
+	QuestionHandlers         QuestionHandlerInterface
+	InviteHandlers           InviteHandlerInterface
+	InviteWebHandlers        InviteWebHandlerInterface
+	ImportInviteHandlers     ImportInviteHandlerInterface
+	ManualInviteHandlers     ManualInviteHandlerInterface
+	RevokeInviteHandlers     RevokeInviteHandlerInterface
 	RegenerateInviteHandlers RegenerateInviteHandlerInterface
-	ListInviteHandlers ListInviteHandlerInterface
-	GetInviteHandlers GetInviteHandlerInterface
-	UpdateInviteHandlers UpdateInviteHandlerInterface
-	DeleteInviteHandlers DeleteInviteHandlerInterface
-	SendInviteHandlers SendInviteHandlerInterface
-	ImageHandlers    RouteRegistrar
-	RSVPHandler      RSVPHandlerInterface
-	RSVPSummaryHandler RSVPSummaryHandlerInterface
-	UserHandler      UserHandlerInterface
-	TemplateHandlers TemplateHandlerInterface
-	CustomizationHandlers CustomizationHandlerInterface
-	AssetHandler     AssetHandlerInterface
-	
+	ListInviteHandlers       ListInviteHandlerInterface
+	GetInviteHandlers        GetInviteHandlerInterface
+	UpdateInviteHandlers     UpdateInviteHandlerInterface
+	DeleteInviteHandlers     DeleteInviteHandlerInterface
+	SendInviteHandlers       SendInviteHandlerInterface
+	ImageHandlers            RouteRegistrar
+	RSVPHandler              RSVPHandlerInterface
+	RSVPSummaryHandler       RSVPSummaryHandlerInterface
+	UserHandler              UserHandlerInterface
+	TemplateHandlers         TemplateHandlerInterface
+	CustomizationHandlers    CustomizationHandlerInterface
+	AssetHandler             AssetHandlerInterface
+
 	AdminDashboardHandler AdminDashboardHandlerInterface
 	UserManagementHandler UserManagementHandlerInterface
-	
-	CleanupHandler http.Handler
+
+	CleanupHandler     http.Handler
 	EmailHealthHandler http.Handler
-	MetricsHandler http.Handler
-	
+	MetricsHandler     http.Handler
+
 	AuthMiddleware AuthMiddlewareInterface
-	
+
 	StaticFileServer http.Handler
-	
+
 	Logger *log.Logger
 }
 
@@ -223,7 +223,7 @@ func NewRouter(handlers *RouterHandlers) *Router {
 	r.Use(func(next http.Handler) http.Handler {
 		return customMiddleware.Timeout(30 * time.Second)(next)
 	})
-	hstsMaxAge := 0
+	hstsMaxAge := 31536000
 	r.Use(func(next http.Handler) http.Handler {
 		return customMiddleware.SecurityHeaders(&customMiddleware.SecurityHeadersConfig{
 			HSTSMaxAge: &hstsMaxAge,
@@ -232,16 +232,16 @@ func NewRouter(handlers *RouterHandlers) *Router {
 	r.Use(func(next http.Handler) http.Handler {
 		return customMiddleware.CSRF(32)(next)
 	})
-	
+
 	rateLimiter := customMiddleware.NewRateLimiter(customMiddleware.RateLimiterConfig{
 		RequestsPerMinute: 300,
 		BurstSize:         300,
 	})
 	r.Use(func(next http.Handler) http.Handler {
 		return customMiddleware.RateLimit(rateLimiter, customMiddleware.RateLimitConfig{
-			AnonymousLimit:      300,
-			AuthenticatedLimit:  900,
-			AdminLimit:          3000,
+			AnonymousLimit:     300,
+			AuthenticatedLimit: 900,
+			AdminLimit:         3000,
 		})(next)
 	})
 
@@ -278,7 +278,7 @@ func NewRouter(handlers *RouterHandlers) *Router {
 		r.Get("/auth/login", func(w http.ResponseWriter, r *http.Request) {
 			w.WriteHeader(http.StatusOK)
 		})
-		
+
 		if handlers.CallbackHandler != nil {
 			r.Handle("/auth/callback", handlers.CallbackHandler)
 		} else {
@@ -286,7 +286,7 @@ func NewRouter(handlers *RouterHandlers) *Router {
 				w.WriteHeader(http.StatusOK)
 			})
 		}
-		
+
 		if handlers.LogoutHandler != nil {
 			r.Handle("/logout", handlers.LogoutHandler)
 		} else {
@@ -584,7 +584,7 @@ func NewRouter(handlers *RouterHandlers) *Router {
 
 func (router *Router) ListRoutes() []RouteInfo {
 	var routes []RouteInfo
-	
+
 	walkFunc := func(method string, route string, handler http.Handler, middlewares ...func(http.Handler) http.Handler) error {
 		routes = append(routes, RouteInfo{
 			Method:  method,
@@ -592,9 +592,9 @@ func (router *Router) ListRoutes() []RouteInfo {
 		})
 		return nil
 	}
-	
+
 	chi.Walk(router.mux, walkFunc)
-	
+
 	return routes
 }
 

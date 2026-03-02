@@ -10,10 +10,10 @@ import (
 
 func TestQuestionValidator_ValidateCreate(t *testing.T) {
 	tests := []struct {
-		name    string
+		name     string
 		question *models.PreferenceQuestion
-		wantErr bool
-		errMsg  string
+		wantErr  bool
+		errMsg   string
 	}{
 		{
 			name: "valid text question",
@@ -247,10 +247,10 @@ func TestQuestionValidator_ValidateCreate(t *testing.T) {
 
 func TestQuestionValidator_ValidateUpdate(t *testing.T) {
 	tests := []struct {
-		name    string
+		name     string
 		question *models.PreferenceQuestion
-		wantErr bool
-		errMsg  string
+		wantErr  bool
+		errMsg   string
 	}{
 		{
 			name: "valid update",

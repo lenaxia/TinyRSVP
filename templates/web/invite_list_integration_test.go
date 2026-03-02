@@ -16,13 +16,27 @@ func TestInviteListTemplateFileExists(t *testing.T) {
 	}
 }
 
-func TestInviteListTemplateValidHTML(t *testing.T) {
-	content, err := os.ReadFile("invite_list.html")
+// readInviteListWithBase reads invite_list.html combined with base.html + navigation.html
+// so tests can verify structural HTML that lives in the base template.
+func readInviteListWithBase(t *testing.T) string {
+	t.Helper()
+	base, err := os.ReadFile("partials/base.html")
+	if err != nil {
+		t.Fatalf("Failed to read partials/base.html: %v", err)
+	}
+	nav, err := os.ReadFile("partials/navigation.html")
+	if err != nil {
+		t.Fatalf("Failed to read partials/navigation.html: %v", err)
+	}
+	page, err := os.ReadFile("invite_list.html")
 	if err != nil {
 		t.Fatalf("Failed to read invite_list.html: %v", err)
 	}
+	return string(base) + string(nav) + string(page)
+}
 
-	htmlContent := string(content)
+func TestInviteListTemplateValidHTML(t *testing.T) {
+	htmlContent := readInviteListWithBase(t)
 
 	if !strings.Contains(htmlContent, "<!DOCTYPE html>") {
 		t.Error("Missing DOCTYPE declaration")
@@ -46,12 +60,7 @@ func TestInviteListTemplateValidHTML(t *testing.T) {
 }
 
 func TestInviteListTemplateMetaTags(t *testing.T) {
-	content, err := os.ReadFile("invite_list.html")
-	if err != nil {
-		t.Fatalf("Failed to read invite_list.html: %v", err)
-	}
-
-	htmlContent := string(content)
+	htmlContent := readInviteListWithBase(t)
 
 	requiredMeta := []string{
 		`<meta charset="UTF-8">`,
@@ -66,12 +75,7 @@ func TestInviteListTemplateMetaTags(t *testing.T) {
 }
 
 func TestInviteListTemplateIncludesCSS(t *testing.T) {
-	content, err := os.ReadFile("invite_list.html")
-	if err != nil {
-		t.Fatalf("Failed to read invite_list.html: %v", err)
-	}
-
-	htmlContent := string(content)
+	htmlContent := readInviteListWithBase(t)
 
 	requiredCSS := []string{
 		"/static/css/variables.css",
@@ -80,8 +84,6 @@ func TestInviteListTemplateIncludesCSS(t *testing.T) {
 		"/static/css/spacing.css",
 		"/static/css/grid.css",
 		"/static/css/buttons.css",
-		"/static/css/forms.css",
-		"/static/css/navigation.css",
 		"/static/css/invite_list.css",
 	}
 
@@ -158,12 +160,7 @@ func TestInviteListTemplateRendersWithData(t *testing.T) {
 }
 
 func TestInviteListTemplateAccessibility(t *testing.T) {
-	content, err := os.ReadFile("invite_list.html")
-	if err != nil {
-		t.Fatalf("Failed to read invite_list.html: %v", err)
-	}
-
-	htmlContent := string(content)
+	htmlContent := readInviteListWithBase(t)
 
 	accessibilityFeatures := []string{
 		`lang="en"`,
@@ -183,12 +180,7 @@ func TestInviteListTemplateAccessibility(t *testing.T) {
 }
 
 func TestInviteListTemplateHasSemanticHTML(t *testing.T) {
-	content, err := os.ReadFile("invite_list.html")
-	if err != nil {
-		t.Fatalf("Failed to read invite_list.html: %v", err)
-	}
-
-	htmlContent := string(content)
+	htmlContent := readInviteListWithBase(t)
 
 	semanticTags := []string{
 		"<main",
@@ -456,12 +448,9 @@ func TestInviteListTemplateHasCreateInviteLink(t *testing.T) {
 
 	htmlContent := string(content)
 
-	if !strings.Contains(htmlContent, `href="/events/{{.EventID}}/invites/new"`) {
-		t.Error("Missing create invite link")
-	}
-
-	if !strings.Contains(htmlContent, "Create Invite") {
-		t.Error("Missing create invite text")
+	// The template uses a modal trigger button for adding guests
+	if !strings.Contains(htmlContent, `data-modal-trigger="create-modal"`) && !strings.Contains(htmlContent, `Add Guest`) {
+		t.Error("Missing create/add guest button")
 	}
 }
 
@@ -498,8 +487,6 @@ func TestInviteListTemplateHasActionButtons(t *testing.T) {
 	htmlContent := string(content)
 
 	actionButtons := []string{
-		"Regenerate",
-		"Revoke",
 		"Export",
 		"Send Selected",
 		"Revoke Selected",

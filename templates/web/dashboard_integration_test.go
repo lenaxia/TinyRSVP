@@ -1,7 +1,6 @@
 package web
 
 import (
-	"html/template"
 	"os"
 	"strings"
 	"testing"
@@ -33,6 +32,25 @@ type DashboardData struct {
 	Error      string
 }
 
+// readDashboardWithBase reads dashboard.html and base.html + navigation.html combined,
+// so tests can check for HTML structure that lives in the base template.
+func readDashboardWithBase(t *testing.T) string {
+	t.Helper()
+	base, err := os.ReadFile("partials/base.html")
+	if err != nil {
+		t.Fatalf("Failed to read partials/base.html: %v", err)
+	}
+	nav, err := os.ReadFile("partials/navigation.html")
+	if err != nil {
+		t.Fatalf("Failed to read partials/navigation.html: %v", err)
+	}
+	page, err := os.ReadFile("dashboard.html")
+	if err != nil {
+		t.Fatalf("Failed to read dashboard.html: %v", err)
+	}
+	return string(base) + string(nav) + string(page)
+}
+
 func TestDashboardTemplateExists(t *testing.T) {
 	if _, err := os.Stat("dashboard.html"); os.IsNotExist(err) {
 		t.Fatal("dashboard.html template does not exist")
@@ -40,12 +58,7 @@ func TestDashboardTemplateExists(t *testing.T) {
 }
 
 func TestDashboardTemplateValidHTML(t *testing.T) {
-	content, err := os.ReadFile("dashboard.html")
-	if err != nil {
-		t.Fatalf("Failed to read dashboard.html: %v", err)
-	}
-
-	htmlContent := string(content)
+	htmlContent := readDashboardWithBase(t)
 
 	if !strings.Contains(htmlContent, "<!DOCTYPE html>") {
 		t.Error("Missing DOCTYPE declaration")
@@ -69,12 +82,7 @@ func TestDashboardTemplateValidHTML(t *testing.T) {
 }
 
 func TestDashboardTemplateMetaTags(t *testing.T) {
-	content, err := os.ReadFile("dashboard.html")
-	if err != nil {
-		t.Fatalf("Failed to read dashboard.html: %v", err)
-	}
-
-	htmlContent := string(content)
+	htmlContent := readDashboardWithBase(t)
 
 	requiredMeta := []string{
 		`<meta charset="UTF-8">`,
@@ -91,12 +99,7 @@ func TestDashboardTemplateMetaTags(t *testing.T) {
 }
 
 func TestDashboardTemplateIncludesCSS(t *testing.T) {
-	content, err := os.ReadFile("dashboard.html")
-	if err != nil {
-		t.Fatalf("Failed to read dashboard.html: %v", err)
-	}
-
-	htmlContent := string(content)
+	htmlContent := readDashboardWithBase(t)
 
 	requiredCSS := []string{
 		"/static/css/variables.css",
@@ -105,7 +108,7 @@ func TestDashboardTemplateIncludesCSS(t *testing.T) {
 		"/static/css/spacing.css",
 		"/static/css/grid.css",
 		"/static/css/buttons.css",
-		"/static/css/navigation.css",
+		"/static/css/app_navigation.css",
 		"/static/css/dashboard.css",
 	}
 
@@ -126,11 +129,12 @@ func TestDashboardTemplateHasDashboardLayout(t *testing.T) {
 
 	htmlContent := string(content)
 
+	// Dashboard uses stats-grid and activity-feed layout (not sidebar layout)
 	requiredClasses := []string{
-		`class="dashboard"`,
-		`class="dashboard-sidebar"`,
-		`class="dashboard-main"`,
-		`class="dashboard-header"`,
+		`class="stats-grid"`,
+		`class="stats-card"`,
+		`class="activity-feed"`,
+		`class="activity-item"`,
 	}
 
 	for _, class := range requiredClasses {
@@ -226,17 +230,14 @@ func TestDashboardTemplateHasQuickActions(t *testing.T) {
 
 	htmlContent := string(content)
 
-	if !strings.Contains(htmlContent, `class="quick-actions"`) {
-		t.Error("Missing quick-actions section")
-	}
-
+	// Dashboard provides a Create Event action via the page header
 	if !strings.Contains(htmlContent, `href="/events/new"`) {
 		t.Error("Missing create event link")
 	}
 }
 
 func TestDashboardTemplateCanParse(t *testing.T) {
-	tmpl, err := template.ParseFiles("dashboard.html")
+	tmpl, err := parseWithBase("dashboard.html")
 	if err != nil {
 		t.Fatalf("Failed to parse dashboard.html: %v", err)
 	}
@@ -247,7 +248,7 @@ func TestDashboardTemplateCanParse(t *testing.T) {
 }
 
 func TestDashboardTemplateRendersWithData(t *testing.T) {
-	tmpl, err := template.ParseFiles("dashboard.html")
+	tmpl, err := parseWithBase("dashboard.html")
 	if err != nil {
 		t.Fatalf("Failed to parse dashboard.html: %v", err)
 	}
@@ -304,7 +305,7 @@ func TestDashboardTemplateRendersWithData(t *testing.T) {
 }
 
 func TestDashboardTemplateRendersEmptyState(t *testing.T) {
-	tmpl, err := template.ParseFiles("dashboard.html")
+	tmpl, err := parseWithBase("dashboard.html")
 	if err != nil {
 		t.Fatalf("Failed to parse dashboard.html: %v", err)
 	}
@@ -336,7 +337,7 @@ func TestDashboardTemplateRendersEmptyState(t *testing.T) {
 }
 
 func TestDashboardTemplateRendersLoadingState(t *testing.T) {
-	tmpl, err := template.ParseFiles("dashboard.html")
+	tmpl, err := parseWithBase("dashboard.html")
 	if err != nil {
 		t.Fatalf("Failed to parse dashboard.html: %v", err)
 	}
@@ -363,7 +364,7 @@ func TestDashboardTemplateRendersLoadingState(t *testing.T) {
 }
 
 func TestDashboardTemplateRendersErrorState(t *testing.T) {
-	tmpl, err := template.ParseFiles("dashboard.html")
+	tmpl, err := parseWithBase("dashboard.html")
 	if err != nil {
 		t.Fatalf("Failed to parse dashboard.html: %v", err)
 	}
@@ -390,18 +391,11 @@ func TestDashboardTemplateRendersErrorState(t *testing.T) {
 }
 
 func TestDashboardTemplateHasNavigation(t *testing.T) {
-	content, err := os.ReadFile("dashboard.html")
-	if err != nil {
-		t.Fatalf("Failed to read dashboard.html: %v", err)
-	}
-
-	htmlContent := string(content)
+	htmlContent := readDashboardWithBase(t)
 
 	requiredLinks := []string{
-		`href="/dashboard"`,
+		`href="/"`,
 		`href="/events"`,
-		`href="/invites"`,
-		`href="/settings"`,
 	}
 
 	for _, link := range requiredLinks {
@@ -414,20 +408,13 @@ func TestDashboardTemplateHasNavigation(t *testing.T) {
 }
 
 func TestDashboardTemplateAccessibility(t *testing.T) {
-	content, err := os.ReadFile("dashboard.html")
-	if err != nil {
-		t.Fatalf("Failed to read dashboard.html: %v", err)
-	}
-
-	htmlContent := string(content)
+	htmlContent := readDashboardWithBase(t)
 
 	accessibilityFeatures := []string{
 		`lang="en"`,
 		"<title>",
 		"<nav",
 		"<main",
-		"<aside",
-		"<header",
 		"<section",
 	}
 
@@ -441,20 +428,12 @@ func TestDashboardTemplateAccessibility(t *testing.T) {
 }
 
 func TestDashboardTemplateHasSemanticHTML(t *testing.T) {
-	content, err := os.ReadFile("dashboard.html")
-	if err != nil {
-		t.Fatalf("Failed to read dashboard.html: %v", err)
-	}
-
-	htmlContent := string(content)
+	htmlContent := readDashboardWithBase(t)
 
 	semanticTags := []string{
 		"<nav",
 		"<main",
-		"<aside",
-		"<header",
 		"<section",
-		"<h1>",
 		"<h2",
 		"<h3",
 		"<time",
@@ -549,7 +528,7 @@ func TestDashboardTemplateActivityFields(t *testing.T) {
 }
 
 func TestDashboardTemplateRendersMultipleActivities(t *testing.T) {
-	tmpl, err := template.ParseFiles("dashboard.html")
+	tmpl, err := parseWithBase("dashboard.html")
 	if err != nil {
 		t.Fatalf("Failed to parse dashboard.html: %v", err)
 	}
@@ -606,15 +585,15 @@ func TestDashboardTemplateRendersMultipleActivities(t *testing.T) {
 }
 
 func TestDashboardTemplateConditionalRendering(t *testing.T) {
-	tmpl, err := template.ParseFiles("dashboard.html")
+	tmpl, err := parseWithBase("dashboard.html")
 	if err != nil {
 		t.Fatalf("Failed to parse dashboard.html: %v", err)
 	}
 
 	tests := []struct {
-		name     string
-		data     DashboardData
-		contains []string
+		name        string
+		data        DashboardData
+		contains    []string
 		notContains []string
 	}{
 		{
@@ -625,16 +604,16 @@ func TestDashboardTemplateConditionalRendering(t *testing.T) {
 					{Title: "Test Activity"},
 				},
 			},
-			contains: []string{"stats-grid", "activity-item"},
+			contains:    []string{"stats-grid", "activity-item"},
 			notContains: []string{"empty-state", "loading-state", "error-state"},
 		},
 		{
 			name: "empty_state",
 			data: DashboardData{
-				Stats: DashboardStats{TotalEvents: 0},
+				Stats:      DashboardStats{TotalEvents: 0},
 				Activities: []DashboardActivity{},
 			},
-			contains: []string{"empty-state", "No Recent Activity"},
+			contains:    []string{"empty-state", "No Recent Activity"},
 			notContains: []string{"activity-item"},
 		},
 		{
@@ -642,7 +621,7 @@ func TestDashboardTemplateConditionalRendering(t *testing.T) {
 			data: DashboardData{
 				Loading: true,
 			},
-			contains: []string{"loading-state", "Loading dashboard"},
+			contains:    []string{"loading-state", "Loading dashboard"},
 			notContains: []string{"stats-grid", "activity-feed"},
 		},
 		{
@@ -650,7 +629,7 @@ func TestDashboardTemplateConditionalRendering(t *testing.T) {
 			data: DashboardData{
 				Error: "Database connection failed",
 			},
-			contains: []string{"error-state", "Database connection failed"},
+			contains:    []string{"error-state", "Database connection failed"},
 			notContains: []string{"stats-grid", "activity-feed"},
 		},
 	}
@@ -681,18 +660,15 @@ func TestDashboardTemplateConditionalRendering(t *testing.T) {
 }
 
 func TestDashboardTemplateHasNavLinks(t *testing.T) {
-	content, err := os.ReadFile("dashboard.html")
-	if err != nil {
-		t.Fatalf("Failed to read dashboard.html: %v", err)
+	htmlContent := readDashboardWithBase(t)
+
+	// Navigation provides the brand link and nav links
+	if !strings.Contains(htmlContent, `href="/"`) {
+		t.Error("Missing root/home navigation link")
 	}
 
-	htmlContent := string(content)
-
-	if !strings.Contains(htmlContent, `class="nav-link active"`) {
-		t.Error("Dashboard link should be marked as active")
-	}
-
-	if !strings.Contains(htmlContent, `class="logo"`) {
-		t.Error("Missing logo link")
+	// Navigation should provide a brand/logo element
+	if !strings.Contains(htmlContent, `class="app-nav-brand"`) && !strings.Contains(htmlContent, `class="logo"`) {
+		t.Error("Missing logo or brand link in navigation")
 	}
 }

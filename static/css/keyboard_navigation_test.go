@@ -146,7 +146,7 @@ func TestNoOutlineNone(t *testing.T) {
 	if pattern.MatchString(cssContent) {
 		hasFocusVisible := strings.Contains(cssContent, ":focus-visible")
 		hasNotFocusVisible := strings.Contains(cssContent, ":focus:not(:focus-visible)")
-		
+
 		if !hasFocusVisible && !hasNotFocusVisible {
 			t.Error("Should not use outline: none on :focus without providing :focus-visible alternative")
 		}
@@ -187,7 +187,7 @@ func TestKeyboardNavigationNoHardcodedColors(t *testing.T) {
 
 	hexColorPattern := regexp.MustCompile(`#[0-9a-fA-F]{3,6}`)
 	matches := hexColorPattern.FindAllString(cssContent, -1)
-	
+
 	for _, match := range matches {
 		if match != "#fff" && match != "#ffffff" && match != "#000" && match != "#000000" {
 			t.Errorf("Keyboard navigation should not use hardcoded hex colors except pure black/white, found: %s", match)

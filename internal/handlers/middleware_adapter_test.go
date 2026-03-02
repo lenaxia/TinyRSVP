@@ -79,7 +79,7 @@ func TestMiddlewareAdapter_NilMiddleware(t *testing.T) {
 	adminWrapped := adapter.RequireAdmin(handler)
 
 	req := httptest.NewRequest(http.MethodGet, "/test", nil)
-	
+
 	w := httptest.NewRecorder()
 	authWrapped.ServeHTTP(w, req)
 	if w.Code != http.StatusOK {

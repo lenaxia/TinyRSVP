@@ -37,7 +37,11 @@ func TestInviteWebHandlers_ListInvitesPage_Success(t *testing.T) {
 		},
 	}
 
-	tmpl, err := template.New("invite_list.html").Funcs(funcMap).ParseFiles("../../templates/web/invite_list.html")
+	tmpl, err := template.New("invite_list.html").Funcs(funcMap).ParseFiles(
+		"../../templates/web/invite_list.html",
+		"../../templates/web/partials/base.html",
+		"../../templates/web/partials/navigation.html",
+	)
 	if err != nil {
 		t.Fatalf("Failed to parse template: %v", err)
 	}
@@ -108,7 +112,7 @@ func TestInviteWebHandlers_ListInvitesPage_Success(t *testing.T) {
 
 	req := httptest.NewRequest(http.MethodGet, "/events/1/invites", nil)
 	req = req.WithContext(auth.WithUser(context.Background(), user))
-	
+
 	rctx := chi.NewRouteContext()
 	rctx.URLParams.Add("eventId", "1")
 	req = req.WithContext(context.WithValue(req.Context(), chi.RouteCtxKey, rctx))
@@ -156,7 +160,7 @@ func TestInviteWebHandlers_ListInvitesPage_InvalidEventID(t *testing.T) {
 
 	req := httptest.NewRequest(http.MethodGet, "/events/invalid/invites", nil)
 	req = req.WithContext(auth.WithUser(context.Background(), user))
-	
+
 	rctx := chi.NewRouteContext()
 	rctx.URLParams.Add("eventId", "invalid")
 	req = req.WithContext(context.WithValue(req.Context(), chi.RouteCtxKey, rctx))
@@ -177,7 +181,7 @@ func TestInviteWebHandlers_ListInvitesPage_Unauthorized(t *testing.T) {
 	handler := NewInviteWebHandlers(mockService, mockEventRepo)
 
 	req := httptest.NewRequest(http.MethodGet, "/events/1/invites", nil)
-	
+
 	rctx := chi.NewRouteContext()
 	rctx.URLParams.Add("eventId", "1")
 	req = req.WithContext(context.WithValue(req.Context(), chi.RouteCtxKey, rctx))
@@ -209,7 +213,7 @@ func TestInviteWebHandlers_ListInvitesPage_EventNotFound(t *testing.T) {
 
 	req := httptest.NewRequest(http.MethodGet, "/events/999/invites", nil)
 	req = req.WithContext(auth.WithUser(context.Background(), user))
-	
+
 	rctx := chi.NewRouteContext()
 	rctx.URLParams.Add("eventId", "999")
 	req = req.WithContext(context.WithValue(req.Context(), chi.RouteCtxKey, rctx))
@@ -247,7 +251,7 @@ func TestInviteWebHandlers_ListInvitesPage_PermissionDenied(t *testing.T) {
 
 	req := httptest.NewRequest(http.MethodGet, "/events/1/invites", nil)
 	req = req.WithContext(auth.WithUser(context.Background(), user))
-	
+
 	rctx := chi.NewRouteContext()
 	rctx.URLParams.Add("eventId", "1")
 	req = req.WithContext(context.WithValue(req.Context(), chi.RouteCtxKey, rctx))
@@ -283,7 +287,11 @@ func TestInviteWebHandlers_ListInvitesPage_WithFilters(t *testing.T) {
 		},
 	}
 
-	tmpl, err := template.New("invite_list.html").Funcs(funcMap).ParseFiles("../../templates/web/invite_list.html")
+	tmpl, err := template.New("invite_list.html").Funcs(funcMap).ParseFiles(
+		"../../templates/web/invite_list.html",
+		"../../templates/web/partials/base.html",
+		"../../templates/web/partials/navigation.html",
+	)
 	if err != nil {
 		t.Fatalf("Failed to parse template: %v", err)
 	}
@@ -323,7 +331,7 @@ func TestInviteWebHandlers_ListInvitesPage_WithFilters(t *testing.T) {
 
 	req := httptest.NewRequest(http.MethodGet, "/events/1/invites?status=sent&search=john", nil)
 	req = req.WithContext(auth.WithUser(context.Background(), user))
-	
+
 	rctx := chi.NewRouteContext()
 	rctx.URLParams.Add("eventId", "1")
 	req = req.WithContext(context.WithValue(req.Context(), chi.RouteCtxKey, rctx))

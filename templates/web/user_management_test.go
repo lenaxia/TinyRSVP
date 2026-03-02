@@ -1,77 +1,62 @@
 package web
 
 import (
-	"html/template"
 	"strings"
 	"testing"
 	"time"
 )
 
-func TestUserManagement_RendersSuccessfully(t *testing.T) {
-	tmpl, err := template.ParseFiles("user_management.html")
-	if err != nil {
-		t.Fatalf("Failed to parse template: %v", err)
+func getUserManagementData(users ...map[string]interface{}) map[string]interface{} {
+	userList := []map[string]interface{}{}
+	for _, u := range users {
+		userList = append(userList, u)
 	}
-
-	data := map[string]interface{}{
+	return map[string]interface{}{
 		"User": map[string]interface{}{
 			"Name":  "Admin User",
 			"Email": "admin@example.com",
 			"Role":  "admin",
 		},
-		"Users": []map[string]interface{}{
-			{
-				"ID":        int64(1),
-				"Email":     "user1@example.com",
-				"Name":      "User One",
-				"Role":      "event_manager",
-				"CreatedAt": time.Now(),
-			},
-		},
+		"Users":     userList,
 		"CSRFToken": "test-csrf-token",
 	}
+}
 
-	var buf strings.Builder
-	if err := tmpl.Execute(&buf, data); err != nil {
-		t.Fatalf("Failed to execute template: %v", err)
+func TestUserManagement_RendersSuccessfully(t *testing.T) {
+	tmpl, err := parseWithBase("user_management.html")
+	if err != nil {
+		t.Fatalf("Failed to parse template: %v", err)
 	}
 
-	html := buf.String()
+	data := getUserManagementData(map[string]interface{}{
+		"ID":        int64(1),
+		"Email":     "user1@example.com",
+		"Name":      "User One",
+		"Role":      "event_manager",
+		"CreatedAt": time.Now(),
+	})
+
+	html := executeTemplate(t, tmpl, data)
 	if html == "" {
 		t.Error("Expected non-empty HTML output")
 	}
 }
 
 func TestUserManagement_ContainsRequiredElements(t *testing.T) {
-	tmpl, err := template.ParseFiles("user_management.html")
+	tmpl, err := parseWithBase("user_management.html")
 	if err != nil {
 		t.Fatalf("Failed to parse template: %v", err)
 	}
 
-	data := map[string]interface{}{
-		"User": map[string]interface{}{
-			"Name":  "Admin User",
-			"Email": "admin@example.com",
-			"Role":  "admin",
-		},
-		"Users": []map[string]interface{}{
-			{
-				"ID":        int64(1),
-				"Email":     "user1@example.com",
-				"Name":      "User One",
-				"Role":      "event_manager",
-				"CreatedAt": time.Now(),
-			},
-		},
-		"CSRFToken": "test-csrf-token",
-	}
+	data := getUserManagementData(map[string]interface{}{
+		"ID":        int64(1),
+		"Email":     "user1@example.com",
+		"Name":      "User One",
+		"Role":      "event_manager",
+		"CreatedAt": time.Now(),
+	})
 
-	var buf strings.Builder
-	if err := tmpl.Execute(&buf, data); err != nil {
-		t.Fatalf("Failed to execute template: %v", err)
-	}
-
-	html := buf.String()
+	html := executeTemplate(t, tmpl, data)
 
 	requiredElements := []string{
 		"<!DOCTYPE html>",
@@ -93,42 +78,29 @@ func TestUserManagement_ContainsRequiredElements(t *testing.T) {
 }
 
 func TestUserManagement_DisplaysUserList(t *testing.T) {
-	tmpl, err := template.ParseFiles("user_management.html")
+	tmpl, err := parseWithBase("user_management.html")
 	if err != nil {
 		t.Fatalf("Failed to parse template: %v", err)
 	}
 
-	data := map[string]interface{}{
-		"User": map[string]interface{}{
-			"Name":  "Admin User",
-			"Email": "admin@example.com",
-			"Role":  "admin",
+	data := getUserManagementData(
+		map[string]interface{}{
+			"ID":        int64(1),
+			"Email":     "user1@example.com",
+			"Name":      "User One",
+			"Role":      "event_manager",
+			"CreatedAt": time.Now(),
 		},
-		"Users": []map[string]interface{}{
-			{
-				"ID":        int64(1),
-				"Email":     "user1@example.com",
-				"Name":      "User One",
-				"Role":      "event_manager",
-				"CreatedAt": time.Now(),
-			},
-			{
-				"ID":        int64(2),
-				"Email":     "user2@example.com",
-				"Name":      "User Two",
-				"Role":      "admin",
-				"CreatedAt": time.Now(),
-			},
+		map[string]interface{}{
+			"ID":        int64(2),
+			"Email":     "user2@example.com",
+			"Name":      "User Two",
+			"Role":      "admin",
+			"CreatedAt": time.Now(),
 		},
-		"CSRFToken": "test-csrf-token",
-	}
+	)
 
-	var buf strings.Builder
-	if err := tmpl.Execute(&buf, data); err != nil {
-		t.Fatalf("Failed to execute template: %v", err)
-	}
-
-	html := buf.String()
+	html := executeTemplate(t, tmpl, data)
 
 	if !strings.Contains(html, "user1@example.com") {
 		t.Error("Expected HTML to contain user1 email")
@@ -145,7 +117,7 @@ func TestUserManagement_DisplaysUserList(t *testing.T) {
 }
 
 func TestUserManagement_ContainsCSRFToken(t *testing.T) {
-	tmpl, err := template.ParseFiles("user_management.html")
+	tmpl, err := parseWithBase("user_management.html")
 	if err != nil {
 		t.Fatalf("Failed to parse template: %v", err)
 	}
@@ -168,12 +140,7 @@ func TestUserManagement_ContainsCSRFToken(t *testing.T) {
 		"CSRFToken": "test-csrf-token-12345",
 	}
 
-	var buf strings.Builder
-	if err := tmpl.Execute(&buf, data); err != nil {
-		t.Fatalf("Failed to execute template: %v", err)
-	}
-
-	html := buf.String()
+	html := executeTemplate(t, tmpl, data)
 
 	if !strings.Contains(html, "test-csrf-token-12345") {
 		t.Error("Expected HTML to contain CSRF token")
@@ -181,7 +148,7 @@ func TestUserManagement_ContainsCSRFToken(t *testing.T) {
 }
 
 func TestUserManagement_HandlesEmptyUserList(t *testing.T) {
-	tmpl, err := template.ParseFiles("user_management.html")
+	tmpl, err := parseWithBase("user_management.html")
 	if err != nil {
 		t.Fatalf("Failed to parse template: %v", err)
 	}
@@ -192,51 +159,31 @@ func TestUserManagement_HandlesEmptyUserList(t *testing.T) {
 			"Email": "admin@example.com",
 			"Role":  "admin",
 		},
-		"Users": []map[string]interface{}{},
+		"Users":     []map[string]interface{}{},
 		"CSRFToken": "test-csrf-token",
 	}
 
-	var buf strings.Builder
-	if err := tmpl.Execute(&buf, data); err != nil {
-		t.Fatalf("Failed to execute template: %v", err)
-	}
-
-	html := buf.String()
+	html := executeTemplate(t, tmpl, data)
 	if html == "" {
 		t.Error("Expected non-empty HTML output")
 	}
 }
 
 func TestUserManagement_ContainsActionButtons(t *testing.T) {
-	tmpl, err := template.ParseFiles("user_management.html")
+	tmpl, err := parseWithBase("user_management.html")
 	if err != nil {
 		t.Fatalf("Failed to parse template: %v", err)
 	}
 
-	data := map[string]interface{}{
-		"User": map[string]interface{}{
-			"Name":  "Admin User",
-			"Email": "admin@example.com",
-			"Role":  "admin",
-		},
-		"Users": []map[string]interface{}{
-			{
-				"ID":        int64(1),
-				"Email":     "user1@example.com",
-				"Name":      "User One",
-				"Role":      "event_manager",
-				"CreatedAt": time.Now(),
-			},
-		},
-		"CSRFToken": "test-csrf-token",
-	}
+	data := getUserManagementData(map[string]interface{}{
+		"ID":        int64(1),
+		"Email":     "user1@example.com",
+		"Name":      "User One",
+		"Role":      "event_manager",
+		"CreatedAt": time.Now(),
+	})
 
-	var buf strings.Builder
-	if err := tmpl.Execute(&buf, data); err != nil {
-		t.Fatalf("Failed to execute template: %v", err)
-	}
-
-	html := buf.String()
+	html := executeTemplate(t, tmpl, data)
 
 	expectedActions := []string{
 		"Edit",
@@ -251,7 +198,7 @@ func TestUserManagement_ContainsActionButtons(t *testing.T) {
 }
 
 func TestUserManagement_AccessibilityFeatures(t *testing.T) {
-	tmpl, err := template.ParseFiles("user_management.html")
+	tmpl, err := parseWithBase("user_management.html")
 	if err != nil {
 		t.Fatalf("Failed to parse template: %v", err)
 	}
@@ -262,16 +209,11 @@ func TestUserManagement_AccessibilityFeatures(t *testing.T) {
 			"Email": "admin@example.com",
 			"Role":  "admin",
 		},
-		"Users": []map[string]interface{}{},
+		"Users":     []map[string]interface{}{},
 		"CSRFToken": "test-csrf-token",
 	}
 
-	var buf strings.Builder
-	if err := tmpl.Execute(&buf, data); err != nil {
-		t.Fatalf("Failed to execute template: %v", err)
-	}
-
-	html := buf.String()
+	html := executeTemplate(t, tmpl, data)
 
 	accessibilityFeatures := []string{
 		`role="navigation"`,

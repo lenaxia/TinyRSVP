@@ -13,9 +13,9 @@ import (
 
 // RetryConfig defines retry behavior for database operations
 type RetryConfig struct {
-	MaxAttempts     int
-	InitialDelay    time.Duration
-	MaxDelay        time.Duration
+	MaxAttempts       int
+	InitialDelay      time.Duration
+	MaxDelay          time.Duration
 	BackoffMultiplier float64
 }
 

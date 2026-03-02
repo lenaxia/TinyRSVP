@@ -121,17 +121,17 @@ func TestRequireAuth_WithValidSession(t *testing.T) {
 		middleware := RequireAuth(mockSessionMgr, mockUserService)
 		handler := middleware(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			handlerCalled = true
-			
+
 			ctxUser, ok := auth.UserFromContext(r.Context())
 			if !ok {
 				t.Error("Expected user in context")
 				return
 			}
-			
+
 			if ctxUser.ID != user.ID {
 				t.Errorf("Expected user ID %d, got %d", user.ID, ctxUser.ID)
 			}
-			
+
 			w.WriteHeader(http.StatusOK)
 		}))
 
@@ -149,4 +149,3 @@ func TestRequireAuth_WithValidSession(t *testing.T) {
 		}
 	})
 }
-

@@ -20,11 +20,11 @@ import (
 )
 
 type EventWebHandlers struct {
-	service            events.Service
-	templateService    templates.Service
-	listTemplates      *template.Template
-	formTemplates      *template.Template
-	detailTemplates    *template.Template
+	service         events.Service
+	templateService templates.Service
+	listTemplates   *template.Template
+	formTemplates   *template.Template
+	detailTemplates *template.Template
 }
 
 type EventListPageData struct {
@@ -567,13 +567,13 @@ func parseEventFormData(form url.Values) (*models.Event, error) {
 	}
 
 	event := &models.Event{
-		Title:              title,
-		StartTime:          startTime,
-		Timezone:           timezone,
-		MaxPlusOnes:        maxPlusOnes,
-		AllowMaybeRSVP:     form.Get("allow_maybe_rsvp") == "on",
-		PrivateGuestList:   form.Get("private_guest_list") == "on",
-		FamilyHeadcount:    form.Get("family_headcount") == "on",
+		Title:                  title,
+		StartTime:              startTime,
+		Timezone:               timezone,
+		MaxPlusOnes:            maxPlusOnes,
+		AllowMaybeRSVP:         form.Get("allow_maybe_rsvp") == "on",
+		PrivateGuestList:       form.Get("private_guest_list") == "on",
+		FamilyHeadcount:        form.Get("family_headcount") == "on",
 		AllowRSVPAfterDeadline: form.Get("allow_rsvp_after_deadline") == "on",
 	}
 

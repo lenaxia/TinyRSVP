@@ -318,7 +318,7 @@ func TestEventRepository_UniquenessConstraints(t *testing.T) {
 
 	t.Run("duplicate public_id should fail", func(t *testing.T) {
 		publicID := "duplicate12"
-		
+
 		event1 := &models.Event{
 			PublicID:    &publicID,
 			Title:       "Event 1",
@@ -352,7 +352,7 @@ func TestEventRepository_UniquenessConstraints(t *testing.T) {
 
 	t.Run("duplicate friendly_name should fail", func(t *testing.T) {
 		friendlyName := "duplicate-event"
-		
+
 		event1 := &models.Event{
 			FriendlyName: &friendlyName,
 			Title:        "Event 1",

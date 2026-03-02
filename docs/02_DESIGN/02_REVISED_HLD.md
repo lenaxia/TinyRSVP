@@ -1155,7 +1155,33 @@ END:VCALENDAR
 - Form submissions to external URLs
 - Arbitrary HTML attributes
 
-### 11.5 Template Versioning
+### 11.5 Component-Based Customization
+
+TinyRSVP supports Evite-style RSVP page customization through
+a component-based rendering system.
+
+**Supported Components:**
+- TextBox - Custom text with styling
+- Image - Header images with effects
+- Background - Colors, gradients, images
+- Overlay - Card overlays and decorations
+- Container - Layout management
+- Divider - Visual separators
+
+**Features:**
+- Drag-and-drop positioning (v1+)
+- Custom fonts, colors, effects
+- Animations (fade, slide, scale, etc.)
+- Responsive layouts
+- Theme presets (7 included)
+
+**Implementation:**
+- Component models: internal/models/component.go
+- Renderer: internal/templates/component_renderer.go
+- Templates: templates/web/partials/component_*.html
+- Database: component_config field in templates table
+
+### 11.6 Template Versioning
 
 **v0 Scope:** No versioning
 
@@ -1171,7 +1197,7 @@ END:VCALENDAR
 - Emails reference specific version
 - Can revert to previous version
 
-### 11.6 Image Upload
+### 11.7 Image Upload
 
 **Allowed File Types:**
 - image/jpeg
@@ -1830,6 +1856,22 @@ Content-Security-Policy: default-src 'self'; img-src 'self' data:; style-src 'se
 - HMAC secret rotation invalidates all tokens (admin command)
 - SMTP password rotation via environment variable update + restart
 - OIDC secret rotation via environment variable update + restart
+
+### 16.5.1 Open Redirect Prevention
+
+**Threat:** Attackers can craft malicious login/callback URLs that redirect authenticated users to phishing sites.
+
+**Mitigation:**
+- Validate all `return` URL parameters in LoginHandler and CallbackHandler
+- Only allow relative URLs starting with `/`
+- Block protocol-relative URLs (`//evil.com`)
+- Block absolute URLs with schemes (`http://`, `javascript:`)
+- Block URLs with hosts
+- Sanitize special characters (backslash, newlines, tabs)
+- Default to `/` for any invalid return URL
+- Log rejected return URLs for security monitoring
+
+**Implementation:** `internal/auth/redirect.go` - `ValidateReturnURL()`
 
 ### 16.6 Audit Logging
 

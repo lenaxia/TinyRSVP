@@ -6,6 +6,8 @@ import (
 	"net/url"
 	"strings"
 	"testing"
+
+	"github.com/lenaxia/tinyrsvp/internal/auth"
 )
 
 func TestShowLogin_ValidReturnURL(t *testing.T) {
@@ -388,9 +390,9 @@ func TestValidateReturnURL(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			_, err := validateReturnURL(tt.url)
+			_, err := auth.ValidateReturnURL(tt.url)
 			if (err != nil) != tt.wantErr {
-				t.Errorf("validateReturnURL() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("auth.ValidateReturnURL() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})
 	}

@@ -87,7 +87,7 @@ func TestConfig_TokenStrategy_HMAC_WithHardcodedFallback(t *testing.T) {
 
 	w2.Close()
 	os.Stderr = oldStderr
-	
+
 	var buf2 bytes.Buffer
 	buf2.ReadFrom(r2)
 

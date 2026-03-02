@@ -412,10 +412,10 @@ func TestValidator_XSSPrevention_AdvancedPayloads(t *testing.T) {
 	validator := NewValidator(engine)
 
 	advancedPayloads := []struct {
-		name            string
-		data            string
-		mustBeEscaped   bool
-		mustNotContain  []string
+		name           string
+		data           string
+		mustBeEscaped  bool
+		mustNotContain []string
 	}{
 		{
 			name:           "encoded script tag",

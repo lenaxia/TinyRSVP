@@ -50,27 +50,27 @@ func TestNoOpMetrics(t *testing.T) {
 }
 
 type mockMetrics struct {
-	queueSize           int
-	emailsQueued        int
-	emailsDequeued      int
-	emailsSent          int
-	emailsFailed        map[string]int
-	retryAttempts       []int
-	rateLimitHits       int
-	rateLimitWaits      []time.Duration
-	batchesProcessed    int
-	batchSizes          []int
-	batchDurations      []time.Duration
-	processingErrors    int
+	queueSize        int
+	emailsQueued     int
+	emailsDequeued   int
+	emailsSent       int
+	emailsFailed     map[string]int
+	retryAttempts    []int
+	rateLimitHits    int
+	rateLimitWaits   []time.Duration
+	batchesProcessed int
+	batchSizes       []int
+	batchDurations   []time.Duration
+	processingErrors int
 }
 
 func newMockMetrics() *mockMetrics {
 	return &mockMetrics{
-		emailsFailed:    make(map[string]int),
-		retryAttempts:   []int{},
-		rateLimitWaits:  []time.Duration{},
-		batchSizes:      []int{},
-		batchDurations:  []time.Duration{},
+		emailsFailed:   make(map[string]int),
+		retryAttempts:  []int{},
+		rateLimitWaits: []time.Duration{},
+		batchSizes:     []int{},
+		batchDurations: []time.Duration{},
 	}
 }
 

@@ -41,7 +41,7 @@ func TestSpacingMarginUtilities(t *testing.T) {
 	cssContent := string(content)
 
 	spacingValues := []string{"0", "1", "2", "3", "4", "5", "6", "8", "10", "12", "16", "20", "24"}
-	
+
 	for _, value := range spacingValues {
 		t.Run("m-"+value, func(t *testing.T) {
 			className := ".m-" + value
@@ -103,7 +103,7 @@ func TestSpacingPaddingUtilities(t *testing.T) {
 	cssContent := string(content)
 
 	spacingValues := []string{"0", "1", "2", "3", "4", "5", "6", "8", "10", "12", "16", "20", "24"}
-	
+
 	for _, value := range spacingValues {
 		t.Run("p-"+value, func(t *testing.T) {
 			className := ".p-" + value
@@ -165,7 +165,7 @@ func TestSpacingGapUtilities(t *testing.T) {
 	cssContent := string(content)
 
 	spacingValues := []string{"0", "1", "2", "3", "4", "5", "6", "8", "10", "12", "16", "20", "24"}
-	
+
 	for _, value := range spacingValues {
 		t.Run("gap-"+value, func(t *testing.T) {
 			className := ".gap-" + value
@@ -223,7 +223,7 @@ func TestSpacingResponsiveUtilities(t *testing.T) {
 	cssContent := string(content)
 
 	breakpoints := []string{"md", "lg"}
-	
+
 	for _, bp := range breakpoints {
 		t.Run("breakpoint_"+bp, func(t *testing.T) {
 			pattern := regexp.MustCompile(`@media\s*\([^)]*min-width[^)]*\)`)
@@ -279,7 +279,7 @@ func TestSpacingNegativeMargins(t *testing.T) {
 	cssContent := string(content)
 
 	negativeValues := []string{"1", "2", "3", "4", "5", "6", "8", "10", "12"}
-	
+
 	for _, value := range negativeValues {
 		t.Run("-m-"+value, func(t *testing.T) {
 			className := ".-m-" + value
@@ -330,12 +330,12 @@ func TestSpacingConsistency(t *testing.T) {
 	cssContent := string(content)
 
 	spacingValues := []string{"0", "1", "2", "3", "4", "5", "6", "8", "10", "12", "16", "20", "24"}
-	
+
 	for _, value := range spacingValues {
 		marginCount := strings.Count(cssContent, ".m-"+value)
 		paddingCount := strings.Count(cssContent, ".p-"+value)
 		gapCount := strings.Count(cssContent, ".gap-"+value)
-		
+
 		if marginCount == 0 {
 			t.Errorf("Missing margin utilities for spacing-%s", value)
 		}
@@ -357,7 +357,7 @@ func TestSpacingEightPointScale(t *testing.T) {
 	cssContent := string(content)
 
 	eightPointValues := []string{"0", "8", "16", "24"}
-	
+
 	for _, value := range eightPointValues {
 		t.Run("8pt-scale-"+value, func(t *testing.T) {
 			if !strings.Contains(cssContent, "var(--spacing-"+value+")") {

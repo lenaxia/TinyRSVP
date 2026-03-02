@@ -91,11 +91,11 @@ func TestService_SubmitRSVP_ValidYesWithPlusOnes(t *testing.T) {
 
 	inviteRepo := repositories.NewInviteRepository(database)
 	invite := &models.Invite{
-		EventID:     event.ID,
-		TokenHash:   hashToken("validtoken"),
-		Email:       strPtr("guest@example.com"),
-		Name:        strPtr("Test Guest"),
-		
+		EventID:   event.ID,
+		TokenHash: hashToken("validtoken"),
+		Email:     strPtr("guest@example.com"),
+		Name:      strPtr("Test Guest"),
+
 		Status:      models.InviteStatusSent,
 		MaxPlusOnes: 2,
 		ExpiresAt:   future,
@@ -288,11 +288,11 @@ func TestService_SubmitRSVP_InvalidResponse(t *testing.T) {
 
 	inviteRepo := repositories.NewInviteRepository(database)
 	invite := &models.Invite{
-		EventID:     event.ID,
-		TokenHash:   hashToken("validtoken"),
-		Email:       strPtr("guest@example.com"),
-		Name:        strPtr("Test Guest"),
-		
+		EventID:   event.ID,
+		TokenHash: hashToken("validtoken"),
+		Email:     strPtr("guest@example.com"),
+		Name:      strPtr("Test Guest"),
+
 		Status:      models.InviteStatusSent,
 		MaxPlusOnes: 2,
 		ExpiresAt:   future,
@@ -358,11 +358,11 @@ func TestService_SubmitRSVP_NegativePlusOnes(t *testing.T) {
 
 	inviteRepo := repositories.NewInviteRepository(database)
 	invite := &models.Invite{
-		EventID:     event.ID,
-		TokenHash:   hashToken("validtoken"),
-		Email:       strPtr("guest@example.com"),
-		Name:        strPtr("Test Guest"),
-		
+		EventID:   event.ID,
+		TokenHash: hashToken("validtoken"),
+		Email:     strPtr("guest@example.com"),
+		Name:      strPtr("Test Guest"),
+
 		Status:      models.InviteStatusSent,
 		MaxPlusOnes: 2,
 		ExpiresAt:   future,
@@ -428,11 +428,11 @@ func TestService_SubmitRSVP_ExceedMaxPlusOnes(t *testing.T) {
 
 	inviteRepo := repositories.NewInviteRepository(database)
 	invite := &models.Invite{
-		EventID:     event.ID,
-		TokenHash:   hashToken("validtoken"),
-		Email:       strPtr("guest@example.com"),
-		Name:        strPtr("Test Guest"),
-		
+		EventID:   event.ID,
+		TokenHash: hashToken("validtoken"),
+		Email:     strPtr("guest@example.com"),
+		Name:      strPtr("Test Guest"),
+
 		Status:      models.InviteStatusSent,
 		MaxPlusOnes: 2,
 		ExpiresAt:   future,
@@ -498,11 +498,11 @@ func TestService_SubmitRSVP_DeadlinePassed(t *testing.T) {
 
 	inviteRepo := repositories.NewInviteRepository(database)
 	invite := &models.Invite{
-		EventID:     event.ID,
-		TokenHash:   hashToken("validtoken"),
-		Email:       strPtr("guest@example.com"),
-		Name:        strPtr("Test Guest"),
-		
+		EventID:   event.ID,
+		TokenHash: hashToken("validtoken"),
+		Email:     strPtr("guest@example.com"),
+		Name:      strPtr("Test Guest"),
+
 		Status:      models.InviteStatusSent,
 		MaxPlusOnes: 2,
 		ExpiresAt:   future,
@@ -564,11 +564,11 @@ func TestService_SubmitRSVP_DuplicateRSVP(t *testing.T) {
 
 	inviteRepo := repositories.NewInviteRepository(database)
 	invite := &models.Invite{
-		EventID:     event.ID,
-		TokenHash:   hashToken("validtoken"),
-		Email:       strPtr("guest@example.com"),
-		Name:        strPtr("Test Guest"),
-		
+		EventID:   event.ID,
+		TokenHash: hashToken("validtoken"),
+		Email:     strPtr("guest@example.com"),
+		Name:      strPtr("Test Guest"),
+
 		Status:      models.InviteStatusSent,
 		MaxPlusOnes: 2,
 		ExpiresAt:   future,
@@ -638,11 +638,11 @@ func TestService_SubmitRSVP_CancelledEvent(t *testing.T) {
 
 	inviteRepo := repositories.NewInviteRepository(database)
 	invite := &models.Invite{
-		EventID:     event.ID,
-		TokenHash:   hashToken("validtoken"),
-		Email:       strPtr("guest@example.com"),
-		Name:        strPtr("Test Guest"),
-		
+		EventID:   event.ID,
+		TokenHash: hashToken("validtoken"),
+		Email:     strPtr("guest@example.com"),
+		Name:      strPtr("Test Guest"),
+
 		Status:      models.InviteStatusSent,
 		MaxPlusOnes: 2,
 		ExpiresAt:   future,
@@ -715,11 +715,11 @@ func TestService_SubmitRSVP_MissingRequiredAnswer(t *testing.T) {
 
 	inviteRepo := repositories.NewInviteRepository(database)
 	invite := &models.Invite{
-		EventID:     event.ID,
-		TokenHash:   hashToken("validtoken"),
-		Email:       strPtr("guest@example.com"),
-		Name:        strPtr("Test Guest"),
-		
+		EventID:   event.ID,
+		TokenHash: hashToken("validtoken"),
+		Email:     strPtr("guest@example.com"),
+		Name:      strPtr("Test Guest"),
+
 		Status:      models.InviteStatusSent,
 		MaxPlusOnes: 2,
 		ExpiresAt:   future,
@@ -797,11 +797,11 @@ func TestService_SubmitRSVP_InvalidAnswerType(t *testing.T) {
 
 	inviteRepo := repositories.NewInviteRepository(database)
 	invite := &models.Invite{
-		EventID:     event.ID,
-		TokenHash:   hashToken("validtoken"),
-		Email:       strPtr("guest@example.com"),
-		Name:        strPtr("Test Guest"),
-		
+		EventID:   event.ID,
+		TokenHash: hashToken("validtoken"),
+		Email:     strPtr("guest@example.com"),
+		Name:      strPtr("Test Guest"),
+
 		Status:      models.InviteStatusSent,
 		MaxPlusOnes: 2,
 		ExpiresAt:   future,
@@ -868,11 +868,11 @@ func TestService_SubmitRSVP_AutoCorrectPlusOnesForNo(t *testing.T) {
 
 	inviteRepo := repositories.NewInviteRepository(database)
 	invite := &models.Invite{
-		EventID:     event.ID,
-		TokenHash:   hashToken("validtoken"),
-		Email:       strPtr("guest@example.com"),
-		Name:        strPtr("Test Guest"),
-		
+		EventID:   event.ID,
+		TokenHash: hashToken("validtoken"),
+		Email:     strPtr("guest@example.com"),
+		Name:      strPtr("Test Guest"),
+
 		Status:      models.InviteStatusSent,
 		MaxPlusOnes: 5,
 		ExpiresAt:   future,
@@ -957,11 +957,11 @@ func TestService_SubmitRSVP_WithAnswers(t *testing.T) {
 
 	inviteRepo := repositories.NewInviteRepository(database)
 	invite := &models.Invite{
-		EventID:     event.ID,
-		TokenHash:   hashToken("validtoken"),
-		Email:       strPtr("guest@example.com"),
-		Name:        strPtr("Test Guest"),
-		
+		EventID:   event.ID,
+		TokenHash: hashToken("validtoken"),
+		Email:     strPtr("guest@example.com"),
+		Name:      strPtr("Test Guest"),
+
 		Status:      models.InviteStatusSent,
 		MaxPlusOnes: 2,
 		ExpiresAt:   future,
@@ -1052,11 +1052,11 @@ func TestService_SubmitRSVP_TransactionRollback(t *testing.T) {
 
 	inviteRepo := repositories.NewInviteRepository(database)
 	invite := &models.Invite{
-		EventID:     event.ID,
-		TokenHash:   hashToken("validtoken"),
-		Email:       strPtr("guest@example.com"),
-		Name:        strPtr("Test Guest"),
-		
+		EventID:   event.ID,
+		TokenHash: hashToken("validtoken"),
+		Email:     strPtr("guest@example.com"),
+		Name:      strPtr("Test Guest"),
+
 		Status:      models.InviteStatusSent,
 		MaxPlusOnes: 2,
 		ExpiresAt:   future,
@@ -1144,11 +1144,11 @@ func TestService_SubmitRSVP_TextAnswerTooLong(t *testing.T) {
 
 	inviteRepo := repositories.NewInviteRepository(database)
 	invite := &models.Invite{
-		EventID:     event.ID,
-		TokenHash:   hashToken("validtoken"),
-		Email:       strPtr("guest@example.com"),
-		Name:        strPtr("Test Guest"),
-		
+		EventID:   event.ID,
+		TokenHash: hashToken("validtoken"),
+		Email:     strPtr("guest@example.com"),
+		Name:      strPtr("Test Guest"),
+
 		Status:      models.InviteStatusSent,
 		MaxPlusOnes: 2,
 		ExpiresAt:   future,
@@ -1242,11 +1242,11 @@ func TestService_SubmitRSVP_InvalidChoiceOption(t *testing.T) {
 
 	inviteRepo := repositories.NewInviteRepository(database)
 	invite := &models.Invite{
-		EventID:     event.ID,
-		TokenHash:   hashToken("validtoken"),
-		Email:       strPtr("guest@example.com"),
-		Name:        strPtr("Test Guest"),
-		
+		EventID:   event.ID,
+		TokenHash: hashToken("validtoken"),
+		Email:     strPtr("guest@example.com"),
+		Name:      strPtr("Test Guest"),
+
 		Status:      models.InviteStatusSent,
 		MaxPlusOnes: 2,
 		ExpiresAt:   future,
@@ -1338,11 +1338,11 @@ func TestService_SubmitRSVP_EmptyTextForRequired(t *testing.T) {
 
 	inviteRepo := repositories.NewInviteRepository(database)
 	invite := &models.Invite{
-		EventID:     event.ID,
-		TokenHash:   hashToken("validtoken"),
-		Email:       strPtr("guest@example.com"),
-		Name:        strPtr("Test Guest"),
-		
+		EventID:   event.ID,
+		TokenHash: hashToken("validtoken"),
+		Email:     strPtr("guest@example.com"),
+		Name:      strPtr("Test Guest"),
+
 		Status:      models.InviteStatusSent,
 		MaxPlusOnes: 2,
 		ExpiresAt:   future,
@@ -1430,11 +1430,11 @@ func TestService_SubmitRSVP_MultipleChoiceValidation(t *testing.T) {
 
 	inviteRepo := repositories.NewInviteRepository(database)
 	invite := &models.Invite{
-		EventID:     event.ID,
-		TokenHash:   hashToken("validtoken"),
-		Email:       strPtr("guest@example.com"),
-		Name:        strPtr("Test Guest"),
-		
+		EventID:   event.ID,
+		TokenHash: hashToken("validtoken"),
+		Email:     strPtr("guest@example.com"),
+		Name:      strPtr("Test Guest"),
+
 		Status:      models.InviteStatusSent,
 		MaxPlusOnes: 2,
 		ExpiresAt:   future,
@@ -1476,11 +1476,11 @@ func TestService_SubmitRSVP_MultipleChoiceValidation(t *testing.T) {
 	}
 
 	invite2 := &models.Invite{
-		EventID:     event.ID,
-		TokenHash:   "1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZ9876543",
-		Email:       strPtr("guest2@example.com"),
-		Name:        strPtr("Test Guest 2"),
-		
+		EventID:   event.ID,
+		TokenHash: "1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZ9876543",
+		Email:     strPtr("guest2@example.com"),
+		Name:      strPtr("Test Guest 2"),
+
 		Status:      models.InviteStatusSent,
 		MaxPlusOnes: 2,
 		ExpiresAt:   future,
@@ -1557,11 +1557,11 @@ func TestService_SubmitRSVP_CaseSensitiveOptions(t *testing.T) {
 
 	inviteRepo := repositories.NewInviteRepository(database)
 	invite := &models.Invite{
-		EventID:     event.ID,
-		TokenHash:   hashToken("validtoken"),
-		Email:       strPtr("guest@example.com"),
-		Name:        strPtr("Test Guest"),
-		
+		EventID:   event.ID,
+		TokenHash: hashToken("validtoken"),
+		Email:     strPtr("guest@example.com"),
+		Name:      strPtr("Test Guest"),
+
 		Status:      models.InviteStatusSent,
 		MaxPlusOnes: 2,
 		ExpiresAt:   future,
@@ -1618,14 +1618,14 @@ func TestService_UpdateRSVP_ValidUpdate(t *testing.T) {
 
 	eventRepo := repositories.NewEventRepository(database)
 	event := &models.Event{
-		Title:        "Test Event",
-		Description:  strPtr("Test Description"),
-		StartTime:    future,
-		Timezone:     "UTC",
-		Status:       models.EventStatusPublished,
-		RSVPDeadline: &rsvpDeadline,
+		Title:          "Test Event",
+		Description:    strPtr("Test Description"),
+		StartTime:      future,
+		Timezone:       "UTC",
+		Status:         models.EventStatusPublished,
+		RSVPDeadline:   &rsvpDeadline,
 		AllowMaybeRSVP: true,
-		CreatedBy:    1,
+		CreatedBy:      1,
 	}
 	if err := eventRepo.Create(ctx, event); err != nil {
 		t.Fatalf("Failed to create test event: %v", err)

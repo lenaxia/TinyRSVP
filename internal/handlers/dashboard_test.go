@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"context"
 	"html/template"
 	"net/http"
 	"net/http/httptest"
@@ -11,39 +10,24 @@ import (
 	"github.com/lenaxia/tinyrsvp/internal/auth"
 	"github.com/lenaxia/tinyrsvp/internal/events"
 	"github.com/lenaxia/tinyrsvp/internal/models"
+	"github.com/lenaxia/tinyrsvp/internal/testutil/mocks/services"
+	"go.uber.org/mock/gomock"
 )
 
-type mockDashboardService struct {
-	stats    *events.DashboardStats
-	activity []*events.ActivityItem
-	err      error
-}
-
-func (m *mockDashboardService) GetDashboardStats(ctx context.Context, userID int64) (*events.DashboardStats, error) {
-	if m.err != nil {
-		return nil, m.err
-	}
-	return m.stats, nil
-}
-
-func (m *mockDashboardService) GetRecentActivity(ctx context.Context, userID int64, limit int) ([]*events.ActivityItem, error) {
-	if m.err != nil {
-		return nil, m.err
-	}
-	return m.activity, nil
-}
-
 func TestDashboardHandler_Dashboard_Success(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
 	stats := &events.DashboardStats{
-		TotalEvents:      5,
-		DraftEvents:      2,
-		PublishedEvents:  3,
-		TotalInvites:     50,
-		PendingInvites:   10,
-		TotalRSVPs:       40,
-		AcceptedRSVPs:    30,
-		DeclinedRSVPs:    10,
-		ResponseRate:     80,
+		TotalEvents:     5,
+		DraftEvents:     2,
+		PublishedEvents: 3,
+		TotalInvites:    50,
+		PendingInvites:  10,
+		TotalRSVPs:      40,
+		AcceptedRSVPs:   30,
+		DeclinedRSVPs:   10,
+		ResponseRate:    80,
 	}
 
 	activity := []*events.ActivityItem{
@@ -55,12 +39,11 @@ func TestDashboardHandler_Dashboard_Success(t *testing.T) {
 		},
 	}
 
-	service := &mockDashboardService{
-		stats:    stats,
-		activity: activity,
-	}
+	mockDashSvc := services.NewMockDashboardService(ctrl)
+	mockDashSvc.EXPECT().GetDashboardStats(gomock.Any(), int64(1)).Return(stats, nil)
+	mockDashSvc.EXPECT().GetRecentActivity(gomock.Any(), int64(1), gomock.Any()).Return(activity, nil)
 
-	handler := NewDashboardHandler(service)
+	handler := NewDashboardHandler(mockDashSvc)
 
 	tmpl := template.Must(template.New("dashboard.html").Parse(`
 		<div>Stats: {{.Stats.TotalEvents}}</div>
@@ -92,8 +75,11 @@ func TestDashboardHandler_Dashboard_Success(t *testing.T) {
 }
 
 func TestDashboardHandler_Dashboard_NoUser(t *testing.T) {
-	service := &mockDashboardService{}
-	handler := NewDashboardHandler(service)
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockDashSvc := services.NewMockDashboardService(ctrl)
+	handler := NewDashboardHandler(mockDashSvc)
 
 	req := httptest.NewRequest(http.MethodGet, "/", nil)
 	w := httptest.NewRecorder()
@@ -106,11 +92,13 @@ func TestDashboardHandler_Dashboard_NoUser(t *testing.T) {
 }
 
 func TestDashboardHandler_Dashboard_StatsError(t *testing.T) {
-	service := &mockDashboardService{
-		err: &models.NotFoundError{Resource: "Stats"},
-	}
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
 
-	handler := NewDashboardHandler(service)
+	mockDashSvc := services.NewMockDashboardService(ctrl)
+	mockDashSvc.EXPECT().GetDashboardStats(gomock.Any(), int64(1)).Return(nil, &models.NotFoundError{Resource: "Stats"})
+
+	handler := NewDashboardHandler(mockDashSvc)
 
 	tmpl := template.Must(template.New("dashboard.html").Parse(`<div>Error: {{.Error}}</div>`))
 	handler.SetTemplates(tmpl)
@@ -134,16 +122,18 @@ func TestDashboardHandler_Dashboard_StatsError(t *testing.T) {
 }
 
 func TestDashboardHandler_Dashboard_NoTemplate(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
 	stats := &events.DashboardStats{
 		TotalEvents: 5,
 	}
 
-	service := &mockDashboardService{
-		stats:    stats,
-		activity: []*events.ActivityItem{},
-	}
+	mockDashSvc := services.NewMockDashboardService(ctrl)
+	mockDashSvc.EXPECT().GetDashboardStats(gomock.Any(), int64(1)).Return(stats, nil)
+	mockDashSvc.EXPECT().GetRecentActivity(gomock.Any(), int64(1), gomock.Any()).Return([]*events.ActivityItem{}, nil)
 
-	handler := NewDashboardHandler(service)
+	handler := NewDashboardHandler(mockDashSvc)
 
 	req := httptest.NewRequest(http.MethodGet, "/", nil)
 	user := &models.User{
@@ -165,10 +155,10 @@ func TestDashboardHandler_Dashboard_NoTemplate(t *testing.T) {
 
 func TestDashboardStats_CalculateResponseRate(t *testing.T) {
 	tests := []struct {
-		name          string
-		totalRSVPs    int
-		totalInvites  int
-		expectedRate  int
+		name         string
+		totalRSVPs   int
+		totalInvites int
+		expectedRate int
 	}{
 		{
 			name:         "80% response rate",

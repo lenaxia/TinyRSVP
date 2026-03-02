@@ -23,7 +23,7 @@ func getTemplateWithFuncs() (*template.Template, error) {
 			return a / b
 		},
 	}
-	
+
 	return template.New("rsvp_summary.html").Funcs(funcMap).ParseFiles(
 		"partials/base.html",
 		"partials/navigation.html",
@@ -677,7 +677,7 @@ func TestRSVPSummaryTemplateRendersQuestionStats(t *testing.T) {
 	}
 
 	data := &RSVPSummaryData{
-		ActivePage:   "events",
+		ActivePage:    "events",
 		Event:         event,
 		Stats:         stats,
 		ResponseRate:  90.0,

@@ -22,16 +22,16 @@ func TestCSSVariablesIntegrationWithExistingRSVPTemplate(t *testing.T) {
 	css := string(cssContent)
 
 	oldToNewMapping := map[string]string{
-		"--primary-color":   "--color-primary-600",
-		"--primary-hover":   "--color-primary-700",
-		"--success-color":   "--color-success",
-		"--warning-color":   "--color-warning",
-		"--error-color":     "--color-error",
-		"--text-primary":    "--color-text-primary",
-		"--text-secondary":  "--color-text-secondary",
-		"--bg-primary":      "--color-background",
-		"--bg-secondary":    "--color-surface",
-		"--border-color":    "--color-border",
+		"--primary-color":  "--color-primary-600",
+		"--primary-hover":  "--color-primary-700",
+		"--success-color":  "--color-success",
+		"--warning-color":  "--color-warning",
+		"--error-color":    "--color-error",
+		"--text-primary":   "--color-text-primary",
+		"--text-secondary": "--color-text-secondary",
+		"--bg-primary":     "--color-background",
+		"--bg-secondary":   "--color-surface",
+		"--border-color":   "--color-border",
 	}
 
 	for oldVar, newVar := range oldToNewMapping {
@@ -52,17 +52,17 @@ func TestCSSVariablesCanReplaceInlineStyles(t *testing.T) {
 	css := string(cssContent)
 
 	inlineStylesToReplace := map[string]string{
-		"#2563eb":                    "--color-primary-600",
-		"#1d4ed8":                    "--color-primary-700",
-		"#16a34a":                    "--color-success",
-		"#ea580c":                    "--color-warning",
-		"#dc2626":                    "--color-error",
-		"#1f2937":                    "--color-gray-800",
-		"#6b7280":                    "--color-text-secondary",
-		"#ffffff":                    "--color-background",
-		"#f9fafb":                    "--color-surface",
-		"#e5e7eb":                    "--color-border",
-		"rgba(37, 99, 235, 0.1)":     "derived from --color-primary-600",
+		"#2563eb":                        "--color-primary-600",
+		"#1d4ed8":                        "--color-primary-700",
+		"#16a34a":                        "--color-success",
+		"#ea580c":                        "--color-warning",
+		"#dc2626":                        "--color-error",
+		"#1f2937":                        "--color-gray-800",
+		"#6b7280":                        "--color-text-secondary",
+		"#ffffff":                        "--color-background",
+		"#f9fafb":                        "--color-surface",
+		"#e5e7eb":                        "--color-border",
+		"rgba(37, 99, 235, 0.1)":         "derived from --color-primary-600",
 		"0 1px 3px 0 rgba(0, 0, 0, 0.1)": "--shadow-base",
 	}
 

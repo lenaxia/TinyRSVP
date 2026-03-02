@@ -68,7 +68,7 @@ func TestRSVPHandler_CSRFTokenIntegration(t *testing.T) {
 		csrfToken := "test-csrf-token-12345"
 		req := httptest.NewRequest(http.MethodGet, "/rsvp/valid-token", nil)
 		ctx := context.WithValue(req.Context(), middleware.CSRFTokenKey, csrfToken)
-		
+
 		rctx := chi.NewRouteContext()
 		rctx.URLParams.Add("token", "valid-token")
 		ctx = context.WithValue(ctx, chi.RouteCtxKey, rctx)
@@ -208,7 +208,7 @@ func TestRSVPHandler_CSRFTokenIntegration(t *testing.T) {
 
 		req := httptest.NewRequest(http.MethodGet, "/rsvp/valid-token/confirmation", nil)
 		ctx := context.WithValue(req.Context(), middleware.CSRFTokenKey, csrfToken)
-		
+
 		rctx := chi.NewRouteContext()
 		rctx.URLParams.Add("token", "valid-token")
 		ctx = context.WithValue(ctx, chi.RouteCtxKey, rctx)
@@ -237,19 +237,19 @@ func TestRSVPHandler_FormSubmissionWithCSRF(t *testing.T) {
 
 		req := httptest.NewRequest(http.MethodPost, "/rsvp/valid-token", strings.NewReader(formData.Encode()))
 		req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
-		
+
 		csrfToken := "valid-csrf-token"
 		cookie := &http.Cookie{
 			Name:  middleware.CSRFCookieName,
 			Value: csrfToken,
 		}
 		req.AddCookie(cookie)
-		
+
 		ctx := context.WithValue(req.Context(), middleware.CSRFTokenKey, csrfToken)
 		req = req.WithContext(ctx)
 
 		rec := httptest.NewRecorder()
-		
+
 		csrfMiddleware := middleware.CSRF(32)
 		handler := csrfMiddleware(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			w.WriteHeader(http.StatusOK)
@@ -271,7 +271,7 @@ func TestRSVPHandler_FormSubmissionWithCSRF(t *testing.T) {
 		req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 
 		rec := httptest.NewRecorder()
-		
+
 		csrfMiddleware := middleware.CSRF(32)
 		handler := csrfMiddleware(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			w.WriteHeader(http.StatusOK)
@@ -297,7 +297,7 @@ func TestRSVPHandler_FormSubmissionWithCSRF(t *testing.T) {
 
 		req := httptest.NewRequest(http.MethodPost, "/rsvp/valid-token", strings.NewReader(formData.Encode()))
 		req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
-		
+
 		cookie := &http.Cookie{
 			Name:  middleware.CSRFCookieName,
 			Value: "correct-token",
@@ -305,7 +305,7 @@ func TestRSVPHandler_FormSubmissionWithCSRF(t *testing.T) {
 		req.AddCookie(cookie)
 
 		rec := httptest.NewRecorder()
-		
+
 		csrfMiddleware := middleware.CSRF(32)
 		handler := csrfMiddleware(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			w.WriteHeader(http.StatusOK)
@@ -373,7 +373,7 @@ func TestRSVPHandler_TemplateCSRFRendering(t *testing.T) {
 		csrfToken := "integration-test-csrf-token"
 		req := httptest.NewRequest(http.MethodGet, "/rsvp/valid-token", nil)
 		ctx := context.WithValue(req.Context(), middleware.CSRFTokenKey, csrfToken)
-		
+
 		rctx := chi.NewRouteContext()
 		rctx.URLParams.Add("token", "valid-token")
 		ctx = context.WithValue(ctx, chi.RouteCtxKey, rctx)
@@ -387,7 +387,7 @@ func TestRSVPHandler_TemplateCSRFRendering(t *testing.T) {
 		}
 
 		body := rec.Body.String()
-		
+
 		expectedHiddenField := `<input type="hidden" name="csrf_token" value="` + csrfToken + `">`
 		if !strings.Contains(body, expectedHiddenField) {
 			t.Errorf("Expected CSRF hidden field in rendered template")
@@ -461,7 +461,7 @@ func TestRSVPHandler_TemplateCSRFRendering(t *testing.T) {
 
 		req := httptest.NewRequest(http.MethodGet, "/rsvp/valid-token/confirmation", nil)
 		ctx := context.WithValue(req.Context(), middleware.CSRFTokenKey, csrfToken)
-		
+
 		rctx := chi.NewRouteContext()
 		rctx.URLParams.Add("token", "valid-token")
 		ctx = context.WithValue(ctx, chi.RouteCtxKey, rctx)
@@ -568,7 +568,7 @@ func TestRSVPHandler_ActualTemplateWithCSRF(t *testing.T) {
 		csrfToken := "script-test-token"
 		req := httptest.NewRequest(http.MethodGet, "/rsvp/valid-token", nil)
 		ctx := context.WithValue(req.Context(), middleware.CSRFTokenKey, csrfToken)
-		
+
 		rctx := chi.NewRouteContext()
 		rctx.URLParams.Add("token", "valid-token")
 		ctx = context.WithValue(ctx, chi.RouteCtxKey, rctx)
@@ -582,7 +582,7 @@ func TestRSVPHandler_ActualTemplateWithCSRF(t *testing.T) {
 		}
 
 		body := rec.Body.String()
-		
+
 		if !strings.Contains(body, `<script src="/static/js/csrf.js"></script>`) {
 			t.Error("Expected csrf.js script tag in rendered template")
 		}

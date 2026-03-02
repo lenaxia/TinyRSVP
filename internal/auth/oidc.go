@@ -14,12 +14,12 @@ import (
 )
 
 type OIDCConfig struct {
-	IssuerURL      string
-	ClientID       string
-	ClientSecret   string
-	RedirectURL    string
-	Scopes         []string
-	SkipTLSVerify  bool
+	IssuerURL     string
+	ClientID      string
+	ClientSecret  string
+	RedirectURL   string
+	Scopes        []string
+	SkipTLSVerify bool
 }
 
 type Authenticator interface {

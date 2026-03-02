@@ -19,12 +19,14 @@ func (h *LoginHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Authentication failed", http.StatusInternalServerError)
 		return
 	}
-	
+
 	returnURL := r.URL.Query().Get("return")
-	if returnURL == "" {
-		returnURL = "/"
+	validatedURL, err := ValidateReturnURL(returnURL)
+	if err != nil {
+		log.Printf("Invalid return URL rejected: %s (error: %v)", returnURL, err)
+		validatedURL = "/"
 	}
-	http.Redirect(w, r, returnURL, http.StatusFound)
+	http.Redirect(w, r, validatedURL, http.StatusFound)
 }
 
 type CallbackHandler struct {
@@ -74,10 +76,12 @@ func (h *CallbackHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 
 	returnURL := r.URL.Query().Get("return")
-	if returnURL == "" {
-		returnURL = "/"
+	validatedURL, err := ValidateReturnURL(returnURL)
+	if err != nil {
+		log.Printf("Invalid return URL rejected: %s (error: %v)", returnURL, err)
+		validatedURL = "/"
 	}
-	http.Redirect(w, r, returnURL, http.StatusFound)
+	http.Redirect(w, r, validatedURL, http.StatusFound)
 }
 
 type LogoutHandler struct {

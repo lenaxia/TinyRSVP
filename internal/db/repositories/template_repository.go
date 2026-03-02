@@ -577,7 +577,7 @@ func (r *templateRepository) SetDefault(ctx context.Context, id int64) error {
 	}
 
 	now := time.Now()
-	
+
 	err = r.db.WithTransaction(ctx, func(tx *sql.Tx) error {
 		unsetQuery := `
 			UPDATE templates

@@ -3,8 +3,8 @@ package handlers
 import (
 	"html/template"
 	"net/http"
-	"net/url"
-	"strings"
+
+	"github.com/lenaxia/tinyrsvp/internal/auth"
 )
 
 type Authenticator interface {
@@ -31,8 +31,8 @@ func NewAuthHandlers(authenticator Authenticator) *AuthHandlers {
 
 func (h *AuthHandlers) ShowLogin(w http.ResponseWriter, r *http.Request) {
 	returnURL := r.URL.Query().Get("return")
-	
-	validatedURL, err := validateReturnURL(returnURL)
+
+	validatedURL, err := auth.ValidateReturnURL(returnURL)
 	if err != nil {
 		HandleError(w, r, NewBadRequestError("Invalid return URL"))
 		return
@@ -92,8 +92,8 @@ func (h *AuthHandlers) ShowLogin(w http.ResponseWriter, r *http.Request) {
 
 func (h *AuthHandlers) OIDCLogin(w http.ResponseWriter, r *http.Request) {
 	returnURL := r.URL.Query().Get("return")
-	
-	if _, err := validateReturnURL(returnURL); err != nil {
+
+	if _, err := auth.ValidateReturnURL(returnURL); err != nil {
 		HandleError(w, r, NewBadRequestError("Invalid return URL"))
 		return
 	}
@@ -128,33 +128,4 @@ func (h *AuthHandlers) Logout(w http.ResponseWriter, r *http.Request) {
 	}
 
 	http.Redirect(w, r, "/login", http.StatusFound)
-}
-
-func validateReturnURL(returnURL string) (string, error) {
-	if returnURL == "" {
-		return "/", nil
-	}
-
-	parsedURL, err := url.Parse(returnURL)
-	if err != nil {
-		return "", err
-	}
-
-	if parsedURL.Scheme != "" && parsedURL.Scheme != "http" && parsedURL.Scheme != "https" {
-		return "", NewBadRequestError("Invalid URL scheme")
-	}
-
-	if parsedURL.Host != "" {
-		return "", NewBadRequestError("External URLs not allowed")
-	}
-
-	if !strings.HasPrefix(returnURL, "/") {
-		return "", NewBadRequestError("URL must be absolute path")
-	}
-
-	if strings.HasPrefix(returnURL, "//") {
-		return "", NewBadRequestError("Protocol-relative URLs not allowed")
-	}
-
-	return returnURL, nil
 }

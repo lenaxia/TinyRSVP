@@ -17,9 +17,11 @@ This folder contains sprint stories, epics, and user stories for the TinyRSVP pr
 
 ## Naming Conventions
 
-**Epics:** `{EPIC_NUMBER}_EPIC_{name}.md`
-- Example: `00_EPIC_foundation.md`, `01_EPIC_auth.md`
+**Epic Folders:** `{EPIC_NUMBER}_{NAME}/`
+- Example: `00_FOUNDATION/`, `01_AUTH/`
 - Epic numbers are two digits: 00-99
+
+**Epic Files:** Each epic folder contains a `README.md` with the epic overview
 
 **User Stories:** `{EPIC_NUMBER}_STORY_{STORY_NUMBER}_{description}.md`
 - Example: `00_STORY_01_go_module_setup.md`, `00_STORY_02_config_management.md`
@@ -32,37 +34,52 @@ This folder contains sprint stories, epics, and user stories for the TinyRSVP pr
 ```
 00_BACKLOG/
 ├── README.md (this file)
+├── 00_BACKLOG_SUMMARY.md
 │
-├── 00_EPIC_foundation.md          # Epic: Foundation & Project Setup
-├── 01_EPIC_auth.md                # Epic: Authentication & Authorization
-├── 02_EPIC_events.md              # Epic: Event Management
-├── 03_EPIC_invites.md             # Epic: Invite & Token Management
-├── 04_EPIC_rsvp.md                # Epic: RSVP & Guest Experience
-├── 05_EPIC_email.md               # Epic: Email System & Calendar Integration
-├── 06_EPIC_templates.md           # Epic: Templates & Asset Management
-├── 07_EPIC_frontend.md            # Epic: Frontend & User Experience
-├── 08_EPIC_api.md                 # Epic: API & HTTP Layer
+├── 00_FOUNDATION/
+│   ├── README.md (epic overview)
+│   ├── 00_STORY_01_go_module_setup.md
+│   ├── 00_STORY_02_config_management.md
+│   └── ...
 │
-└── (User story files will be created as epics are started)
+├── 01_AUTH/
+│   ├── README.md
+│   └── (all 01_STORY_* files)
+│
+├── 02_EVENTS/
+├── 03_INVITES/
+├── 04_RSVP/
+├── 05_EMAIL/
+├── 06_TEMPLATES/
+├── 07_FRONTEND/
+├── 08_API/
+├── 09_SECURITY/
+├── 10_TECHNICAL_DEBT/
+├── 11_RSVP_THEMES/
+└── 12_TEST_INFRASTRUCTURE/
 ```
 
 ## Current Epics
 
 | # | Epic | Priority | Status | Stories | Effort | Dependencies |
 |---|------|----------|--------|---------|--------|--------------|
-| 00 | [Foundation & Project Setup](00_EPIC_foundation.md) | High | Not Started | 7 | 1 week | None |
-| 01 | [Authentication & Authorization](01_EPIC_auth.md) | High | Not Started | 8 | 1 week | Epic 00 |
-| 02 | [Event Management](02_EPIC_events.md) | High | Not Started | 11 | 2 weeks | Epic 00, 01 |
-| 03 | [Invite & Token Management](03_EPIC_invites.md) | High | Not Started | 11 | 1.5 weeks | Epic 00, 01, 02 |
-| 04 | [RSVP & Guest Experience](04_EPIC_rsvp.md) | High | Not Started | 11 | 1 week | Epic 00, 02, 03 |
-| 05 | [Email System & Calendar](05_EPIC_email.md) | High | Not Started | 15 | 1.5 weeks | Epic 00, 02, 03, 06 |
-| 06 | [Templates & Asset Management](06_EPIC_templates.md) | Medium | Not Started | 13 | 1 week | Epic 00, 01 |
-| 07 | [Frontend & User Experience](07_EPIC_frontend.md) | High | Not Started | 21 | 1 week | Epic 08 |
-| 08 | [API & HTTP Layer](08_EPIC_api.md) | High | Not Started | 18 | 1.5 weeks | All |
+| 00 | [Foundation & Project Setup](00_FOUNDATION/) | High | Not Started | 7 | 1 week | None |
+| 01 | [Authentication & Authorization](01_AUTH/) | High | Not Started | 8 | 1 week | Epic 00 |
+| 02 | [Event Management](02_EVENTS/) | High | Not Started | 6 | 2 weeks | Epic 00, 01 |
+| 03 | [Invite & Token Management](03_INVITES/) | High | Not Started | 12 | 1.5 weeks | Epic 00, 01, 02 |
+| 04 | [RSVP & Guest Experience](04_RSVP/) | High | Not Started | 12 | 1 week | Epic 00, 02, 03 |
+| 05 | [Email System & Calendar](05_EMAIL/) | High | Not Started | 8 | 1.5 weeks | Epic 00, 02, 03, 06 |
+| 06 | [Templates & Asset Management](06_TEMPLATES/) | Medium | Not Started | 13 | 1 week | Epic 00, 01 |
+| 07 | [Frontend & User Experience](07_FRONTEND/) | High | Not Started | 22 | 1 week | Epic 08 |
+| 08 | [API & HTTP Layer](08_API/) | High | Not Started | 19 | 1.5 weeks | All |
+| 09 | [Security](09_SECURITY/) | High | Not Started | 1 | 1 week | Epic 08 |
+| 10 | [Technical Debt](10_TECHNICAL_DEBT/) | Medium | Not Started | 16 | 1 week | Various |
+| 11 | [RSVP Themes](11_RSVP_THEMES/) | Medium | Not Started | 12 | 1 week | Epic 06 |
+| 12 | [Test Infrastructure](12_TEST_INFRASTRUCTURE/) | Medium | Not Started | 20 | 3-4 weeks | None |
 
-**Total Stories:** 115  
-**Total Effort:** ~10 weeks  
-**v0 Target:** All epics complete
+**Total Stories:** 150+  
+**Total Effort:** ~15 weeks  
+**v0 Target:** Epics 00-08 complete
 
 ---
 
@@ -301,17 +318,21 @@ All epics (project just starting)
 
 ## Epic Quick Links
 
-- [00: Foundation](00_EPIC_foundation.md) - Database, config, migrations
-- [01: Authentication](01_EPIC_auth.md) - OIDC, sessions, RBAC
-- [02: Events](02_EPIC_events.md) - Event lifecycle, questions
-- [03: Invites](03_EPIC_invites.md) - Tokens, CSV import
-- [04: RSVP](04_EPIC_rsvp.md) - Guest responses, plus ones
-- [05: Email](05_EPIC_email.md) - SMTP, queue, ICS files
-- [06: Templates](06_EPIC_templates.md) - Customization, assets
-- [07: Frontend](07_EPIC_frontend.md) - UI, mobile-first, accessibility
-- [08: API](08_EPIC_api.md) - Routes, middleware, integration
+- [00: Foundation](00_FOUNDATION/) - Database, config, migrations
+- [01: Authentication](01_AUTH/) - OIDC, sessions, RBAC
+- [02: Events](02_EVENTS/) - Event lifecycle, questions
+- [03: Invites](03_INVITES/) - Tokens, CSV import
+- [04: RSVP](04_RSVP/) - Guest responses, plus ones
+- [05: Email](05_EMAIL/) - SMTP, queue, ICS files
+- [06: Templates](06_TEMPLATES/) - Customization, assets
+- [07: Frontend](07_FRONTEND/) - UI, mobile-first, accessibility
+- [08: API](08_API/) - Routes, middleware, integration
+- [09: Security](09_SECURITY/) - Security scanning, audits
+- [10: Technical Debt](10_TECHNICAL_DEBT/) - Refactoring, improvements
+- [11: RSVP Themes](11_RSVP_THEMES/) - Theme system, customization
+- [12: Test Infrastructure](12_TEST_INFRASTRUCTURE/) - Testing modernization
 
 ---
 
-**Last Updated:** 2026-01-06  
+**Last Updated:** 2026-02-04  
 **Next Review:** After Epic 00 completion

@@ -27,7 +27,7 @@ func TestInviteService_ListInvites(t *testing.T) {
 		} else if i == 4 {
 			status = models.InviteStatusViewed
 		}
-		
+
 		invite := &models.Invite{
 			ID:          int64(i + 1),
 			EventID:     eventID,
@@ -579,4 +579,3 @@ func TestInviteService_ListInvites_StatisticsAccuracy(t *testing.T) {
 		t.Errorf("Stats.Revoked = %d, want 1", resp.Stats.Revoked)
 	}
 }
-

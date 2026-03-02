@@ -9,6 +9,8 @@ import (
 	"github.com/lenaxia/tinyrsvp/internal/auth"
 	"github.com/lenaxia/tinyrsvp/internal/events"
 	"github.com/lenaxia/tinyrsvp/internal/models"
+	"github.com/lenaxia/tinyrsvp/internal/testutil/mocks/services"
+	"go.uber.org/mock/gomock"
 )
 
 type testAuthMiddleware struct {
@@ -35,6 +37,9 @@ func (m *testAuthMiddleware) RequireAdmin(next http.Handler) http.Handler {
 }
 
 func TestDashboardRoute_Integration(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
 	stats := &events.DashboardStats{
 		TotalEvents:     5,
 		DraftEvents:     2,
@@ -56,12 +61,11 @@ func TestDashboardRoute_Integration(t *testing.T) {
 		},
 	}
 
-	dashboardService := &mockDashboardService{
-		stats:    stats,
-		activity: activity,
-	}
+	mockDashSvc := services.NewMockDashboardService(ctrl)
+	mockDashSvc.EXPECT().GetDashboardStats(gomock.Any(), int64(1)).Return(stats, nil).AnyTimes()
+	mockDashSvc.EXPECT().GetRecentActivity(gomock.Any(), int64(1), gomock.Any()).Return(activity, nil).AnyTimes()
 
-	dashboardHandler := NewDashboardHandler(dashboardService)
+	dashboardHandler := NewDashboardHandler(mockDashSvc)
 	tmpl := template.Must(template.New("dashboard.html").Parse(`
 		<div>Stats: {{.Stats.TotalEvents}}</div>
 		<div>Activities: {{len .Activities}}</div>

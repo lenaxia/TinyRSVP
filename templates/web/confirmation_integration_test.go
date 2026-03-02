@@ -27,14 +27,14 @@ func TestConfirmationTemplateIntegration(t *testing.T) {
 			PlusOnes: 2,
 			Notes:    "Excited to attend!",
 		},
-		Answers: []ConfirmationAnswer{
+		AnswersWithQuestions: []ConfirmationAnswerWithQuestion{
 			{
-				QuestionText:  "Dietary restrictions?",
-				AnswerDisplay: "Vegetarian",
+				Question: ConfirmationQuestion{Text: "Dietary restrictions?"},
+				Answer:   ConfirmationAnswer{AnswerText: "Vegetarian"},
 			},
 			{
-				QuestionText:  "T-shirt size?",
-				AnswerDisplay: "Large",
+				Question: ConfirmationQuestion{Text: "T-shirt size?"},
+				Answer:   ConfirmationAnswer{AnswerText: "Large"},
 			},
 		},
 		Token: "abc123xyz",
@@ -119,8 +119,8 @@ func TestConfirmationTemplateWithMinimalData(t *testing.T) {
 
 func TestConfirmationTemplateResponseTypes(t *testing.T) {
 	responses := []struct {
-		response     string
-		expectedText string
+		response      string
+		expectedText  string
 		expectedClass string
 	}{
 		{"yes", "YES", "response-yes"},
@@ -298,12 +298,12 @@ func TestConfirmationTemplateMultipleAnswers(t *testing.T) {
 		RSVP: ConfirmationRSVP{
 			Response: "yes",
 		},
-		Answers: []ConfirmationAnswer{
-			{QuestionText: "Question 1", AnswerDisplay: "Answer 1"},
-			{QuestionText: "Question 2", AnswerDisplay: "Answer 2"},
-			{QuestionText: "Question 3", AnswerDisplay: "Answer 3"},
-			{QuestionText: "Question 4", AnswerDisplay: "Answer 4"},
-			{QuestionText: "Question 5", AnswerDisplay: "Answer 5"},
+		AnswersWithQuestions: []ConfirmationAnswerWithQuestion{
+			{Question: ConfirmationQuestion{Text: "Question 1"}, Answer: ConfirmationAnswer{AnswerText: "Answer 1"}},
+			{Question: ConfirmationQuestion{Text: "Question 2"}, Answer: ConfirmationAnswer{AnswerText: "Answer 2"}},
+			{Question: ConfirmationQuestion{Text: "Question 3"}, Answer: ConfirmationAnswer{AnswerText: "Answer 3"}},
+			{Question: ConfirmationQuestion{Text: "Question 4"}, Answer: ConfirmationAnswer{AnswerText: "Answer 4"}},
+			{Question: ConfirmationQuestion{Text: "Question 5"}, Answer: ConfirmationAnswer{AnswerText: "Answer 5"}},
 		},
 		Token: "test",
 	}

@@ -22,10 +22,10 @@ type QuestionValidator interface {
 }
 
 type questionService struct {
-	eventRepo     repositories.EventRepository
-	questionRepo  repositories.QuestionRepository
-	validator     QuestionValidator
-	authz         auth.AuthorizationChecker
+	eventRepo    repositories.EventRepository
+	questionRepo repositories.QuestionRepository
+	validator    QuestionValidator
+	authz        auth.AuthorizationChecker
 }
 
 func NewQuestionService(

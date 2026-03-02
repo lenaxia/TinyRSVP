@@ -100,13 +100,13 @@ func TestTemplateService_CreateTemplate(t *testing.T) {
 
 func TestTemplateService_UpdateTemplate(t *testing.T) {
 	tests := []struct {
-		name         string
-		template     *models.Template
-		existing     *models.Template
-		userID       int64
-		role         models.UserRole
-		wantErr      bool
-		errContains  string
+		name        string
+		template    *models.Template
+		existing    *models.Template
+		userID      int64
+		role        models.UserRole
+		wantErr     bool
+		errContains string
 	}{
 		{
 			name: "update own template",
@@ -696,9 +696,9 @@ func TestTemplateService_RenderWithComponents(t *testing.T) {
 			engine := NewEngine()
 			renderer := NewComponentRenderer(engine)
 			svc := &service{
-				repo:               &mockServiceTemplateRepository{},
-				validator:          &mockServiceValidator{},
-				componentRenderer:  renderer,
+				repo:              &mockServiceTemplateRepository{},
+				validator:         &mockServiceValidator{},
+				componentRenderer: renderer,
 			}
 
 			hasComponentConfig := tt.template.ComponentConfig != nil && *tt.template.ComponentConfig != ""

@@ -546,10 +546,10 @@ func TestEventWebHandlers_CreateEventFromForm(t *testing.T) {
 		{
 			name: "invalid datetime format",
 			formData: url.Values{
-				"title":        []string{"Test Event"},
-				"start_time":   []string{"invalid-date"},
-				"timezone":     []string{"America/Los_Angeles"},
-				"csrf_token":   []string{"test-csrf-token"},
+				"title":      []string{"Test Event"},
+				"start_time": []string{"invalid-date"},
+				"timezone":   []string{"America/Los_Angeles"},
+				"csrf_token": []string{"test-csrf-token"},
 			},
 			user: &models.User{
 				ID:   1,
@@ -1153,13 +1153,13 @@ func TestEventWebHandlers_DeleteEventAction(t *testing.T) {
 
 func TestEventWebHandlers_FormDataParsing(t *testing.T) {
 	tests := []struct {
-		name       string
-		formData   url.Values
-		wantTitle  string
-		wantDesc   *string
-		wantLoc    *string
-		wantMaxPO  int
-		wantErr    bool
+		name      string
+		formData  url.Values
+		wantTitle string
+		wantDesc  *string
+		wantLoc   *string
+		wantMaxPO int
+		wantErr   bool
 	}{
 		{
 			name: "all fields provided",
@@ -1217,7 +1217,7 @@ func TestEventWebHandlers_FormDataParsing(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			event, err := parseEventFormData(tt.formData)
-			
+
 			if tt.wantErr {
 				if err == nil {
 					t.Error("Expected error, got nil")

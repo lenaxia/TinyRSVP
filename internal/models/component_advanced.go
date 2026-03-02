@@ -193,10 +193,10 @@ func (gc *GridConfig) Validate() error {
 type FlexDirection string
 
 const (
-	FlexDirectionRow            FlexDirection = "row"
-	FlexDirectionColumn         FlexDirection = "column"
-	FlexDirectionRowReverse     FlexDirection = "row-reverse"
-	FlexDirectionColumnReverse  FlexDirection = "column-reverse"
+	FlexDirectionRow           FlexDirection = "row"
+	FlexDirectionColumn        FlexDirection = "column"
+	FlexDirectionRowReverse    FlexDirection = "row-reverse"
+	FlexDirectionColumnReverse FlexDirection = "column-reverse"
 )
 
 func (fd FlexDirection) IsValid() bool {

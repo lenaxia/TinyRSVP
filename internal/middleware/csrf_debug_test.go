@@ -11,7 +11,7 @@ import (
 func TestCSRF_FormSubmissionDebug(t *testing.T) {
 	t.Run("reproduce 403 with valid token in form", func(t *testing.T) {
 		csrfMiddleware := CSRF(32)
-		
+
 		handler := csrfMiddleware(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			w.WriteHeader(http.StatusOK)
 			w.Write([]byte("Success"))
@@ -53,7 +53,7 @@ func TestCSRF_FormSubmissionDebug(t *testing.T) {
 
 		if rec2.Code == http.StatusForbidden {
 			t.Errorf("Expected success with valid CSRF token, got 403")
-			
+
 			if err := req2.ParseForm(); err == nil {
 				t.Logf("Submitted csrf_token: %s", req2.FormValue("csrf_token"))
 			}
@@ -62,9 +62,9 @@ func TestCSRF_FormSubmissionDebug(t *testing.T) {
 
 	t.Run("test token comparison logic", func(t *testing.T) {
 		token := "94sNayaLR2RyTkeWcUSXHH6T9hwxtUmJZAjD-6UGLYQ="
-		
+
 		csrfMiddleware := CSRF(32)
-		
+
 		var capturedExpectedToken string
 		handler := csrfMiddleware(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			capturedExpectedToken = GetCSRFToken(r.Context())

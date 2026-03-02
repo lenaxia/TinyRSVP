@@ -100,7 +100,7 @@ func TestImageHandlers_UploadImage_Success(t *testing.T) {
 	writer.Close()
 
 	req := httptest.NewRequest(http.MethodPost, "/api/events/123/images", body)
-			req.Header.Set("Accept", "application/json")
+	req.Header.Set("Accept", "application/json")
 	req.Header.Set("Content-Type", writer.FormDataContentType())
 
 	rctx := chi.NewRouteContext()
@@ -148,7 +148,7 @@ func TestImageHandlers_UploadImage_Unauthorized(t *testing.T) {
 	writer.Close()
 
 	req := httptest.NewRequest(http.MethodPost, "/api/events/123/images", body)
-			req.Header.Set("Accept", "application/json")
+	req.Header.Set("Accept", "application/json")
 	req.Header.Set("Content-Type", writer.FormDataContentType())
 
 	rctx := chi.NewRouteContext()
@@ -176,7 +176,7 @@ func TestImageHandlers_UploadImage_InvalidEventID(t *testing.T) {
 	writer.Close()
 
 	req := httptest.NewRequest(http.MethodPost, "/api/events/invalid/images", body)
-			req.Header.Set("Accept", "application/json")
+	req.Header.Set("Accept", "application/json")
 	req.Header.Set("Content-Type", writer.FormDataContentType())
 
 	rctx := chi.NewRouteContext()
@@ -211,7 +211,7 @@ func TestImageHandlers_UploadImage_EventNotFound(t *testing.T) {
 	writer.Close()
 
 	req := httptest.NewRequest(http.MethodPost, "/api/events/999/images", body)
-			req.Header.Set("Accept", "application/json")
+	req.Header.Set("Accept", "application/json")
 	req.Header.Set("Content-Type", writer.FormDataContentType())
 
 	rctx := chi.NewRouteContext()
@@ -253,7 +253,7 @@ func TestImageHandlers_UploadImage_Forbidden(t *testing.T) {
 	writer.Close()
 
 	req := httptest.NewRequest(http.MethodPost, "/api/events/123/images", body)
-			req.Header.Set("Accept", "application/json")
+	req.Header.Set("Accept", "application/json")
 	req.Header.Set("Content-Type", writer.FormDataContentType())
 
 	rctx := chi.NewRouteContext()
@@ -283,7 +283,7 @@ func TestImageHandlers_UploadImage_NoFile(t *testing.T) {
 	writer.Close()
 
 	req := httptest.NewRequest(http.MethodPost, "/api/events/123/images", body)
-			req.Header.Set("Accept", "application/json")
+	req.Header.Set("Accept", "application/json")
 	req.Header.Set("Content-Type", writer.FormDataContentType())
 
 	rctx := chi.NewRouteContext()
@@ -326,7 +326,7 @@ func TestImageHandlers_UploadImage_ValidationError(t *testing.T) {
 	writer.Close()
 
 	req := httptest.NewRequest(http.MethodPost, "/api/events/123/images", body)
-			req.Header.Set("Accept", "application/json")
+	req.Header.Set("Accept", "application/json")
 	req.Header.Set("Content-Type", writer.FormDataContentType())
 
 	rctx := chi.NewRouteContext()
@@ -366,7 +366,7 @@ func TestImageHandlers_UploadImage_ServiceError(t *testing.T) {
 	writer.Close()
 
 	req := httptest.NewRequest(http.MethodPost, "/api/events/123/images", body)
-			req.Header.Set("Accept", "application/json")
+	req.Header.Set("Accept", "application/json")
 	req.Header.Set("Content-Type", writer.FormDataContentType())
 
 	rctx := chi.NewRouteContext()
@@ -392,7 +392,7 @@ func TestImageHandlers_DeleteImage_Success(t *testing.T) {
 	handlers := NewImageHandlers(imageService, eventService, authz)
 
 	req := httptest.NewRequest(http.MethodDelete, "/api/events/123/images/test.jpg", nil)
-			req.Header.Set("Accept", "application/json")
+	req.Header.Set("Accept", "application/json")
 
 	rctx := chi.NewRouteContext()
 	rctx.URLParams.Add("event_id", "123")
@@ -418,7 +418,7 @@ func TestImageHandlers_DeleteImage_Unauthorized(t *testing.T) {
 	handlers := NewImageHandlers(imageService, eventService, authz)
 
 	req := httptest.NewRequest(http.MethodDelete, "/api/events/123/images/test.jpg", nil)
-			req.Header.Set("Accept", "application/json")
+	req.Header.Set("Accept", "application/json")
 
 	rctx := chi.NewRouteContext()
 	rctx.URLParams.Add("event_id", "123")
@@ -452,7 +452,7 @@ func TestImageHandlers_DeleteImage_Forbidden(t *testing.T) {
 	handlers := NewImageHandlers(imageService, eventService, authz)
 
 	req := httptest.NewRequest(http.MethodDelete, "/api/events/123/images/test.jpg", nil)
-			req.Header.Set("Accept", "application/json")
+	req.Header.Set("Accept", "application/json")
 
 	rctx := chi.NewRouteContext()
 	rctx.URLParams.Add("event_id", "123")

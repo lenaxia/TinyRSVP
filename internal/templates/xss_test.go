@@ -53,22 +53,22 @@ var owaspXSSVectors = []struct {
 func TestXSSPrevention_OWASPVectors_HTMLContext(t *testing.T) {
 	engine := NewEngine()
 	tmplStr := "<div>{{.Payload}}</div>"
-	
+
 	for _, vector := range owaspXSSVectors {
 		t.Run(vector.name, func(t *testing.T) {
 			tmpl, err := engine.Parse(tmplStr)
 			if err != nil {
 				t.Fatalf("Parse() error = %v", err)
 			}
-			
+
 			data := struct{ Payload string }{Payload: vector.payload}
 			result, err := engine.ExecuteToString(tmpl, data)
 			if err != nil {
 				t.Fatalf("ExecuteToString() error = %v", err)
 			}
-			
+
 			if strings.Contains(vector.payload, "<") && !strings.Contains(result, "&lt;") {
-				t.Errorf("Expected HTML escaping for %s\nPayload: %s\nOutput: %s", 
+				t.Errorf("Expected HTML escaping for %s\nPayload: %s\nOutput: %s",
 					vector.name, vector.payload, result)
 			}
 		})
@@ -78,22 +78,22 @@ func TestXSSPrevention_OWASPVectors_HTMLContext(t *testing.T) {
 func TestXSSPrevention_OWASPVectors_AttributeContext(t *testing.T) {
 	engine := NewEngine()
 	tmplStr := "<img alt='{{.Payload}}'>"
-	
+
 	for _, vector := range owaspXSSVectors {
 		t.Run(vector.name, func(t *testing.T) {
 			tmpl, err := engine.Parse(tmplStr)
 			if err != nil {
 				t.Fatalf("Parse() error = %v", err)
 			}
-			
+
 			data := struct{ Payload string }{Payload: vector.payload}
 			result, err := engine.ExecuteToString(tmpl, data)
 			if err != nil {
 				t.Fatalf("ExecuteToString() error = %v", err)
 			}
-			
+
 			if strings.Contains(vector.payload, "<") && !strings.Contains(result, "&lt;") {
-				t.Errorf("Expected HTML escaping in attribute for %s\nPayload: %s\nOutput: %s", 
+				t.Errorf("Expected HTML escaping in attribute for %s\nPayload: %s\nOutput: %s",
 					vector.name, vector.payload, result)
 			}
 		})
@@ -103,7 +103,7 @@ func TestXSSPrevention_OWASPVectors_AttributeContext(t *testing.T) {
 func TestXSSPrevention_OWASPVectors_URLContext(t *testing.T) {
 	engine := NewEngine()
 	tmplStr := "<a href='{{.Payload}}'>Link</a>"
-	
+
 	javascriptVectors := []struct {
 		name    string
 		payload string
@@ -113,20 +113,20 @@ func TestXSSPrevention_OWASPVectors_URLContext(t *testing.T) {
 		{"data url text/html", "data:text/html,<script>alert('xss')</script>"},
 		{"data url base64", "data:text/html;base64,PHNjcmlwdD5hbGVydCgneHNzJyk8L3NjcmlwdD4="},
 	}
-	
+
 	for _, vector := range javascriptVectors {
 		t.Run(vector.name, func(t *testing.T) {
 			tmpl, err := engine.Parse(tmplStr)
 			if err != nil {
 				t.Fatalf("Parse() error = %v", err)
 			}
-			
+
 			data := struct{ Payload string }{Payload: vector.payload}
 			result, err := engine.ExecuteToString(tmpl, data)
 			if err != nil {
 				t.Fatalf("ExecuteToString() error = %v", err)
 			}
-			
+
 			if !strings.Contains(result, "#ZgotmplZ") && !strings.Contains(result, "%28") {
 				t.Errorf("Expected URL sanitization for %s\nPayload: %s\nOutput: %s",
 					vector.name, vector.payload, result)
@@ -138,7 +138,7 @@ func TestXSSPrevention_OWASPVectors_URLContext(t *testing.T) {
 func TestXSSPrevention_OWASPVectors_JavaScriptContext(t *testing.T) {
 	engine := NewEngine()
 	tmplStr := "<script>var data = {{.Payload}};</script>"
-	
+
 	jsVectors := []struct {
 		name    string
 		payload string
@@ -148,20 +148,20 @@ func TestXSSPrevention_OWASPVectors_JavaScriptContext(t *testing.T) {
 		{"newline escape", "\\n'; alert('xss'); //"},
 		{"unicode escape", "\\u0027; alert('xss'); //"},
 	}
-	
+
 	for _, vector := range jsVectors {
 		t.Run(vector.name, func(t *testing.T) {
 			tmpl, err := engine.Parse(tmplStr)
 			if err != nil {
 				t.Fatalf("Parse() error = %v", err)
 			}
-			
+
 			data := struct{ Payload string }{Payload: vector.payload}
 			result, err := engine.ExecuteToString(tmpl, data)
 			if err != nil {
 				t.Fatalf("ExecuteToString() error = %v", err)
 			}
-			
+
 			if strings.Contains(result, "'; alert") && !strings.Contains(result, "\"'; alert") && !strings.Contains(result, "\\\\n'; alert") {
 				t.Errorf("JavaScript context allows code injection for %s\nPayload: %s\nOutput: %s",
 					vector.name, vector.payload, result)
@@ -172,7 +172,7 @@ func TestXSSPrevention_OWASPVectors_JavaScriptContext(t *testing.T) {
 
 func TestXSSPrevention_ContextAwareEscaping(t *testing.T) {
 	engine := NewEngine()
-	
+
 	tests := []struct {
 		name     string
 		template string
@@ -210,19 +210,19 @@ func TestXSSPrevention_ContextAwareEscaping(t *testing.T) {
 			},
 		},
 	}
-	
+
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			tmpl, err := engine.Parse(tt.template)
 			if err != nil {
 				t.Fatalf("Parse() error = %v", err)
 			}
-			
+
 			result, err := engine.ExecuteToString(tmpl, tt.data)
 			if err != nil {
 				t.Fatalf("ExecuteToString() error = %v", err)
 			}
-			
+
 			tt.validate(t, result)
 		})
 	}
@@ -230,9 +230,9 @@ func TestXSSPrevention_ContextAwareEscaping(t *testing.T) {
 
 func TestXSSPrevention_PolyglotPayload(t *testing.T) {
 	engine := NewEngine()
-	
+
 	polyglot := "jaVasCript:/*-/*`/*\\`/*'/*\"/**/(/* */oNcliCk=alert() )//%0D%0A%0d%0a//</stYle/</titLe/</teXtarEa/</scRipt/--!>\\x3csVg/<sVg/oNloAd=alert()//\\x3e"
-	
+
 	contexts := []struct {
 		name     string
 		template string
@@ -241,20 +241,20 @@ func TestXSSPrevention_PolyglotPayload(t *testing.T) {
 		{"Attribute", "<img alt='{{.Payload}}'>"},
 		{"URL", "<a href='{{.Payload}}'>Link</a>"},
 	}
-	
+
 	for _, ctx := range contexts {
 		t.Run(ctx.name, func(t *testing.T) {
 			tmpl, err := engine.Parse(ctx.template)
 			if err != nil {
 				t.Fatalf("Parse() error = %v", err)
 			}
-			
+
 			data := struct{ Payload string }{Payload: polyglot}
 			result, err := engine.ExecuteToString(tmpl, data)
 			if err != nil {
 				t.Fatalf("ExecuteToString() error = %v", err)
 			}
-			
+
 			if ctx.name == "URL" {
 				if !strings.Contains(result, "#ZgotmplZ") {
 					t.Errorf("Polyglot not sanitized in URL context\nOutput: %s", result)
@@ -270,7 +270,7 @@ func TestXSSPrevention_PolyglotPayload(t *testing.T) {
 
 func TestXSSPrevention_EncodingBypass(t *testing.T) {
 	engine := NewEngine()
-	
+
 	encodingVectors := []struct {
 		name    string
 		payload string
@@ -282,24 +282,24 @@ func TestXSSPrevention_EncodingBypass(t *testing.T) {
 		{"Tab in tag", "<script\t>alert('xss')</script>"},
 		{"Newline in tag", "<script\n>alert('xss')</script>"},
 	}
-	
+
 	tmplStr := "<div>{{.Payload}}</div>"
-	
+
 	for _, vector := range encodingVectors {
 		t.Run(vector.name, func(t *testing.T) {
 			tmpl, err := engine.Parse(tmplStr)
 			if err != nil {
 				t.Fatalf("Parse() error = %v", err)
 			}
-			
+
 			data := struct{ Payload string }{Payload: vector.payload}
 			result, err := engine.ExecuteToString(tmpl, data)
 			if err != nil {
 				t.Fatalf("ExecuteToString() error = %v", err)
 			}
-			
+
 			if strings.Contains(vector.payload, "<") && !strings.Contains(result, "&lt;") {
-				t.Errorf("Encoding bypass not prevented for %s\nPayload: %s\nOutput: %s", 
+				t.Errorf("Encoding bypass not prevented for %s\nPayload: %s\nOutput: %s",
 					vector.name, vector.payload, result)
 			}
 		})
@@ -308,7 +308,7 @@ func TestXSSPrevention_EncodingBypass(t *testing.T) {
 
 func TestXSSPrevention_MutationXSS(t *testing.T) {
 	engine := NewEngine()
-	
+
 	mutationVectors := []struct {
 		name    string
 		payload string
@@ -318,24 +318,24 @@ func TestXSSPrevention_MutationXSS(t *testing.T) {
 		{"title mutation", "<title><title/><img src=x onerror=alert('xss')>"},
 		{"textarea mutation", "<textarea><textarea/><img src=x onerror=alert('xss')>"},
 	}
-	
+
 	tmplStr := "<div>{{.Payload}}</div>"
-	
+
 	for _, vector := range mutationVectors {
 		t.Run(vector.name, func(t *testing.T) {
 			tmpl, err := engine.Parse(tmplStr)
 			if err != nil {
 				t.Fatalf("Parse() error = %v", err)
 			}
-			
+
 			data := struct{ Payload string }{Payload: vector.payload}
 			result, err := engine.ExecuteToString(tmpl, data)
 			if err != nil {
 				t.Fatalf("ExecuteToString() error = %v", err)
 			}
-			
+
 			if !strings.Contains(result, "&lt;") {
-				t.Errorf("Mutation XSS not prevented for %s\nPayload: %s\nOutput: %s", 
+				t.Errorf("Mutation XSS not prevented for %s\nPayload: %s\nOutput: %s",
 					vector.name, vector.payload, result)
 			}
 		})
@@ -344,7 +344,7 @@ func TestXSSPrevention_MutationXSS(t *testing.T) {
 
 func TestXSSPrevention_VerifyEscaping(t *testing.T) {
 	engine := NewEngine()
-	
+
 	tests := []struct {
 		name        string
 		template    string
@@ -382,22 +382,22 @@ func TestXSSPrevention_VerifyEscaping(t *testing.T) {
 			mustContain: "#ZgotmplZ",
 		},
 	}
-	
+
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			tmpl, err := engine.Parse(tt.template)
 			if err != nil {
 				t.Fatalf("Parse() error = %v", err)
 			}
-			
+
 			data := struct{ Input string }{Input: tt.payload}
 			result, err := engine.ExecuteToString(tmpl, data)
 			if err != nil {
 				t.Fatalf("ExecuteToString() error = %v", err)
 			}
-			
+
 			if !strings.Contains(result, tt.mustContain) {
-				t.Errorf("Expected %q in output\nPayload: %s\nOutput: %s", 
+				t.Errorf("Expected %q in output\nPayload: %s\nOutput: %s",
 					tt.mustContain, tt.payload, result)
 			}
 		})

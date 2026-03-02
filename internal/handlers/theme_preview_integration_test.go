@@ -28,10 +28,10 @@ func TestThemePreviewIntegration_CustomImageFlow(t *testing.T) {
 	}
 
 	tests := []struct {
-		name                string
-		customImageURL      string
-		expectImageInHTML   bool
-		expectImageClass    bool
+		name              string
+		customImageURL    string
+		expectImageInHTML bool
+		expectImageClass  bool
 	}{
 		{
 			name:              "with custom image",
@@ -119,8 +119,8 @@ func TestThemePreviewIntegration_FallbackBehavior(t *testing.T) {
 
 	t.Run("custom image takes precedence", func(t *testing.T) {
 		customImageURL := "https://example.com/custom.jpg"
-		req := httptest.NewRequest(http.MethodGet, 
-			"/api/themes/preview?theme_id=2&custom_image_url="+customImageURL, 
+		req := httptest.NewRequest(http.MethodGet,
+			"/api/themes/preview?theme_id=2&custom_image_url="+customImageURL,
 			nil)
 		w := httptest.NewRecorder()
 
@@ -165,8 +165,8 @@ func TestThemePreviewIntegration_ResponsiveImageDisplay(t *testing.T) {
 	}
 
 	customImageURL := "https://example.com/responsive.jpg"
-	req := httptest.NewRequest(http.MethodGet, 
-		"/api/themes/preview?theme_id=3&custom_image_url="+customImageURL, 
+	req := httptest.NewRequest(http.MethodGet,
+		"/api/themes/preview?theme_id=3&custom_image_url="+customImageURL,
 		nil)
 	w := httptest.NewRecorder()
 
@@ -207,8 +207,8 @@ func TestThemePreviewIntegration_LightDarkModeWithCustomImage(t *testing.T) {
 	modes := []string{"light", "dark"}
 	for _, mode := range modes {
 		t.Run("mode_"+mode, func(t *testing.T) {
-			req := httptest.NewRequest(http.MethodGet, 
-				"/api/themes/preview?theme_id=4&custom_image_url="+customImageURL+"&theme_mode="+mode, 
+			req := httptest.NewRequest(http.MethodGet,
+				"/api/themes/preview?theme_id=4&custom_image_url="+customImageURL+"&theme_mode="+mode,
 				nil)
 			w := httptest.NewRecorder()
 

@@ -115,7 +115,7 @@ var presets = map[string]*ComponentPreset{
 				ID:   "cta-container",
 				Type: models.ComponentTypeContainer,
 				Position: models.Position{
-					Mode: models.PositionModeRelative,
+					Mode:  models.PositionModeRelative,
 					Order: func() *int { i := 1; return &i }(),
 				},
 				Dimensions: models.Dimensions{
@@ -140,7 +140,7 @@ var presets = map[string]*ComponentPreset{
 				ID:   "cta-heading",
 				Type: models.ComponentTypeTextBox,
 				Position: models.Position{
-					Mode: models.PositionModeRelative,
+					Mode:  models.PositionModeRelative,
 					Order: func() *int { i := 1; return &i }(),
 				},
 				Dimensions: models.Dimensions{
@@ -164,7 +164,7 @@ var presets = map[string]*ComponentPreset{
 				ID:   "cta-button",
 				Type: models.ComponentTypeTextBox,
 				Position: models.Position{
-					Mode: models.PositionModeRelative,
+					Mode:  models.PositionModeRelative,
 					Order: func() *int { i := 2; return &i }(),
 				},
 				Dimensions: models.Dimensions{
@@ -202,7 +202,7 @@ var presets = map[string]*ComponentPreset{
 				ID:   "gallery-container",
 				Type: models.ComponentTypeContainer,
 				Position: models.Position{
-					Mode: models.PositionModeRelative,
+					Mode:  models.PositionModeRelative,
 					Order: func() *int { i := 1; return &i }(),
 				},
 				Dimensions: models.Dimensions{
@@ -227,7 +227,7 @@ var presets = map[string]*ComponentPreset{
 				ID:   "gallery-image-1",
 				Type: models.ComponentTypeImage,
 				Position: models.Position{
-					Mode: models.PositionModeRelative,
+					Mode:  models.PositionModeRelative,
 					Order: func() *int { i := 1; return &i }(),
 				},
 				Dimensions: models.Dimensions{
@@ -249,7 +249,7 @@ var presets = map[string]*ComponentPreset{
 				ID:   "gallery-image-2",
 				Type: models.ComponentTypeImage,
 				Position: models.Position{
-					Mode: models.PositionModeRelative,
+					Mode:  models.PositionModeRelative,
 					Order: func() *int { i := 2; return &i }(),
 				},
 				Dimensions: models.Dimensions{
@@ -271,7 +271,7 @@ var presets = map[string]*ComponentPreset{
 				ID:   "gallery-image-3",
 				Type: models.ComponentTypeImage,
 				Position: models.Position{
-					Mode: models.PositionModeRelative,
+					Mode:  models.PositionModeRelative,
 					Order: func() *int { i := 3; return &i }(),
 				},
 				Dimensions: models.Dimensions{
@@ -304,7 +304,7 @@ var presets = map[string]*ComponentPreset{
 				ID:   "testimonial-container",
 				Type: models.ComponentTypeContainer,
 				Position: models.Position{
-					Mode: models.PositionModeRelative,
+					Mode:  models.PositionModeRelative,
 					Order: func() *int { i := 1; return &i }(),
 				},
 				Dimensions: models.Dimensions{
@@ -330,7 +330,7 @@ var presets = map[string]*ComponentPreset{
 				ID:   "testimonial-quote",
 				Type: models.ComponentTypeTextBox,
 				Position: models.Position{
-					Mode: models.PositionModeRelative,
+					Mode:  models.PositionModeRelative,
 					Order: func() *int { i := 1; return &i }(),
 				},
 				Dimensions: models.Dimensions{
@@ -354,7 +354,7 @@ var presets = map[string]*ComponentPreset{
 				ID:   "testimonial-author",
 				Type: models.ComponentTypeTextBox,
 				Position: models.Position{
-					Mode: models.PositionModeRelative,
+					Mode:  models.PositionModeRelative,
 					Order: func() *int { i := 2; return &i }(),
 				},
 				Dimensions: models.Dimensions{
@@ -398,4 +398,3 @@ func ListPresets() []PresetMetadata {
 	}
 	return result
 }
-

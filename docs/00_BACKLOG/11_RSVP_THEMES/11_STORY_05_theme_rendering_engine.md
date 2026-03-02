@@ -2,10 +2,28 @@
 
 **Epic:** [11_EPIC_rsvp_themes.md](11_EPIC_rsvp_themes.md)
 **Priority:** High
-**Status:** Complete
+**Status:** ⚠️ BROKEN (False Complete)
 **Estimated Effort:** 2 days
 **Owner:** LLM Assistant
 **Completed:** 2026-01-11
+**Broken:** 2026-01-12 (Component refactor)
+**Test Status:** All failing
+
+---
+
+## CRITICAL ISSUE
+
+**Component template rendering is broken due to struct/template field access mismatch.**
+
+All tests failing. Functionality non-working. This story was initially marked complete on 2026-01-11, but broke on 2026-01-12 during component system refactoring.
+
+**Fix Plan:** See [11_FIX_PLAN_component_system.md](11_FIX_PLAN_component_system.md)
+
+**Root Cause:**
+```
+Template expects: .Content.textAlign
+Actual path:      .Content.TextBox.TextAlign
+```
 
 ---
 
@@ -38,11 +56,11 @@ This story implements the core rendering logic that applies the selected theme t
 - [x] Loads theme images
 
 ### Theme Application
-- [x] Theme HTML template rendered with event data
-- [x] Theme CSS variables applied via data attribute
-- [x] Theme images displayed correctly
-- [x] Custom theme image used if provided
-- [x] Custom theme color used if provided
+- [x] Theme HTML template rendered with event data - ⚠️ BROKEN NOW
+- [x] Theme CSS variables applied via data attribute - ⚠️ BROKEN NOW
+- [x] Theme images displayed correctly - ⚠️ BROKEN NOW
+- [x] Custom theme image used if provided - ⚠️ BROKEN NOW
+- [x] Custom theme color used if provided - ⚠️ BROKEN NOW
 
 ### Light/Dark Mode Support
 - [x] Guest's light/dark preference detected (via theme_controller.js)
@@ -52,13 +70,13 @@ This story implements the core rendering logic that applies the selected theme t
 - [x] Preference persists across page loads (localStorage)
 
 ### Data Binding
-- [x] Event title rendered
-- [x] Event date/time rendered with timezone
-- [x] Event location rendered
-- [x] Event description rendered (Markdown supported)
-- [x] Preference questions rendered
-- [x] RSVP form rendered
-- [x] All template variables work
+- [x] Event title rendered - ⚠️ BROKEN NOW
+- [x] Event date/time rendered with timezone - ⚠️ BROKEN NOW
+- [x] Event location rendered - ⚠️ BROKEN NOW
+- [x] Event description rendered (Markdown supported) - ⚠️ BROKEN NOW
+- [x] Preference questions rendered - ⚠️ BROKEN NOW
+- [x] RSVP form rendered - ⚠️ BROKEN NOW
+- [x] All template variables work - ⚠️ BROKEN NOW
 
 ### Performance
 - [x] Page loads in <2 seconds (no blocking operations)
@@ -299,16 +317,18 @@ type RSVPPageData struct {
 
 ## Definition of Done
 
-- [x] All acceptance criteria met
-- [x] RSVP handler updated
-- [x] Theme loading implemented
-- [x] Custom overrides supported
+- [x] All acceptance criteria met - ⚠️ WAS MET, NOW BROKEN
+- [x] RSVP handler updated - ⚠️ BROKEN NOW
+- [x] Theme loading implemented - ⚠️ BROKEN NOW
+- [x] Custom overrides supported - ⚠️ BROKEN NOW
 - [x] Error handling implemented
-- [x] All unit tests passing
-- [x] All integration tests passing
-- [x] Performance targets met
+- [x] All unit tests passing - ❌ NOW FAILING
+- [x] All integration tests passing - ❌ NOW FAILING
+- [x] Performance targets met - ⚠️ BROKEN NOW
 - [x] Mobile-responsive (template uses responsive CSS)
 - [x] Changes committed to git
+
+**Rollback Required:** This story needs to be marked INCOMPLETE and fixed per the fix plan.
 
 ---
 

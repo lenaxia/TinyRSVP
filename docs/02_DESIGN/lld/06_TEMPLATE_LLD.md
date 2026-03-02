@@ -408,6 +408,56 @@ func TestTemplateRenderer_RenderHTML(t *testing.T) {
 
 ---
 
+## 9. Component-Based Rendering
+
+### 9.1 Component System Architecture
+
+TinyRSVP supports Evite-style component-based customization:
+
+**Component Types:**
+- TextBox (fonts, colors, shadows, gradients)
+- Image (filters, transforms, effects)
+- Background (colors, gradients, images)
+- Overlay (cards, borders, shadows)
+- Container (flexbox/grid layouts)
+- Divider (separators)
+
+**Data Structure:**
+```go
+type ComponentContent struct {
+    TextBox    *TextBoxContent
+    Image      *ImageContent
+    Background *BackgroundContent
+    Overlay    *OverlayContent
+}
+```
+
+**Template Access Pattern:**
+```html
+{{with .Content.TextBox}}
+    <div style="color: {{.Color}}; font-size: {{.FontSize}};">
+        {{.Text}}
+    </div>
+{{end}}
+```
+
+### 9.2 Component Rendering Process
+
+1. Load component configuration from database
+2. Parse component JSON
+3. Validate component types
+4. Render via component templates
+5. Apply CSS sanitization
+
+### 9.3 Security Considerations
+
+- All HTML auto-escaped via html/template
+- CSS sanitized via whitelist
+- No arbitrary JavaScript execution
+- Component overrides validated
+
+---
+
 **Document Status:** ✅ Complete
 
 **Next Domain:** [Domain 8: API & HTTP Handlers](08_API_LLD.md)

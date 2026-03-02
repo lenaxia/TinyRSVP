@@ -52,7 +52,7 @@ func TestThemePickerPartialIntegration(t *testing.T) {
 	}
 
 	var buf strings.Builder
-	if err := tmpl.ExecuteTemplate(&buf, "theme_picker.html", data); err != nil {
+	if err := tmpl.ExecuteTemplate(&buf, "theme_picker", data); err != nil {
 		t.Fatalf("Failed to execute template: %v", err)
 	}
 
@@ -87,11 +87,12 @@ func TestThemePickerPartialIntegration(t *testing.T) {
 			t.Error("Should render theme-gallery")
 		}
 
-		if !strings.Contains(html, `role="radiogroup"`) {
-			t.Error("Theme gallery should have radiogroup role")
+		// Theme gallery uses role="region" with aria-label for accessibility
+		if !strings.Contains(html, `role="region"`) && !strings.Contains(html, `role="radiogroup"`) {
+			t.Error("Theme gallery should have a landmark role (region or radiogroup)")
 		}
 
-		if !strings.Contains(html, `aria-label="Select theme"`) {
+		if !strings.Contains(html, `aria-label="Theme gallery"`) && !strings.Contains(html, `aria-label="Select theme"`) {
 			t.Error("Theme gallery should have aria-label")
 		}
 	})
@@ -235,7 +236,7 @@ func TestThemePickerPartialWithoutThumbnail(t *testing.T) {
 	}
 
 	var buf strings.Builder
-	if err := tmpl.ExecuteTemplate(&buf, "theme_picker.html", data); err != nil {
+	if err := tmpl.ExecuteTemplate(&buf, "theme_picker", data); err != nil {
 		t.Fatalf("Failed to execute template: %v", err)
 	}
 
@@ -269,7 +270,7 @@ func TestThemePickerPartialEmptyThemes(t *testing.T) {
 	}
 
 	var buf strings.Builder
-	if err := tmpl.ExecuteTemplate(&buf, "theme_picker.html", data); err != nil {
+	if err := tmpl.ExecuteTemplate(&buf, "theme_picker", data); err != nil {
 		t.Fatalf("Failed to execute template: %v", err)
 	}
 

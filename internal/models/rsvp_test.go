@@ -323,8 +323,8 @@ func TestRSVPAnswer_Validate(t *testing.T) {
 		{
 			name: "empty option answer",
 			answer: &RSVPAnswer{
-				RSVPID:       1,
-				QuestionID:   1,
+				RSVPID:     1,
+				QuestionID: 1,
 				AnswerOption: func() *string {
 					s := ""
 					return &s

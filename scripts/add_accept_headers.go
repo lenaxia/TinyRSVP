@@ -35,18 +35,18 @@ func addAcceptHeaders(filename string) error {
 
 	var lines []string
 	scanner := bufio.NewScanner(file)
-	
+
 	for scanner.Scan() {
 		line := scanner.Text()
 		lines = append(lines, line)
-		
+
 		// If this line creates an httptest.NewRequest
 		if strings.Contains(line, "httptest.NewRequest(") {
 			// Check if next line already has Accept header
 			if scanner.Scan() {
 				nextLine := scanner.Text()
 				lines = append(lines, nextLine)
-				
+
 				if !strings.Contains(nextLine, `Header.Set("Accept"`) {
 					// Add Accept header with same indentation as next line
 					indent := ""
@@ -78,6 +78,6 @@ func addAcceptHeaders(filename string) error {
 	for _, line := range lines {
 		fmt.Fprintln(writer, line)
 	}
-	
+
 	return writer.Flush()
 }

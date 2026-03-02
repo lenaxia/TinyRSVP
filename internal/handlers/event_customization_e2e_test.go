@@ -26,11 +26,11 @@ func TestEventCustomizationE2E_CompleteFlow(t *testing.T) {
 	defer cleanup()
 
 	ctx := context.Background()
-	
+
 	userRepo := repositories.NewUserRepository(database)
 	eventRepo := repositories.NewEventRepository(database)
 	templateRepo := repositories.NewTemplateRepository(database)
-	
+
 	user := &models.User{
 		Email: "test@example.com",
 		Name:  "Test User",
@@ -320,7 +320,7 @@ func TestEventCustomizationE2E_CompleteFlow(t *testing.T) {
 		if !strings.Contains(body, "component-canvas") {
 			t.Error("Expected component-based rendering in page")
 		}
-		
+
 		if !strings.Contains(body, "Test Event") {
 			t.Error("Expected event title in rendered page")
 		}
@@ -377,11 +377,11 @@ func TestEventCustomizationE2E_MultipleComponents(t *testing.T) {
 	defer cleanup()
 
 	ctx := context.Background()
-	
+
 	userRepo := repositories.NewUserRepository(database)
 	eventRepo := repositories.NewEventRepository(database)
 	templateRepo := repositories.NewTemplateRepository(database)
-	
+
 	user := &models.User{
 		Email: "test2@example.com",
 		Name:  "Test User 2",
@@ -581,11 +581,11 @@ func TestEventCustomizationE2E_BackwardCompatibility(t *testing.T) {
 	defer cleanup()
 
 	ctx := context.Background()
-	
+
 	userRepo := repositories.NewUserRepository(database)
 	eventRepo := repositories.NewEventRepository(database)
 	templateRepo := repositories.NewTemplateRepository(database)
-	
+
 	user := &models.User{
 		Email: "test3@example.com",
 		Name:  "Test User 3",

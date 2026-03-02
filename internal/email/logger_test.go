@@ -21,7 +21,7 @@ func TestLogger(t *testing.T) {
 	t.Run("EmailQueued", func(t *testing.T) {
 		buf.Reset()
 		logger.EmailQueued(123, "test@example.com")
-		
+
 		output := buf.String()
 		if !strings.Contains(output, "email queued") {
 			t.Errorf("Expected 'email queued' in output, got: %s", output)
@@ -37,7 +37,7 @@ func TestLogger(t *testing.T) {
 	t.Run("EmailSending", func(t *testing.T) {
 		buf.Reset()
 		logger.EmailSending(456, "user@example.com", 2)
-		
+
 		output := buf.String()
 		if !strings.Contains(output, "sending email") {
 			t.Errorf("Expected 'sending email' in output, got: %s", output)
@@ -53,7 +53,7 @@ func TestLogger(t *testing.T) {
 	t.Run("EmailSent", func(t *testing.T) {
 		buf.Reset()
 		logger.EmailSent(789, "success@example.com", 2*time.Second)
-		
+
 		output := buf.String()
 		if !strings.Contains(output, "email sent successfully") {
 			t.Errorf("Expected 'email sent successfully' in output, got: %s", output)
@@ -66,7 +66,7 @@ func TestLogger(t *testing.T) {
 	t.Run("EmailFailed", func(t *testing.T) {
 		buf.Reset()
 		logger.EmailFailed(111, "fail@example.com", 1, context.DeadlineExceeded)
-		
+
 		output := buf.String()
 		if !strings.Contains(output, "email send failed") {
 			t.Errorf("Expected 'email send failed' in output, got: %s", output)
@@ -79,7 +79,7 @@ func TestLogger(t *testing.T) {
 	t.Run("EmailRetrying", func(t *testing.T) {
 		buf.Reset()
 		logger.EmailRetrying(222, "retry@example.com", 2, 5*time.Minute)
-		
+
 		output := buf.String()
 		if !strings.Contains(output, "retrying email") {
 			t.Errorf("Expected 'retrying email' in output, got: %s", output)
@@ -92,7 +92,7 @@ func TestLogger(t *testing.T) {
 	t.Run("EmailPermanentlyFailed", func(t *testing.T) {
 		buf.Reset()
 		logger.EmailPermanentlyFailed(333, "permfail@example.com", 4, context.DeadlineExceeded)
-		
+
 		output := buf.String()
 		if !strings.Contains(output, "email permanently failed") {
 			t.Errorf("Expected 'email permanently failed' in output, got: %s", output)
@@ -105,7 +105,7 @@ func TestLogger(t *testing.T) {
 	t.Run("RateLimitHit", func(t *testing.T) {
 		buf.Reset()
 		logger.RateLimitHit(10, 30*time.Second)
-		
+
 		output := buf.String()
 		if !strings.Contains(output, "rate limit hit") {
 			t.Errorf("Expected 'rate limit hit' in output, got: %s", output)
@@ -118,7 +118,7 @@ func TestLogger(t *testing.T) {
 	t.Run("BatchProcessed", func(t *testing.T) {
 		buf.Reset()
 		logger.BatchProcessed(25, 10*time.Second)
-		
+
 		output := buf.String()
 		if !strings.Contains(output, "batch processed") {
 			t.Errorf("Expected 'batch processed' in output, got: %s", output)
@@ -131,7 +131,7 @@ func TestLogger(t *testing.T) {
 	t.Run("QueueProcessorStarted", func(t *testing.T) {
 		buf.Reset()
 		logger.QueueProcessorStarted(60*time.Second, 50)
-		
+
 		output := buf.String()
 		if !strings.Contains(output, "queue processor started") {
 			t.Errorf("Expected 'queue processor started' in output, got: %s", output)
@@ -141,7 +141,7 @@ func TestLogger(t *testing.T) {
 	t.Run("QueueProcessorStopped", func(t *testing.T) {
 		buf.Reset()
 		logger.QueueProcessorStopped()
-		
+
 		output := buf.String()
 		if !strings.Contains(output, "queue processor stopped") {
 			t.Errorf("Expected 'queue processor stopped' in output, got: %s", output)

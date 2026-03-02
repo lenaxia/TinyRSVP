@@ -160,7 +160,7 @@ func (c *Config) loadFromEnv() error {
 	c.OIDC.ClientID = getEnvString("OIDC_CLIENT_ID", "")
 	c.OIDC.ClientSecret = getEnvString("OIDC_CLIENT_SECRET", "")
 	c.OIDC.RedirectURL = getEnvString("OIDC_REDIRECT_URL", "")
-	
+
 	c.OIDC.SkipTLSVerify, err = getEnvBool("OIDC_SKIP_VERIFY", false)
 	if err != nil {
 		return fmt.Errorf("OIDC_SKIP_VERIFY: %w", err)
@@ -218,7 +218,7 @@ func (c *Config) loadFromEnv() error {
 	c.Security.HMACSecretKey = getEnvString("SECURITY_HMAC_SECRET", "")
 
 	c.Token.Secret = getEnvString("TOKEN_SECRET", "")
-	
+
 	hashingEnabled, err := getEnvBool("TOKEN_HASHING_ENABLED", true)
 	if err != nil {
 		return fmt.Errorf("TOKEN_HASHING_ENABLED: %w", err)
@@ -232,7 +232,7 @@ func (c *Config) setDefaults() {
 	if c.Security.HMACSecretKey == "" {
 		c.Security.HMACSecretKey = generateHMACSecret()
 	}
-	
+
 	if c.Token.HashingEnabled {
 		if c.Token.Secret == "" {
 			c.Token.Secret = getHardcodedTokenSecret()

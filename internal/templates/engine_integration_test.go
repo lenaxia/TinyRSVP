@@ -35,7 +35,7 @@ type RSVP struct {
 
 func TestEngine_Integration_EventTemplate(t *testing.T) {
 	engine := NewEngine()
-	
+
 	event := Event{
 		ID:          1,
 		Title:       "Summer BBQ Party",
@@ -44,7 +44,7 @@ func TestEngine_Integration_EventTemplate(t *testing.T) {
 		StartTime:   time.Date(2026, 7, 15, 17, 0, 0, 0, time.UTC),
 		EndTime:     time.Date(2026, 7, 15, 21, 0, 0, 0, time.UTC),
 	}
-	
+
 	tmplStr := `
 <!DOCTYPE html>
 <html>
@@ -63,17 +63,17 @@ func TestEngine_Integration_EventTemplate(t *testing.T) {
 </body>
 </html>
 `
-	
+
 	tmpl, err := engine.Parse(tmplStr)
 	if err != nil {
 		t.Fatalf("Parse() error = %v", err)
 	}
-	
+
 	result, err := engine.ExecuteToString(tmpl, event)
 	if err != nil {
 		t.Fatalf("ExecuteToString() error = %v", err)
 	}
-	
+
 	if !strings.Contains(result, "SUMMER BBQ PARTY") {
 		t.Error("Expected uppercase title")
 	}
@@ -93,7 +93,7 @@ func TestEngine_Integration_EventTemplate(t *testing.T) {
 
 func TestEngine_Integration_InviteEmailTemplate(t *testing.T) {
 	engine := NewEngine()
-	
+
 	data := struct {
 		Event  Event
 		Invite Invite
@@ -109,7 +109,7 @@ func TestEngine_Integration_InviteEmailTemplate(t *testing.T) {
 			Token: "abc123xyz",
 		},
 	}
-	
+
 	tmplStr := `
 Dear {{.Invite.Name}},
 
@@ -124,17 +124,17 @@ https://example.com/rsvp/{{.Invite.Token}}
 
 We hope to see you there!
 `
-	
+
 	tmpl, err := engine.Parse(tmplStr)
 	if err != nil {
 		t.Fatalf("Parse() error = %v", err)
 	}
-	
+
 	result, err := engine.ExecuteToString(tmpl, data)
 	if err != nil {
 		t.Fatalf("ExecuteToString() error = %v", err)
 	}
-	
+
 	if !strings.Contains(result, "Dear John Doe") {
 		t.Error("Expected personalized greeting")
 	}
@@ -151,7 +151,7 @@ We hope to see you there!
 
 func TestEngine_Integration_RSVPConfirmationTemplate(t *testing.T) {
 	engine := NewEngine()
-	
+
 	data := struct {
 		Event Event
 		RSVP  RSVP
@@ -169,7 +169,7 @@ func TestEngine_Integration_RSVPConfirmationTemplate(t *testing.T) {
 		},
 		Name: "Jane Smith",
 	}
-	
+
 	tmplStr := `
 <html>
 <head><title>RSVP Confirmation</title></head>
@@ -194,17 +194,17 @@ func TestEngine_Integration_RSVPConfirmationTemplate(t *testing.T) {
 </body>
 </html>
 `
-	
+
 	tmpl, err := engine.Parse(tmplStr)
 	if err != nil {
 		t.Fatalf("Parse() error = %v", err)
 	}
-	
+
 	result, err := engine.ExecuteToString(tmpl, data)
 	if err != nil {
 		t.Fatalf("ExecuteToString() error = %v", err)
 	}
-	
+
 	if !strings.Contains(result, "Thank You, Jane Smith!") {
 		t.Error("Expected personalized thank you")
 	}
@@ -227,13 +227,13 @@ func TestEngine_Integration_RSVPConfirmationTemplate(t *testing.T) {
 
 func TestEngine_Integration_XSSInUserData(t *testing.T) {
 	engine := NewEngine()
-	
+
 	event := Event{
 		Title:       "<script>alert('xss')</script>Malicious Event",
 		Description: "<img src=x onerror=alert('xss')>",
 		Location:    "javascript:alert('xss')",
 	}
-	
+
 	tmplStr := `
 <html>
 <body>
@@ -243,17 +243,17 @@ func TestEngine_Integration_XSSInUserData(t *testing.T) {
 </body>
 </html>
 `
-	
+
 	tmpl, err := engine.Parse(tmplStr)
 	if err != nil {
 		t.Fatalf("Parse() error = %v", err)
 	}
-	
+
 	result, err := engine.ExecuteToString(tmpl, event)
 	if err != nil {
 		t.Fatalf("ExecuteToString() error = %v", err)
 	}
-	
+
 	if strings.Contains(result, "<script>") && !strings.Contains(result, "&lt;script&gt;") {
 		t.Error("XSS not prevented in title")
 	}
@@ -263,7 +263,7 @@ func TestEngine_Integration_XSSInUserData(t *testing.T) {
 	if strings.Contains(result, "javascript:alert") && !strings.Contains(result, "&#") {
 		t.Error("XSS not prevented in location")
 	}
-	
+
 	if !strings.Contains(result, "&lt;") || !strings.Contains(result, "&gt;") {
 		t.Error("Expected HTML escaping")
 	}
@@ -271,7 +271,7 @@ func TestEngine_Integration_XSSInUserData(t *testing.T) {
 
 func TestEngine_Integration_ComplexNestedData(t *testing.T) {
 	engine := NewEngine()
-	
+
 	data := struct {
 		Events []Event
 		Title  string
@@ -292,7 +292,7 @@ func TestEngine_Integration_ComplexNestedData(t *testing.T) {
 			},
 		},
 	}
-	
+
 	tmplStr := `
 <html>
 <body>
@@ -307,17 +307,17 @@ func TestEngine_Integration_ComplexNestedData(t *testing.T) {
 </body>
 </html>
 `
-	
+
 	tmpl, err := engine.Parse(tmplStr)
 	if err != nil {
 		t.Fatalf("Parse() error = %v", err)
 	}
-	
+
 	result, err := engine.ExecuteToString(tmpl, data)
 	if err != nil {
 		t.Fatalf("ExecuteToString() error = %v", err)
 	}
-	
+
 	if !strings.Contains(result, "UPCOMING EVENTS") {
 		t.Error("Expected uppercase title")
 	}
@@ -334,7 +334,7 @@ func TestEngine_Integration_ComplexNestedData(t *testing.T) {
 
 func TestEngine_Integration_TruncateAndDefault(t *testing.T) {
 	engine := NewEngine()
-	
+
 	data := struct {
 		LongText  string
 		ShortText string
@@ -344,7 +344,7 @@ func TestEngine_Integration_TruncateAndDefault(t *testing.T) {
 		ShortText: "Short",
 		EmptyText: "",
 	}
-	
+
 	tmplStr := `
 <div>
 	<p>Long: {{truncate .LongText 20}}</p>
@@ -352,17 +352,17 @@ func TestEngine_Integration_TruncateAndDefault(t *testing.T) {
 	<p>Empty: {{default .EmptyText "No description provided"}}</p>
 </div>
 `
-	
+
 	tmpl, err := engine.Parse(tmplStr)
 	if err != nil {
 		t.Fatalf("Parse() error = %v", err)
 	}
-	
+
 	result, err := engine.ExecuteToString(tmpl, data)
 	if err != nil {
 		t.Fatalf("ExecuteToString() error = %v", err)
 	}
-	
+
 	if !strings.Contains(result, "This is a very long ...") {
 		t.Error("Expected truncated long text")
 	}
@@ -376,7 +376,7 @@ func TestEngine_Integration_TruncateAndDefault(t *testing.T) {
 
 func TestEngine_Integration_NoUnsafeFunctions(t *testing.T) {
 	engine := NewEngine()
-	
+
 	dangerousFunctions := []struct {
 		name     string
 		template string
@@ -394,7 +394,7 @@ func TestEngine_Integration_NoUnsafeFunctions(t *testing.T) {
 			template: "<style>{{safeCSS .CSS}}</style>",
 		},
 	}
-	
+
 	for _, tt := range dangerousFunctions {
 		t.Run(tt.name, func(t *testing.T) {
 			_, err := engine.Parse(tt.template)
@@ -410,7 +410,7 @@ func TestEngine_Integration_NoUnsafeFunctions(t *testing.T) {
 
 func BenchmarkEngine_Integration_ComplexTemplate(b *testing.B) {
 	engine := NewEngine()
-	
+
 	data := struct {
 		Event  Event
 		Invite Invite
@@ -427,7 +427,7 @@ func BenchmarkEngine_Integration_ComplexTemplate(b *testing.B) {
 			Token: "test123",
 		},
 	}
-	
+
 	tmplStr := `
 <!DOCTYPE html>
 <html>
@@ -442,9 +442,9 @@ func BenchmarkEngine_Integration_ComplexTemplate(b *testing.B) {
 </body>
 </html>
 `
-	
+
 	tmpl, _ := engine.Parse(tmplStr)
-	
+
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		_, _ = engine.ExecuteToString(tmpl, data)

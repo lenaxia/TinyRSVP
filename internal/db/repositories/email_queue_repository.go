@@ -28,12 +28,12 @@ type EmailQueueRepository interface {
 }
 
 type EmailQueueStats struct {
-	PendingCount  int
-	SendingCount  int
-	SentCount     int
-	FailedCount   int
+	PendingCount   int
+	SendingCount   int
+	SentCount      int
+	FailedCount    int
 	CancelledCount int
-	TotalCount    int
+	TotalCount     int
 }
 
 type emailQueueRepository struct {

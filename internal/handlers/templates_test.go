@@ -18,18 +18,18 @@ import (
 )
 
 type mockTemplateService struct {
-	CreateTemplateFunc        func(ctx context.Context, template *models.Template) error
-	GetTemplateFunc           func(ctx context.Context, id int64) (*models.Template, error)
-	GetTemplateForEventFunc   func(ctx context.Context, eventID int64, templateType models.TemplateType) (*models.Template, error)
-	GetDefaultTemplateFunc    func(ctx context.Context, templateType models.TemplateType) (*models.Template, error)
-	UpdateTemplateFunc        func(ctx context.Context, template *models.Template) error
-	DeleteTemplateFunc        func(ctx context.Context, id int64) error
-	SetActiveFunc             func(ctx context.Context, id int64, active bool) error
-	SetDefaultFunc            func(ctx context.Context, id int64) error
-	ListTemplatesFunc         func(ctx context.Context, filters *repositories.TemplateFilters) ([]*models.Template, error)
-	PreviewTemplateFunc       func(ctx context.Context, req *templates.PreviewRequest) (*templates.PreviewResponse, error)
-	GetComponentRendererFunc  func() *templates.ComponentRenderer
-	RenderRSVPPageFunc        func(w io.Writer, event *models.Event, template *models.Template) error
+	CreateTemplateFunc       func(ctx context.Context, template *models.Template) error
+	GetTemplateFunc          func(ctx context.Context, id int64) (*models.Template, error)
+	GetTemplateForEventFunc  func(ctx context.Context, eventID int64, templateType models.TemplateType) (*models.Template, error)
+	GetDefaultTemplateFunc   func(ctx context.Context, templateType models.TemplateType) (*models.Template, error)
+	UpdateTemplateFunc       func(ctx context.Context, template *models.Template) error
+	DeleteTemplateFunc       func(ctx context.Context, id int64) error
+	SetActiveFunc            func(ctx context.Context, id int64, active bool) error
+	SetDefaultFunc           func(ctx context.Context, id int64) error
+	ListTemplatesFunc        func(ctx context.Context, filters *repositories.TemplateFilters) ([]*models.Template, error)
+	PreviewTemplateFunc      func(ctx context.Context, req *templates.PreviewRequest) (*templates.PreviewResponse, error)
+	GetComponentRendererFunc func() *templates.ComponentRenderer
+	RenderRSVPPageFunc       func(w io.Writer, event *models.Event, template *models.Template) error
 }
 
 func (m *mockTemplateService) CreateTemplate(ctx context.Context, template *models.Template) error {
@@ -573,38 +573,38 @@ func TestPreviewTemplate_Success(t *testing.T) {
 			}, nil
 		},
 	}
-	
+
 	handlers := NewTemplateHandlers(mockService)
-	
+
 	reqBody := `{
 		"type": "invite_email",
 		"html_content": "<h1>{{.Event.Title}}</h1>",
 		"text_content": "{{.Event.Title}}"
 	}`
-	
+
 	req := httptest.NewRequest(http.MethodPost, "/api/templates/preview", strings.NewReader(reqBody))
-			req.Header.Set("Accept", "application/json")
+	req.Header.Set("Accept", "application/json")
 	req.Header.Set("Content-Type", "application/json")
-			req.Header.Set("Accept", "application/json")
+	req.Header.Set("Accept", "application/json")
 	user := &models.User{ID: 1, Role: models.RoleEventManager}
 	req = req.WithContext(auth.WithUser(context.Background(), user))
-	
+
 	w := httptest.NewRecorder()
 	handlers.PreviewTemplate(w, req)
-	
+
 	if w.Code != http.StatusOK {
 		t.Errorf("Status = %d, want %d. Body: %s", w.Code, http.StatusOK, w.Body.String())
 	}
-	
+
 	var resp map[string]interface{}
 	if err := json.NewDecoder(w.Body).Decode(&resp); err != nil {
 		t.Fatalf("Failed to decode response: %v", err)
 	}
-	
+
 	if resp["html_preview"] == nil {
 		t.Error("Expected html_preview in response")
 	}
-	
+
 	if resp["text_preview"] == nil {
 		t.Error("Expected text_preview in response")
 	}
@@ -613,17 +613,17 @@ func TestPreviewTemplate_Success(t *testing.T) {
 func TestPreviewTemplate_InvalidJSON(t *testing.T) {
 	mockService := &mockTemplateService{}
 	handlers := NewTemplateHandlers(mockService)
-	
+
 	req := httptest.NewRequest(http.MethodPost, "/api/templates/preview", strings.NewReader("invalid json"))
-			req.Header.Set("Accept", "application/json")
+	req.Header.Set("Accept", "application/json")
 	req.Header.Set("Content-Type", "application/json")
-			req.Header.Set("Accept", "application/json")
+	req.Header.Set("Accept", "application/json")
 	user := &models.User{ID: 1, Role: models.RoleEventManager}
 	req = req.WithContext(auth.WithUser(context.Background(), user))
-	
+
 	w := httptest.NewRecorder()
 	handlers.PreviewTemplate(w, req)
-	
+
 	if w.Code != http.StatusBadRequest {
 		t.Errorf("Status = %d, want %d", w.Code, http.StatusBadRequest)
 	}
@@ -638,24 +638,24 @@ func TestPreviewTemplate_ValidationError(t *testing.T) {
 			}
 		},
 	}
-	
+
 	handlers := NewTemplateHandlers(mockService)
-	
+
 	reqBody := `{
 		"type": "invite_email",
 		"html_content": "{{.Event.Title"
 	}`
-	
+
 	req := httptest.NewRequest(http.MethodPost, "/api/templates/preview", strings.NewReader(reqBody))
-			req.Header.Set("Accept", "application/json")
+	req.Header.Set("Accept", "application/json")
 	req.Header.Set("Content-Type", "application/json")
-			req.Header.Set("Accept", "application/json")
+	req.Header.Set("Accept", "application/json")
 	user := &models.User{ID: 1, Role: models.RoleEventManager}
 	req = req.WithContext(auth.WithUser(context.Background(), user))
-	
+
 	w := httptest.NewRecorder()
 	handlers.PreviewTemplate(w, req)
-	
+
 	if w.Code != http.StatusBadRequest {
 		t.Errorf("Status = %d, want %d", w.Code, http.StatusBadRequest)
 	}
@@ -664,20 +664,20 @@ func TestPreviewTemplate_ValidationError(t *testing.T) {
 func TestPreviewTemplate_Unauthorized(t *testing.T) {
 	mockService := &mockTemplateService{}
 	handlers := NewTemplateHandlers(mockService)
-	
+
 	reqBody := `{
 		"type": "invite_email",
 		"html_content": "<h1>{{.Event.Title}}</h1>"
 	}`
-	
+
 	req := httptest.NewRequest(http.MethodPost, "/api/templates/preview", strings.NewReader(reqBody))
-			req.Header.Set("Accept", "application/json")
+	req.Header.Set("Accept", "application/json")
 	req.Header.Set("Content-Type", "application/json")
-			req.Header.Set("Accept", "application/json")
-	
+	req.Header.Set("Accept", "application/json")
+
 	w := httptest.NewRecorder()
 	handlers.PreviewTemplate(w, req)
-	
+
 	if w.Code != http.StatusUnauthorized {
 		t.Errorf("Status = %d, want %d", w.Code, http.StatusUnauthorized)
 	}

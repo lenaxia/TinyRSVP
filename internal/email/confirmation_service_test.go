@@ -12,8 +12,8 @@ import (
 )
 
 type mockTemplateRenderer struct {
-	renderHTMLFunc func(ctx context.Context, templateName string, data interface{}) (string, error)
-	renderTextFunc func(ctx context.Context, templateName string, data interface{}) (string, error)
+	renderHTMLFunc  func(ctx context.Context, templateName string, data interface{}) (string, error)
+	renderTextFunc  func(ctx context.Context, templateName string, data interface{}) (string, error)
 	renderHTMLCalls int
 	renderTextCalls int
 }
@@ -43,9 +43,9 @@ func (m *mockTemplateRenderer) ReloadTemplates() error {
 }
 
 type mockEmailQueueRepository struct {
-	createFunc func(ctx context.Context, email *models.EmailQueue) error
+	createFunc  func(ctx context.Context, email *models.EmailQueue) error
 	createCalls int
-	lastEmail *models.EmailQueue
+	lastEmail   *models.EmailQueue
 }
 
 func (m *mockEmailQueueRepository) Create(ctx context.Context, email *models.EmailQueue) error {
@@ -108,7 +108,7 @@ func (m *mockEmailQueueRepository) GetStats(ctx context.Context) (*repositories.
 }
 
 type mockICSGenerator struct {
-	generateFunc func(event *models.Event, rsvpURL string) ([]byte, error)
+	generateFunc  func(event *models.Event, rsvpURL string) ([]byte, error)
 	generateCalls int
 }
 

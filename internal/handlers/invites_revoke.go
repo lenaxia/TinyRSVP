@@ -101,7 +101,7 @@ func (h *RevokeInviteHandlers) RevokeInvite(w http.ResponseWriter, r *http.Reque
 	if err := h.service.RevokeInvite(r.Context(), serviceReq); err != nil {
 		errMsg := err.Error()
 		if strings.Contains(errMsg, "cannot transition from responded") ||
-		   strings.Contains(errMsg, "cannot transition from revoked") {
+			strings.Contains(errMsg, "cannot transition from revoked") {
 			HandleError(w, r, NewBadRequestError(err.Error()))
 			return
 		}

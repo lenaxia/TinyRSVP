@@ -343,7 +343,7 @@ func createTestEvent(t *testing.T, database db.Database) int64 {
 	t.Helper()
 
 	ctx := context.Background()
-	
+
 	_, err := database.Exec(ctx, `
 		INSERT INTO users (id, email, name, role, created_at, updated_at)
 		VALUES (1, 'test@example.com', 'Test User', 'admin', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)

@@ -23,13 +23,13 @@ func NewNoOpMetrics() Metrics {
 	return &noOpMetrics{}
 }
 
-func (m *noOpMetrics) RecordQueueSize(size int)                          {}
-func (m *noOpMetrics) RecordEmailQueued()                                {}
-func (m *noOpMetrics) RecordEmailDequeued()                              {}
-func (m *noOpMetrics) RecordEmailSent(duration time.Duration)            {}
-func (m *noOpMetrics) RecordEmailFailed(reason string)                   {}
-func (m *noOpMetrics) RecordRetryAttempt(attempt int)                    {}
-func (m *noOpMetrics) RecordRateLimitHit()                               {}
-func (m *noOpMetrics) RecordRateLimitWait(duration time.Duration)        {}
+func (m *noOpMetrics) RecordQueueSize(size int)                               {}
+func (m *noOpMetrics) RecordEmailQueued()                                     {}
+func (m *noOpMetrics) RecordEmailDequeued()                                   {}
+func (m *noOpMetrics) RecordEmailSent(duration time.Duration)                 {}
+func (m *noOpMetrics) RecordEmailFailed(reason string)                        {}
+func (m *noOpMetrics) RecordRetryAttempt(attempt int)                         {}
+func (m *noOpMetrics) RecordRateLimitHit()                                    {}
+func (m *noOpMetrics) RecordRateLimitWait(duration time.Duration)             {}
 func (m *noOpMetrics) RecordBatchProcessed(count int, duration time.Duration) {}
-func (m *noOpMetrics) RecordProcessingError(err error)                   {}
+func (m *noOpMetrics) RecordProcessingError(err error)                        {}

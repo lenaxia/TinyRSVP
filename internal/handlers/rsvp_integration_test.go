@@ -47,16 +47,17 @@ func createTestEventForRSVP(t *testing.T, database db.Database, userID int64) *m
 	loc := "123 Test St, Test City"
 
 	event := &models.Event{
-		Title:        "Test Event",
-		Description:  &desc,
-		StartTime:    startTime,
-		EndTime:      &endTime,
-		Timezone:     "America/Los_Angeles",
-		Location:     &loc,
-		Status:       models.EventStatusPublished,
-		CreatedBy:    userID,
-		MaxPlusOnes:  3,
-		RSVPDeadline: &rsvpDeadline,
+		Title:          "Test Event",
+		Description:    &desc,
+		StartTime:      startTime,
+		EndTime:        &endTime,
+		Timezone:       "America/Los_Angeles",
+		Location:       &loc,
+		Status:         models.EventStatusPublished,
+		CreatedBy:      userID,
+		MaxPlusOnes:    3,
+		RSVPDeadline:   &rsvpDeadline,
+		AllowMaybeRSVP: true,
 	}
 
 	if err := eventRepo.Create(context.Background(), event); err != nil {
@@ -117,7 +118,7 @@ func TestRSVPHandler_Integration_ValidToken(t *testing.T) {
 	questionRepo := repositories.NewQuestionRepository(database)
 
 	handler := NewRSVPHandler(inviteService, eventRepo, rsvpRepo, questionRepo)
-	
+
 	tmpl, err := template.ParseFiles("../../templates/web/rsvp_page.html")
 	if err != nil {
 		t.Logf("Warning: Failed to load template: %v. Using fallback HTML.", err)
@@ -175,7 +176,7 @@ func TestRSVPHandler_Integration_WithExistingRSVP(t *testing.T) {
 	questionRepo := repositories.NewQuestionRepository(database)
 
 	handler := NewRSVPHandler(inviteService, eventRepo, rsvpRepo, questionRepo)
-	
+
 	tmpl, err := template.ParseFiles("../../templates/web/rsvp_page.html")
 	if err != nil {
 		t.Logf("Warning: Failed to load template: %v. Using fallback HTML.", err)
@@ -216,7 +217,7 @@ func TestRSVPHandler_Integration_ExpiredToken(t *testing.T) {
 
 	inviteRepo := repositories.NewInviteRepository(database)
 	invite.ExpiresAt = time.Now().Add(-1 * time.Hour)
-	
+
 	ctx := context.Background()
 	query := `UPDATE invites SET expires_at = ? WHERE id = ?`
 	if _, err := database.Exec(ctx, query, invite.ExpiresAt, invite.ID); err != nil {
@@ -479,7 +480,7 @@ func TestRSVPHandler_Integration_SubmitRSVP_Success(t *testing.T) {
 	body := `{"response":"yes","plus_ones":2,"answers":[]}`
 	req := httptest.NewRequest("POST", "/api/rsvp/"+inviteToken, strings.NewReader(body))
 	req.Header.Set("Content-Type", "application/json")
-			req.Header.Set("Accept", "application/json")
+	req.Header.Set("Accept", "application/json")
 	w := httptest.NewRecorder()
 
 	r.ServeHTTP(w, req)
@@ -520,7 +521,7 @@ func TestRSVPHandler_Integration_SubmitRSVP_WithAnswers(t *testing.T) {
 	_, inviteToken := createTestInviteForRSVP(t, database, event.ID)
 
 	questionRepo := repositories.NewQuestionRepository(database)
-	
+
 	q1 := &models.PreferenceQuestion{
 		EventID:      event.ID,
 		QuestionText: "Dietary restrictions?",
@@ -569,7 +570,7 @@ func TestRSVPHandler_Integration_SubmitRSVP_WithAnswers(t *testing.T) {
 	}`
 	req := httptest.NewRequest("POST", "/api/rsvp/"+inviteToken, strings.NewReader(body))
 	req.Header.Set("Content-Type", "application/json")
-			req.Header.Set("Accept", "application/json")
+	req.Header.Set("Accept", "application/json")
 	w := httptest.NewRecorder()
 
 	r.ServeHTTP(w, req)
@@ -593,7 +594,7 @@ func TestRSVPHandler_Integration_SubmitRSVP_DeadlinePassed(t *testing.T) {
 	defer database.Close()
 
 	user := createTestUser(t, database)
-	
+
 	eventRepo := repositories.NewEventRepository(database)
 	startTime := time.Now().Add(30 * 24 * time.Hour)
 	endTime := startTime.Add(2 * time.Hour)
@@ -637,7 +638,7 @@ func TestRSVPHandler_Integration_SubmitRSVP_DeadlinePassed(t *testing.T) {
 	body := `{"response":"yes","plus_ones":0,"answers":[]}`
 	req := httptest.NewRequest("POST", "/api/rsvp/"+inviteToken, strings.NewReader(body))
 	req.Header.Set("Content-Type", "application/json")
-			req.Header.Set("Accept", "application/json")
+	req.Header.Set("Accept", "application/json")
 	w := httptest.NewRecorder()
 
 	r.ServeHTTP(w, req)
@@ -677,7 +678,7 @@ func TestRSVPHandler_Integration_SubmitRSVP_DuplicateSubmission(t *testing.T) {
 	r.Post("/api/rsvp/{token}", handler.SubmitRSVP)
 
 	body := `{"response":"yes","plus_ones":1,"answers":[]}`
-	
+
 	req1 := httptest.NewRequest("POST", "/api/rsvp/"+inviteToken, strings.NewReader(body))
 	req1.Header.Set("Content-Type", "application/json")
 	w1 := httptest.NewRecorder()
@@ -759,7 +760,7 @@ func TestRSVPHandler_Integration_SubmitRSVP_MissingRequiredAnswer(t *testing.T) 
 	body := `{"response":"yes","plus_ones":0,"answers":[]}`
 	req := httptest.NewRequest("POST", "/api/rsvp/"+inviteToken, strings.NewReader(body))
 	req.Header.Set("Content-Type", "application/json")
-			req.Header.Set("Accept", "application/json")
+	req.Header.Set("Accept", "application/json")
 	w := httptest.NewRecorder()
 
 	r.ServeHTTP(w, req)
@@ -974,7 +975,7 @@ func TestRSVPHandler_Integration_UpdateRSVP_DeadlinePassed(t *testing.T) {
 	defer database.Close()
 
 	user := createTestUser(t, database)
-	
+
 	eventRepo := repositories.NewEventRepository(database)
 	startTime := time.Now().Add(30 * 24 * time.Hour)
 	endTime := startTime.Add(2 * time.Hour)

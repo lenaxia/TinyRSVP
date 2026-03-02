@@ -482,31 +482,31 @@ func TestLocalProvider_ListObjects(t *testing.T) {
 	}
 
 	tests := []struct {
-		name      string
-		prefix    string
-		wantCount int
-		wantErr   bool
+		name       string
+		prefix     string
+		wantCount  int
+		wantErr    bool
 		checkPaths []string
 	}{
 		{
-			name:      "list with prefix images/123/",
-			prefix:    "images/123/",
-			wantCount: 2,
-			wantErr:   false,
+			name:       "list with prefix images/123/",
+			prefix:     "images/123/",
+			wantCount:  2,
+			wantErr:    false,
 			checkPaths: []string{"images/123/logo.png", "images/123/banner.jpg"},
 		},
 		{
-			name:      "list with prefix images/",
-			prefix:    "images/",
-			wantCount: 3,
-			wantErr:   false,
+			name:       "list with prefix images/",
+			prefix:     "images/",
+			wantCount:  3,
+			wantErr:    false,
 			checkPaths: []string{"images/123/logo.png", "images/123/banner.jpg", "images/456/photo.png"},
 		},
 		{
-			name:      "list with prefix templates/",
-			prefix:    "templates/",
-			wantCount: 1,
-			wantErr:   false,
+			name:       "list with prefix templates/",
+			prefix:     "templates/",
+			wantCount:  1,
+			wantErr:    false,
 			checkPaths: []string{"templates/789/custom.html"},
 		},
 		{

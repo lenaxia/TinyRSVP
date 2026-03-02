@@ -26,14 +26,15 @@ func TestRSVPPageFullIntegration(t *testing.T) {
 
 		data := &handlers.RSVPPageData{
 			Event: &models.Event{
-				ID:           1,
-				Title:        "Summer BBQ Party",
-				Description:  strPtr("Join us for a fun summer BBQ!"),
-				Location:     strPtr("123 Main St, Anytown, USA"),
-				StartTime:    startTime,
-				Timezone:     "America/Los_Angeles",
-				RSVPDeadline: &deadline,
-				MaxPlusOnes:  3,
+				ID:             1,
+				Title:          "Summer BBQ Party",
+				Description:    strPtr("Join us for a fun summer BBQ!"),
+				Location:       strPtr("123 Main St, Anytown, USA"),
+				StartTime:      startTime,
+				Timezone:       "America/Los_Angeles",
+				RSVPDeadline:   &deadline,
+				MaxPlusOnes:    3,
+				AllowMaybeRSVP: true,
 			},
 			Invite: &models.Invite{
 				ID:          1,

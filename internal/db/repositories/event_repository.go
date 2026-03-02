@@ -732,13 +732,13 @@ func isForeignKeyConstraintError(err error) bool {
 
 func (r *eventRepository) CountEvents(ctx context.Context) (int, error) {
 	query := `SELECT COUNT(*) FROM events WHERE status != 'archived'`
-	
+
 	var count int
 	err := r.db.QueryRow(ctx, query).Scan(&count)
 	if err != nil {
 		return 0, fmt.Errorf("failed to count events: %w", err)
 	}
-	
+
 	return count, nil
 }
 

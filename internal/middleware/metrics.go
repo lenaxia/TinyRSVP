@@ -65,7 +65,7 @@ func PrometheusMetrics(metrics *PrometheusMetricsCollector) func(http.Handler) h
 			}
 
 			start := time.Now()
-			
+
 			rw := &responseWriter{
 				ResponseWriter: w,
 				status:         http.StatusOK,
@@ -100,10 +100,10 @@ func MetricsHandler(metrics *PrometheusMetricsCollector) http.Handler {
 			w.Write([]byte("# No metrics available\n"))
 		})
 	}
-	
+
 	if metrics.registry != nil {
 		return promhttp.HandlerFor(metrics.registry, promhttp.HandlerOpts{})
 	}
-	
+
 	return promhttp.Handler()
 }

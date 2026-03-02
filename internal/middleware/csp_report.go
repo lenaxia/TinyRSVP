@@ -14,18 +14,18 @@ type CSPReport struct {
 }
 
 type CSPReportDetails struct {
-	DocumentURI        string      `json:"document-uri"`
-	ViolatedDirective  string      `json:"violated-directive"`
-	BlockedURI         string      `json:"blocked-uri"`
-	SourceFile         string      `json:"source-file,omitempty"`
-	LineNumber         int         `json:"line-number,omitempty"`
-	ColumnNumber       int         `json:"column-number,omitempty"`
-	StatusCode         int         `json:"status-code,omitempty"`
-	EffectiveDirective string      `json:"effective-directive,omitempty"`
-	OriginalPolicy     string      `json:"original-policy,omitempty"`
-	Disposition        string      `json:"disposition,omitempty"`
-	ScriptSample       string      `json:"script-sample,omitempty"`
-	Referrer           string      `json:"referrer,omitempty"`
+	DocumentURI        string `json:"document-uri"`
+	ViolatedDirective  string `json:"violated-directive"`
+	BlockedURI         string `json:"blocked-uri"`
+	SourceFile         string `json:"source-file,omitempty"`
+	LineNumber         int    `json:"line-number,omitempty"`
+	ColumnNumber       int    `json:"column-number,omitempty"`
+	StatusCode         int    `json:"status-code,omitempty"`
+	EffectiveDirective string `json:"effective-directive,omitempty"`
+	OriginalPolicy     string `json:"original-policy,omitempty"`
+	Disposition        string `json:"disposition,omitempty"`
+	ScriptSample       string `json:"script-sample,omitempty"`
+	Referrer           string `json:"referrer,omitempty"`
 }
 
 func CSPReportHandler(logger *log.Logger) http.Handler {

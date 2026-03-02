@@ -23,12 +23,12 @@ func (e *Engine) Parse(templateContent string) (*template.Template, error) {
 	if templateContent == "" {
 		return template.New("").Funcs(e.funcMap).Parse(templateContent)
 	}
-	
+
 	tmpl, err := template.New("").Funcs(e.funcMap).Parse(templateContent)
 	if err != nil {
 		return nil, fmt.Errorf("failed to parse template: %w", err)
 	}
-	
+
 	return tmpl, nil
 }
 
@@ -36,15 +36,15 @@ func (e *Engine) Execute(w io.Writer, tmpl *template.Template, data interface{})
 	if w == nil {
 		return fmt.Errorf("writer cannot be nil")
 	}
-	
+
 	if tmpl == nil {
 		return fmt.Errorf("template cannot be nil")
 	}
-	
+
 	if err := tmpl.Execute(w, data); err != nil {
 		return fmt.Errorf("failed to execute template: %w", err)
 	}
-	
+
 	return nil
 }
 

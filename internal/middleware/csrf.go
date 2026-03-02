@@ -46,7 +46,7 @@ func CSRF(tokenLength int) Middleware {
 					if cookieToken != nil {
 						cookieValue = cookieToken.Value
 					}
-					
+
 					slog.Error("CSRF validation failed",
 						"method", r.Method,
 						"path", r.URL.Path,
@@ -58,7 +58,7 @@ func CSRF(tokenLength int) Middleware {
 						"tokens_match", submittedToken == token,
 						"cookie_matches", cookieValue == token,
 					)
-					
+
 					http.Error(w, "Invalid or missing CSRF token", http.StatusForbidden)
 					return
 				}
@@ -137,7 +137,7 @@ func validateCSRFToken(r *http.Request, expectedToken string) bool {
 
 	submittedMatch := subtle.ConstantTimeCompare([]byte(submittedToken), []byte(expectedToken)) == 1
 	cookieMatch := subtle.ConstantTimeCompare([]byte(cookieToken.Value), []byte(expectedToken)) == 1
-	
+
 	return submittedMatch && cookieMatch
 }
 

@@ -8,45 +8,14 @@ import (
 
 	"github.com/lenaxia/tinyrsvp/internal/auth"
 	"github.com/lenaxia/tinyrsvp/internal/models"
+	"github.com/lenaxia/tinyrsvp/internal/testutil/mocks/repositories"
+	"go.uber.org/mock/gomock"
 )
 
-type mockDashboardEventRepo struct {
-	events []*models.Event
-	err    error
-}
-
-func (m *mockDashboardEventRepo) GetByCreatorID(ctx context.Context, creatorID int64) ([]*models.Event, error) {
-	if m.err != nil {
-		return nil, m.err
-	}
-	return m.events, nil
-}
-
-type mockDashboardInviteRepo struct {
-	invites []*models.Invite
-	err     error
-}
-
-func (m *mockDashboardInviteRepo) GetByEventIDs(ctx context.Context, eventIDs []int64) ([]*models.Invite, error) {
-	if m.err != nil {
-		return nil, m.err
-	}
-	return m.invites, nil
-}
-
-type mockDashboardRSVPRepo struct {
-	rsvps []*models.RSVP
-	err   error
-}
-
-func (m *mockDashboardRSVPRepo) GetByInviteIDs(ctx context.Context, inviteIDs []int64) ([]*models.RSVP, error) {
-	if m.err != nil {
-		return nil, m.err
-	}
-	return m.rsvps, nil
-}
-
 func TestDashboardService_GetDashboardStats_Success(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
 	now := time.Now()
 	events := []*models.Event{
 		{ID: 1, Status: models.EventStatusDraft, CreatedBy: 1, CreatedAt: now},
@@ -67,11 +36,24 @@ func TestDashboardService_GetDashboardStats_Success(t *testing.T) {
 		{ID: 3, InviteID: 4, Response: models.RSVPResponseNo},
 	}
 
-	eventRepo := &mockDashboardEventRepo{events: events}
-	inviteRepo := &mockDashboardInviteRepo{invites: invites}
-	rsvpRepo := &mockDashboardRSVPRepo{rsvps: rsvps}
+	mockEventRepo := repositories.NewMockEventRepository(ctrl)
+	mockInviteRepo := repositories.NewMockInviteRepository(ctrl)
+	mockRSVPRepo := repositories.NewMockRSVPRepository(ctrl)
 
-	service := NewDashboardService(eventRepo, inviteRepo, rsvpRepo)
+	// Set expectations
+	mockEventRepo.EXPECT().
+		GetByCreatorID(gomock.Any(), int64(1)).
+		Return(events, nil)
+
+	mockInviteRepo.EXPECT().
+		GetByEventIDs(gomock.Any(), []int64{1, 2, 3}).
+		Return(invites, nil)
+
+	mockRSVPRepo.EXPECT().
+		GetByInviteIDs(gomock.Any(), []int64{1, 2, 3, 4}).
+		Return(rsvps, nil)
+
+	service := NewDashboardService(mockEventRepo, mockInviteRepo, mockRSVPRepo)
 
 	user := &models.User{ID: 1, Role: models.RoleEventManager}
 	ctx := auth.WithUser(context.Background(), user)
@@ -111,11 +93,19 @@ func TestDashboardService_GetDashboardStats_Success(t *testing.T) {
 }
 
 func TestDashboardService_GetDashboardStats_NoEvents(t *testing.T) {
-	eventRepo := &mockDashboardEventRepo{events: []*models.Event{}}
-	inviteRepo := &mockDashboardInviteRepo{invites: []*models.Invite{}}
-	rsvpRepo := &mockDashboardRSVPRepo{rsvps: []*models.RSVP{}}
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
 
-	service := NewDashboardService(eventRepo, inviteRepo, rsvpRepo)
+	mockEventRepo := repositories.NewMockEventRepository(ctrl)
+	mockInviteRepo := repositories.NewMockInviteRepository(ctrl)
+	mockRSVPRepo := repositories.NewMockRSVPRepository(ctrl)
+
+	// Set expectation
+	mockEventRepo.EXPECT().
+		GetByCreatorID(gomock.Any(), int64(1)).
+		Return([]*models.Event{}, nil)
+
+	service := NewDashboardService(mockEventRepo, mockInviteRepo, mockRSVPRepo)
 
 	user := &models.User{ID: 1, Role: models.RoleEventManager}
 	ctx := auth.WithUser(context.Background(), user)
@@ -134,11 +124,14 @@ func TestDashboardService_GetDashboardStats_NoEvents(t *testing.T) {
 }
 
 func TestDashboardService_GetDashboardStats_NoUser(t *testing.T) {
-	eventRepo := &mockDashboardEventRepo{}
-	inviteRepo := &mockDashboardInviteRepo{}
-	rsvpRepo := &mockDashboardRSVPRepo{}
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
 
-	service := NewDashboardService(eventRepo, inviteRepo, rsvpRepo)
+	mockEventRepo := repositories.NewMockEventRepository(ctrl)
+	mockInviteRepo := repositories.NewMockInviteRepository(ctrl)
+	mockRSVPRepo := repositories.NewMockRSVPRepository(ctrl)
+
+	service := NewDashboardService(mockEventRepo, mockInviteRepo, mockRSVPRepo)
 
 	ctx := context.Background()
 
@@ -154,6 +147,9 @@ func TestDashboardService_GetDashboardStats_NoUser(t *testing.T) {
 }
 
 func TestDashboardService_GetRecentActivity_Success(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
 	now := time.Now()
 	email := "guest1@example.com"
 	events := []*models.Event{
@@ -169,11 +165,24 @@ func TestDashboardService_GetRecentActivity_Success(t *testing.T) {
 		{ID: 1, InviteID: 1, Response: models.RSVPResponseYes, CreatedAt: now.Add(-15 * time.Minute)},
 	}
 
-	eventRepo := &mockDashboardEventRepo{events: events}
-	inviteRepo := &mockDashboardInviteRepo{invites: invites}
-	rsvpRepo := &mockDashboardRSVPRepo{rsvps: rsvps}
+	mockEventRepo := repositories.NewMockEventRepository(ctrl)
+	mockInviteRepo := repositories.NewMockInviteRepository(ctrl)
+	mockRSVPRepo := repositories.NewMockRSVPRepository(ctrl)
 
-	service := NewDashboardService(eventRepo, inviteRepo, rsvpRepo)
+	// Set expectations
+	mockEventRepo.EXPECT().
+		GetByCreatorID(gomock.Any(), int64(1)).
+		Return(events, nil)
+
+	mockInviteRepo.EXPECT().
+		GetByEventIDs(gomock.Any(), []int64{1, 2}).
+		Return(invites, nil)
+
+	mockRSVPRepo.EXPECT().
+		GetByInviteIDs(gomock.Any(), []int64{1}).
+		Return(rsvps, nil)
+
+	service := NewDashboardService(mockEventRepo, mockInviteRepo, mockRSVPRepo)
 
 	user := &models.User{ID: 1, Role: models.RoleEventManager}
 	ctx := auth.WithUser(context.Background(), user)
@@ -193,11 +202,14 @@ func TestDashboardService_GetRecentActivity_Success(t *testing.T) {
 }
 
 func TestDashboardService_GetRecentActivity_NoUser(t *testing.T) {
-	eventRepo := &mockDashboardEventRepo{}
-	inviteRepo := &mockDashboardInviteRepo{}
-	rsvpRepo := &mockDashboardRSVPRepo{}
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
 
-	service := NewDashboardService(eventRepo, inviteRepo, rsvpRepo)
+	mockEventRepo := repositories.NewMockEventRepository(ctrl)
+	mockInviteRepo := repositories.NewMockInviteRepository(ctrl)
+	mockRSVPRepo := repositories.NewMockRSVPRepository(ctrl)
+
+	service := NewDashboardService(mockEventRepo, mockInviteRepo, mockRSVPRepo)
 
 	ctx := context.Background()
 
@@ -213,11 +225,19 @@ func TestDashboardService_GetRecentActivity_NoUser(t *testing.T) {
 }
 
 func TestDashboardService_GetRecentActivity_EmptyResult(t *testing.T) {
-	eventRepo := &mockDashboardEventRepo{events: []*models.Event{}}
-	inviteRepo := &mockDashboardInviteRepo{invites: []*models.Invite{}}
-	rsvpRepo := &mockDashboardRSVPRepo{rsvps: []*models.RSVP{}}
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
 
-	service := NewDashboardService(eventRepo, inviteRepo, rsvpRepo)
+	mockEventRepo := repositories.NewMockEventRepository(ctrl)
+	mockInviteRepo := repositories.NewMockInviteRepository(ctrl)
+	mockRSVPRepo := repositories.NewMockRSVPRepository(ctrl)
+
+	// Set expectation
+	mockEventRepo.EXPECT().
+		GetByCreatorID(gomock.Any(), int64(1)).
+		Return([]*models.Event{}, nil)
+
+	service := NewDashboardService(mockEventRepo, mockInviteRepo, mockRSVPRepo)
 
 	user := &models.User{ID: 1, Role: models.RoleEventManager}
 	ctx := auth.WithUser(context.Background(), user)

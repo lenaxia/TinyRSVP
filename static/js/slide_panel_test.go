@@ -84,9 +84,9 @@ func TestSlidePanelButtonSelectorLogic(t *testing.T) {
 	if strings.Contains(jsContent, "querySelector(`.${baseClass}-close`)") ||
 		strings.Contains(jsContent, "querySelector(`.${baseClass}-cancel`)") ||
 		strings.Contains(jsContent, "querySelector(`.${baseClass}-save`)") {
-		
-		if !strings.Contains(jsContent, "replace('-panel', '')") && 
-		   !strings.Contains(jsContent, "replace(/-panel$/, '')") {
+
+		if !strings.Contains(jsContent, "replace('-panel', '')") &&
+			!strings.Contains(jsContent, "replace(/-panel$/, '')") {
 			t.Error("Button selectors use baseClass but don't remove '-panel' suffix. For '.rsvp-settings-panel', buttons should be '.rsvp-settings-close' not '.rsvp-settings-panel-close'")
 		}
 	}

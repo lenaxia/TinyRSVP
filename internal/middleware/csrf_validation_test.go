@@ -11,7 +11,7 @@ import (
 func TestCSRF_ValidationLogic(t *testing.T) {
 	t.Run("exact reproduction of user's scenario", func(t *testing.T) {
 		userToken := "94sNayaLR2RyTkeWcUSXHH6T9hwxtUmJZAjD-6UGLYQ="
-		
+
 		cookie := &http.Cookie{
 			Name:  CSRFCookieName,
 			Value: userToken,
@@ -53,7 +53,7 @@ func TestCSRF_ValidationLogic(t *testing.T) {
 
 	t.Run("test getSubmittedToken with form data", func(t *testing.T) {
 		token := "test-token-abc123"
-		
+
 		formData := url.Values{}
 		formData.Set("csrf_token", token)
 		formData.Set("other_field", "value")

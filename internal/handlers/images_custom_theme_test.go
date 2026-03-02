@@ -40,7 +40,7 @@ func (m *mockImageEventServiceWithUpdate) UpdateEvent(ctx context.Context, event
 
 func TestImageHandlers_UploadImage_UpdatesEventCustomThemeImageURL(t *testing.T) {
 	var updatedEvent *models.Event
-	
+
 	imageService := &mockImageService{
 		UploadImageFunc: func(ctx context.Context, eventID int64, filename string, data io.Reader) (*assets.ImageMetadata, error) {
 			return &assets.ImageMetadata{
@@ -54,7 +54,7 @@ func TestImageHandlers_UploadImage_UpdatesEventCustomThemeImageURL(t *testing.T)
 			}, nil
 		},
 	}
-	
+
 	eventService := &mockImageEventServiceWithUpdate{
 		GetEventFunc: func(ctx context.Context, id int64) (*models.Event, error) {
 			return &models.Event{
@@ -68,7 +68,7 @@ func TestImageHandlers_UploadImage_UpdatesEventCustomThemeImageURL(t *testing.T)
 			return nil
 		},
 	}
-	
+
 	authz := &mockImageAuthz{
 		CanEditEventFunc: func(ctx context.Context, user *models.User, event *models.Event) bool {
 			return true
@@ -118,7 +118,7 @@ func TestImageHandlers_UploadImage_UpdatesEventCustomThemeImageURL(t *testing.T)
 func TestImageHandlers_UploadImage_DeletesOldImage(t *testing.T) {
 	var deletedPath string
 	oldImageURL := "http://localhost:8080/assets/images/123/old_image.jpg"
-	
+
 	imageService := &mockImageService{
 		UploadImageFunc: func(ctx context.Context, eventID int64, filename string, data io.Reader) (*assets.ImageMetadata, error) {
 			return &assets.ImageMetadata{
@@ -136,7 +136,7 @@ func TestImageHandlers_UploadImage_DeletesOldImage(t *testing.T) {
 			return nil
 		},
 	}
-	
+
 	eventService := &mockImageEventServiceWithUpdate{
 		GetEventFunc: func(ctx context.Context, id int64) (*models.Event, error) {
 			return &models.Event{
@@ -150,7 +150,7 @@ func TestImageHandlers_UploadImage_DeletesOldImage(t *testing.T) {
 			return nil
 		},
 	}
-	
+
 	authz := &mockImageAuthz{
 		CanEditEventFunc: func(ctx context.Context, user *models.User, event *models.Event) bool {
 			return true
@@ -191,7 +191,7 @@ func TestImageHandlers_UploadImage_DeletesOldImage(t *testing.T) {
 
 func TestImageHandlers_UploadImage_NoOldImageToDelete(t *testing.T) {
 	deleteImageCalled := false
-	
+
 	imageService := &mockImageService{
 		UploadImageFunc: func(ctx context.Context, eventID int64, filename string, data io.Reader) (*assets.ImageMetadata, error) {
 			return &assets.ImageMetadata{
@@ -209,7 +209,7 @@ func TestImageHandlers_UploadImage_NoOldImageToDelete(t *testing.T) {
 			return nil
 		},
 	}
-	
+
 	eventService := &mockImageEventServiceWithUpdate{
 		GetEventFunc: func(ctx context.Context, id int64) (*models.Event, error) {
 			return &models.Event{
@@ -223,7 +223,7 @@ func TestImageHandlers_UploadImage_NoOldImageToDelete(t *testing.T) {
 			return nil
 		},
 	}
-	
+
 	authz := &mockImageAuthz{
 		CanEditEventFunc: func(ctx context.Context, user *models.User, event *models.Event) bool {
 			return true
@@ -275,7 +275,7 @@ func TestImageHandlers_UploadImage_UpdateEventFails(t *testing.T) {
 			}, nil
 		},
 	}
-	
+
 	eventService := &mockImageEventServiceWithUpdate{
 		GetEventFunc: func(ctx context.Context, id int64) (*models.Event, error) {
 			return &models.Event{
@@ -288,7 +288,7 @@ func TestImageHandlers_UploadImage_UpdateEventFails(t *testing.T) {
 			return &models.ValidationError{Field: "event", Message: "update failed"}
 		},
 	}
-	
+
 	authz := &mockImageAuthz{
 		CanEditEventFunc: func(ctx context.Context, user *models.User, event *models.Event) bool {
 			return true
@@ -323,7 +323,7 @@ func TestImageHandlers_UploadImage_UpdateEventFails(t *testing.T) {
 
 	var response map[string]interface{}
 	json.NewDecoder(w.Body).Decode(&response)
-	
+
 	if response["error"] == nil {
 		t.Error("Expected error in response")
 	}
