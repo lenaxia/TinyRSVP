@@ -1,0 +1,142 @@
+name: Renovate PR Analysis
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+  workflow_dispatch:
+    inputs:
+      pr_number:
+        description: 'PR number to analyze (leave empty for all open Renovate PRs)'
+        required: false
+        type: string
+
+env:
+  OWNER: lenaxia
+  REPO: tinyrsvp
+
+jobs:
+  analyze-prs:
+    # Only run for Renovate PRs or manual triggers
+    if: |
+      github.event_name != 'pull_request' ||
+      github.event.pull_request.user.login == 'renovate[bot]'
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: write
+      pull-requests: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        with:
+          persist-credentials: false
+
+      # Skip analysis if the PR was already analyzed and hasn't been updated since
+      - name: Check if already analyzed
+        id: pre-check
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TRIGGERING_PR: ${{ github.event.pull_request.number || inputs.pr_number || '' }}
+          EVENT_NAME: ${{ github.event_name }}
+        run: |
+          # Only skip-check for single-PR pull_request events (not manual all-PR runs)
+          if [ "$EVENT_NAME" != "pull_request" ] || [ -z "$TRIGGERING_PR" ]; then
+            echo "skip=false" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+
+          echo "Checking if PR #$TRIGGERING_PR was already analyzed..."
+          PR_DATA=$(gh pr view "$TRIGGERING_PR" --json updatedAt)
+          PR_UPDATED=$(echo "$PR_DATA" | jq -r '.updatedAt')
+          echo "PR last updated: $PR_UPDATED"
+
+          EXISTING_COMMENTS=$(gh pr view "$TRIGGERING_PR" --json comments \
+            --jq '.comments[] | select(.author.login == "github-actions" and (.body | startswith("## Renovate PR Analysis")))')
+
+          if [ -z "$EXISTING_COMMENTS" ]; then
+            echo "No existing analysis found. Proceeding."
+            echo "skip=false" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+
+          echo "Found existing analysis comment(s)"
+          COMMENT_DATE=$(echo "$EXISTING_COMMENTS" | jq -r '.createdAt' | tail -1)
+          echo "Most recent analysis: $COMMENT_DATE"
+
+          PR_UPDATED_TS=$(date -d "$PR_UPDATED" +%s 2>/dev/null || echo "0")
+          COMMENT_DATE_TS=$(date -d "$COMMENT_DATE" +%s 2>/dev/null || echo "0")
+          COMMENT_BUFFER_TS=$((COMMENT_DATE_TS + 60))
+
+          if [ "$PR_UPDATED_TS" -le "$COMMENT_BUFFER_TS" ]; then
+            echo "PR #$TRIGGERING_PR already analyzed and not updated since. Skipping."
+            echo "skip=true" >> $GITHUB_OUTPUT
+          else
+            echo "PR #$TRIGGERING_PR updated after last analysis. Re-analyzing."
+            echo "skip=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Analyze with OpenCode
+        if: steps.pre-check.outputs.skip != 'true'
+        uses: anomalyco/opencode/github@0cf0294787322664c6d668fa5ab0a9ce26796f78 # github-v1.2.9
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          OPENAI_API_BASE: ${{ secrets.OPENAI_API_BASE }}
+          OPENAI_MODEL: ${{ vars.OPENAI_MODEL }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          model: openai-compatible/default
+          use_github_token: "true"
+          share: "false"
+          prompt: |
+            You are an AI assistant that analyzes Renovatebot pull requests for TinyRSVP, a self-hosted RSVP and event invitation platform built in Go (Chi router, SQLite/PostgreSQL, OIDC + Forward Auth, Docker-first deployment).
+
+            Target PR (empty = find and analyze all open Renovate PRs): ${{ inputs.pr_number }}
+
+            Task: Analyze Renovate PR(s) and post a detailed report as a PR comment. Do NOT merge any PRs.
+
+            For each PR to analyze:
+
+            1. Parse the PR title: identify the dependency, version range (old → new), update type (patch/minor/major/digest).
+
+            2. Identify the upstream repository:
+               - Go modules: pkg.go.dev or the module's GitHub repo
+               - GitHub Actions: the action's repository
+               - Check the PR body for links
+
+            3. Fetch release notes from upstream for the new version(s). For minor/major, fetch all versions between old and new.
+
+            4. Analyze impact on this codebase:
+               - Go modules: check import usage in internal/, pkg/, cmd/
+               - GitHub Actions: check .github/workflows/ usage
+               - Breaking changes? Deprecated APIs we use? New required params?
+
+            5. Post a comment on the PR using this exact structure:
+               ## Renovate PR Analysis
+               ### Update Summary
+               - Dependency: [name]
+               - Version: [old] → [new]
+               - Type: [patch/minor/major/digest]
+               ### Release Changes
+               [new features, bug fixes, security fixes]
+               ### Breaking Changes
+               [list, or "None affecting our usage"]
+               ### Code Changes Required
+               [specific changes needed, or "None"]
+               ### Security Impact
+               [security fixes and whether they affect our threat surface]
+               ### Recommendation
+               [Safe to merge / Needs manual review / Requires code changes] — [reason]
+
+            6. Act on the recommendation:
+               - Safe to merge: merge with squash method (github_merge_pull_request)
+               - Requires code changes: create branch config/renovate-pr-{number}-changes, make changes, open a PR, comment on the Renovate PR with the link
+               - Needs manual review: post comment only, do NOT merge
+
+            Special exclusions (always "Needs manual review", never auto-merge):
+            - github.com/coreos/go-oidc — OIDC authentication library; changes affect login and token validation
+            - golang.org/x/oauth2 — OAuth2 token flow; changes affect auth code exchange and refresh
+            - github.com/mattn/go-sqlite3 — core database driver (CGO); major/minor updates require testing
+            - github.com/golang-migrate/migrate — database migration engine; version changes risk schema integrity
+            - Any LLM/AI SDK — affects prompt handling and response parsing
+
+            Skip PRs with "abandoned" in the title.
