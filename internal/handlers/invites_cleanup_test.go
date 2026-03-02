@@ -1,106 +1,24 @@
 package handlers
 
 import (
-	"context"
 	"encoding/json"
 	"errors"
 	"net/http"
 	"net/http/httptest"
 	"testing"
-	"time"
 
-	"github.com/lenaxia/tinyrsvp/internal/db/repositories"
-	"github.com/lenaxia/tinyrsvp/internal/invites"
-	"github.com/lenaxia/tinyrsvp/internal/models"
+	mocksvcs "github.com/lenaxia/tinyrsvp/internal/testutil/mocks/services"
+	"go.uber.org/mock/gomock"
 )
 
-type mockInviteServiceWithCleanup struct {
-	cleanupExpiredTokensFunc func(ctx context.Context) (int64, error)
-}
-
-func (m *mockInviteServiceWithCleanup) CreateInvite(ctx context.Context, eventID int64, name *string, email *string, maxPlusOnes int, expiresAt time.Time) (*models.Invite, string, error) {
-	return nil, "", nil
-}
-
-func (m *mockInviteServiceWithCleanup) CreateManualInvite(ctx context.Context, req *invites.CreateManualInviteRequest, expiresAt time.Time) (*invites.CreateManualInviteResponse, error) {
-	return nil, nil
-}
-
-func (m *mockInviteServiceWithCleanup) GetInviteByToken(ctx context.Context, token string) (*models.Invite, error) {
-	return nil, nil
-}
-
-func (m *mockInviteServiceWithCleanup) GetInviteByID(ctx context.Context, id int64) (*models.Invite, error) {
-	return nil, nil
-}
-
-func (m *mockInviteServiceWithCleanup) RevokeInvite(ctx context.Context, req *invites.RevokeInviteRequest) error {
-	return nil
-}
-
-func (m *mockInviteServiceWithCleanup) RegenerateToken(ctx context.Context, inviteID int64) (*invites.RegenerateTokenResponse, error) {
-	return nil, nil
-}
-
-func (m *mockInviteServiceWithCleanup) ListInvitesByEventID(ctx context.Context, eventID int64, filters repositories.InviteFilters) ([]*models.Invite, error) {
-	return nil, nil
-}
-
-func (m *mockInviteServiceWithCleanup) ImportCSV(ctx context.Context, eventID int64, csvData []byte, defaultMaxPlusOnes int, expiresAt time.Time) (*invites.ImportResult, error) {
-	return nil, nil
-}
-
-func (m *mockInviteServiceWithCleanup) CleanupExpiredTokens(ctx context.Context) (int64, error) {
-	if m.cleanupExpiredTokensFunc != nil {
-		return m.cleanupExpiredTokensFunc(ctx)
-	}
-	return 0, nil
-}
-
-func (m *mockInviteServiceWithCleanup) MarkInviteSent(ctx context.Context, inviteID int64) error {
-	return nil
-}
-
-func (m *mockInviteServiceWithCleanup) MarkInviteViewed(ctx context.Context, inviteID int64) error {
-	return nil
-}
-
-func (m *mockInviteServiceWithCleanup) MarkInviteResponded(ctx context.Context, inviteID int64) error {
-	return nil
-}
-
-func (m *mockInviteServiceWithCleanup) UnsubscribeFromReminders(ctx context.Context, token string) error {
-	return nil
-}
-
-func (m *mockInviteServiceWithCleanup) ListInvites(ctx context.Context, req *invites.ListInvitesRequest) (*invites.ListInvitesResponse, error) {
-	return &invites.ListInvitesResponse{
-		Invites: []*models.Invite{},
-		Total:   0,
-		Stats:   &repositories.InviteStats{},
-	}, nil
-}
-
-func (m *mockInviteServiceWithCleanup) UpdateInvite(ctx context.Context, req *invites.UpdateInviteRequest) error {
-	return nil
-}
-
-func (m *mockInviteServiceWithCleanup) DeleteInvite(ctx context.Context, inviteID int64) error {
-	return nil
-}
-
-func (m *mockInviteServiceWithCleanup) SendInvite(ctx context.Context, req *invites.SendInviteRequest, emailRepo repositories.EmailQueueRepository) error {
-	return nil
-}
-
 func TestCleanupExpiredTokensHandler_Success(t *testing.T) {
-	mockService := &mockInviteServiceWithCleanup{
-		cleanupExpiredTokensFunc: func(ctx context.Context) (int64, error) {
-			return 5, nil
-		},
-	}
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
 
-	handler := NewCleanupHandler(mockService)
+	mockSvc := mocksvcs.NewMockInviteService(ctrl)
+	mockSvc.EXPECT().CleanupExpiredTokens(gomock.Any()).Return(int64(5), nil)
+
+	handler := NewCleanupHandler(mockSvc)
 
 	req := httptest.NewRequest(http.MethodPost, "/api/invites/cleanup", nil)
 	w := httptest.NewRecorder()
@@ -126,13 +44,13 @@ func TestCleanupExpiredTokensHandler_Success(t *testing.T) {
 }
 
 func TestCleanupExpiredTokensHandler_NoExpiredTokens(t *testing.T) {
-	mockService := &mockInviteServiceWithCleanup{
-		cleanupExpiredTokensFunc: func(ctx context.Context) (int64, error) {
-			return 0, nil
-		},
-	}
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
 
-	handler := NewCleanupHandler(mockService)
+	mockSvc := mocksvcs.NewMockInviteService(ctrl)
+	mockSvc.EXPECT().CleanupExpiredTokens(gomock.Any()).Return(int64(0), nil)
+
+	handler := NewCleanupHandler(mockSvc)
 
 	req := httptest.NewRequest(http.MethodPost, "/api/invites/cleanup", nil)
 	w := httptest.NewRecorder()
@@ -154,13 +72,13 @@ func TestCleanupExpiredTokensHandler_NoExpiredTokens(t *testing.T) {
 }
 
 func TestCleanupExpiredTokensHandler_ServiceError(t *testing.T) {
-	mockService := &mockInviteServiceWithCleanup{
-		cleanupExpiredTokensFunc: func(ctx context.Context) (int64, error) {
-			return 0, errors.New("database error")
-		},
-	}
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
 
-	handler := NewCleanupHandler(mockService)
+	mockSvc := mocksvcs.NewMockInviteService(ctrl)
+	mockSvc.EXPECT().CleanupExpiredTokens(gomock.Any()).Return(int64(0), errors.New("database error"))
+
+	handler := NewCleanupHandler(mockSvc)
 
 	req := httptest.NewRequest(http.MethodPost, "/api/invites/cleanup", nil)
 	w := httptest.NewRecorder()
@@ -182,8 +100,11 @@ func TestCleanupExpiredTokensHandler_ServiceError(t *testing.T) {
 }
 
 func TestCleanupExpiredTokensHandler_InvalidMethod(t *testing.T) {
-	mockService := &mockInviteServiceWithCleanup{}
-	handler := NewCleanupHandler(mockService)
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockSvc := mocksvcs.NewMockInviteService(ctrl)
+	handler := NewCleanupHandler(mockSvc)
 
 	tests := []struct {
 		name   string
