@@ -1,9 +1,6 @@
 package handlers
 
 import (
-	"context"
-	"errors"
-	"html/template"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -13,169 +10,15 @@ import (
 	"github.com/lenaxia/tinyrsvp/internal/auth"
 	"github.com/lenaxia/tinyrsvp/internal/db/repositories"
 	"github.com/lenaxia/tinyrsvp/internal/models"
+	mockrepos "github.com/lenaxia/tinyrsvp/internal/testutil/mocks/repositories"
+	"go.uber.org/mock/gomock"
+	"html/template"
 )
 
-type mockRSVPSummaryEventRepository struct {
-	event *models.Event
-	err   error
-}
-
-func (m *mockRSVPSummaryEventRepository) GetByID(ctx context.Context, id int64) (*models.Event, error) {
-	if m.err != nil {
-		return nil, m.err
-	}
-	return m.event, nil
-}
-
-func (m *mockRSVPSummaryEventRepository) Create(ctx context.Context, event *models.Event) error {
-	return nil
-}
-
-func (m *mockRSVPSummaryEventRepository) Update(ctx context.Context, event *models.Event) error {
-	return nil
-}
-
-func (m *mockRSVPSummaryEventRepository) Delete(ctx context.Context, id int64) error {
-	return nil
-}
-
-func (m *mockRSVPSummaryEventRepository) List(ctx context.Context, filters repositories.ListFilters) ([]*models.Event, error) {
-	return nil, nil
-}
-
-func (m *mockRSVPSummaryEventRepository) UpdateWithVersion(ctx context.Context, event *models.Event, expectedVersion int) error {
-	return nil
-}
-
-func (m *mockRSVPSummaryEventRepository) UpdateStatus(ctx context.Context, id int64, status models.EventStatus) error {
-	return nil
-}
-
-func (m *mockRSVPSummaryEventRepository) GetByStatus(ctx context.Context, status models.EventStatus) ([]*models.Event, error) {
-	return nil, nil
-}
-
-func (m *mockRSVPSummaryEventRepository) GetEventsToArchive(ctx context.Context, daysAfterEvent int) ([]*models.Event, error) {
-	return nil, nil
-}
-
-func (m *mockRSVPSummaryEventRepository) GetByCreatorID(ctx context.Context, creatorID int64) ([]*models.Event, error) {
-	return nil, nil
-}
-
-func (m *mockRSVPSummaryEventRepository) GetByPublicID(ctx context.Context, publicID string) (*models.Event, error) {
-	return nil, nil
-}
-
-func (m *mockRSVPSummaryEventRepository) GetByFriendlyName(ctx context.Context, friendlyName string) (*models.Event, error) {
-	return nil, nil
-}
-
-type mockRSVPSummaryRSVPRepository struct {
-	stats *repositories.RSVPStats
-	rsvps []*models.RSVP
-	err   error
-}
-
-func (m *mockRSVPSummaryRSVPRepository) Create(ctx context.Context, rsvp *models.RSVP) error {
-	return nil
-}
-
-func (m *mockRSVPSummaryRSVPRepository) GetByID(ctx context.Context, id int64) (*models.RSVP, error) {
-	return nil, nil
-}
-
-func (m *mockRSVPSummaryRSVPRepository) GetByInviteID(ctx context.Context, inviteID int64) (*models.RSVP, error) {
-	return nil, nil
-}
-
-func (m *mockRSVPSummaryRSVPRepository) GetByEventID(ctx context.Context, eventID int64) ([]*models.RSVP, error) {
-	if m.err != nil {
-		return nil, m.err
-	}
-	return m.rsvps, nil
-}
-
-func (m *mockRSVPSummaryRSVPRepository) Update(ctx context.Context, rsvp *models.RSVP) error {
-	return nil
-}
-
-func (m *mockRSVPSummaryRSVPRepository) GetStats(ctx context.Context, eventID int64) (*repositories.RSVPStats, error) {
-	if m.err != nil {
-		return nil, m.err
-	}
-	return m.stats, nil
-}
-
-func (m *mockRSVPSummaryRSVPRepository) GetByInviteIDs(ctx context.Context, inviteIDs []int64) ([]*models.RSVP, error) {
-	return []*models.RSVP{}, nil
-}
-
-type mockRSVPSummaryQuestionRepository struct {
-	questions []*models.PreferenceQuestion
-	err       error
-}
-
-func (m *mockRSVPSummaryQuestionRepository) Create(ctx context.Context, question *models.PreferenceQuestion) error {
-	return nil
-}
-
-func (m *mockRSVPSummaryQuestionRepository) GetByID(ctx context.Context, id int64) (*models.PreferenceQuestion, error) {
-	return nil, nil
-}
-
-func (m *mockRSVPSummaryQuestionRepository) GetByEventID(ctx context.Context, eventID int64) ([]*models.PreferenceQuestion, error) {
-	if m.err != nil {
-		return nil, m.err
-	}
-	return m.questions, nil
-}
-
-func (m *mockRSVPSummaryQuestionRepository) Update(ctx context.Context, question *models.PreferenceQuestion) error {
-	return nil
-}
-
-func (m *mockRSVPSummaryQuestionRepository) Delete(ctx context.Context, id int64) error {
-	return nil
-}
-
-func (m *mockRSVPSummaryQuestionRepository) List(ctx context.Context, eventID int64) ([]*models.PreferenceQuestion, error) {
-	return m.questions, m.err
-}
-
-func (m *mockRSVPSummaryQuestionRepository) Reorder(ctx context.Context, eventID int64, questionIDs []int64) error {
-	return nil
-}
-
-type mockRSVPSummaryAnswerRepository struct {
-	answers []*models.RSVPAnswer
-	err     error
-}
-
-func (m *mockRSVPSummaryAnswerRepository) Create(ctx context.Context, answer *models.RSVPAnswer) error {
-	return nil
-}
-
-func (m *mockRSVPSummaryAnswerRepository) GetByRSVPID(ctx context.Context, rsvpID int64) ([]*models.RSVPAnswer, error) {
-	if m.err != nil {
-		return nil, m.err
-	}
-	return m.answers, nil
-}
-
-func (m *mockRSVPSummaryAnswerRepository) Update(ctx context.Context, answer *models.RSVPAnswer) error {
-	return nil
-}
-
-func (m *mockRSVPSummaryAnswerRepository) DeleteByRSVPID(ctx context.Context, rsvpID int64) error {
-	return nil
-}
-
-func (m *mockRSVPSummaryAnswerRepository) GetByQuestionID(ctx context.Context, questionID int64) ([]*models.RSVPAnswer, error) {
-	return nil, nil
-}
-
 func TestRSVPSummaryHandler_GetRSVPSummary_Success(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
 	startTime := time.Now().Add(24 * time.Hour)
 	event := &models.Event{
 		ID:        1,
@@ -195,10 +38,17 @@ func TestRSVPSummaryHandler_GetRSVPSummary_Success(t *testing.T) {
 		TotalGuests:  75,
 	}
 
-	mockEventRepo := &mockRSVPSummaryEventRepository{event: event}
-	mockRSVPRepo := &mockRSVPSummaryRSVPRepository{stats: stats}
-	mockQuestionRepo := &mockRSVPSummaryQuestionRepository{}
-	mockAnswerRepo := &mockRSVPSummaryAnswerRepository{}
+	mockEventRepo := mockrepos.NewMockEventRepository(ctrl)
+	mockEventRepo.EXPECT().GetByID(gomock.Any(), gomock.Any()).Return(event, nil)
+
+	mockRSVPRepo := mockrepos.NewMockRSVPRepository(ctrl)
+	mockRSVPRepo.EXPECT().GetStats(gomock.Any(), gomock.Any()).Return(stats, nil)
+	mockRSVPRepo.EXPECT().GetByEventID(gomock.Any(), gomock.Any()).Return([]*models.RSVP{}, nil).AnyTimes()
+
+	mockQuestionRepo := mockrepos.NewMockQuestionRepository(ctrl)
+	mockQuestionRepo.EXPECT().GetByEventID(gomock.Any(), gomock.Any()).Return([]*models.PreferenceQuestion{}, nil).AnyTimes()
+
+	mockAnswerRepo := mockrepos.NewMockAnswerRepository(ctrl)
 
 	handler := NewRSVPSummaryHandler(mockEventRepo, mockRSVPRepo, mockQuestionRepo, mockAnswerRepo)
 
@@ -219,10 +69,13 @@ func TestRSVPSummaryHandler_GetRSVPSummary_Success(t *testing.T) {
 }
 
 func TestRSVPSummaryHandler_GetRSVPSummary_Unauthorized(t *testing.T) {
-	mockEventRepo := &mockRSVPSummaryEventRepository{}
-	mockRSVPRepo := &mockRSVPSummaryRSVPRepository{}
-	mockQuestionRepo := &mockRSVPSummaryQuestionRepository{}
-	mockAnswerRepo := &mockRSVPSummaryAnswerRepository{}
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockEventRepo := mockrepos.NewMockEventRepository(ctrl)
+	mockRSVPRepo := mockrepos.NewMockRSVPRepository(ctrl)
+	mockQuestionRepo := mockrepos.NewMockQuestionRepository(ctrl)
+	mockAnswerRepo := mockrepos.NewMockAnswerRepository(ctrl)
 
 	handler := NewRSVPSummaryHandler(mockEventRepo, mockRSVPRepo, mockQuestionRepo, mockAnswerRepo)
 
@@ -239,10 +92,13 @@ func TestRSVPSummaryHandler_GetRSVPSummary_Unauthorized(t *testing.T) {
 }
 
 func TestRSVPSummaryHandler_GetRSVPSummary_InvalidEventID(t *testing.T) {
-	mockEventRepo := &mockRSVPSummaryEventRepository{}
-	mockRSVPRepo := &mockRSVPSummaryRSVPRepository{}
-	mockQuestionRepo := &mockRSVPSummaryQuestionRepository{}
-	mockAnswerRepo := &mockRSVPSummaryAnswerRepository{}
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockEventRepo := mockrepos.NewMockEventRepository(ctrl)
+	mockRSVPRepo := mockrepos.NewMockRSVPRepository(ctrl)
+	mockQuestionRepo := mockrepos.NewMockQuestionRepository(ctrl)
+	mockAnswerRepo := mockrepos.NewMockAnswerRepository(ctrl)
 
 	handler := NewRSVPSummaryHandler(mockEventRepo, mockRSVPRepo, mockQuestionRepo, mockAnswerRepo)
 
@@ -263,12 +119,15 @@ func TestRSVPSummaryHandler_GetRSVPSummary_InvalidEventID(t *testing.T) {
 }
 
 func TestRSVPSummaryHandler_GetRSVPSummary_EventNotFound(t *testing.T) {
-	mockEventRepo := &mockRSVPSummaryEventRepository{
-		err: &models.NotFoundError{Resource: "event", ID: 1},
-	}
-	mockRSVPRepo := &mockRSVPSummaryRSVPRepository{}
-	mockQuestionRepo := &mockRSVPSummaryQuestionRepository{}
-	mockAnswerRepo := &mockRSVPSummaryAnswerRepository{}
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockEventRepo := mockrepos.NewMockEventRepository(ctrl)
+	mockEventRepo.EXPECT().GetByID(gomock.Any(), gomock.Any()).Return(nil, &models.NotFoundError{Resource: "event", ID: 1})
+
+	mockRSVPRepo := mockrepos.NewMockRSVPRepository(ctrl)
+	mockQuestionRepo := mockrepos.NewMockQuestionRepository(ctrl)
+	mockAnswerRepo := mockrepos.NewMockAnswerRepository(ctrl)
 
 	handler := NewRSVPSummaryHandler(mockEventRepo, mockRSVPRepo, mockQuestionRepo, mockAnswerRepo)
 
@@ -289,6 +148,9 @@ func TestRSVPSummaryHandler_GetRSVPSummary_EventNotFound(t *testing.T) {
 }
 
 func TestRSVPSummaryHandler_GetRSVPSummary_PermissionDenied(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
 	startTime := time.Now().Add(24 * time.Hour)
 	event := &models.Event{
 		ID:        1,
@@ -299,10 +161,12 @@ func TestRSVPSummaryHandler_GetRSVPSummary_PermissionDenied(t *testing.T) {
 		CreatedBy: 2,
 	}
 
-	mockEventRepo := &mockRSVPSummaryEventRepository{event: event}
-	mockRSVPRepo := &mockRSVPSummaryRSVPRepository{}
-	mockQuestionRepo := &mockRSVPSummaryQuestionRepository{}
-	mockAnswerRepo := &mockRSVPSummaryAnswerRepository{}
+	mockEventRepo := mockrepos.NewMockEventRepository(ctrl)
+	mockEventRepo.EXPECT().GetByID(gomock.Any(), gomock.Any()).Return(event, nil)
+
+	mockRSVPRepo := mockrepos.NewMockRSVPRepository(ctrl)
+	mockQuestionRepo := mockrepos.NewMockQuestionRepository(ctrl)
+	mockAnswerRepo := mockrepos.NewMockAnswerRepository(ctrl)
 
 	handler := NewRSVPSummaryHandler(mockEventRepo, mockRSVPRepo, mockQuestionRepo, mockAnswerRepo)
 
@@ -323,6 +187,9 @@ func TestRSVPSummaryHandler_GetRSVPSummary_PermissionDenied(t *testing.T) {
 }
 
 func TestRSVPSummaryHandler_GetRSVPSummary_AdminCanAccessAnyEvent(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
 	startTime := time.Now().Add(24 * time.Hour)
 	event := &models.Event{
 		ID:        1,
@@ -342,10 +209,17 @@ func TestRSVPSummaryHandler_GetRSVPSummary_AdminCanAccessAnyEvent(t *testing.T) 
 		TotalGuests:  40,
 	}
 
-	mockEventRepo := &mockRSVPSummaryEventRepository{event: event}
-	mockRSVPRepo := &mockRSVPSummaryRSVPRepository{stats: stats}
-	mockQuestionRepo := &mockRSVPSummaryQuestionRepository{}
-	mockAnswerRepo := &mockRSVPSummaryAnswerRepository{}
+	mockEventRepo := mockrepos.NewMockEventRepository(ctrl)
+	mockEventRepo.EXPECT().GetByID(gomock.Any(), gomock.Any()).Return(event, nil)
+
+	mockRSVPRepo := mockrepos.NewMockRSVPRepository(ctrl)
+	mockRSVPRepo.EXPECT().GetStats(gomock.Any(), gomock.Any()).Return(stats, nil)
+	mockRSVPRepo.EXPECT().GetByEventID(gomock.Any(), gomock.Any()).Return([]*models.RSVP{}, nil).AnyTimes()
+
+	mockQuestionRepo := mockrepos.NewMockQuestionRepository(ctrl)
+	mockQuestionRepo.EXPECT().GetByEventID(gomock.Any(), gomock.Any()).Return([]*models.PreferenceQuestion{}, nil).AnyTimes()
+
+	mockAnswerRepo := mockrepos.NewMockAnswerRepository(ctrl)
 
 	handler := NewRSVPSummaryHandler(mockEventRepo, mockRSVPRepo, mockQuestionRepo, mockAnswerRepo)
 
@@ -366,6 +240,9 @@ func TestRSVPSummaryHandler_GetRSVPSummary_AdminCanAccessAnyEvent(t *testing.T) 
 }
 
 func TestRSVPSummaryHandler_GetRSVPSummary_WithQuestions(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
 	startTime := time.Now().Add(24 * time.Hour)
 	event := &models.Event{
 		ID:        1,
@@ -409,10 +286,18 @@ func TestRSVPSummaryHandler_GetRSVPSummary_WithQuestions(t *testing.T) {
 		{ID: 2, RSVPID: 2, QuestionID: 1, AnswerText: &vegan},
 	}
 
-	mockEventRepo := &mockRSVPSummaryEventRepository{event: event}
-	mockRSVPRepo := &mockRSVPSummaryRSVPRepository{stats: stats, rsvps: rsvps}
-	mockQuestionRepo := &mockRSVPSummaryQuestionRepository{questions: questions}
-	mockAnswerRepo := &mockRSVPSummaryAnswerRepository{answers: answers}
+	mockEventRepo := mockrepos.NewMockEventRepository(ctrl)
+	mockEventRepo.EXPECT().GetByID(gomock.Any(), gomock.Any()).Return(event, nil)
+
+	mockRSVPRepo := mockrepos.NewMockRSVPRepository(ctrl)
+	mockRSVPRepo.EXPECT().GetStats(gomock.Any(), gomock.Any()).Return(stats, nil)
+	mockRSVPRepo.EXPECT().GetByEventID(gomock.Any(), gomock.Any()).Return(rsvps, nil)
+
+	mockQuestionRepo := mockrepos.NewMockQuestionRepository(ctrl)
+	mockQuestionRepo.EXPECT().GetByEventID(gomock.Any(), gomock.Any()).Return(questions, nil)
+
+	mockAnswerRepo := mockrepos.NewMockAnswerRepository(ctrl)
+	mockAnswerRepo.EXPECT().GetByRSVPID(gomock.Any(), gomock.Any()).Return(answers, nil).AnyTimes()
 
 	handler := NewRSVPSummaryHandler(mockEventRepo, mockRSVPRepo, mockQuestionRepo, mockAnswerRepo)
 
@@ -433,6 +318,9 @@ func TestRSVPSummaryHandler_GetRSVPSummary_WithQuestions(t *testing.T) {
 }
 
 func TestRSVPSummaryHandler_GetRSVPSummary_StatsError(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
 	startTime := time.Now().Add(24 * time.Hour)
 	event := &models.Event{
 		ID:        1,
@@ -443,10 +331,14 @@ func TestRSVPSummaryHandler_GetRSVPSummary_StatsError(t *testing.T) {
 		CreatedBy: 1,
 	}
 
-	mockEventRepo := &mockRSVPSummaryEventRepository{event: event}
-	mockRSVPRepo := &mockRSVPSummaryRSVPRepository{err: errors.New("database error")}
-	mockQuestionRepo := &mockRSVPSummaryQuestionRepository{}
-	mockAnswerRepo := &mockRSVPSummaryAnswerRepository{}
+	mockEventRepo := mockrepos.NewMockEventRepository(ctrl)
+	mockEventRepo.EXPECT().GetByID(gomock.Any(), gomock.Any()).Return(event, nil)
+
+	mockRSVPRepo := mockrepos.NewMockRSVPRepository(ctrl)
+	mockRSVPRepo.EXPECT().GetStats(gomock.Any(), gomock.Any()).Return(nil, &models.NotFoundError{Resource: "stats"})
+
+	mockQuestionRepo := mockrepos.NewMockQuestionRepository(ctrl)
+	mockAnswerRepo := mockrepos.NewMockAnswerRepository(ctrl)
 
 	handler := NewRSVPSummaryHandler(mockEventRepo, mockRSVPRepo, mockQuestionRepo, mockAnswerRepo)
 
@@ -467,10 +359,13 @@ func TestRSVPSummaryHandler_GetRSVPSummary_StatsError(t *testing.T) {
 }
 
 func TestRSVPSummaryHandler_SetTemplates(t *testing.T) {
-	mockEventRepo := &mockRSVPSummaryEventRepository{}
-	mockRSVPRepo := &mockRSVPSummaryRSVPRepository{}
-	mockQuestionRepo := &mockRSVPSummaryQuestionRepository{}
-	mockAnswerRepo := &mockRSVPSummaryAnswerRepository{}
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockEventRepo := mockrepos.NewMockEventRepository(ctrl)
+	mockRSVPRepo := mockrepos.NewMockRSVPRepository(ctrl)
+	mockQuestionRepo := mockrepos.NewMockQuestionRepository(ctrl)
+	mockAnswerRepo := mockrepos.NewMockAnswerRepository(ctrl)
 
 	handler := NewRSVPSummaryHandler(mockEventRepo, mockRSVPRepo, mockQuestionRepo, mockAnswerRepo)
 
@@ -480,22 +375,4 @@ func TestRSVPSummaryHandler_SetTemplates(t *testing.T) {
 	if handler.templates == nil {
 		t.Error("Expected templates to be set")
 	}
-}
-
-
-
-func (m *mockRSVPSummaryEventRepository) CountEvents(ctx context.Context) (int, error) {
-	return 0, nil
-}
-
-func (m *mockRSVPSummaryEventRepository) GetComponentOverrides(ctx context.Context, eventID int64) (*models.ComponentOverrides, error) {
-	return nil, nil
-}
-
-func (m *mockRSVPSummaryEventRepository) UpdateComponentOverrides(ctx context.Context, eventID int64, overrides *models.ComponentOverrides) error {
-	return nil
-}
-
-func (m *mockRSVPSummaryEventRepository) DeleteComponentOverrides(ctx context.Context, eventID int64) error {
-	return nil
 }

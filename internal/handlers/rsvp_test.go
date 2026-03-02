@@ -11,208 +11,56 @@ import (
 	"time"
 
 	"github.com/go-chi/chi/v5"
-	"github.com/lenaxia/tinyrsvp/internal/db/repositories"
 	"github.com/lenaxia/tinyrsvp/internal/models"
 	"github.com/lenaxia/tinyrsvp/internal/rsvp"
+	mockrepos "github.com/lenaxia/tinyrsvp/internal/testutil/mocks/repositories"
+	mocksvcs "github.com/lenaxia/tinyrsvp/internal/testutil/mocks/services"
+	"go.uber.org/mock/gomock"
 )
 
-type mockRSVPInviteService struct {
-	getInviteByTokenFunc     func(ctx context.Context, token string) (*models.Invite, error)
-	markViewedFunc           func(ctx context.Context, inviteID int64) error
-	unsubscribeFunc          func(ctx context.Context, token string) error
-}
-
-func (m *mockRSVPInviteService) GetInviteByToken(ctx context.Context, token string) (*models.Invite, error) {
-	if m.getInviteByTokenFunc != nil {
-		return m.getInviteByTokenFunc(ctx, token)
-	}
-	return nil, errors.New("not implemented")
-}
-
-func (m *mockRSVPInviteService) MarkInviteViewed(ctx context.Context, inviteID int64) error {
-	if m.markViewedFunc != nil {
-		return m.markViewedFunc(ctx, inviteID)
-	}
-	return nil
-}
-
-func (m *mockRSVPInviteService) UnsubscribeFromReminders(ctx context.Context, token string) error {
-	if m.unsubscribeFunc != nil {
-		return m.unsubscribeFunc(ctx, token)
-	}
-	return nil
-}
-
-type mockRSVPEventRepository struct {
-	getByIDFunc func(ctx context.Context, id int64) (*models.Event, error)
-}
-
-func (m *mockRSVPEventRepository) Create(ctx context.Context, event *models.Event) error {
-	return nil
-}
-
-func (m *mockRSVPEventRepository) GetByID(ctx context.Context, id int64) (*models.Event, error) {
-	if m.getByIDFunc != nil {
-		return m.getByIDFunc(ctx, id)
-	}
-	return nil, errors.New("not implemented")
-}
-
-func (m *mockRSVPEventRepository) Update(ctx context.Context, event *models.Event) error {
-	return nil
-}
-
-func (m *mockRSVPEventRepository) UpdateWithVersion(ctx context.Context, event *models.Event, expectedVersion int) error {
-	return nil
-}
-
-func (m *mockRSVPEventRepository) UpdateStatus(ctx context.Context, id int64, status models.EventStatus) error {
-	return nil
-}
-
-func (m *mockRSVPEventRepository) Delete(ctx context.Context, id int64) error {
-	return nil
-}
-
-func (m *mockRSVPEventRepository) List(ctx context.Context, filters repositories.ListFilters) ([]*models.Event, error) {
-	return nil, nil
-}
-
-func (m *mockRSVPEventRepository) GetByStatus(ctx context.Context, status models.EventStatus) ([]*models.Event, error) {
-	return nil, nil
-}
-
-func (m *mockRSVPEventRepository) GetEventsToArchive(ctx context.Context, daysAfterEvent int) ([]*models.Event, error) {
-	return nil, nil
-}
-
-func (m *mockRSVPEventRepository) GetByCreatorID(ctx context.Context, creatorID int64) ([]*models.Event, error) {
-	return nil, nil
-}
-
-type mockRSVPRSVPRepository struct {
-	getByInviteIDFunc func(ctx context.Context, inviteID int64) (*models.RSVP, error)
-}
-
-func (m *mockRSVPRSVPRepository) Create(ctx context.Context, rsvp *models.RSVP) error {
-	return nil
-}
-
-func (m *mockRSVPRSVPRepository) GetByID(ctx context.Context, id int64) (*models.RSVP, error) {
-	return nil, nil
-}
-
-func (m *mockRSVPRSVPRepository) GetByInviteID(ctx context.Context, inviteID int64) (*models.RSVP, error) {
-	if m.getByInviteIDFunc != nil {
-		return m.getByInviteIDFunc(ctx, inviteID)
-	}
-	return nil, &models.NotFoundError{Resource: "rsvp"}
-}
-
-func (m *mockRSVPRSVPRepository) GetByEventID(ctx context.Context, eventID int64) ([]*models.RSVP, error) {
-	return nil, nil
-}
-
-func (m *mockRSVPRSVPRepository) Update(ctx context.Context, rsvp *models.RSVP) error {
-	return nil
-}
-
-func (m *mockRSVPRSVPRepository) GetStats(ctx context.Context, eventID int64) (*repositories.RSVPStats, error) {
-	return nil, nil
-}
-
-func (m *mockRSVPRSVPRepository) GetByInviteIDs(ctx context.Context, inviteIDs []int64) ([]*models.RSVP, error) {
-	return []*models.RSVP{}, nil
-}
-
-type mockRSVPQuestionRepository struct {
-	getByEventIDFunc func(ctx context.Context, eventID int64) ([]*models.PreferenceQuestion, error)
-}
-
-func (m *mockRSVPQuestionRepository) Create(ctx context.Context, question *models.PreferenceQuestion) error {
-	return nil
-}
-
-func (m *mockRSVPQuestionRepository) GetByID(ctx context.Context, id int64) (*models.PreferenceQuestion, error) {
-	return nil, nil
-}
-
-func (m *mockRSVPQuestionRepository) GetByEventID(ctx context.Context, eventID int64) ([]*models.PreferenceQuestion, error) {
-	if m.getByEventIDFunc != nil {
-		return m.getByEventIDFunc(ctx, eventID)
-	}
-	return []*models.PreferenceQuestion{}, nil
-}
-
-func (m *mockRSVPQuestionRepository) Update(ctx context.Context, question *models.PreferenceQuestion) error {
-	return nil
-}
-
-func (m *mockRSVPQuestionRepository) Delete(ctx context.Context, id int64) error {
-	return nil
-}
-
-func (m *mockRSVPQuestionRepository) UpdateDisplayOrder(ctx context.Context, eventID int64, questionIDs []int64) error {
-	return nil
-}
-
-func (m *mockRSVPQuestionRepository) Reorder(ctx context.Context, eventID int64, questionIDs []int64) error {
-	return nil
-}
-
 func TestRSVPHandler_GetRSVPPage_ValidToken(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
 	startTime := time.Now().Add(24 * time.Hour)
 	endTime := startTime.Add(2 * time.Hour)
 	rsvpDeadline := startTime.Add(-24 * time.Hour)
 
-	mockInviteSvc := &mockRSVPInviteService{
-		getInviteByTokenFunc: func(ctx context.Context, token string) (*models.Invite, error) {
-			email := "test@example.com"
-			name := "Test User"
-			return &models.Invite{
-				ID:          1,
-				EventID:     1,
-				Email:       &email,
-				Name:        &name,
-				MaxPlusOnes: 2,
-				Status:      models.InviteStatusSent,
-				ExpiresAt:   time.Now().Add(30 * 24 * time.Hour),
-			}, nil
-		},
-		markViewedFunc: func(ctx context.Context, inviteID int64) error {
-			return nil
-		},
-	}
+	email := "test@example.com"
+	name := "Test User"
+	desc := "Test event description"
+	loc := "Test Location"
 
-	mockEventRepo := &mockRSVPEventRepository{
-		getByIDFunc: func(ctx context.Context, id int64) (*models.Event, error) {
-			desc := "Test event description"
-			loc := "Test Location"
-			return &models.Event{
-				ID:           1,
-				Title:        "Test Event",
-				Description:  &desc,
-				StartTime:    startTime,
-				EndTime:      &endTime,
-				Timezone:     "America/Los_Angeles",
-				Location:     &loc,
-				Status:       models.EventStatusPublished,
-				RSVPDeadline: &rsvpDeadline,
-			}, nil
-		},
-	}
+	mockInviteSvc := mocksvcs.NewMockInviteService(ctrl)
+	mockInviteSvc.EXPECT().GetInviteByToken(gomock.Any(), gomock.Any()).Return(&models.Invite{
+		ID:          1,
+		EventID:     1,
+		Email:       &email,
+		Name:        &name,
+		MaxPlusOnes: 2,
+		Status:      models.InviteStatusSent,
+		ExpiresAt:   time.Now().Add(30 * 24 * time.Hour),
+	}, nil)
+	mockInviteSvc.EXPECT().MarkInviteViewed(gomock.Any(), gomock.Any()).Return(nil)
 
-	mockRSVPRepo := &mockRSVPRSVPRepository{
-		getByInviteIDFunc: func(ctx context.Context, inviteID int64) (*models.RSVP, error) {
-			return nil, &models.NotFoundError{Resource: "rsvp"}
-		},
-	}
+	mockEventRepo := mockrepos.NewMockEventRepository(ctrl)
+	mockEventRepo.EXPECT().GetByID(gomock.Any(), gomock.Any()).Return(&models.Event{
+		ID:           1,
+		Title:        "Test Event",
+		Description:  &desc,
+		StartTime:    startTime,
+		EndTime:      &endTime,
+		Timezone:     "America/Los_Angeles",
+		Location:     &loc,
+		Status:       models.EventStatusPublished,
+		RSVPDeadline: &rsvpDeadline,
+	}, nil)
 
-	mockQuestionRepo := &mockRSVPQuestionRepository{
-		getByEventIDFunc: func(ctx context.Context, eventID int64) ([]*models.PreferenceQuestion, error) {
-			return []*models.PreferenceQuestion{}, nil
-		},
-	}
+	mockRSVPRepo := mockrepos.NewMockRSVPRepository(ctrl)
+	mockRSVPRepo.EXPECT().GetByInviteID(gomock.Any(), gomock.Any()).Return(nil, &models.NotFoundError{Resource: "rsvp"})
+
+	mockQuestionRepo := mockrepos.NewMockQuestionRepository(ctrl)
+	mockQuestionRepo.EXPECT().GetByEventID(gomock.Any(), gomock.Any()).Return([]*models.PreferenceQuestion{}, nil)
 
 	handler := NewRSVPHandler(mockInviteSvc, mockEventRepo, mockRSVPRepo, mockQuestionRepo)
 
@@ -239,15 +87,15 @@ func TestRSVPHandler_GetRSVPPage_ValidToken(t *testing.T) {
 }
 
 func TestRSVPHandler_GetRSVPPage_InvalidToken(t *testing.T) {
-	mockInviteSvc := &mockRSVPInviteService{
-		getInviteByTokenFunc: func(ctx context.Context, token string) (*models.Invite, error) {
-			return nil, errors.New("invite not found")
-		},
-	}
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
 
-	mockEventRepo := &mockRSVPEventRepository{}
-	mockRSVPRepo := &mockRSVPRSVPRepository{}
-	mockQuestionRepo := &mockRSVPQuestionRepository{}
+	mockInviteSvc := mocksvcs.NewMockInviteService(ctrl)
+	mockInviteSvc.EXPECT().GetInviteByToken(gomock.Any(), gomock.Any()).Return(nil, &models.NotFoundError{Resource: "invite"})
+
+	mockEventRepo := mockrepos.NewMockEventRepository(ctrl)
+	mockRSVPRepo := mockrepos.NewMockRSVPRepository(ctrl)
+	mockQuestionRepo := mockrepos.NewMockQuestionRepository(ctrl)
 
 	handler := NewRSVPHandler(mockInviteSvc, mockEventRepo, mockRSVPRepo, mockQuestionRepo)
 
@@ -265,15 +113,15 @@ func TestRSVPHandler_GetRSVPPage_InvalidToken(t *testing.T) {
 }
 
 func TestRSVPHandler_GetRSVPPage_ExpiredToken(t *testing.T) {
-	mockInviteSvc := &mockRSVPInviteService{
-		getInviteByTokenFunc: func(ctx context.Context, token string) (*models.Invite, error) {
-			return nil, errors.New("invite has expired")
-		},
-	}
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
 
-	mockEventRepo := &mockRSVPEventRepository{}
-	mockRSVPRepo := &mockRSVPRSVPRepository{}
-	mockQuestionRepo := &mockRSVPQuestionRepository{}
+	mockInviteSvc := mocksvcs.NewMockInviteService(ctrl)
+	mockInviteSvc.EXPECT().GetInviteByToken(gomock.Any(), gomock.Any()).Return(nil, errors.New("invite has expired"))
+
+	mockEventRepo := mockrepos.NewMockEventRepository(ctrl)
+	mockRSVPRepo := mockrepos.NewMockRSVPRepository(ctrl)
+	mockQuestionRepo := mockrepos.NewMockQuestionRepository(ctrl)
 
 	handler := NewRSVPHandler(mockInviteSvc, mockEventRepo, mockRSVPRepo, mockQuestionRepo)
 
@@ -291,15 +139,15 @@ func TestRSVPHandler_GetRSVPPage_ExpiredToken(t *testing.T) {
 }
 
 func TestRSVPHandler_GetRSVPPage_RevokedInvite(t *testing.T) {
-	mockInviteSvc := &mockRSVPInviteService{
-		getInviteByTokenFunc: func(ctx context.Context, token string) (*models.Invite, error) {
-			return nil, errors.New("invite has been revoked")
-		},
-	}
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
 
-	mockEventRepo := &mockRSVPEventRepository{}
-	mockRSVPRepo := &mockRSVPRSVPRepository{}
-	mockQuestionRepo := &mockRSVPQuestionRepository{}
+	mockInviteSvc := mocksvcs.NewMockInviteService(ctrl)
+	mockInviteSvc.EXPECT().GetInviteByToken(gomock.Any(), gomock.Any()).Return(nil, errors.New("invite has been revoked"))
+
+	mockEventRepo := mockrepos.NewMockEventRepository(ctrl)
+	mockRSVPRepo := mockrepos.NewMockRSVPRepository(ctrl)
+	mockQuestionRepo := mockrepos.NewMockQuestionRepository(ctrl)
 
 	handler := NewRSVPHandler(mockInviteSvc, mockEventRepo, mockRSVPRepo, mockQuestionRepo)
 
@@ -317,31 +165,29 @@ func TestRSVPHandler_GetRSVPPage_RevokedInvite(t *testing.T) {
 }
 
 func TestRSVPHandler_GetRSVPPage_CancelledEvent(t *testing.T) {
-	mockInviteSvc := &mockRSVPInviteService{
-		getInviteByTokenFunc: func(ctx context.Context, token string) (*models.Invite, error) {
-			email := "test@example.com"
-			return &models.Invite{
-				ID:        1,
-				EventID:   1,
-				Email:     &email,
-				Status:    models.InviteStatusSent,
-				ExpiresAt: time.Now().Add(30 * 24 * time.Hour),
-			}, nil
-		},
-	}
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
 
-	mockEventRepo := &mockRSVPEventRepository{
-		getByIDFunc: func(ctx context.Context, id int64) (*models.Event, error) {
-			return &models.Event{
-				ID:     1,
-				Title:  "Cancelled Event",
-				Status: models.EventStatusCancelled,
-			}, nil
-		},
-	}
+	email := "test@example.com"
 
-	mockRSVPRepo := &mockRSVPRSVPRepository{}
-	mockQuestionRepo := &mockRSVPQuestionRepository{}
+	mockInviteSvc := mocksvcs.NewMockInviteService(ctrl)
+	mockInviteSvc.EXPECT().GetInviteByToken(gomock.Any(), gomock.Any()).Return(&models.Invite{
+		ID:        1,
+		EventID:   1,
+		Email:     &email,
+		Status:    models.InviteStatusSent,
+		ExpiresAt: time.Now().Add(30 * 24 * time.Hour),
+	}, nil)
+
+	mockEventRepo := mockrepos.NewMockEventRepository(ctrl)
+	mockEventRepo.EXPECT().GetByID(gomock.Any(), gomock.Any()).Return(&models.Event{
+		ID:     1,
+		Title:  "Cancelled Event",
+		Status: models.EventStatusCancelled,
+	}, nil)
+
+	mockRSVPRepo := mockrepos.NewMockRSVPRepository(ctrl)
+	mockQuestionRepo := mockrepos.NewMockQuestionRepository(ctrl)
 
 	handler := NewRSVPHandler(mockInviteSvc, mockEventRepo, mockRSVPRepo, mockQuestionRepo)
 
@@ -359,31 +205,29 @@ func TestRSVPHandler_GetRSVPPage_CancelledEvent(t *testing.T) {
 }
 
 func TestRSVPHandler_GetRSVPPage_ArchivedEvent(t *testing.T) {
-	mockInviteSvc := &mockRSVPInviteService{
-		getInviteByTokenFunc: func(ctx context.Context, token string) (*models.Invite, error) {
-			email := "test@example.com"
-			return &models.Invite{
-				ID:        1,
-				EventID:   1,
-				Email:     &email,
-				Status:    models.InviteStatusSent,
-				ExpiresAt: time.Now().Add(30 * 24 * time.Hour),
-			}, nil
-		},
-	}
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
 
-	mockEventRepo := &mockRSVPEventRepository{
-		getByIDFunc: func(ctx context.Context, id int64) (*models.Event, error) {
-			return &models.Event{
-				ID:     1,
-				Title:  "Archived Event",
-				Status: models.EventStatusArchived,
-			}, nil
-		},
-	}
+	email := "test@example.com"
 
-	mockRSVPRepo := &mockRSVPRSVPRepository{}
-	mockQuestionRepo := &mockRSVPQuestionRepository{}
+	mockInviteSvc := mocksvcs.NewMockInviteService(ctrl)
+	mockInviteSvc.EXPECT().GetInviteByToken(gomock.Any(), gomock.Any()).Return(&models.Invite{
+		ID:        1,
+		EventID:   1,
+		Email:     &email,
+		Status:    models.InviteStatusSent,
+		ExpiresAt: time.Now().Add(30 * 24 * time.Hour),
+	}, nil)
+
+	mockEventRepo := mockrepos.NewMockEventRepository(ctrl)
+	mockEventRepo.EXPECT().GetByID(gomock.Any(), gomock.Any()).Return(&models.Event{
+		ID:     1,
+		Title:  "Archived Event",
+		Status: models.EventStatusArchived,
+	}, nil)
+
+	mockRSVPRepo := mockrepos.NewMockRSVPRepository(ctrl)
+	mockQuestionRepo := mockrepos.NewMockQuestionRepository(ctrl)
 
 	handler := NewRSVPHandler(mockInviteSvc, mockEventRepo, mockRSVPRepo, mockQuestionRepo)
 
@@ -401,52 +245,41 @@ func TestRSVPHandler_GetRSVPPage_ArchivedEvent(t *testing.T) {
 }
 
 func TestRSVPHandler_GetRSVPPage_WithExistingRSVP(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
 	startTime := time.Now().Add(24 * time.Hour)
+	email := "test@example.com"
 
-	mockInviteSvc := &mockRSVPInviteService{
-		getInviteByTokenFunc: func(ctx context.Context, token string) (*models.Invite, error) {
-			email := "test@example.com"
-			return &models.Invite{
-				ID:        1,
-				EventID:   1,
-				Email:     &email,
-				Status:    models.InviteStatusResponded,
-				ExpiresAt: time.Now().Add(30 * 24 * time.Hour),
-			}, nil
-		},
-		markViewedFunc: func(ctx context.Context, inviteID int64) error {
-			return nil
-		},
-	}
+	mockInviteSvc := mocksvcs.NewMockInviteService(ctrl)
+	mockInviteSvc.EXPECT().GetInviteByToken(gomock.Any(), gomock.Any()).Return(&models.Invite{
+		ID:        1,
+		EventID:   1,
+		Email:     &email,
+		Status:    models.InviteStatusResponded,
+		ExpiresAt: time.Now().Add(30 * 24 * time.Hour),
+	}, nil)
+	mockInviteSvc.EXPECT().MarkInviteViewed(gomock.Any(), gomock.Any()).Return(nil)
 
-	mockEventRepo := &mockRSVPEventRepository{
-		getByIDFunc: func(ctx context.Context, id int64) (*models.Event, error) {
-			return &models.Event{
-				ID:        1,
-				Title:     "Test Event",
-				StartTime: startTime,
-				Timezone:  "America/Los_Angeles",
-				Status:    models.EventStatusPublished,
-			}, nil
-		},
-	}
+	mockEventRepo := mockrepos.NewMockEventRepository(ctrl)
+	mockEventRepo.EXPECT().GetByID(gomock.Any(), gomock.Any()).Return(&models.Event{
+		ID:        1,
+		Title:     "Test Event",
+		StartTime: startTime,
+		Timezone:  "America/Los_Angeles",
+		Status:    models.EventStatusPublished,
+	}, nil)
 
-	mockRSVPRepo := &mockRSVPRSVPRepository{
-		getByInviteIDFunc: func(ctx context.Context, inviteID int64) (*models.RSVP, error) {
-			return &models.RSVP{
-				ID:       1,
-				InviteID: 1,
-				Response: models.RSVPResponseYes,
-				PlusOnes: 2,
-			}, nil
-		},
-	}
+	mockRSVPRepo := mockrepos.NewMockRSVPRepository(ctrl)
+	mockRSVPRepo.EXPECT().GetByInviteID(gomock.Any(), gomock.Any()).Return(&models.RSVP{
+		ID:       1,
+		InviteID: 1,
+		Response: models.RSVPResponseYes,
+		PlusOnes: 2,
+	}, nil)
 
-	mockQuestionRepo := &mockRSVPQuestionRepository{
-		getByEventIDFunc: func(ctx context.Context, eventID int64) ([]*models.PreferenceQuestion, error) {
-			return []*models.PreferenceQuestion{}, nil
-		},
-	}
+	mockQuestionRepo := mockrepos.NewMockQuestionRepository(ctrl)
+	mockQuestionRepo.EXPECT().GetByEventID(gomock.Any(), gomock.Any()).Return([]*models.PreferenceQuestion{}, nil)
 
 	handler := NewRSVPHandler(mockInviteSvc, mockEventRepo, mockRSVPRepo, mockQuestionRepo)
 
@@ -464,27 +297,25 @@ func TestRSVPHandler_GetRSVPPage_WithExistingRSVP(t *testing.T) {
 }
 
 func TestRSVPHandler_GetRSVPPage_EventNotFound(t *testing.T) {
-	mockInviteSvc := &mockRSVPInviteService{
-		getInviteByTokenFunc: func(ctx context.Context, token string) (*models.Invite, error) {
-			email := "test@example.com"
-			return &models.Invite{
-				ID:        1,
-				EventID:   999,
-				Email:     &email,
-				Status:    models.InviteStatusSent,
-				ExpiresAt: time.Now().Add(30 * 24 * time.Hour),
-			}, nil
-		},
-	}
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
 
-	mockEventRepo := &mockRSVPEventRepository{
-		getByIDFunc: func(ctx context.Context, id int64) (*models.Event, error) {
-			return nil, &models.NotFoundError{Resource: "event"}
-		},
-	}
+	email := "test@example.com"
 
-	mockRSVPRepo := &mockRSVPRSVPRepository{}
-	mockQuestionRepo := &mockRSVPQuestionRepository{}
+	mockInviteSvc := mocksvcs.NewMockInviteService(ctrl)
+	mockInviteSvc.EXPECT().GetInviteByToken(gomock.Any(), gomock.Any()).Return(&models.Invite{
+		ID:        1,
+		EventID:   999,
+		Email:     &email,
+		Status:    models.InviteStatusSent,
+		ExpiresAt: time.Now().Add(30 * 24 * time.Hour),
+	}, nil)
+
+	mockEventRepo := mockrepos.NewMockEventRepository(ctrl)
+	mockEventRepo.EXPECT().GetByID(gomock.Any(), gomock.Any()).Return(nil, &models.NotFoundError{Resource: "event"})
+
+	mockRSVPRepo := mockrepos.NewMockRSVPRepository(ctrl)
+	mockQuestionRepo := mockrepos.NewMockQuestionRepository(ctrl)
 
 	handler := NewRSVPHandler(mockInviteSvc, mockEventRepo, mockRSVPRepo, mockQuestionRepo)
 
@@ -501,46 +332,27 @@ func TestRSVPHandler_GetRSVPPage_EventNotFound(t *testing.T) {
 	}
 }
 
-type mockRSVPService struct {
-	submitRSVPFunc func(ctx context.Context, token string, req *rsvp.SubmitRSVPRequest) (*models.RSVP, error)
-	updateRSVPFunc func(ctx context.Context, token string, req *rsvp.SubmitRSVPRequest) (*models.RSVP, error)
-}
-
-func (m *mockRSVPService) SubmitRSVP(ctx context.Context, token string, req *rsvp.SubmitRSVPRequest) (*models.RSVP, error) {
-	if m.submitRSVPFunc != nil {
-		return m.submitRSVPFunc(ctx, token, req)
-	}
-	return nil, errors.New("not implemented")
-}
-
-func (m *mockRSVPService) UpdateRSVP(ctx context.Context, token string, req *rsvp.SubmitRSVPRequest) (*models.RSVP, error) {
-	if m.updateRSVPFunc != nil {
-		return m.updateRSVPFunc(ctx, token, req)
-	}
-	return nil, errors.New("not implemented")
-}
-
 func TestRSVPHandler_SubmitRSVP_Success(t *testing.T) {
-	mockService := &mockRSVPService{
-		submitRSVPFunc: func(ctx context.Context, token string, req *rsvp.SubmitRSVPRequest) (*models.RSVP, error) {
-			return &models.RSVP{
-				ID:        1,
-				InviteID:  1,
-				Response:  models.RSVPResponseYes,
-				PlusOnes:  2,
-				CreatedAt: time.Now(),
-				UpdatedAt: time.Now(),
-			}, nil
-		},
-	}
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockService := mocksvcs.NewMockRSVPService(ctrl)
+	mockService.EXPECT().SubmitRSVP(gomock.Any(), gomock.Any(), gomock.Any()).Return(&models.RSVP{
+		ID:        1,
+		InviteID:  1,
+		Response:  models.RSVPResponseYes,
+		PlusOnes:  2,
+		CreatedAt: time.Now(),
+		UpdatedAt: time.Now(),
+	}, nil)
 
 	handler := &RSVPHandler{rsvpService: mockService}
 
 	body := `{"response":"yes","plus_ones":2,"answers":[]}`
 	req := httptest.NewRequest("POST", "/api/rsvp/validtoken", strings.NewReader(body))
 	req.Header.Set("Content-Type", "application/json")
-			req.Header.Set("Accept", "application/json")
-	
+	req.Header.Set("Accept", "application/json")
+
 	rctx := chi.NewRouteContext()
 	rctx.URLParams.Add("token", "validtoken")
 	req = req.WithContext(context.WithValue(req.Context(), chi.RouteCtxKey, rctx))
@@ -559,14 +371,17 @@ func TestRSVPHandler_SubmitRSVP_Success(t *testing.T) {
 }
 
 func TestRSVPHandler_SubmitRSVP_InvalidJSON(t *testing.T) {
-	mockService := &mockRSVPService{}
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockService := mocksvcs.NewMockRSVPService(ctrl)
 	handler := &RSVPHandler{rsvpService: mockService}
 
 	body := `{invalid json`
 	req := httptest.NewRequest("POST", "/api/rsvp/validtoken", strings.NewReader(body))
 	req.Header.Set("Content-Type", "application/json")
-			req.Header.Set("Accept", "application/json")
-	
+	req.Header.Set("Accept", "application/json")
+
 	rctx := chi.NewRouteContext()
 	rctx.URLParams.Add("token", "validtoken")
 	req = req.WithContext(context.WithValue(req.Context(), chi.RouteCtxKey, rctx))
@@ -581,22 +396,22 @@ func TestRSVPHandler_SubmitRSVP_InvalidJSON(t *testing.T) {
 }
 
 func TestRSVPHandler_SubmitRSVP_ValidationError(t *testing.T) {
-	mockService := &mockRSVPService{
-		submitRSVPFunc: func(ctx context.Context, token string, req *rsvp.SubmitRSVPRequest) (*models.RSVP, error) {
-			return nil, &models.ValidationError{
-				Field:   "plus_ones",
-				Message: "you can bring up to 2 guest(s)",
-			}
-		},
-	}
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockService := mocksvcs.NewMockRSVPService(ctrl)
+	mockService.EXPECT().SubmitRSVP(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil, &models.ValidationError{
+		Field:   "plus_ones",
+		Message: "you can bring up to 2 guest(s)",
+	})
 
 	handler := &RSVPHandler{rsvpService: mockService}
 
 	body := `{"response":"yes","plus_ones":5,"answers":[]}`
 	req := httptest.NewRequest("POST", "/api/rsvp/validtoken", strings.NewReader(body))
 	req.Header.Set("Content-Type", "application/json")
-			req.Header.Set("Accept", "application/json")
-	
+	req.Header.Set("Accept", "application/json")
+
 	rctx := chi.NewRouteContext()
 	rctx.URLParams.Add("token", "validtoken")
 	req = req.WithContext(context.WithValue(req.Context(), chi.RouteCtxKey, rctx))
@@ -611,22 +426,22 @@ func TestRSVPHandler_SubmitRSVP_ValidationError(t *testing.T) {
 }
 
 func TestRSVPHandler_SubmitRSVP_DeadlinePassed(t *testing.T) {
-	mockService := &mockRSVPService{
-		submitRSVPFunc: func(ctx context.Context, token string, req *rsvp.SubmitRSVPRequest) (*models.RSVP, error) {
-			return nil, &models.DeadlinePassedError{
-				Deadline: time.Now().Add(-1 * time.Hour),
-				Message:  "RSVP deadline has passed",
-			}
-		},
-	}
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockService := mocksvcs.NewMockRSVPService(ctrl)
+	mockService.EXPECT().SubmitRSVP(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil, &models.DeadlinePassedError{
+		Deadline: time.Now().Add(-1 * time.Hour),
+		Message:  "RSVP deadline has passed",
+	})
 
 	handler := &RSVPHandler{rsvpService: mockService}
 
 	body := `{"response":"yes","plus_ones":0,"answers":[]}`
 	req := httptest.NewRequest("POST", "/api/rsvp/validtoken", strings.NewReader(body))
 	req.Header.Set("Content-Type", "application/json")
-			req.Header.Set("Accept", "application/json")
-	
+	req.Header.Set("Accept", "application/json")
+
 	rctx := chi.NewRouteContext()
 	rctx.URLParams.Add("token", "validtoken")
 	req = req.WithContext(context.WithValue(req.Context(), chi.RouteCtxKey, rctx))
@@ -641,19 +456,19 @@ func TestRSVPHandler_SubmitRSVP_DeadlinePassed(t *testing.T) {
 }
 
 func TestRSVPHandler_SubmitRSVP_DuplicateRSVP(t *testing.T) {
-	mockService := &mockRSVPService{
-		submitRSVPFunc: func(ctx context.Context, token string, req *rsvp.SubmitRSVPRequest) (*models.RSVP, error) {
-			return nil, rsvp.ErrDuplicateRSVP
-		},
-	}
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockService := mocksvcs.NewMockRSVPService(ctrl)
+	mockService.EXPECT().SubmitRSVP(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil, rsvp.ErrDuplicateRSVP)
 
 	handler := &RSVPHandler{rsvpService: mockService}
 
 	body := `{"response":"yes","plus_ones":0,"answers":[]}`
 	req := httptest.NewRequest("POST", "/api/rsvp/validtoken", strings.NewReader(body))
 	req.Header.Set("Content-Type", "application/json")
-			req.Header.Set("Accept", "application/json")
-	
+	req.Header.Set("Accept", "application/json")
+
 	rctx := chi.NewRouteContext()
 	rctx.URLParams.Add("token", "validtoken")
 	req = req.WithContext(context.WithValue(req.Context(), chi.RouteCtxKey, rctx))
@@ -668,19 +483,19 @@ func TestRSVPHandler_SubmitRSVP_DuplicateRSVP(t *testing.T) {
 }
 
 func TestRSVPHandler_SubmitRSVP_InternalError(t *testing.T) {
-	mockService := &mockRSVPService{
-		submitRSVPFunc: func(ctx context.Context, token string, req *rsvp.SubmitRSVPRequest) (*models.RSVP, error) {
-			return nil, errors.New("database connection failed")
-		},
-	}
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockService := mocksvcs.NewMockRSVPService(ctrl)
+	mockService.EXPECT().SubmitRSVP(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil, errors.New("database connection failed"))
 
 	handler := &RSVPHandler{rsvpService: mockService}
 
 	body := `{"response":"yes","plus_ones":0,"answers":[]}`
 	req := httptest.NewRequest("POST", "/api/rsvp/validtoken", strings.NewReader(body))
 	req.Header.Set("Content-Type", "application/json")
-			req.Header.Set("Accept", "application/json")
-	
+	req.Header.Set("Accept", "application/json")
+
 	rctx := chi.NewRouteContext()
 	rctx.URLParams.Add("token", "validtoken")
 	req = req.WithContext(context.WithValue(req.Context(), chi.RouteCtxKey, rctx))
@@ -695,8 +510,12 @@ func TestRSVPHandler_SubmitRSVP_InternalError(t *testing.T) {
 }
 
 func TestRSVPHandler_SubmitRSVP_FormDataSuccess(t *testing.T) {
-	mockService := &mockRSVPService{
-		submitRSVPFunc: func(ctx context.Context, token string, req *rsvp.SubmitRSVPRequest) (*models.RSVP, error) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockService := mocksvcs.NewMockRSVPService(ctrl)
+	mockService.EXPECT().SubmitRSVP(gomock.Any(), gomock.Any(), gomock.Any()).DoAndReturn(
+		func(ctx context.Context, token string, req *rsvp.SubmitRSVPRequest) (*models.RSVP, error) {
 			if req.Response != "yes" {
 				t.Errorf("Expected response 'yes', got %s", req.Response)
 			}
@@ -711,8 +530,7 @@ func TestRSVPHandler_SubmitRSVP_FormDataSuccess(t *testing.T) {
 				CreatedAt: time.Now(),
 				UpdatedAt: time.Now(),
 			}, nil
-		},
-	}
+		})
 
 	handler := &RSVPHandler{rsvpService: mockService}
 
@@ -720,7 +538,7 @@ func TestRSVPHandler_SubmitRSVP_FormDataSuccess(t *testing.T) {
 	req := httptest.NewRequest("POST", "/rsvp/validtoken", strings.NewReader(body))
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 	req.Header.Set("Accept", "application/json")
-	
+
 	rctx := chi.NewRouteContext()
 	rctx.URLParams.Add("token", "validtoken")
 	req = req.WithContext(context.WithValue(req.Context(), chi.RouteCtxKey, rctx))
@@ -739,10 +557,13 @@ func TestRSVPHandler_SubmitRSVP_FormDataSuccess(t *testing.T) {
 }
 
 func TestRSVPHandler_GetRSVPPage_EmptyToken(t *testing.T) {
-	mockInviteSvc := &mockRSVPInviteService{}
-	mockEventRepo := &mockRSVPEventRepository{}
-	mockRSVPRepo := &mockRSVPRSVPRepository{}
-	mockQuestionRepo := &mockRSVPQuestionRepository{}
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockInviteSvc := mocksvcs.NewMockInviteService(ctrl)
+	mockEventRepo := mockrepos.NewMockEventRepository(ctrl)
+	mockRSVPRepo := mockrepos.NewMockRSVPRepository(ctrl)
+	mockQuestionRepo := mockrepos.NewMockQuestionRepository(ctrl)
 
 	handler := NewRSVPHandler(mockInviteSvc, mockEventRepo, mockRSVPRepo, mockQuestionRepo)
 
@@ -760,26 +581,26 @@ func TestRSVPHandler_GetRSVPPage_EmptyToken(t *testing.T) {
 }
 
 func TestRSVPHandler_UpdateRSVP_Success(t *testing.T) {
-	mockService := &mockRSVPService{
-		updateRSVPFunc: func(ctx context.Context, token string, req *rsvp.SubmitRSVPRequest) (*models.RSVP, error) {
-			return &models.RSVP{
-				ID:        1,
-				InviteID:  1,
-				Response:  models.RSVPResponseMaybe,
-				PlusOnes:  1,
-				CreatedAt: time.Now(),
-				UpdatedAt: time.Now(),
-			}, nil
-		},
-	}
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockService := mocksvcs.NewMockRSVPService(ctrl)
+	mockService.EXPECT().UpdateRSVP(gomock.Any(), gomock.Any(), gomock.Any()).Return(&models.RSVP{
+		ID:        1,
+		InviteID:  1,
+		Response:  models.RSVPResponseMaybe,
+		PlusOnes:  1,
+		CreatedAt: time.Now(),
+		UpdatedAt: time.Now(),
+	}, nil)
 
 	handler := &RSVPHandler{rsvpService: mockService}
 
 	body := `{"response":"maybe","plus_ones":1,"answers":[]}`
 	req := httptest.NewRequest("PUT", "/api/rsvp/validtoken", strings.NewReader(body))
 	req.Header.Set("Content-Type", "application/json")
-			req.Header.Set("Accept", "application/json")
-	
+	req.Header.Set("Accept", "application/json")
+
 	rctx := chi.NewRouteContext()
 	rctx.URLParams.Add("token", "validtoken")
 	req = req.WithContext(context.WithValue(req.Context(), chi.RouteCtxKey, rctx))
@@ -798,19 +619,19 @@ func TestRSVPHandler_UpdateRSVP_Success(t *testing.T) {
 }
 
 func TestRSVPHandler_UpdateRSVP_NoExistingRSVP(t *testing.T) {
-	mockService := &mockRSVPService{
-		updateRSVPFunc: func(ctx context.Context, token string, req *rsvp.SubmitRSVPRequest) (*models.RSVP, error) {
-			return nil, &models.NotFoundError{Resource: "rsvp"}
-		},
-	}
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockService := mocksvcs.NewMockRSVPService(ctrl)
+	mockService.EXPECT().UpdateRSVP(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil, &models.NotFoundError{Resource: "rsvp"})
 
 	handler := &RSVPHandler{rsvpService: mockService}
 
 	body := `{"response":"yes","plus_ones":0,"answers":[]}`
 	req := httptest.NewRequest("PUT", "/api/rsvp/validtoken", strings.NewReader(body))
 	req.Header.Set("Content-Type", "application/json")
-			req.Header.Set("Accept", "application/json")
-	
+	req.Header.Set("Accept", "application/json")
+
 	rctx := chi.NewRouteContext()
 	rctx.URLParams.Add("token", "validtoken")
 	req = req.WithContext(context.WithValue(req.Context(), chi.RouteCtxKey, rctx))
@@ -825,22 +646,22 @@ func TestRSVPHandler_UpdateRSVP_NoExistingRSVP(t *testing.T) {
 }
 
 func TestRSVPHandler_UpdateRSVP_DeadlinePassed(t *testing.T) {
-	mockService := &mockRSVPService{
-		updateRSVPFunc: func(ctx context.Context, token string, req *rsvp.SubmitRSVPRequest) (*models.RSVP, error) {
-			return nil, &models.DeadlinePassedError{
-				Deadline: time.Now().Add(-1 * time.Hour),
-				Message:  "RSVP deadline has passed",
-			}
-		},
-	}
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockService := mocksvcs.NewMockRSVPService(ctrl)
+	mockService.EXPECT().UpdateRSVP(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil, &models.DeadlinePassedError{
+		Deadline: time.Now().Add(-1 * time.Hour),
+		Message:  "RSVP deadline has passed",
+	})
 
 	handler := &RSVPHandler{rsvpService: mockService}
 
 	body := `{"response":"no","plus_ones":0,"answers":[]}`
 	req := httptest.NewRequest("PUT", "/api/rsvp/validtoken", strings.NewReader(body))
 	req.Header.Set("Content-Type", "application/json")
-			req.Header.Set("Accept", "application/json")
-	
+	req.Header.Set("Accept", "application/json")
+
 	rctx := chi.NewRouteContext()
 	rctx.URLParams.Add("token", "validtoken")
 	req = req.WithContext(context.WithValue(req.Context(), chi.RouteCtxKey, rctx))
@@ -855,22 +676,22 @@ func TestRSVPHandler_UpdateRSVP_DeadlinePassed(t *testing.T) {
 }
 
 func TestRSVPHandler_UpdateRSVP_ValidationError(t *testing.T) {
-	mockService := &mockRSVPService{
-		updateRSVPFunc: func(ctx context.Context, token string, req *rsvp.SubmitRSVPRequest) (*models.RSVP, error) {
-			return nil, &models.ValidationError{
-				Field:   "plus_ones",
-				Message: "you can bring up to 2 guest(s)",
-			}
-		},
-	}
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockService := mocksvcs.NewMockRSVPService(ctrl)
+	mockService.EXPECT().UpdateRSVP(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil, &models.ValidationError{
+		Field:   "plus_ones",
+		Message: "you can bring up to 2 guest(s)",
+	})
 
 	handler := &RSVPHandler{rsvpService: mockService}
 
 	body := `{"response":"yes","plus_ones":5,"answers":[]}`
 	req := httptest.NewRequest("PUT", "/api/rsvp/validtoken", strings.NewReader(body))
 	req.Header.Set("Content-Type", "application/json")
-			req.Header.Set("Accept", "application/json")
-	
+	req.Header.Set("Accept", "application/json")
+
 	rctx := chi.NewRouteContext()
 	rctx.URLParams.Add("token", "validtoken")
 	req = req.WithContext(context.WithValue(req.Context(), chi.RouteCtxKey, rctx))
@@ -885,14 +706,17 @@ func TestRSVPHandler_UpdateRSVP_ValidationError(t *testing.T) {
 }
 
 func TestRSVPHandler_UpdateRSVP_InvalidJSON(t *testing.T) {
-	mockService := &mockRSVPService{}
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockService := mocksvcs.NewMockRSVPService(ctrl)
 	handler := &RSVPHandler{rsvpService: mockService}
 
 	body := `{invalid json`
 	req := httptest.NewRequest("PUT", "/api/rsvp/validtoken", strings.NewReader(body))
 	req.Header.Set("Content-Type", "application/json")
-			req.Header.Set("Accept", "application/json")
-	
+	req.Header.Set("Accept", "application/json")
+
 	rctx := chi.NewRouteContext()
 	rctx.URLParams.Add("token", "validtoken")
 	req = req.WithContext(context.WithValue(req.Context(), chi.RouteCtxKey, rctx))
@@ -907,49 +731,38 @@ func TestRSVPHandler_UpdateRSVP_InvalidJSON(t *testing.T) {
 }
 
 func TestRSVPHandler_GetRSVPPage_DeadlinePassed(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
 	startTime := time.Now().Add(24 * time.Hour)
 	pastDeadline := time.Now().Add(-1 * time.Hour)
+	email := "test@example.com"
 
-	mockInviteSvc := &mockRSVPInviteService{
-		getInviteByTokenFunc: func(ctx context.Context, token string) (*models.Invite, error) {
-			email := "test@example.com"
-			return &models.Invite{
-				ID:        1,
-				EventID:   1,
-				Email:     &email,
-				Status:    models.InviteStatusSent,
-				ExpiresAt: time.Now().Add(30 * 24 * time.Hour),
-			}, nil
-		},
-		markViewedFunc: func(ctx context.Context, inviteID int64) error {
-			return nil
-		},
-	}
+	mockInviteSvc := mocksvcs.NewMockInviteService(ctrl)
+	mockInviteSvc.EXPECT().GetInviteByToken(gomock.Any(), gomock.Any()).Return(&models.Invite{
+		ID:        1,
+		EventID:   1,
+		Email:     &email,
+		Status:    models.InviteStatusSent,
+		ExpiresAt: time.Now().Add(30 * 24 * time.Hour),
+	}, nil)
+	mockInviteSvc.EXPECT().MarkInviteViewed(gomock.Any(), gomock.Any()).Return(nil)
 
-	mockEventRepo := &mockRSVPEventRepository{
-		getByIDFunc: func(ctx context.Context, id int64) (*models.Event, error) {
-			return &models.Event{
-				ID:           1,
-				Title:        "Test Event",
-				StartTime:    startTime,
-				Timezone:     "America/Los_Angeles",
-				Status:       models.EventStatusPublished,
-				RSVPDeadline: &pastDeadline,
-			}, nil
-		},
-	}
+	mockEventRepo := mockrepos.NewMockEventRepository(ctrl)
+	mockEventRepo.EXPECT().GetByID(gomock.Any(), gomock.Any()).Return(&models.Event{
+		ID:           1,
+		Title:        "Test Event",
+		StartTime:    startTime,
+		Timezone:     "America/Los_Angeles",
+		Status:       models.EventStatusPublished,
+		RSVPDeadline: &pastDeadline,
+	}, nil)
 
-	mockRSVPRepo := &mockRSVPRSVPRepository{
-		getByInviteIDFunc: func(ctx context.Context, inviteID int64) (*models.RSVP, error) {
-			return nil, &models.NotFoundError{Resource: "rsvp"}
-		},
-	}
+	mockRSVPRepo := mockrepos.NewMockRSVPRepository(ctrl)
+	mockRSVPRepo.EXPECT().GetByInviteID(gomock.Any(), gomock.Any()).Return(nil, &models.NotFoundError{Resource: "rsvp"})
 
-	mockQuestionRepo := &mockRSVPQuestionRepository{
-		getByEventIDFunc: func(ctx context.Context, eventID int64) ([]*models.PreferenceQuestion, error) {
-			return []*models.PreferenceQuestion{}, nil
-		},
-	}
+	mockQuestionRepo := mockrepos.NewMockQuestionRepository(ctrl)
+	mockQuestionRepo.EXPECT().GetByEventID(gomock.Any(), gomock.Any()).Return([]*models.PreferenceQuestion{}, nil)
 
 	handler := NewRSVPHandler(mockInviteSvc, mockEventRepo, mockRSVPRepo, mockQuestionRepo)
 
@@ -978,49 +791,38 @@ func TestRSVPHandler_GetRSVPPage_DeadlinePassed(t *testing.T) {
 }
 
 func TestRSVPHandler_GetRSVPPage_DeadlineNotPassed(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
 	startTime := time.Now().Add(24 * time.Hour)
 	futureDeadline := time.Now().Add(12 * time.Hour)
+	email := "test@example.com"
 
-	mockInviteSvc := &mockRSVPInviteService{
-		getInviteByTokenFunc: func(ctx context.Context, token string) (*models.Invite, error) {
-			email := "test@example.com"
-			return &models.Invite{
-				ID:        1,
-				EventID:   1,
-				Email:     &email,
-				Status:    models.InviteStatusSent,
-				ExpiresAt: time.Now().Add(30 * 24 * time.Hour),
-			}, nil
-		},
-		markViewedFunc: func(ctx context.Context, inviteID int64) error {
-			return nil
-		},
-	}
+	mockInviteSvc := mocksvcs.NewMockInviteService(ctrl)
+	mockInviteSvc.EXPECT().GetInviteByToken(gomock.Any(), gomock.Any()).Return(&models.Invite{
+		ID:        1,
+		EventID:   1,
+		Email:     &email,
+		Status:    models.InviteStatusSent,
+		ExpiresAt: time.Now().Add(30 * 24 * time.Hour),
+	}, nil)
+	mockInviteSvc.EXPECT().MarkInviteViewed(gomock.Any(), gomock.Any()).Return(nil)
 
-	mockEventRepo := &mockRSVPEventRepository{
-		getByIDFunc: func(ctx context.Context, id int64) (*models.Event, error) {
-			return &models.Event{
-				ID:           1,
-				Title:        "Test Event",
-				StartTime:    startTime,
-				Timezone:     "America/Los_Angeles",
-				Status:       models.EventStatusPublished,
-				RSVPDeadline: &futureDeadline,
-			}, nil
-		},
-	}
+	mockEventRepo := mockrepos.NewMockEventRepository(ctrl)
+	mockEventRepo.EXPECT().GetByID(gomock.Any(), gomock.Any()).Return(&models.Event{
+		ID:           1,
+		Title:        "Test Event",
+		StartTime:    startTime,
+		Timezone:     "America/Los_Angeles",
+		Status:       models.EventStatusPublished,
+		RSVPDeadline: &futureDeadline,
+	}, nil)
 
-	mockRSVPRepo := &mockRSVPRSVPRepository{
-		getByInviteIDFunc: func(ctx context.Context, inviteID int64) (*models.RSVP, error) {
-			return nil, &models.NotFoundError{Resource: "rsvp"}
-		},
-	}
+	mockRSVPRepo := mockrepos.NewMockRSVPRepository(ctrl)
+	mockRSVPRepo.EXPECT().GetByInviteID(gomock.Any(), gomock.Any()).Return(nil, &models.NotFoundError{Resource: "rsvp"})
 
-	mockQuestionRepo := &mockRSVPQuestionRepository{
-		getByEventIDFunc: func(ctx context.Context, eventID int64) ([]*models.PreferenceQuestion, error) {
-			return []*models.PreferenceQuestion{}, nil
-		},
-	}
+	mockQuestionRepo := mockrepos.NewMockQuestionRepository(ctrl)
+	mockQuestionRepo.EXPECT().GetByEventID(gomock.Any(), gomock.Any()).Return([]*models.PreferenceQuestion{}, nil)
 
 	handler := NewRSVPHandler(mockInviteSvc, mockEventRepo, mockRSVPRepo, mockQuestionRepo)
 
@@ -1049,48 +851,37 @@ func TestRSVPHandler_GetRSVPPage_DeadlineNotPassed(t *testing.T) {
 }
 
 func TestRSVPHandler_GetRSVPPage_NoDeadline(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
 	startTime := time.Now().Add(24 * time.Hour)
+	email := "test@example.com"
 
-	mockInviteSvc := &mockRSVPInviteService{
-		getInviteByTokenFunc: func(ctx context.Context, token string) (*models.Invite, error) {
-			email := "test@example.com"
-			return &models.Invite{
-				ID:        1,
-				EventID:   1,
-				Email:     &email,
-				Status:    models.InviteStatusSent,
-				ExpiresAt: time.Now().Add(30 * 24 * time.Hour),
-			}, nil
-		},
-		markViewedFunc: func(ctx context.Context, inviteID int64) error {
-			return nil
-		},
-	}
+	mockInviteSvc := mocksvcs.NewMockInviteService(ctrl)
+	mockInviteSvc.EXPECT().GetInviteByToken(gomock.Any(), gomock.Any()).Return(&models.Invite{
+		ID:        1,
+		EventID:   1,
+		Email:     &email,
+		Status:    models.InviteStatusSent,
+		ExpiresAt: time.Now().Add(30 * 24 * time.Hour),
+	}, nil)
+	mockInviteSvc.EXPECT().MarkInviteViewed(gomock.Any(), gomock.Any()).Return(nil)
 
-	mockEventRepo := &mockRSVPEventRepository{
-		getByIDFunc: func(ctx context.Context, id int64) (*models.Event, error) {
-			return &models.Event{
-				ID:           1,
-				Title:        "Test Event",
-				StartTime:    startTime,
-				Timezone:     "America/Los_Angeles",
-				Status:       models.EventStatusPublished,
-				RSVPDeadline: nil,
-			}, nil
-		},
-	}
+	mockEventRepo := mockrepos.NewMockEventRepository(ctrl)
+	mockEventRepo.EXPECT().GetByID(gomock.Any(), gomock.Any()).Return(&models.Event{
+		ID:           1,
+		Title:        "Test Event",
+		StartTime:    startTime,
+		Timezone:     "America/Los_Angeles",
+		Status:       models.EventStatusPublished,
+		RSVPDeadline: nil,
+	}, nil)
 
-	mockRSVPRepo := &mockRSVPRSVPRepository{
-		getByInviteIDFunc: func(ctx context.Context, inviteID int64) (*models.RSVP, error) {
-			return nil, &models.NotFoundError{Resource: "rsvp"}
-		},
-	}
+	mockRSVPRepo := mockrepos.NewMockRSVPRepository(ctrl)
+	mockRSVPRepo.EXPECT().GetByInviteID(gomock.Any(), gomock.Any()).Return(nil, &models.NotFoundError{Resource: "rsvp"})
 
-	mockQuestionRepo := &mockRSVPQuestionRepository{
-		getByEventIDFunc: func(ctx context.Context, eventID int64) ([]*models.PreferenceQuestion, error) {
-			return []*models.PreferenceQuestion{}, nil
-		},
-	}
+	mockQuestionRepo := mockrepos.NewMockQuestionRepository(ctrl)
+	mockQuestionRepo.EXPECT().GetByEventID(gomock.Any(), gomock.Any()).Return([]*models.PreferenceQuestion{}, nil)
 
 	handler := NewRSVPHandler(mockInviteSvc, mockEventRepo, mockRSVPRepo, mockQuestionRepo)
 
@@ -1119,14 +910,17 @@ func TestRSVPHandler_GetRSVPPage_NoDeadline(t *testing.T) {
 }
 
 func TestRSVPHandler_UpdateRSVP_EmptyToken(t *testing.T) {
-	mockService := &mockRSVPService{}
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockService := mocksvcs.NewMockRSVPService(ctrl)
 	handler := &RSVPHandler{rsvpService: mockService}
 
 	body := `{"response":"yes","plus_ones":0,"answers":[]}`
 	req := httptest.NewRequest("PUT", "/api/rsvp/", strings.NewReader(body))
 	req.Header.Set("Content-Type", "application/json")
-			req.Header.Set("Accept", "application/json")
-	
+	req.Header.Set("Accept", "application/json")
+
 	rctx := chi.NewRouteContext()
 	rctx.URLParams.Add("token", "")
 	req = req.WithContext(context.WithValue(req.Context(), chi.RouteCtxKey, rctx))
@@ -1138,31 +932,4 @@ func TestRSVPHandler_UpdateRSVP_EmptyToken(t *testing.T) {
 	if w.Code != http.StatusBadRequest {
 		t.Errorf("Expected status 400, got %d", w.Code)
 	}
-}
-
-
-
-
-func (m *mockRSVPEventRepository) GetByPublicID(ctx context.Context, publicID string) (*models.Event, error) {
-	return nil, nil
-}
-
-func (m *mockRSVPEventRepository) GetByFriendlyName(ctx context.Context, friendlyName string) (*models.Event, error) {
-	return nil, nil
-}
-
-func (m *mockRSVPEventRepository) CountEvents(ctx context.Context) (int, error) {
-	return 0, nil
-}
-
-func (m *mockRSVPEventRepository) GetComponentOverrides(ctx context.Context, eventID int64) (*models.ComponentOverrides, error) {
-	return nil, nil
-}
-
-func (m *mockRSVPEventRepository) UpdateComponentOverrides(ctx context.Context, eventID int64, overrides *models.ComponentOverrides) error {
-	return nil
-}
-
-func (m *mockRSVPEventRepository) DeleteComponentOverrides(ctx context.Context, eventID int64) error {
-	return nil
 }

@@ -1,8 +1,6 @@
 package handlers
 
 import (
-	"context"
-	"errors"
 	"html/template"
 	"net/http"
 	"net/http/httptest"
@@ -12,112 +10,76 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	"github.com/lenaxia/tinyrsvp/internal/models"
+	mockrepos "github.com/lenaxia/tinyrsvp/internal/testutil/mocks/repositories"
+	mocksvcs "github.com/lenaxia/tinyrsvp/internal/testutil/mocks/services"
+	"go.uber.org/mock/gomock"
 )
 
-type mockAnswerRepository struct {
-	getByRSVPIDFunc func(ctx context.Context, rsvpID int64) ([]*models.RSVPAnswer, error)
-}
-
-func (m *mockAnswerRepository) Create(ctx context.Context, answer *models.RSVPAnswer) error {
-	return nil
-}
-
-func (m *mockAnswerRepository) GetByRSVPID(ctx context.Context, rsvpID int64) ([]*models.RSVPAnswer, error) {
-	if m.getByRSVPIDFunc != nil {
-		return m.getByRSVPIDFunc(ctx, rsvpID)
-	}
-	return []*models.RSVPAnswer{}, nil
-}
-
-func (m *mockAnswerRepository) GetByQuestionID(ctx context.Context, questionID int64) ([]*models.RSVPAnswer, error) {
-	return nil, nil
-}
-
-func (m *mockAnswerRepository) Update(ctx context.Context, answer *models.RSVPAnswer) error {
-	return nil
-}
-
-func (m *mockAnswerRepository) DeleteByRSVPID(ctx context.Context, rsvpID int64) error {
-	return nil
-}
-
 func TestRSVPHandler_GetConfirmationPage_Success(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
 	startTime := time.Now().Add(24 * time.Hour)
 	rsvpDeadline := startTime.Add(-1 * time.Hour)
-
-	mockInviteSvc := &mockRSVPInviteService{
-		getInviteByTokenFunc: func(ctx context.Context, token string) (*models.Invite, error) {
-			email := "test@example.com"
-			name := "Test User"
-			return &models.Invite{
-				ID:          1,
-				EventID:     1,
-				Email:       &email,
-				Name:        &name,
-				MaxPlusOnes: 2,
-				Status:      models.InviteStatusResponded,
-				ExpiresAt:   time.Now().Add(30 * 24 * time.Hour),
-			}, nil
-		},
-	}
-
-	mockEventRepo := &mockRSVPEventRepository{
-		getByIDFunc: func(ctx context.Context, id int64) (*models.Event, error) {
-			desc := "Test event description"
-			loc := "Test Location"
-			return &models.Event{
-				ID:           1,
-				Title:        "Test Event",
-				Description:  &desc,
-				StartTime:    startTime,
-				Timezone:     "America/Los_Angeles",
-				Location:     &loc,
-				Status:       models.EventStatusPublished,
-				RSVPDeadline: &rsvpDeadline,
-			}, nil
-		},
-	}
-
-	mockRSVPRepo := &mockRSVPRSVPRepository{
-		getByInviteIDFunc: func(ctx context.Context, inviteID int64) (*models.RSVP, error) {
-			return &models.RSVP{
-				ID:        1,
-				InviteID:  1,
-				Response:  models.RSVPResponseYes,
-				PlusOnes:  2,
-				CreatedAt: time.Now(),
-				UpdatedAt: time.Now(),
-			}, nil
-		},
-	}
-
-	mockQuestionRepo := &mockRSVPQuestionRepository{
-		getByEventIDFunc: func(ctx context.Context, eventID int64) ([]*models.PreferenceQuestion, error) {
-			return []*models.PreferenceQuestion{
-				{
-					ID:           1,
-					EventID:      1,
-					QuestionText: "Dietary restrictions?",
-					QuestionType: models.QuestionTypeText,
-					Required:     true,
-				},
-			}, nil
-		},
-	}
-
+	email := "test@example.com"
+	name := "Test User"
+	desc := "Test event description"
+	loc := "Test Location"
 	textAnswer := "Vegetarian"
-	mockAnswerRepo := &mockAnswerRepository{
-		getByRSVPIDFunc: func(ctx context.Context, rsvpID int64) ([]*models.RSVPAnswer, error) {
-			return []*models.RSVPAnswer{
-				{
-					ID:         1,
-					RSVPID:     1,
-					QuestionID: 1,
-					AnswerText: &textAnswer,
-				},
-			}, nil
+
+	mockInviteSvc := mocksvcs.NewMockInviteService(ctrl)
+	mockInviteSvc.EXPECT().GetInviteByToken(gomock.Any(), gomock.Any()).Return(&models.Invite{
+		ID:          1,
+		EventID:     1,
+		Email:       &email,
+		Name:        &name,
+		MaxPlusOnes: 2,
+		Status:      models.InviteStatusResponded,
+		ExpiresAt:   time.Now().Add(30 * 24 * time.Hour),
+	}, nil)
+
+	mockEventRepo := mockrepos.NewMockEventRepository(ctrl)
+	mockEventRepo.EXPECT().GetByID(gomock.Any(), gomock.Any()).Return(&models.Event{
+		ID:           1,
+		Title:        "Test Event",
+		Description:  &desc,
+		StartTime:    startTime,
+		Timezone:     "America/Los_Angeles",
+		Location:     &loc,
+		Status:       models.EventStatusPublished,
+		RSVPDeadline: &rsvpDeadline,
+	}, nil)
+
+	mockRSVPRepo := mockrepos.NewMockRSVPRepository(ctrl)
+	mockRSVPRepo.EXPECT().GetByInviteID(gomock.Any(), gomock.Any()).Return(&models.RSVP{
+		ID:        1,
+		InviteID:  1,
+		Response:  models.RSVPResponseYes,
+		PlusOnes:  2,
+		CreatedAt: time.Now(),
+		UpdatedAt: time.Now(),
+	}, nil)
+
+	mockQuestionRepo := mockrepos.NewMockQuestionRepository(ctrl)
+	mockQuestionRepo.EXPECT().GetByEventID(gomock.Any(), gomock.Any()).Return([]*models.PreferenceQuestion{
+		{
+			ID:           1,
+			EventID:      1,
+			QuestionText: "Dietary restrictions?",
+			QuestionType: models.QuestionTypeText,
+			Required:     true,
 		},
-	}
+	}, nil)
+
+	mockAnswerRepo := mockrepos.NewMockAnswerRepository(ctrl)
+	mockAnswerRepo.EXPECT().GetByRSVPID(gomock.Any(), gomock.Any()).Return([]*models.RSVPAnswer{
+		{
+			ID:         1,
+			RSVPID:     1,
+			QuestionID: 1,
+			AnswerText: &textAnswer,
+		},
+	}, nil)
 
 	handler := NewRSVPHandler(mockInviteSvc, mockEventRepo, mockRSVPRepo, mockQuestionRepo)
 	handler.SetAnswerRepository(mockAnswerRepo)
@@ -145,37 +107,32 @@ func TestRSVPHandler_GetConfirmationPage_Success(t *testing.T) {
 }
 
 func TestRSVPHandler_GetConfirmationPage_NoRSVP(t *testing.T) {
-	mockInviteSvc := &mockRSVPInviteService{
-		getInviteByTokenFunc: func(ctx context.Context, token string) (*models.Invite, error) {
-			email := "test@example.com"
-			return &models.Invite{
-				ID:        1,
-				EventID:   1,
-				Email:     &email,
-				Status:    models.InviteStatusSent,
-				ExpiresAt: time.Now().Add(30 * 24 * time.Hour),
-			}, nil
-		},
-	}
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
 
-	mockEventRepo := &mockRSVPEventRepository{
-		getByIDFunc: func(ctx context.Context, id int64) (*models.Event, error) {
-			return &models.Event{
-				ID:     1,
-				Title:  "Test Event",
-				Status: models.EventStatusPublished,
-			}, nil
-		},
-	}
+	email := "test@example.com"
 
-	mockRSVPRepo := &mockRSVPRSVPRepository{
-		getByInviteIDFunc: func(ctx context.Context, inviteID int64) (*models.RSVP, error) {
-			return nil, &models.NotFoundError{Resource: "rsvp"}
-		},
-	}
+	mockInviteSvc := mocksvcs.NewMockInviteService(ctrl)
+	mockInviteSvc.EXPECT().GetInviteByToken(gomock.Any(), gomock.Any()).Return(&models.Invite{
+		ID:        1,
+		EventID:   1,
+		Email:     &email,
+		Status:    models.InviteStatusSent,
+		ExpiresAt: time.Now().Add(30 * 24 * time.Hour),
+	}, nil)
 
-	mockQuestionRepo := &mockRSVPQuestionRepository{}
-	mockAnswerRepo := &mockAnswerRepository{}
+	mockEventRepo := mockrepos.NewMockEventRepository(ctrl)
+	mockEventRepo.EXPECT().GetByID(gomock.Any(), gomock.Any()).Return(&models.Event{
+		ID:     1,
+		Title:  "Test Event",
+		Status: models.EventStatusPublished,
+	}, nil)
+
+	mockRSVPRepo := mockrepos.NewMockRSVPRepository(ctrl)
+	mockRSVPRepo.EXPECT().GetByInviteID(gomock.Any(), gomock.Any()).Return(nil, &models.NotFoundError{Resource: "rsvp"})
+
+	mockQuestionRepo := mockrepos.NewMockQuestionRepository(ctrl)
+	mockAnswerRepo := mockrepos.NewMockAnswerRepository(ctrl)
 
 	handler := NewRSVPHandler(mockInviteSvc, mockEventRepo, mockRSVPRepo, mockQuestionRepo)
 	handler.SetAnswerRepository(mockAnswerRepo)
@@ -194,16 +151,16 @@ func TestRSVPHandler_GetConfirmationPage_NoRSVP(t *testing.T) {
 }
 
 func TestRSVPHandler_GetConfirmationPage_InvalidToken(t *testing.T) {
-	mockInviteSvc := &mockRSVPInviteService{
-		getInviteByTokenFunc: func(ctx context.Context, token string) (*models.Invite, error) {
-			return nil, errors.New("invite not found")
-		},
-	}
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
 
-	mockEventRepo := &mockRSVPEventRepository{}
-	mockRSVPRepo := &mockRSVPRSVPRepository{}
-	mockQuestionRepo := &mockRSVPQuestionRepository{}
-	mockAnswerRepo := &mockAnswerRepository{}
+	mockInviteSvc := mocksvcs.NewMockInviteService(ctrl)
+	mockInviteSvc.EXPECT().GetInviteByToken(gomock.Any(), gomock.Any()).Return(nil, &models.NotFoundError{Resource: "invite"})
+
+	mockEventRepo := mockrepos.NewMockEventRepository(ctrl)
+	mockRSVPRepo := mockrepos.NewMockRSVPRepository(ctrl)
+	mockQuestionRepo := mockrepos.NewMockQuestionRepository(ctrl)
+	mockAnswerRepo := mockrepos.NewMockAnswerRepository(ctrl)
 
 	handler := NewRSVPHandler(mockInviteSvc, mockEventRepo, mockRSVPRepo, mockQuestionRepo)
 	handler.SetAnswerRepository(mockAnswerRepo)
@@ -222,57 +179,45 @@ func TestRSVPHandler_GetConfirmationPage_InvalidToken(t *testing.T) {
 }
 
 func TestRSVPHandler_GetConfirmationPage_WithTemplate(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
 	startTime := time.Now().Add(24 * time.Hour)
+	email := "test@example.com"
+	name := "Test User"
 
-	mockInviteSvc := &mockRSVPInviteService{
-		getInviteByTokenFunc: func(ctx context.Context, token string) (*models.Invite, error) {
-			email := "test@example.com"
-			name := "Test User"
-			return &models.Invite{
-				ID:        1,
-				EventID:   1,
-				Email:     &email,
-				Name:      &name,
-				Status:    models.InviteStatusResponded,
-				ExpiresAt: time.Now().Add(30 * 24 * time.Hour),
-			}, nil
-		},
-	}
+	mockInviteSvc := mocksvcs.NewMockInviteService(ctrl)
+	mockInviteSvc.EXPECT().GetInviteByToken(gomock.Any(), gomock.Any()).Return(&models.Invite{
+		ID:        1,
+		EventID:   1,
+		Email:     &email,
+		Name:      &name,
+		Status:    models.InviteStatusResponded,
+		ExpiresAt: time.Now().Add(30 * 24 * time.Hour),
+	}, nil)
 
-	mockEventRepo := &mockRSVPEventRepository{
-		getByIDFunc: func(ctx context.Context, id int64) (*models.Event, error) {
-			return &models.Event{
-				ID:        1,
-				Title:     "Birthday Party",
-				StartTime: startTime,
-				Timezone:  "America/Los_Angeles",
-				Status:    models.EventStatusPublished,
-			}, nil
-		},
-	}
+	mockEventRepo := mockrepos.NewMockEventRepository(ctrl)
+	mockEventRepo.EXPECT().GetByID(gomock.Any(), gomock.Any()).Return(&models.Event{
+		ID:        1,
+		Title:     "Birthday Party",
+		StartTime: startTime,
+		Timezone:  "America/Los_Angeles",
+		Status:    models.EventStatusPublished,
+	}, nil)
 
-	mockRSVPRepo := &mockRSVPRSVPRepository{
-		getByInviteIDFunc: func(ctx context.Context, inviteID int64) (*models.RSVP, error) {
-			return &models.RSVP{
-				ID:       1,
-				InviteID: 1,
-				Response: models.RSVPResponseYes,
-				PlusOnes: 1,
-			}, nil
-		},
-	}
+	mockRSVPRepo := mockrepos.NewMockRSVPRepository(ctrl)
+	mockRSVPRepo.EXPECT().GetByInviteID(gomock.Any(), gomock.Any()).Return(&models.RSVP{
+		ID:       1,
+		InviteID: 1,
+		Response: models.RSVPResponseYes,
+		PlusOnes: 1,
+	}, nil)
 
-	mockQuestionRepo := &mockRSVPQuestionRepository{
-		getByEventIDFunc: func(ctx context.Context, eventID int64) ([]*models.PreferenceQuestion, error) {
-			return []*models.PreferenceQuestion{}, nil
-		},
-	}
+	mockQuestionRepo := mockrepos.NewMockQuestionRepository(ctrl)
+	mockQuestionRepo.EXPECT().GetByEventID(gomock.Any(), gomock.Any()).Return([]*models.PreferenceQuestion{}, nil)
 
-	mockAnswerRepo := &mockAnswerRepository{
-		getByRSVPIDFunc: func(ctx context.Context, rsvpID int64) ([]*models.RSVPAnswer, error) {
-			return []*models.RSVPAnswer{}, nil
-		},
-	}
+	mockAnswerRepo := mockrepos.NewMockAnswerRepository(ctrl)
+	mockAnswerRepo.EXPECT().GetByRSVPID(gomock.Any(), gomock.Any()).Return([]*models.RSVPAnswer{}, nil)
 
 	handler := NewRSVPHandler(mockInviteSvc, mockEventRepo, mockRSVPRepo, mockQuestionRepo)
 	handler.SetAnswerRepository(mockAnswerRepo)
@@ -305,32 +250,30 @@ func TestRSVPHandler_GetConfirmationPage_WithTemplate(t *testing.T) {
 }
 
 func TestRSVPHandler_GetConfirmationPage_CancelledEvent(t *testing.T) {
-	mockInviteSvc := &mockRSVPInviteService{
-		getInviteByTokenFunc: func(ctx context.Context, token string) (*models.Invite, error) {
-			email := "test@example.com"
-			return &models.Invite{
-				ID:        1,
-				EventID:   1,
-				Email:     &email,
-				Status:    models.InviteStatusResponded,
-				ExpiresAt: time.Now().Add(30 * 24 * time.Hour),
-			}, nil
-		},
-	}
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
 
-	mockEventRepo := &mockRSVPEventRepository{
-		getByIDFunc: func(ctx context.Context, id int64) (*models.Event, error) {
-			return &models.Event{
-				ID:     1,
-				Title:  "Cancelled Event",
-				Status: models.EventStatusCancelled,
-			}, nil
-		},
-	}
+	email := "test@example.com"
 
-	mockRSVPRepo := &mockRSVPRSVPRepository{}
-	mockQuestionRepo := &mockRSVPQuestionRepository{}
-	mockAnswerRepo := &mockAnswerRepository{}
+	mockInviteSvc := mocksvcs.NewMockInviteService(ctrl)
+	mockInviteSvc.EXPECT().GetInviteByToken(gomock.Any(), gomock.Any()).Return(&models.Invite{
+		ID:        1,
+		EventID:   1,
+		Email:     &email,
+		Status:    models.InviteStatusResponded,
+		ExpiresAt: time.Now().Add(30 * 24 * time.Hour),
+	}, nil)
+
+	mockEventRepo := mockrepos.NewMockEventRepository(ctrl)
+	mockEventRepo.EXPECT().GetByID(gomock.Any(), gomock.Any()).Return(&models.Event{
+		ID:     1,
+		Title:  "Cancelled Event",
+		Status: models.EventStatusCancelled,
+	}, nil)
+
+	mockRSVPRepo := mockrepos.NewMockRSVPRepository(ctrl)
+	mockQuestionRepo := mockrepos.NewMockQuestionRepository(ctrl)
+	mockAnswerRepo := mockrepos.NewMockAnswerRepository(ctrl)
 
 	handler := NewRSVPHandler(mockInviteSvc, mockEventRepo, mockRSVPRepo, mockQuestionRepo)
 	handler.SetAnswerRepository(mockAnswerRepo)
@@ -349,57 +292,45 @@ func TestRSVPHandler_GetConfirmationPage_CancelledEvent(t *testing.T) {
 }
 
 func TestRSVPHandler_GetConfirmationPage_CanUpdateTrue(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
 	startTime := time.Now().Add(24 * time.Hour)
 	futureDeadline := time.Now().Add(12 * time.Hour)
+	email := "test@example.com"
 
-	mockInviteSvc := &mockRSVPInviteService{
-		getInviteByTokenFunc: func(ctx context.Context, token string) (*models.Invite, error) {
-			email := "test@example.com"
-			return &models.Invite{
-				ID:        1,
-				EventID:   1,
-				Email:     &email,
-				Status:    models.InviteStatusResponded,
-				ExpiresAt: time.Now().Add(30 * 24 * time.Hour),
-			}, nil
-		},
-	}
+	mockInviteSvc := mocksvcs.NewMockInviteService(ctrl)
+	mockInviteSvc.EXPECT().GetInviteByToken(gomock.Any(), gomock.Any()).Return(&models.Invite{
+		ID:        1,
+		EventID:   1,
+		Email:     &email,
+		Status:    models.InviteStatusResponded,
+		ExpiresAt: time.Now().Add(30 * 24 * time.Hour),
+	}, nil)
 
-	mockEventRepo := &mockRSVPEventRepository{
-		getByIDFunc: func(ctx context.Context, id int64) (*models.Event, error) {
-			return &models.Event{
-				ID:           1,
-				Title:        "Test Event",
-				StartTime:    startTime,
-				Timezone:     "America/Los_Angeles",
-				Status:       models.EventStatusPublished,
-				RSVPDeadline: &futureDeadline,
-			}, nil
-		},
-	}
+	mockEventRepo := mockrepos.NewMockEventRepository(ctrl)
+	mockEventRepo.EXPECT().GetByID(gomock.Any(), gomock.Any()).Return(&models.Event{
+		ID:           1,
+		Title:        "Test Event",
+		StartTime:    startTime,
+		Timezone:     "America/Los_Angeles",
+		Status:       models.EventStatusPublished,
+		RSVPDeadline: &futureDeadline,
+	}, nil)
 
-	mockRSVPRepo := &mockRSVPRSVPRepository{
-		getByInviteIDFunc: func(ctx context.Context, inviteID int64) (*models.RSVP, error) {
-			return &models.RSVP{
-				ID:       1,
-				InviteID: 1,
-				Response: models.RSVPResponseYes,
-				PlusOnes: 0,
-			}, nil
-		},
-	}
+	mockRSVPRepo := mockrepos.NewMockRSVPRepository(ctrl)
+	mockRSVPRepo.EXPECT().GetByInviteID(gomock.Any(), gomock.Any()).Return(&models.RSVP{
+		ID:       1,
+		InviteID: 1,
+		Response: models.RSVPResponseYes,
+		PlusOnes: 0,
+	}, nil)
 
-	mockQuestionRepo := &mockRSVPQuestionRepository{
-		getByEventIDFunc: func(ctx context.Context, eventID int64) ([]*models.PreferenceQuestion, error) {
-			return []*models.PreferenceQuestion{}, nil
-		},
-	}
+	mockQuestionRepo := mockrepos.NewMockQuestionRepository(ctrl)
+	mockQuestionRepo.EXPECT().GetByEventID(gomock.Any(), gomock.Any()).Return([]*models.PreferenceQuestion{}, nil)
 
-	mockAnswerRepo := &mockAnswerRepository{
-		getByRSVPIDFunc: func(ctx context.Context, rsvpID int64) ([]*models.RSVPAnswer, error) {
-			return []*models.RSVPAnswer{}, nil
-		},
-	}
+	mockAnswerRepo := mockrepos.NewMockAnswerRepository(ctrl)
+	mockAnswerRepo.EXPECT().GetByRSVPID(gomock.Any(), gomock.Any()).Return([]*models.RSVPAnswer{}, nil)
 
 	handler := NewRSVPHandler(mockInviteSvc, mockEventRepo, mockRSVPRepo, mockQuestionRepo)
 	handler.SetAnswerRepository(mockAnswerRepo)
@@ -426,57 +357,45 @@ func TestRSVPHandler_GetConfirmationPage_CanUpdateTrue(t *testing.T) {
 }
 
 func TestRSVPHandler_GetConfirmationPage_CanUpdateFalse_DeadlinePassed(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
 	startTime := time.Now().Add(24 * time.Hour)
 	pastDeadline := time.Now().Add(-1 * time.Hour)
+	email := "test@example.com"
 
-	mockInviteSvc := &mockRSVPInviteService{
-		getInviteByTokenFunc: func(ctx context.Context, token string) (*models.Invite, error) {
-			email := "test@example.com"
-			return &models.Invite{
-				ID:        1,
-				EventID:   1,
-				Email:     &email,
-				Status:    models.InviteStatusResponded,
-				ExpiresAt: time.Now().Add(30 * 24 * time.Hour),
-			}, nil
-		},
-	}
+	mockInviteSvc := mocksvcs.NewMockInviteService(ctrl)
+	mockInviteSvc.EXPECT().GetInviteByToken(gomock.Any(), gomock.Any()).Return(&models.Invite{
+		ID:        1,
+		EventID:   1,
+		Email:     &email,
+		Status:    models.InviteStatusResponded,
+		ExpiresAt: time.Now().Add(30 * 24 * time.Hour),
+	}, nil)
 
-	mockEventRepo := &mockRSVPEventRepository{
-		getByIDFunc: func(ctx context.Context, id int64) (*models.Event, error) {
-			return &models.Event{
-				ID:           1,
-				Title:        "Test Event",
-				StartTime:    startTime,
-				Timezone:     "America/Los_Angeles",
-				Status:       models.EventStatusPublished,
-				RSVPDeadline: &pastDeadline,
-			}, nil
-		},
-	}
+	mockEventRepo := mockrepos.NewMockEventRepository(ctrl)
+	mockEventRepo.EXPECT().GetByID(gomock.Any(), gomock.Any()).Return(&models.Event{
+		ID:           1,
+		Title:        "Test Event",
+		StartTime:    startTime,
+		Timezone:     "America/Los_Angeles",
+		Status:       models.EventStatusPublished,
+		RSVPDeadline: &pastDeadline,
+	}, nil)
 
-	mockRSVPRepo := &mockRSVPRSVPRepository{
-		getByInviteIDFunc: func(ctx context.Context, inviteID int64) (*models.RSVP, error) {
-			return &models.RSVP{
-				ID:       1,
-				InviteID: 1,
-				Response: models.RSVPResponseYes,
-				PlusOnes: 0,
-			}, nil
-		},
-	}
+	mockRSVPRepo := mockrepos.NewMockRSVPRepository(ctrl)
+	mockRSVPRepo.EXPECT().GetByInviteID(gomock.Any(), gomock.Any()).Return(&models.RSVP{
+		ID:       1,
+		InviteID: 1,
+		Response: models.RSVPResponseYes,
+		PlusOnes: 0,
+	}, nil)
 
-	mockQuestionRepo := &mockRSVPQuestionRepository{
-		getByEventIDFunc: func(ctx context.Context, eventID int64) ([]*models.PreferenceQuestion, error) {
-			return []*models.PreferenceQuestion{}, nil
-		},
-	}
+	mockQuestionRepo := mockrepos.NewMockQuestionRepository(ctrl)
+	mockQuestionRepo.EXPECT().GetByEventID(gomock.Any(), gomock.Any()).Return([]*models.PreferenceQuestion{}, nil)
 
-	mockAnswerRepo := &mockAnswerRepository{
-		getByRSVPIDFunc: func(ctx context.Context, rsvpID int64) ([]*models.RSVPAnswer, error) {
-			return []*models.RSVPAnswer{}, nil
-		},
-	}
+	mockAnswerRepo := mockrepos.NewMockAnswerRepository(ctrl)
+	mockAnswerRepo.EXPECT().GetByRSVPID(gomock.Any(), gomock.Any()).Return([]*models.RSVPAnswer{}, nil)
 
 	handler := NewRSVPHandler(mockInviteSvc, mockEventRepo, mockRSVPRepo, mockQuestionRepo)
 	handler.SetAnswerRepository(mockAnswerRepo)
