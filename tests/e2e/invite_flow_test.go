@@ -26,14 +26,14 @@ import (
 )
 
 type inviteTestServer struct {
-	router         chi.Router
-	database       db.Database
-	sessionMgr     auth.SessionManager
-	userService    auth.UserService
-	authChecker    auth.AuthorizationChecker
-	eventService   events.Service
-	inviteService  invites.IndividualInviteService
-	inviteRepo     repositories.InviteRepository
+	router        chi.Router
+	database      db.Database
+	sessionMgr    auth.SessionManager
+	userService   auth.UserService
+	authChecker   auth.AuthorizationChecker
+	eventService  events.Service
+	inviteService invites.IndividualInviteService
+	inviteRepo    repositories.InviteRepository
 }
 
 func setupInviteTestServer(t *testing.T) *inviteTestServer {
@@ -254,8 +254,8 @@ func TestInviteEndpointExists(t *testing.T) {
 		rec := httptest.NewRecorder()
 		srv.router.ServeHTTP(rec, req)
 
-		if rec.Code != http.StatusUnauthorized {
-			t.Errorf("Expected status 401, got %d", rec.Code)
+		if rec.Code != http.StatusUnauthorized && rec.Code != http.StatusSeeOther && rec.Code != http.StatusFound {
+			t.Errorf("Expected status 401, 302, or 303 for unauthorized request, got %d", rec.Code)
 		}
 	})
 

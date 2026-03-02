@@ -182,6 +182,10 @@ func TestMobileOptimizationTemplateIntegration(t *testing.T) {
 		"../../templates/web/rsvp_summary.html",
 	}
 
+	// Read base.html once — it contains viewport meta and CSS links for templates that extend it.
+	baseContent, _ := os.ReadFile("../../templates/web/partials/base.html")
+	baseHTML := string(baseContent)
+
 	for _, templatePath := range templates {
 		t.Run(templatePath, func(t *testing.T) {
 			content, err := os.ReadFile(templatePath)
@@ -190,7 +194,17 @@ func TestMobileOptimizationTemplateIntegration(t *testing.T) {
 				return
 			}
 
-			html := string(content)
+			templateHTML := string(content)
+
+			// For templates that use the base layout, the viewport/CSS are in base.html.
+			// Combine both for the check so we validate the full rendered page.
+			usesBase := strings.Contains(templateHTML, `{{template "base"`)
+			var html string
+			if usesBase {
+				html = baseHTML + templateHTML
+			} else {
+				html = templateHTML
+			}
 
 			t.Run("has viewport meta tag", func(t *testing.T) {
 				if !strings.Contains(html, `<meta name="viewport"`) {

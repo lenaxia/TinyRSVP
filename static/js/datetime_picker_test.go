@@ -9,6 +9,7 @@ import (
 )
 
 func TestDateTimePickerSingleMode(t *testing.T) {
+	requireServer(t)
 	ctx, cancel := chromedp.NewContext(context.Background())
 	defer cancel()
 
@@ -35,6 +36,7 @@ func TestDateTimePickerSingleMode(t *testing.T) {
 }
 
 func TestDateTimePickerRangeMode(t *testing.T) {
+	requireServer(t)
 	ctx, cancel := chromedp.NewContext(context.Background())
 	defer cancel()
 
@@ -61,6 +63,7 @@ func TestDateTimePickerRangeMode(t *testing.T) {
 }
 
 func TestDateTimePickerToggleGroupHiddenOnOpen(t *testing.T) {
+	requireServer(t)
 	ctx, cancel := chromedp.NewContext(context.Background())
 	defer cancel()
 
@@ -92,6 +95,7 @@ func TestDateTimePickerToggleGroupHiddenOnOpen(t *testing.T) {
 }
 
 func TestDateTimePickerSingleModeNoEndDateInDisplay(t *testing.T) {
+	requireServer(t)
 	ctx, cancel := chromedp.NewContext(context.Background())
 	defer cancel()
 
@@ -128,6 +132,7 @@ func TestDateTimePickerSingleModeNoEndDateInDisplay(t *testing.T) {
 }
 
 func TestDateTimePickerRangeModeShowsEndDateInDisplay(t *testing.T) {
+	requireServer(t)
 	ctx, cancel := chromedp.NewContext(context.Background())
 	defer cancel()
 
@@ -170,6 +175,7 @@ func TestDateTimePickerRangeModeShowsEndDateInDisplay(t *testing.T) {
 }
 
 func TestDateTimePickerSingleModeNoEndDateAfterRangeMode(t *testing.T) {
+	requireServer(t)
 	ctx, cancel := chromedp.NewContext(context.Background())
 	defer cancel()
 
@@ -225,7 +231,7 @@ func containsEndDateSeparator(text string) bool {
 	if len(text) == 0 || text[0:1] == "C" {
 		return false
 	}
-	
+
 	for i := 0; i < len(text)-2; i++ {
 		if text[i:i+3] == " - " {
 			return true

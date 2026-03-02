@@ -3,13 +3,27 @@ package js_test
 import (
 	"context"
 	"fmt"
+	"net/http"
 	"testing"
 	"time"
 
 	"github.com/chromedp/chromedp"
 )
 
+// requireServerExternal skips the test if localhost:8080 is not reachable.
+func requireServerExternal(t *testing.T) {
+	t.Helper()
+	client := &http.Client{Timeout: 2 * time.Second}
+	resp, err := client.Get("http://localhost:8080/")
+	if err != nil {
+		t.Skipf("Skipping browser test: localhost:8080 not reachable (%v)", err)
+		return
+	}
+	resp.Body.Close()
+}
+
 func TestThemePreviewModalMultipleClicks(t *testing.T) {
+	requireServerExternal(t)
 	if testing.Short() {
 		t.Skip("Skipping browser test in short mode")
 	}
@@ -26,13 +40,13 @@ func TestThemePreviewModalMultipleClicks(t *testing.T) {
 	err := chromedp.Run(ctx,
 		chromedp.Navigate("http://localhost:8080/events/new"),
 		chromedp.WaitVisible(`#theme-preview-modal`, chromedp.ByID),
-		
+
 		chromedp.ScrollIntoView(`.theme-gallery`, chromedp.ByQuery),
 		chromedp.Sleep(500*time.Millisecond),
-		
+
 		chromedp.Click(`.btn-preview[data-theme-id="modern-minimalist"]`, chromedp.ByQuery),
 		chromedp.Sleep(500*time.Millisecond),
-		
+
 		chromedp.Evaluate(`!document.getElementById('theme-preview-modal').hidden`, &modalVisible),
 	)
 	if err != nil {
@@ -45,7 +59,7 @@ func TestThemePreviewModalMultipleClicks(t *testing.T) {
 	err = chromedp.Run(ctx,
 		chromedp.Click(`.modal-close`, chromedp.ByQuery),
 		chromedp.Sleep(500*time.Millisecond),
-		
+
 		chromedp.Evaluate(`document.getElementById('theme-preview-modal').hidden`, &modalVisible),
 	)
 	if err != nil {
@@ -64,10 +78,10 @@ func TestThemePreviewModalMultipleClicks(t *testing.T) {
 				return originalOpen(themeId);
 			};
 		`, nil),
-		
+
 		chromedp.Click(`.btn-preview[data-theme-id="garden-party"]`, chromedp.ByQuery),
 		chromedp.Sleep(500*time.Millisecond),
-		
+
 		chromedp.Evaluate(`window.previewOpenCount`, &clickCount),
 	)
 	if err != nil {
@@ -91,10 +105,10 @@ func TestThemePreviewModalMultipleClicks(t *testing.T) {
 	err = chromedp.Run(ctx,
 		chromedp.Click(`.modal-close`, chromedp.ByQuery),
 		chromedp.Sleep(500*time.Millisecond),
-		
+
 		chromedp.Click(`.btn-preview[data-theme-id="holiday-festive"]`, chromedp.ByQuery),
 		chromedp.Sleep(500*time.Millisecond),
-		
+
 		chromedp.Evaluate(`window.previewOpenCount`, &clickCount),
 	)
 	if err != nil {
@@ -107,6 +121,7 @@ func TestThemePreviewModalMultipleClicks(t *testing.T) {
 }
 
 func TestThemePreviewModalGuardAgainstDoubleOpen(t *testing.T) {
+	requireServerExternal(t)
 	if testing.Short() {
 		t.Skip("Skipping browser test in short mode")
 	}
@@ -122,10 +137,10 @@ func TestThemePreviewModalGuardAgainstDoubleOpen(t *testing.T) {
 	err := chromedp.Run(ctx,
 		chromedp.Navigate("http://localhost:8080/events/new"),
 		chromedp.WaitVisible(`#theme-preview-modal`, chromedp.ByID),
-		
+
 		chromedp.ScrollIntoView(`.theme-gallery`, chromedp.ByQuery),
 		chromedp.Sleep(500*time.Millisecond),
-		
+
 		chromedp.Evaluate(`
 			window.actualOpenCount = 0;
 			const modal = window.themePreviewModal;
@@ -136,16 +151,16 @@ func TestThemePreviewModalGuardAgainstDoubleOpen(t *testing.T) {
 				return originalOpen(themeId);
 			};
 		`, nil),
-		
+
 		chromedp.Evaluate(`
 			const event1 = new CustomEvent('theme-preview-requested', { detail: { themeId: 'modern-minimalist' } });
 			const event2 = new CustomEvent('theme-preview-requested', { detail: { themeId: 'garden-party' } });
 			document.dispatchEvent(event1);
 			document.dispatchEvent(event2);
 		`, nil),
-		
+
 		chromedp.Sleep(500*time.Millisecond),
-		
+
 		chromedp.Evaluate(`window.actualOpenCount`, &openCallCount),
 	)
 	if err != nil {
@@ -158,6 +173,7 @@ func TestThemePreviewModalGuardAgainstDoubleOpen(t *testing.T) {
 }
 
 func TestThemePreviewModalEventListenerNotDuplicated(t *testing.T) {
+	requireServerExternal(t)
 	if testing.Short() {
 		t.Skip("Skipping browser test in short mode")
 	}
@@ -173,7 +189,7 @@ func TestThemePreviewModalEventListenerNotDuplicated(t *testing.T) {
 	err := chromedp.Run(ctx,
 		chromedp.Navigate("http://localhost:8080/events/new"),
 		chromedp.WaitVisible(`#theme-preview-modal`, chromedp.ByID),
-		
+
 		chromedp.Evaluate(`
 			let callCount = 0;
 			const testHandler = () => { callCount++; };

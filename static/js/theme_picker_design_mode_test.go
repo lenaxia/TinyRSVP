@@ -24,6 +24,7 @@ func setTestAuthHeader() chromedp.Action {
 
 // Test 1: Page loads successfully with auth bypass
 func TestPageLoad_Success(t *testing.T) {
+	requireServer(t)
 	ctx, cancel := chromedp.NewContext(context.Background())
 	defer cancel()
 
@@ -50,6 +51,7 @@ func TestPageLoad_Success(t *testing.T) {
 
 // Test 2: Theme picker elements exist on page load
 func TestPageLoad_ThemePickerElementsExist(t *testing.T) {
+	requireServer(t)
 	ctx, cancel := chromedp.NewContext(context.Background())
 	defer cancel()
 
@@ -90,6 +92,7 @@ func TestPageLoad_ThemePickerElementsExist(t *testing.T) {
 
 // Test 3: Initial state is gallery mode
 func TestInitialState_GalleryMode(t *testing.T) {
+	requireServer(t)
 	ctx, cancel := chromedp.NewContext(context.Background())
 	defer cancel()
 
@@ -130,6 +133,7 @@ func TestInitialState_GalleryMode(t *testing.T) {
 
 // Test 4: Theme cards exist in gallery
 func TestInitialState_ThemeCardsExist(t *testing.T) {
+	requireServer(t)
 	ctx, cancel := chromedp.NewContext(context.Background())
 	defer cancel()
 
@@ -160,6 +164,7 @@ func TestInitialState_ThemeCardsExist(t *testing.T) {
 
 // Test 5: Switch to design mode - UI changes
 func TestModeSwitch_ToDesignMode_UIChanges(t *testing.T) {
+	requireServer(t)
 	ctx, cancel := chromedp.NewContext(context.Background())
 	defer cancel()
 
@@ -202,6 +207,7 @@ func TestModeSwitch_ToDesignMode_UIChanges(t *testing.T) {
 
 // Test 6: Switch to design mode - preview iframe appears
 func TestModeSwitch_ToDesignMode_PreviewFrameAppears(t *testing.T) {
+	requireServer(t)
 	ctx, cancel := chromedp.NewContext(context.Background())
 	defer cancel()
 
@@ -236,6 +242,7 @@ func TestModeSwitch_ToDesignMode_PreviewFrameAppears(t *testing.T) {
 
 // Test 7: Switch back to gallery mode
 func TestModeSwitch_BackToGalleryMode(t *testing.T) {
+	requireServer(t)
 	ctx, cancel := chromedp.NewContext(context.Background())
 	defer cancel()
 
@@ -275,6 +282,7 @@ func TestModeSwitch_BackToGalleryMode(t *testing.T) {
 
 // Test 8: Switch to design mode clears iframe on gallery switch
 func TestModeSwitch_ClearsIframeOnGallerySwitch(t *testing.T) {
+	requireServer(t)
 	ctx, cancel := chromedp.NewContext(context.Background())
 	defer cancel()
 
@@ -310,6 +318,7 @@ func TestModeSwitch_ClearsIframeOnGallerySwitch(t *testing.T) {
 
 // Test 9: Mode switching is accessible via keyboard
 func TestModeSwitch_KeyboardAccessible(t *testing.T) {
+	requireServer(t)
 	ctx, cancel := chromedp.NewContext(context.Background())
 	defer cancel()
 
@@ -346,6 +355,7 @@ func TestModeSwitch_KeyboardAccessible(t *testing.T) {
 
 // Test 10: Preview URL contains theme_id parameter
 func TestPreviewURL_ContainsThemeID(t *testing.T) {
+	requireServer(t)
 	ctx, cancel := chromedp.NewContext(context.Background())
 	defer cancel()
 
@@ -379,6 +389,7 @@ func TestPreviewURL_ContainsThemeID(t *testing.T) {
 
 // Test 11: Form input updates preview URL with title
 func TestPreviewURL_UpdatesWithTitle(t *testing.T) {
+	requireServer(t)
 	ctx, cancel := chromedp.NewContext(context.Background())
 	defer cancel()
 
@@ -418,6 +429,7 @@ func TestPreviewURL_UpdatesWithTitle(t *testing.T) {
 
 // Test 12: Form input updates preview URL with description
 func TestPreviewURL_UpdatesWithDescription(t *testing.T) {
+	requireServer(t)
 	ctx, cancel := chromedp.NewContext(context.Background())
 	defer cancel()
 
@@ -457,6 +469,7 @@ func TestPreviewURL_UpdatesWithDescription(t *testing.T) {
 
 // Test 13: Form input updates preview URL with location
 func TestPreviewURL_UpdatesWithLocation(t *testing.T) {
+	requireServer(t)
 	ctx, cancel := chromedp.NewContext(context.Background())
 	defer cancel()
 
@@ -496,6 +509,7 @@ func TestPreviewURL_UpdatesWithLocation(t *testing.T) {
 
 // Test 14: Theme selector change updates preview URL
 func TestPreviewURL_UpdatesWithThemeChange(t *testing.T) {
+	requireServer(t)
 	ctx, cancel := chromedp.NewContext(context.Background())
 	defer cancel()
 
@@ -539,6 +553,7 @@ func TestPreviewURL_UpdatesWithThemeChange(t *testing.T) {
 
 // Test 15: Debounce prevents immediate updates
 func TestDebounce_PreventsImmediateUpdates(t *testing.T) {
+	requireServer(t)
 	ctx, cancel := chromedp.NewContext(context.Background())
 	defer cancel()
 
@@ -578,6 +593,7 @@ func TestDebounce_PreventsImmediateUpdates(t *testing.T) {
 
 // Test 16: Multiple rapid inputs result in single update
 func TestDebounce_MultipleRapidInputsSingleUpdate(t *testing.T) {
+	requireServer(t)
 	ctx, cancel := chromedp.NewContext(context.Background())
 	defer cancel()
 
@@ -642,6 +658,7 @@ func TestDebounce_MultipleRapidInputsSingleUpdate(t *testing.T) {
 
 // Test 17: Debounce timer cleared on mode switch
 func TestDebounce_ClearedOnModeSwitch(t *testing.T) {
+	requireServer(t)
 	ctx, cancel := chromedp.NewContext(context.Background())
 	defer cancel()
 
@@ -677,6 +694,7 @@ func TestDebounce_ClearedOnModeSwitch(t *testing.T) {
 
 // Test 18: Loading indicator exists
 func TestLoadingState_IndicatorExists(t *testing.T) {
+	requireServer(t)
 	ctx, cancel := chromedp.NewContext(context.Background())
 	defer cancel()
 
@@ -706,6 +724,7 @@ func TestLoadingState_IndicatorExists(t *testing.T) {
 
 // Test 19: Loading indicator can be toggled (verifies loading mechanism works)
 func TestLoadingState_ShowsDuringLoad(t *testing.T) {
+	requireServer(t)
 	ctx, cancel := chromedp.NewContext(context.Background())
 	defer cancel()
 
@@ -744,6 +763,7 @@ func TestLoadingState_ShowsDuringLoad(t *testing.T) {
 
 // Test 20: Error indicator exists
 func TestErrorState_IndicatorExists(t *testing.T) {
+	requireServer(t)
 	ctx, cancel := chromedp.NewContext(context.Background())
 	defer cancel()
 
@@ -771,6 +791,7 @@ func TestErrorState_IndicatorExists(t *testing.T) {
 
 // Test 21: Retry button exists in error state
 func TestErrorState_RetryButtonExists(t *testing.T) {
+	requireServer(t)
 	ctx, cancel := chromedp.NewContext(context.Background())
 	defer cancel()
 
@@ -802,6 +823,7 @@ func TestErrorState_RetryButtonExists(t *testing.T) {
 
 // Test 22: Mobile view toggle buttons exist
 func TestMobile_ToggleButtonsExist(t *testing.T) {
+	requireServer(t)
 	ctx, cancel := chromedp.NewContext(context.Background())
 	defer cancel()
 
@@ -836,6 +858,7 @@ func TestMobile_ToggleButtonsExist(t *testing.T) {
 
 // Test 23: Mobile viewport renders correctly
 func TestMobile_ViewportRenders(t *testing.T) {
+	requireServer(t)
 	ctx, cancel := chromedp.NewContext(context.Background())
 	defer cancel()
 
@@ -864,6 +887,7 @@ func TestMobile_ViewportRenders(t *testing.T) {
 
 // Test 24: Mobile preview toggle switches view
 func TestMobile_PreviewToggleSwitchesView(t *testing.T) {
+	requireServer(t)
 	ctx, cancel := chromedp.NewContext(context.Background())
 	defer cancel()
 
@@ -902,6 +926,7 @@ func TestMobile_PreviewToggleSwitchesView(t *testing.T) {
 
 // Test 25: Mobile edit toggle switches back to edit
 func TestMobile_EditToggleSwitchesBack(t *testing.T) {
+	requireServer(t)
 	ctx, cancel := chromedp.NewContext(context.Background())
 	defer cancel()
 
@@ -945,6 +970,7 @@ func TestMobile_EditToggleSwitchesBack(t *testing.T) {
 
 // Test 26: Tablet viewport renders correctly
 func TestTablet_ViewportRenders(t *testing.T) {
+	requireServer(t)
 	ctx, cancel := chromedp.NewContext(context.Background())
 	defer cancel()
 
@@ -977,6 +1003,7 @@ func TestTablet_ViewportRenders(t *testing.T) {
 
 // Test 27: Theme cards are clickable
 func TestGallery_ThemeCardsClickable(t *testing.T) {
+	requireServer(t)
 	ctx, cancel := chromedp.NewContext(context.Background())
 	defer cancel()
 
@@ -1009,6 +1036,7 @@ func TestGallery_ThemeCardsClickable(t *testing.T) {
 
 // Test 28: Theme selection updates hidden input
 func TestGallery_SelectionUpdatesHiddenInput(t *testing.T) {
+	requireServer(t)
 	ctx, cancel := chromedp.NewContext(context.Background())
 	defer cancel()
 
@@ -1040,6 +1068,7 @@ func TestGallery_SelectionUpdatesHiddenInput(t *testing.T) {
 
 // Test 29: Theme filter dropdown exists
 func TestGallery_FilterDropdownExists(t *testing.T) {
+	requireServer(t)
 	ctx, cancel := chromedp.NewContext(context.Background())
 	defer cancel()
 
@@ -1067,6 +1096,7 @@ func TestGallery_FilterDropdownExists(t *testing.T) {
 
 // Test 30: Selected theme has correct styling
 func TestGallery_SelectedThemeHasClass(t *testing.T) {
+	requireServer(t)
 	ctx, cancel := chromedp.NewContext(context.Background())
 	defer cancel()
 
@@ -1103,6 +1133,7 @@ func TestGallery_SelectedThemeHasClass(t *testing.T) {
 
 // Test 31: Mode toggle has proper ARIA roles
 func TestAccessibility_ModeToggleARIARoles(t *testing.T) {
+	requireServer(t)
 	ctx, cancel := chromedp.NewContext(context.Background())
 	defer cancel()
 
@@ -1134,6 +1165,7 @@ func TestAccessibility_ModeToggleARIARoles(t *testing.T) {
 
 // Test 32: Preview iframe has title attribute
 func TestAccessibility_IframeHasTitle(t *testing.T) {
+	requireServer(t)
 	ctx, cancel := chromedp.NewContext(context.Background())
 	defer cancel()
 
@@ -1161,6 +1193,7 @@ func TestAccessibility_IframeHasTitle(t *testing.T) {
 
 // Test 33: Loading indicator has ARIA live region
 func TestAccessibility_LoadingIndicatorARIALive(t *testing.T) {
+	requireServer(t)
 	ctx, cancel := chromedp.NewContext(context.Background())
 	defer cancel()
 
@@ -1192,6 +1225,7 @@ func TestAccessibility_LoadingIndicatorARIALive(t *testing.T) {
 
 // Test 34: Error indicator has alert role
 func TestAccessibility_ErrorIndicatorAlertRole(t *testing.T) {
+	requireServer(t)
 	ctx, cancel := chromedp.NewContext(context.Background())
 	defer cancel()
 
@@ -1219,6 +1253,7 @@ func TestAccessibility_ErrorIndicatorAlertRole(t *testing.T) {
 
 // Test 35: Theme cards have proper ARIA attributes
 func TestAccessibility_ThemeCardsARIAAttributes(t *testing.T) {
+	requireServer(t)
 	ctx, cancel := chromedp.NewContext(context.Background())
 	defer cancel()
 
@@ -1254,6 +1289,7 @@ func TestAccessibility_ThemeCardsARIAAttributes(t *testing.T) {
 
 // Test 36: Complete workflow - gallery to design mode
 func TestIntegration_GalleryToDesignWorkflow(t *testing.T) {
+	requireServer(t)
 	ctx, cancel := chromedp.NewContext(context.Background())
 	defer cancel()
 
@@ -1284,6 +1320,7 @@ func TestIntegration_GalleryToDesignWorkflow(t *testing.T) {
 
 // Test 37: Complete workflow - edit form and see preview
 func TestIntegration_EditFormSeePreview(t *testing.T) {
+	requireServer(t)
 	ctx, cancel := chromedp.NewContext(context.Background())
 	defer cancel()
 
@@ -1322,6 +1359,7 @@ func TestIntegration_EditFormSeePreview(t *testing.T) {
 
 // Test 38: Form persistence across mode switches
 func TestIntegration_FormPersistsAcrossModes(t *testing.T) {
+	requireServer(t)
 	ctx, cancel := chromedp.NewContext(context.Background())
 	defer cancel()
 
@@ -1366,6 +1404,7 @@ func TestIntegration_FormPersistsAcrossModes(t *testing.T) {
 
 // Test 39: Theme selection persists in design mode dropdown
 func TestIntegration_ThemeSelectionPersistsInDropdown(t *testing.T) {
+	requireServer(t)
 	ctx, cancel := chromedp.NewContext(context.Background())
 	defer cancel()
 
@@ -1404,6 +1443,7 @@ func TestIntegration_ThemeSelectionPersistsInDropdown(t *testing.T) {
 
 // Test 40: Multiple field updates work correctly
 func TestIntegration_MultipleFieldUpdates(t *testing.T) {
+	requireServer(t)
 	ctx, cancel := chromedp.NewContext(context.Background())
 	defer cancel()
 

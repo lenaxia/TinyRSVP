@@ -413,29 +413,44 @@ func TestThemePickerHiddenInputUpdate(t *testing.T) {
 }
 
 func extractSelectThemeMethod(js string) string {
-	startIdx := strings.Index(js, "selectTheme(")
-	if startIdx == -1 {
-		return ""
-	}
-
-	braceCount := 0
-	inMethod := false
-	var result strings.Builder
-
-	for i := startIdx; i < len(js); i++ {
-		char := js[i]
-		result.WriteByte(char)
-
-		if char == '{' {
-			braceCount++
-			inMethod = true
-		} else if char == '}' {
-			braceCount--
-			if inMethod && braceCount == 0 {
-				break
-			}
+	// Look for the method definition (not a call site).
+	// The definition is "selectTheme(themeId) {" (with a { on the same line or next).
+	// We search for the pattern where selectTheme( is followed by a { before a ;
+	idx := 0
+	for {
+		startIdx := strings.Index(js[idx:], "selectTheme(")
+		if startIdx == -1 {
+			return ""
 		}
-	}
+		startIdx += idx
 
-	return result.String()
+		// Check if this is a method definition by looking ahead for '{' before ';' or next line
+		rest := js[startIdx:]
+		bracePos := strings.Index(rest, "{")
+		semiPos := strings.Index(rest, ";")
+		// If { comes before ;, this is likely the method definition
+		if bracePos != -1 && (semiPos == -1 || bracePos < semiPos) {
+			// Extract the method body
+			braceCount := 0
+			inMethod := false
+			var result strings.Builder
+
+			for i := startIdx; i < len(js); i++ {
+				char := js[i]
+				result.WriteByte(char)
+
+				if char == '{' {
+					braceCount++
+					inMethod = true
+				} else if char == '}' {
+					braceCount--
+					if inMethod && braceCount == 0 {
+						break
+					}
+				}
+			}
+			return result.String()
+		}
+		idx = startIdx + 1
+	}
 }
