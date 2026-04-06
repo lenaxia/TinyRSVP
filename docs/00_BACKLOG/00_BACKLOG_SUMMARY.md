@@ -37,13 +37,12 @@ This document provides a comprehensive breakdown of the TinyRSVP v0 implementati
 | 11: RSVP Themes | ✅ Complete | HIGH | 100% | |
 | 12: Test Infrastructure | ⚠️ Partial | HIGH | 100% | Phases 1-3 + Phase 5 done; Phase 4 partial (cleanup + TESTING.md missing) |
 | 13: Guest Accounts | ❌ Not Started | N/A | N/A | |
-| 14: Bug Fixes & Gaps | ❌ Not Started | N/A | N/A | 6 stories: 1 critical, 3 high, 1 medium, 1 low |
+| 14: Bug Fixes & Gaps | ✅ Complete (Story 01 deferred) | HIGH | 100% | Stories 02-06 done; Story 01 (X-Test-User-ID) deferred to Epic 09 |
 
 **All 32 non-browser test packages pass (verified 2026-04-06).**
 
-**Production Ready:** NO — two blockers before public deployment:
-1. `X-Test-User-ID` auth bypass must be removed/gated — **Epic 14 Story 01**
-2. Three functional bugs in email system — **Epic 14 Stories 02, 03, 04**
+**Production Ready:** NO — one remaining blocker:
+1. `X-Test-User-ID` auth bypass must be removed/gated before public deployment — **Epic 14 Story 01 / Epic 09**
 
 ---
 

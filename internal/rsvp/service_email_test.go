@@ -8,9 +8,24 @@ import (
 	"time"
 
 	"github.com/lenaxia/tinyrsvp/internal/db/repositories"
-	"github.com/lenaxia/tinyrsvp/internal/email"
 	"github.com/lenaxia/tinyrsvp/internal/models"
 )
+
+// mockEmailService is a test-only implementation of email.Service.
+// It lives here (not in the email package) so the production email package
+// ships no mock code.
+type mockEmailService struct {
+	sendConfirmationEmailFunc  func(ctx context.Context, token string, rsvp *models.RSVP, invite *models.Invite, event *models.Event, answers []*models.RSVPAnswer) error
+	sendConfirmationEmailCalls int
+}
+
+func (m *mockEmailService) SendConfirmationEmail(ctx context.Context, token string, rsvp *models.RSVP, invite *models.Invite, event *models.Event, answers []*models.RSVPAnswer) error {
+	m.sendConfirmationEmailCalls++
+	if m.sendConfirmationEmailFunc != nil {
+		return m.sendConfirmationEmailFunc(ctx, token, rsvp, invite, event, answers)
+	}
+	return nil
+}
 
 func TestService_SubmitRSVP_SendsConfirmationEmail(t *testing.T) {
 	database := setupTestDB(t)
@@ -60,8 +75,8 @@ func TestService_SubmitRSVP_SendsConfirmationEmail(t *testing.T) {
 
 	var wg sync.WaitGroup
 	wg.Add(1)
-	mockEmail := &email.MockService{
-		SendConfirmationEmailFunc: func(ctx context.Context, token string, rsvp *models.RSVP, invite *models.Invite, event *models.Event, answers []*models.RSVPAnswer) error {
+	mockEmail := &mockEmailService{
+		sendConfirmationEmailFunc: func(ctx context.Context, token string, rsvp *models.RSVP, invite *models.Invite, event *models.Event, answers []*models.RSVPAnswer) error {
 			defer wg.Done()
 			return nil
 		},
@@ -86,8 +101,8 @@ func TestService_SubmitRSVP_SendsConfirmationEmail(t *testing.T) {
 
 	wg.Wait()
 
-	if mockEmail.SendConfirmationEmailCalls != 1 {
-		t.Errorf("Expected SendConfirmationEmail to be called once, got %d calls", mockEmail.SendConfirmationEmailCalls)
+	if mockEmail.sendConfirmationEmailCalls != 1 {
+		t.Errorf("Expected SendConfirmationEmail to be called once, got %d calls", mockEmail.sendConfirmationEmailCalls)
 	}
 }
 
@@ -139,8 +154,8 @@ func TestService_SubmitRSVP_EmailFailureDoesNotBlockRSVP(t *testing.T) {
 
 	var wg sync.WaitGroup
 	wg.Add(1)
-	mockEmail := &email.MockService{
-		SendConfirmationEmailFunc: func(ctx context.Context, token string, rsvp *models.RSVP, invite *models.Invite, event *models.Event, answers []*models.RSVPAnswer) error {
+	mockEmail := &mockEmailService{
+		sendConfirmationEmailFunc: func(ctx context.Context, token string, rsvp *models.RSVP, invite *models.Invite, event *models.Event, answers []*models.RSVPAnswer) error {
 			defer wg.Done()
 			return errors.New("email service unavailable")
 		},
@@ -228,8 +243,8 @@ func TestService_UpdateRSVP_SendsConfirmationEmail(t *testing.T) {
 
 	var wg sync.WaitGroup
 	wg.Add(1)
-	mockEmail := &email.MockService{
-		SendConfirmationEmailFunc: func(ctx context.Context, token string, rsvp *models.RSVP, invite *models.Invite, event *models.Event, answers []*models.RSVPAnswer) error {
+	mockEmail := &mockEmailService{
+		sendConfirmationEmailFunc: func(ctx context.Context, token string, rsvp *models.RSVP, invite *models.Invite, event *models.Event, answers []*models.RSVPAnswer) error {
 			defer wg.Done()
 			return nil
 		},
@@ -254,8 +269,8 @@ func TestService_UpdateRSVP_SendsConfirmationEmail(t *testing.T) {
 
 	wg.Wait()
 
-	if mockEmail.SendConfirmationEmailCalls != 1 {
-		t.Errorf("Expected SendConfirmationEmail to be called once, got %d calls", mockEmail.SendConfirmationEmailCalls)
+	if mockEmail.sendConfirmationEmailCalls != 1 {
+		t.Errorf("Expected SendConfirmationEmail to be called once, got %d calls", mockEmail.sendConfirmationEmailCalls)
 	}
 }
 
@@ -305,7 +320,7 @@ func TestService_SubmitRSVP_NoEmailIfInviteHasNoEmail(t *testing.T) {
 	answerRepo := repositories.NewAnswerRepository(database)
 	questionRepo := repositories.NewQuestionRepository(database)
 
-	mockEmail := &email.MockService{}
+	mockEmail := &mockEmailService{}
 	service := NewServiceWithEmail(database, inviteService, inviteRepo, eventRepo, rsvpRepo, answerRepo, questionRepo, mockEmail)
 
 	req := &SubmitRSVPRequest{
@@ -324,7 +339,7 @@ func TestService_SubmitRSVP_NoEmailIfInviteHasNoEmail(t *testing.T) {
 		t.Fatal("Expected RSVP to be returned")
 	}
 
-	if mockEmail.SendConfirmationEmailCalls != 0 {
-		t.Errorf("Expected SendConfirmationEmail not to be called when invite has no email, got %d calls", mockEmail.SendConfirmationEmailCalls)
+	if mockEmail.sendConfirmationEmailCalls != 0 {
+		t.Errorf("Expected SendConfirmationEmail not to be called when invite has no email, got %d calls", mockEmail.sendConfirmationEmailCalls)
 	}
 }

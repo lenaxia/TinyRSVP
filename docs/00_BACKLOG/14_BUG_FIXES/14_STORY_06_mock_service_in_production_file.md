@@ -66,4 +66,12 @@ go test -timeout 30s ./...
 
 ## Status
 
-- **Status:** Not Started
+- **Status:** ✅ Complete — 2026-04-06
+
+## Implementation Notes
+
+- `MockService` struct and `SendConfirmationEmail` method deleted from `internal/email/service.go`. File now contains only the `Service` interface.
+- `internal/rsvp/service_email_test.go`: added local `mockEmailService` (unexported, test-file only) with `sendConfirmationEmailFunc` and `sendConfirmationEmailCalls` fields. The `email` package import removed entirely.
+- 4 test usages migrated: `&email.MockService{...}` → `&mockEmailService{...}`, exported field names → unexported.
+- The generated `testutil/mocks/services/MockEmailService` (gomock) was not used — the existing tests use a function-field pattern incompatible with gomock's `EXPECT()` API. Switching would be a separate refactor beyond this story's scope.
+- 32/32 packages pass.
