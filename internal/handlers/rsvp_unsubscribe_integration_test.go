@@ -283,3 +283,64 @@ func TestUnsubscribeHandler_Integration_Idempotent(t *testing.T) {
 		t.Error("Expected invite to still be marked as unsubscribed after second call")
 	}
 }
+
+// TestUnsubscribeHandler_ProductionTemplateSet proves that the production
+// template set (rsvpPageTemplates as constructed in main.go) contains
+// "unsubscribe.html" and renders it correctly with UnsubscribePageData.
+// This is the regression test for the bug where unsubscribe.html was missing
+// from the set and ExecuteTemplate returned an error.
+func TestUnsubscribeHandler_ProductionTemplateSet_RendersUnsubscribePage(t *testing.T) {
+	// Mirror the ParseFiles call from cmd/server/main.go exactly.
+	tmpl, err := template.New("rsvp_page.html").ParseFiles(
+		"../../templates/web/partials/base.html",
+		"../../templates/web/partials/navigation.html",
+		"../../templates/web/rsvp_page.html",
+		"../../templates/web/unsubscribe.html",
+	)
+	if err != nil {
+		t.Fatalf("Failed to parse production template set: %v", err)
+	}
+
+	database := setupIntegrationTestDB(t)
+	defer database.Close()
+
+	user := createTestUser(t, database)
+	event := createTestEventForRSVP(t, database, user.ID)
+	_, inviteToken := createTestInviteForRSVP(t, database, event.ID)
+
+	secret := []byte("test-secret-key-32-bytes-long!!")
+	generator := token.NewGenerator(secret)
+	inviteRepo := repositories.NewInviteRepository(database)
+	inviteService := invites.NewInviteService(generator, inviteRepo)
+	eventRepo := repositories.NewEventRepository(database)
+	rsvpRepo := repositories.NewRSVPRepository(database)
+	questionRepo := repositories.NewQuestionRepository(database)
+
+	handler := NewRSVPHandler(inviteService, eventRepo, rsvpRepo, questionRepo)
+	handler.SetTemplates(tmpl)
+
+	r := chi.NewRouter()
+	r.Get("/unsubscribe/{token}", handler.Unsubscribe)
+
+	req := httptest.NewRequest("GET", "/unsubscribe/"+inviteToken, nil)
+	w := httptest.NewRecorder()
+	r.ServeHTTP(w, req)
+
+	if w.Code != http.StatusOK {
+		t.Errorf("Expected status 200, got %d. Body: %s", w.Code, w.Body.String())
+	}
+
+	body := w.Body.String()
+
+	// Must not be the error fallback string.
+	if strings.Contains(body, "Failed to render page") {
+		t.Error("Response must not contain fallback error — template was not found in set")
+	}
+	// Must contain the styled page content from unsubscribe.html.
+	if !strings.Contains(body, "Unsubscribed Successfully") {
+		t.Errorf("Expected styled success content from unsubscribe.html, got: %s", body)
+	}
+	if !strings.Contains(body, event.Title) {
+		t.Errorf("Expected event title %q in response, got: %s", event.Title, body)
+	}
+}

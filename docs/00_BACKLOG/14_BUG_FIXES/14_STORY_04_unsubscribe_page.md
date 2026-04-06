@@ -92,4 +92,12 @@ Manual verification:
 
 ## Status
 
-- **Status:** Not Started
+- **Status:** ✅ Complete — 2026-04-06
+
+## Implementation Notes
+
+- One-line fix: `"templates/web/unsubscribe.html"` added to the `ParseFiles` call for `rsvpPageTemplates` in `cmd/server/main.go:410-415`.
+- `unsubscribe.html` is a standalone HTML document (no `{{define}}` blocks) — `ParseFiles` names it `"unsubscribe.html"`, exactly matching the `ExecuteTemplate` call.
+- No template function conflicts — `unsubscribe.html` uses only `.Success`, `.ErrorMessage`, `.Event.Title`, `.Event.Description` with no custom funcmap calls.
+- Pre-existing `TestUnsubscribeHandler_Integration_Success` loaded `unsubscribe.html` in isolation — masked the bug. New test `TestUnsubscribeHandler_ProductionTemplateSet_RendersUnsubscribePage` mirrors the exact production `ParseFiles` call and asserts: (a) status 200, (b) "Failed to render page" absent, (c) "Unsubscribed Successfully" present, (d) event title present.
+- 32/32 packages pass.

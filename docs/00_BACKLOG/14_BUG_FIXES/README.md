@@ -35,7 +35,7 @@ The items are ordered by severity:
 |-------|-------|------|--------|
 | [14_STORY_02](14_STORY_02_invite_email_template.md) | Render invite email template instead of hardcoded plaintext | `internal/invites/service.go:275` | ✅ Complete |
 | [14_STORY_03](14_STORY_03_confirmation_question_names.md) | Look up question text in confirmation emails (not "Question N") | `internal/email/confirmation_service.go:157` | ✅ Complete |
-| [14_STORY_04](14_STORY_04_unsubscribe_page.md) | Fix unsubscribe page — add template to rsvpPageTemplates | `cmd/server/main.go:410` | Not Started |
+| [14_STORY_04](14_STORY_04_unsubscribe_page.md) | Fix unsubscribe page — add template to rsvpPageTemplates | `cmd/server/main.go:410` | ✅ Complete |
 
 ### Medium — Dead Code / Unreachable Features
 

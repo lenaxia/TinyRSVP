@@ -411,6 +411,7 @@ func main() {
 		"templates/web/partials/base.html",
 		"templates/web/partials/navigation.html",
 		"templates/web/rsvp_page.html",
+		"templates/web/unsubscribe.html",
 	)
 	if err != nil {
 		logger.Error("Failed to parse RSVP page templates", "error", err)

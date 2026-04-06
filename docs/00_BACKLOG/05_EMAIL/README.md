@@ -1,12 +1,12 @@
 # Epic: Email System & Calendar Integration
 
 **Priority:** High  
-**Status:** ⚠️ Mostly Complete — 1 known bug  
+**Status:** ✅ Complete  
 **Target Version:** v0  
 **Completed:** 2026-01-09
-**Confidence:** HIGH (90%)
+**Confidence:** HIGH (95%)
 **Test Pass Rate:** 100%
-**Production Ready:** Partial (unsubscribe page still broken — see BUG-3)
+**Production Ready:** Yes
 
 ---
 
@@ -28,7 +28,7 @@ Implement reliable email delivery system with queue management, retry logic, and
 - [x] ICS calendar files generated correctly (RFC 5545)
 - [x] Bounce handling for failed deliveries
 - [x] Email templates support HTML and plain text
-- [~] Unsubscribe mechanism functional — DB unsubscribe succeeds but success page returns garbled body (see Known Bugs)
+- [x] Unsubscribe mechanism functional
 
 ## Known Bugs (Code-Verified)
 
@@ -46,12 +46,10 @@ Implement reliable email delivery system with queue management, retry logic, and
 - Graceful fallback to `"Question N"` if question was deleted after RSVP, or if no repo is configured.
 - `TestSendConfirmationEmail_WithAnswers` updated to assert real question labels. Two new fallback tests added.
 
-**BUG-3: Unsubscribe success page renders garbled**
-- `unsubscribe.html` is not included in `rsvpPageTemplates` (main.go:410-414 parses only base, navigation, rsvp_page).
-- `renderUnsubscribePage` calls `h.templates.ExecuteTemplate("unsubscribe.html", ...)`, which errors.
-- Since `w.WriteHeader(status)` was already called before `ExecuteTemplate`, the subsequent `http.Error` cannot change the status code and writes "Failed to render page\n" as the body.
-- The DB unsubscribe itself succeeds; only the success page is broken.
-- Fix: add `"templates/web/unsubscribe.html"` to the rsvpPageTemplates ParseFiles call in main.go.
+**BUG-3: ~~Unsubscribe success page renders garbled~~** ✅ Fixed 2026-04-06
+- `unsubscribe.html` added to `rsvpPageTemplates` `ParseFiles` call in `main.go`.
+- `ExecuteTemplate(w, "unsubscribe.html", data)` now finds the template and renders correctly.
+- `TestUnsubscribeHandler_ProductionTemplateSet_RendersUnsubscribePage` added — mirrors the exact `ParseFiles` call from `main.go`, proves styled content is rendered and fallback error string is absent.
 
 ---
 
