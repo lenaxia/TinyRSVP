@@ -3,8 +3,10 @@ package handlers
 import (
 	"context"
 	"errors"
+	"html/template"
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"testing"
 
 	"github.com/go-chi/chi/v5"
@@ -274,5 +276,66 @@ func TestGetEditorPage_NegativeID(t *testing.T) {
 
 	if w.Code != http.StatusBadRequest {
 		t.Errorf("Expected status %d, got %d", http.StatusBadRequest, w.Code)
+	}
+}
+
+// TestGetEditorPage_ProductionTemplateSet_RendersEditorPage proves that the
+// production template set (as constructed in main.go) contains
+// "template_editor.html" and renders it without error. This is the regression
+// test for the dead-code bug — verifying wiring is complete end-to-end.
+func TestGetEditorPage_ProductionTemplateSet_RendersEditorPage(t *testing.T) {
+	// Mirror the ParseFiles call from cmd/server/main.go exactly.
+	tmpl, err := template.New("template_editor.html").ParseFiles(
+		"../../templates/web/partials/base.html",
+		"../../templates/web/partials/navigation.html",
+		"../../templates/web/template_editor.html",
+	)
+	if err != nil {
+		t.Fatalf("Failed to parse production template set: %v", err)
+	}
+
+	tmplModel := &models.Template{
+		ID:   1,
+		Name: "Test Template",
+		Type: models.TemplateTypeRSVPPage,
+	}
+
+	service := &mockEditorPageService{
+		getEditableTemplateFunc: func(ctx context.Context, id int64) (*templates.EditableTemplate, error) {
+			return &templates.EditableTemplate{
+				Template:        tmplModel,
+				ComponentConfig: nil,
+			}, nil
+		},
+	}
+
+	handler := NewTemplateEditorHandlers(service)
+	handler.SetTemplates(tmpl)
+
+	user := &models.User{ID: 1, Email: "admin@example.com", Role: models.RoleAdmin}
+
+	req := httptest.NewRequest(http.MethodGet, "/templates/1/edit", nil)
+	rctx := chi.NewRouteContext()
+	rctx.URLParams.Add("id", "1")
+	req = req.WithContext(context.WithValue(req.Context(), chi.RouteCtxKey, rctx))
+	req = req.WithContext(auth.WithUser(req.Context(), user))
+
+	w := httptest.NewRecorder()
+	handler.GetEditorPage(w, req)
+
+	if w.Code != http.StatusOK {
+		t.Errorf("Expected status 200, got %d. Body: %s", w.Code, w.Body.String())
+	}
+
+	body := w.Body.String()
+
+	if strings.Contains(body, "Failed to render page") {
+		t.Error("Response must not contain render error fallback")
+	}
+	if strings.Contains(body, "Template engine not initialized") {
+		t.Error("Response must not contain inline fallback — SetTemplates not called")
+	}
+	if !strings.Contains(body, "Test Template") {
+		t.Errorf("Expected template name in response body, got: %s", body)
 	}
 }

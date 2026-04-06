@@ -248,11 +248,13 @@ func (h *TemplateEditorHandlers) GetEditorPage(w http.ResponseWriter, r *http.Re
 	}
 
 	data := struct {
-		Template *models.Template
-		User     *models.User
+		Template   *models.Template
+		User       *models.User
+		ActivePage string
 	}{
-		Template: editable.Template,
-		User:     user,
+		Template:   editable.Template,
+		User:       user,
+		ActivePage: "templates",
 	}
 
 	h.renderPage(w, http.StatusOK, data)
