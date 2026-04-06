@@ -41,7 +41,7 @@ The items are ordered by severity:
 
 | Story | Title | File | Status |
 |-------|-------|------|--------|
-| [14_STORY_05](14_STORY_05_wire_template_editor.md) | Wire template editor routes into router (or delete) | `cmd/server/main.go`, `internal/handlers/router.go` | Not Started |
+| [14_STORY_05](14_STORY_05_wire_template_editor.md) | Wire template editor routes into router (or delete) | `cmd/server/main.go`, `internal/handlers/router.go` | ✅ Complete |
 
 ### Low — Code Quality
 

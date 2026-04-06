@@ -58,6 +58,7 @@ type RouterHandlers struct {
 	RSVPSummaryHandler       RSVPSummaryHandlerInterface
 	UserHandler              UserHandlerInterface
 	TemplateHandlers         TemplateHandlerInterface
+	TemplateEditorHandlers   RouteRegistrar
 	CustomizationHandlers    CustomizationHandlerInterface
 	AssetHandler             AssetHandlerInterface
 
@@ -535,6 +536,10 @@ func NewRouter(handlers *RouterHandlers) *Router {
 	}
 
 	r.Mount("/api", apiRouter)
+
+	if handlers.TemplateEditorHandlers != nil {
+		handlers.TemplateEditorHandlers.RegisterRoutes(r)
+	}
 
 	if handlers.RSVPHandler != nil {
 		r.Route("/rsvp/{token}", func(r chi.Router) {

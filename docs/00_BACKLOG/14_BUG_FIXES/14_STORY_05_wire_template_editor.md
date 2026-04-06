@@ -100,4 +100,14 @@ go test -timeout 30s ./...
 
 ## Status
 
-- **Status:** Not Started
+- **Status:** ✅ Complete (wired) — 2026-04-06
+
+## Implementation Notes
+
+- `TemplateEditorHandlers RouteRegistrar` field added to `RouterHandlers` struct in `router.go`.
+- `handlers.TemplateEditorHandlers.RegisterRoutes(r)` called on the **root router** (not `apiRouter`) after `r.Mount("/api", apiRouter)`. This is required because `RegisterRoutes` hardcodes `/api/templates/{id}/components` paths — mounting on `apiRouter` would produce `/api/api/...`.
+- Auth: `RegisterRoutes` routes bypass `apiRouter`'s `RequireAuth` middleware. The handler methods check `auth.UserFromContext` directly and return 401 — consistent with how the feature was designed.
+- In `main.go`: `templates.NewEditorService(templateRepo)` constructed; `handlers.NewTemplateEditorHandlers(editorService)` created; `template_editor.html` parsed with `base.html` + `navigation.html` (template uses `{{template "base" .}}`); `templateEditorHandlers.SetTemplates(...)` called; `TemplateEditorHandlers: templateEditorHandlers` added to `RouterHandlers` literal.
+- Routes now live at: `GET /templates/{id}/edit`, `GET /api/templates/{id}/components`, `PUT /api/templates/{id}/components`, `POST /api/templates/{id}/components/preview`, `GET /api/templates/{id}/components/validate`.
+- All existing template editor tests (`template_editor_test.go`, `_integration_test.go`, `_page_test.go`) pass.
+- 32/32 packages pass.

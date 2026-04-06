@@ -550,6 +550,20 @@ func main() {
 	userManagementHandler.SetTemplates(userManagementTemplates)
 	logger.Info("User management templates loaded successfully")
 
+	templateEditorTemplates, err := template.New("template_editor.html").Funcs(funcMap).ParseFiles(
+		"templates/web/partials/base.html",
+		"templates/web/partials/navigation.html",
+		"templates/web/template_editor.html",
+	)
+	if err != nil {
+		logger.Error("Failed to load template editor templates", "error", err)
+		os.Exit(1)
+	}
+	editorService := templates.NewEditorService(templateRepo)
+	templateEditorHandlers := handlers.NewTemplateEditorHandlers(editorService)
+	templateEditorHandlers.SetTemplates(templateEditorTemplates)
+	logger.Info("Template editor initialized")
+
 	icsGenerator := ics.NewGenerator()
 	emailService := email.NewConfirmationServiceWithQuestions(templateRenderer, emailQueueRepo, icsGenerator, cfg.Server.BaseURL, questionRepo)
 	logger.Info("Initialized email confirmation service")
@@ -637,6 +651,7 @@ func main() {
 		AdminDashboardHandler:    adminDashboardHandler,
 		UserManagementHandler:    userManagementHandler,
 		TemplateHandlers:         templateHandlers,
+		TemplateEditorHandlers:   templateEditorHandlers,
 		CustomizationHandlers:    customizationHandlers,
 		AssetHandler:             assetHandler,
 		CleanupHandler:           cleanupHandler,

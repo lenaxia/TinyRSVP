@@ -29,11 +29,8 @@ All routes implemented and tests pass. Two issues found during code-level valida
 - Used by `tests/ux/server_test.go` for browser tests. Should be gated by a build tag (`//go:build testing`) or env flag.
 - Must be removed or gated before public deployment.
 
-**ISSUE-2: Template editor routes unreachable**
-- `internal/handlers/template_editor.go` implements full component editor UI (`/templates/{id}/edit`, `/api/templates/{id}/components`).
-- `NewTemplateEditorHandlers` is never called in `cmd/server/main.go`.
-- Routes are never registered in `router.go`.
-- Feature is completely dead. Route table in docs is aspirational for this path.
+**ISSUE-2: ~~Template editor routes unreachable~~** ✅ Fixed 2026-04-06
+- `TemplateEditorHandlers` wired in `main.go` and `router.go`. Routes now live at `GET /templates/{id}/edit` and `GET|PUT /api/templates/{id}/components`.
 
 ---
 
