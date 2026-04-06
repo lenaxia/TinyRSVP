@@ -8,7 +8,7 @@ This directory contains all user stories for Epic 12: Test Infrastructure Modern
 
 **Estimated Effort:** 20-26 hours (3-4 weeks)
 
-**Status:** Not Started
+**Status:** Partially Complete — Phases 1-3 done, Phase 4 partially done, Phase 5 done
 
 ---
 
@@ -18,10 +18,10 @@ This directory contains all user stories for Epic 12: Test Infrastructure Modern
 
 | Story | Title | Effort | Status |
 |-------|-------|--------|--------|
-| [01](12_STORY_01_testutil_package.md) | Create testutil Package Structure | 30 min | Not Started |
-| [02](12_STORY_02_pointer_helpers.md) | Centralize Pointer Helpers | 30 min | Not Started |
-| [03](12_STORY_03_database_helpers.md) | Database Test Helpers | 1 hour | Not Started |
-| [04](12_STORY_04_context_helpers.md) | Auth Context Helpers | 30 min | Not Started |
+| [01](12_STORY_01_testutil_package.md) | Create testutil Package Structure | 30 min | ✅ Done — `internal/testutil/` package exists with `context.go`, `database.go`, `fixtures.go`, `http.go`, `pointers.go`, `doc.go` |
+| [02](12_STORY_02_pointer_helpers.md) | Centralize Pointer Helpers | 30 min | ✅ Done — `internal/testutil/pointers.go` exists; tests pass |
+| [03](12_STORY_03_database_helpers.md) | Database Test Helpers | 1 hour | ✅ Done — `internal/testutil/database.go` exists |
+| [04](12_STORY_04_context_helpers.md) | Auth Context Helpers | 30 min | ✅ Done — `internal/testutil/context.go` exists |
 
 **Phase 1 Total: 2.5 hours**
 
@@ -29,10 +29,10 @@ This directory contains all user stories for Epic 12: Test Infrastructure Modern
 
 | Story | Title | Effort | Status |
 |-------|-------|--------|--------|
-| [05](12_STORY_05_mockgen_setup.md) | Install and Configure mockgen | 30 min | Not Started |
-| [06](12_STORY_06_priority1_mocks.md) | Generate Priority 1 Repository Mocks | 1 hour | Not Started |
-| [07](12_STORY_07_service_mocks.md) | Generate Service Mocks | 30 min | Not Started |
-| [08](12_STORY_08_remaining_mocks.md) | Generate Remaining Mocks | 30 min | Not Started |
+| [05](12_STORY_05_mockgen_setup.md) | Install and Configure mockgen | 30 min | ✅ Done — `//go:generate mockgen` directives present in mock files |
+| [06](12_STORY_06_priority1_mocks.md) | Generate Priority 1 Repository Mocks | 1 hour | ✅ Done — 10 repository mocks in `internal/testutil/mocks/repositories/` |
+| [07](12_STORY_07_service_mocks.md) | Generate Service Mocks | 30 min | ✅ Done — 8 service mocks in `internal/testutil/mocks/services/` |
+| [08](12_STORY_08_remaining_mocks.md) | Generate Remaining Mocks | 30 min | ✅ Done — additional mocks in `internal/testutil/mocks/other/` (12 files) |
 
 **Phase 2 Total: 2.5 hours**
 
@@ -40,11 +40,11 @@ This directory contains all user stories for Epic 12: Test Infrastructure Modern
 
 | Story | Title | Effort | Status |
 |-------|-------|--------|--------|
-| [09](12_STORY_09_validate_pattern.md) | Migrate 3 Example Files to Validate | 2 hours | Not Started |
-| [10](12_STORY_10_reflect_adjust.md) | Review and Adjust Approach | 1 hour | Not Started |
-| [11](12_STORY_11_migrate_handlers.md) | Migrate Handler Tests (~81 files) | 4-5 hours | Not Started |
-| [12](12_STORY_12_migrate_services.md) | Migrate Service Tests (~30 files) | 2-3 hours | Not Started |
-| [13](12_STORY_13_migrate_repos.md) | Migrate Repository Tests | 1 hour | Not Started |
+| [09](12_STORY_09_validate_pattern.md) | Migrate 3 Example Files to Validate | 2 hours | ✅ Done |
+| [10](12_STORY_10_reflect_adjust.md) | Review and Adjust Approach | 1 hour | ✅ Done — PROCEED decision made |
+| [11](12_STORY_11_migrate_handlers.md) | Migrate Handler Tests (~81 files) | 4-5 hours | ⚠️ Partial — 14 handler test files use `testutil/mocks`; ~67 test files still define local mock structs |
+| [12](12_STORY_12_migrate_services.md) | Migrate Service Tests (~30 files) | 2-3 hours | ⚠️ Partial — some service tests migrated, others still use local mocks |
+| [13](12_STORY_13_migrate_repos.md) | Migrate Repository Tests | 1 hour | ✅ Done — repository tests use real SQLite, no mocks needed |
 
 **Phase 3 Total: 10-12 hours**
 
@@ -52,10 +52,10 @@ This directory contains all user stories for Epic 12: Test Infrastructure Modern
 
 | Story | Title | Effort | Status |
 |-------|-------|--------|--------|
-| [14](12_STORY_14_cleanup_old_mocks.md) | Remove Manual Mocks and Duplicates | 1 hour | Not Started |
-| [15](12_STORY_15_testing_docs.md) | Create TESTING.md | 1 hour | Not Started |
-| [16](12_STORY_16_testutil_readme.md) | Document testutil Package | 30 min | Not Started |
-| [17](12_STORY_17_update_llm_guide.md) | Update README-LLM with Testing | 30 min | Not Started |
+| [14](12_STORY_14_cleanup_old_mocks.md) | Remove Manual Mocks and Duplicates | 1 hour | ❌ Not Done — ~67 local mock struct definitions remain in test files |
+| [15](12_STORY_15_testing_docs.md) | Create TESTING.md | 1 hour | ❌ Not Done — no `TESTING.md` at repo root |
+| [16](12_STORY_16_testutil_readme.md) | Document testutil Package | 30 min | ✅ Done — `internal/testutil/README.md` exists |
+| [17](12_STORY_17_update_llm_guide.md) | Update README-LLM with Testing | 30 min | ✅ Done — `README-LLM.md` has testutil/mockgen section at line 890 |
 
 **Phase 4 Total: 3 hours**
 
@@ -63,9 +63,9 @@ This directory contains all user stories for Epic 12: Test Infrastructure Modern
 
 | Story | Title | Effort | Status |
 |-------|-------|--------|--------|
-| [18](12_STORY_18_test_builders.md) | Create Test Data Builders | 2-3 hours | Not Started |
-| [19](12_STORY_19_http_helpers.md) | HTTP Test Helpers | 1-2 hours | Not Started |
-| [20](12_STORY_20_fixture_files.md) | Test Fixture Files | 1 hour | Not Started |
+| [18](12_STORY_18_test_builders.md) | Create Test Data Builders | 2-3 hours | ✅ Done — `internal/testutil/builders/` package exists |
+| [19](12_STORY_19_http_helpers.md) | HTTP Test Helpers | 1-2 hours | ✅ Done — `internal/testutil/http.go` exists |
+| [20](12_STORY_20_fixture_files.md) | Test Fixture Files | 1 hour | ✅ Done — `internal/testutil/testdata/` and `fixtures.go` exist |
 
 **Phase 5 Total: 4-6 hours**
 

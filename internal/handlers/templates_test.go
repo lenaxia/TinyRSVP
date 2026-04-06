@@ -117,6 +117,10 @@ func (m *mockTemplateService) RenderRSVPPage(w io.Writer, event *models.Event, t
 	return nil
 }
 
+func (m *mockTemplateService) RenderEmailTemplate(ctx context.Context, eventID int64, templateType models.TemplateType, data interface{}) (string, string, error) {
+	return "", "", nil
+}
+
 func TestTemplateHandlers_CreateTemplate(t *testing.T) {
 	tests := []struct {
 		name           string

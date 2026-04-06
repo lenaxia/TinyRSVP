@@ -1,22 +1,43 @@
 # Epic: API & HTTP Layer
 
 **Priority:** High
-**Status:** ✅ Complete
+**Status:** ⚠️ Mostly Complete — 1 critical security issue, 1 dead feature  
 **Target Version:** v0
 **Completed:** 2026-01-10
-**Confidence:** HIGH (95%)
+**Confidence:** MEDIUM (80%)
 **Test Pass Rate:** 100% (all tests passing as of 2026-03-05)
-**Production Ready:** Yes
+**Production Ready:** No — X-Test-User-ID bypass must be removed before public deployment
 
 ---
 
 ## Current Status
 
-**Last Updated:** 2026-03-05
+**Last Updated:** 2026-04-06
 
-All known issues from Feb 2026 have been resolved. All 33 packages pass. The confirmation page 500 bug was fixed (buffered template render + nil guard). The 8 test failures originally documented were already resolved before this date.
+All routes implemented and tests pass. Two issues found during code-level validation:
+
+1. **`X-Test-User-ID` auth bypass is active in production** (Critical — see Known Issues)
+2. **Template editor routes are registered in docs but never registered in router** (Dead code)
 
 ---
+
+## Known Issues (Code-Verified)
+
+**ISSUE-1 (Critical): X-Test-User-ID authentication bypass**
+- `internal/middleware/rbac.go:16`: `if testUserID := r.Header.Get("X-Test-User-ID"); testUserID != "" {`
+- No build tag, no env flag, no conditional. Any HTTP request with this header bypasses session auth and impersonates any user by ID.
+- Used by `tests/ux/server_test.go` for browser tests. Should be gated by a build tag (`//go:build testing`) or env flag.
+- Must be removed or gated before public deployment.
+
+**ISSUE-2: Template editor routes unreachable**
+- `internal/handlers/template_editor.go` implements full component editor UI (`/templates/{id}/edit`, `/api/templates/{id}/components`).
+- `NewTemplateEditorHandlers` is never called in `cmd/server/main.go`.
+- Routes are never registered in `router.go`.
+- Feature is completely dead. Route table in docs is aspirational for this path.
+
+---
+
+
 
 ## Overview
 

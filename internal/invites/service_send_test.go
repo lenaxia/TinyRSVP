@@ -2,11 +2,14 @@ package invites
 
 import (
 	"context"
+	"fmt"
+	"io"
 	"testing"
 	"time"
 
 	"github.com/lenaxia/tinyrsvp/internal/db/repositories"
 	"github.com/lenaxia/tinyrsvp/internal/models"
+	"github.com/lenaxia/tinyrsvp/internal/templates"
 	"github.com/lenaxia/tinyrsvp/internal/testutil"
 	"github.com/lenaxia/tinyrsvp/pkg/token"
 )
@@ -364,5 +367,276 @@ func TestSendInvite_NilToken_ReturnsError(t *testing.T) {
 	err := service.SendInvite(context.Background(), req, emailRepo)
 	if err == nil {
 		t.Error("Expected error for invite with nil token, got nil")
+	}
+}
+
+// --- template rendering tests ---
+
+// stubTemplateService is a minimal stub of templates.Service used only in
+// send tests. Only RenderEmailTemplate is implemented; all other methods
+// return zero values or errors.
+type stubTemplateService struct {
+	renderEmailTemplateFn func(ctx context.Context, eventID int64, templateType string, data interface{}) (string, string, error)
+}
+
+func (s *stubTemplateService) RenderEmailTemplate(ctx context.Context, eventID int64, templateType models.TemplateType, data interface{}) (string, string, error) {
+	if s.renderEmailTemplateFn != nil {
+		return s.renderEmailTemplateFn(ctx, eventID, string(templateType), data)
+	}
+	return "", "", nil
+}
+
+// Unused interface methods — zero-value stubs.
+func (s *stubTemplateService) CreateTemplate(ctx context.Context, t *models.Template) error {
+	return nil
+}
+func (s *stubTemplateService) GetTemplate(ctx context.Context, id int64) (*models.Template, error) {
+	return nil, nil
+}
+func (s *stubTemplateService) GetTemplateForEvent(ctx context.Context, eventID int64, templateType models.TemplateType) (*models.Template, error) {
+	return nil, nil
+}
+func (s *stubTemplateService) GetDefaultTemplate(ctx context.Context, templateType models.TemplateType) (*models.Template, error) {
+	return nil, nil
+}
+func (s *stubTemplateService) UpdateTemplate(ctx context.Context, t *models.Template) error {
+	return nil
+}
+func (s *stubTemplateService) DeleteTemplate(ctx context.Context, id int64) error { return nil }
+func (s *stubTemplateService) SetActive(ctx context.Context, id int64, active bool) error {
+	return nil
+}
+func (s *stubTemplateService) SetDefault(ctx context.Context, id int64) error { return nil }
+func (s *stubTemplateService) ListTemplates(ctx context.Context, filters *repositories.TemplateFilters) ([]*models.Template, error) {
+	return nil, nil
+}
+func (s *stubTemplateService) PreviewTemplate(ctx context.Context, req *templates.PreviewRequest) (*templates.PreviewResponse, error) {
+	return nil, nil
+}
+func (s *stubTemplateService) GetComponentRenderer() *templates.ComponentRenderer { return nil }
+func (s *stubTemplateService) RenderRSVPPage(w io.Writer, event *models.Event, tmpl *models.Template) error {
+	return nil
+}
+
+func TestSendInvite_WithTemplateService_RendersHTMLAndText(t *testing.T) {
+	now := time.Now()
+	expiresAt := now.Add(30 * 24 * time.Hour)
+	emailAddr := "guest@example.com"
+	plainToken := "test-token-abc123"
+
+	invite := &models.Invite{
+		ID:          1,
+		EventID:     42,
+		Email:       &emailAddr,
+		Name:        testutil.StringPtr("Alice"),
+		Token:       &plainToken,
+		TokenHash:   "somehash",
+		MaxPlusOnes: 1,
+		Status:      models.InviteStatusDraft,
+		ExpiresAt:   expiresAt,
+		CreatedAt:   now,
+		UpdatedAt:   now,
+	}
+
+	event := &models.Event{
+		ID:    42,
+		Title: "Alice's Birthday",
+	}
+
+	repo := &mockSendInviteRepo{
+		getByIDFunc: func(ctx context.Context, id int64) (*models.Invite, error) { return invite, nil },
+		updateFunc:  func(ctx context.Context, inv *models.Invite) error { return nil },
+	}
+
+	var queuedEmail *models.EmailQueue
+	emailRepo := &mockEmailQueueRepo{
+		createFunc: func(ctx context.Context, e *models.EmailQueue) error {
+			queuedEmail = e
+			return nil
+		},
+	}
+
+	renderCalled := false
+	var capturedEventID int64
+	var capturedType string
+
+	tmplSvc := &stubTemplateService{
+		renderEmailTemplateFn: func(ctx context.Context, eventID int64, templateType string, data interface{}) (string, string, error) {
+			renderCalled = true
+			capturedEventID = eventID
+			capturedType = templateType
+			return "<html>You're invited to Alice's Birthday!</html>", "You're invited to Alice's Birthday!", nil
+		},
+	}
+
+	generator := token.NewGenerator([]byte("test-secret-key-32-bytes-long!!"))
+	service := &inviteService{
+		generator:       generator,
+		repo:            repo,
+		templateService: tmplSvc,
+	}
+
+	req := &SendInviteRequest{
+		InviteID: 1,
+		BaseURL:  "https://rsvp.example.com",
+		Event:    event,
+	}
+
+	if err := service.SendInvite(context.Background(), req, emailRepo); err != nil {
+		t.Fatalf("Expected no error, got %v", err)
+	}
+
+	if !renderCalled {
+		t.Error("Expected template service RenderEmailTemplate to be called")
+	}
+	if capturedEventID != 42 {
+		t.Errorf("Expected eventID 42, got %d", capturedEventID)
+	}
+	if capturedType != string(models.TemplateTypeInviteEmail) {
+		t.Errorf("Expected template type %q, got %q", models.TemplateTypeInviteEmail, capturedType)
+	}
+
+	if queuedEmail == nil {
+		t.Fatal("Expected email to be queued")
+	}
+	if queuedEmail.BodyHTML == nil || *queuedEmail.BodyHTML == "" {
+		t.Error("Expected BodyHTML to be populated from template")
+	}
+	if queuedEmail.BodyText == "" {
+		t.Error("Expected BodyText to be populated from template")
+	}
+	// The stub returns a fixed string — verify the service used it as-is
+	// (the template content itself is tested in the templates package).
+	if queuedEmail.BodyText != "You're invited to Alice's Birthday!" {
+		t.Errorf("Expected BodyText from stub renderer, got: %s", queuedEmail.BodyText)
+	}
+	expectedSubject := "You're Invited: Alice's Birthday"
+	if queuedEmail.Subject != expectedSubject {
+		t.Errorf("Expected Subject %q, got %q", expectedSubject, queuedEmail.Subject)
+	}
+}
+
+func TestSendInvite_WithTemplateService_FallsBackToPlaintextOnRenderError(t *testing.T) {
+	now := time.Now()
+	expiresAt := now.Add(30 * 24 * time.Hour)
+	emailAddr := "guest@example.com"
+	plainToken := "test-token-abc123"
+
+	invite := &models.Invite{
+		ID:          1,
+		EventID:     42,
+		Email:       &emailAddr,
+		Name:        testutil.StringPtr("Bob"),
+		Token:       &plainToken,
+		TokenHash:   "somehash",
+		MaxPlusOnes: 0,
+		Status:      models.InviteStatusDraft,
+		ExpiresAt:   expiresAt,
+		CreatedAt:   now,
+		UpdatedAt:   now,
+	}
+
+	event := &models.Event{ID: 42, Title: "Bob's Party"}
+
+	repo := &mockSendInviteRepo{
+		getByIDFunc: func(ctx context.Context, id int64) (*models.Invite, error) { return invite, nil },
+		updateFunc:  func(ctx context.Context, inv *models.Invite) error { return nil },
+	}
+
+	var queuedEmail *models.EmailQueue
+	emailRepo := &mockEmailQueueRepo{
+		createFunc: func(ctx context.Context, e *models.EmailQueue) error {
+			queuedEmail = e
+			return nil
+		},
+	}
+
+	tmplSvc := &stubTemplateService{
+		renderEmailTemplateFn: func(ctx context.Context, eventID int64, templateType string, data interface{}) (string, string, error) {
+			return "", "", fmt.Errorf("template not found")
+		},
+	}
+
+	generator := token.NewGenerator([]byte("test-secret-key-32-bytes-long!!"))
+	service := &inviteService{
+		generator:       generator,
+		repo:            repo,
+		templateService: tmplSvc,
+	}
+
+	req := &SendInviteRequest{
+		InviteID: 1,
+		BaseURL:  "https://rsvp.example.com",
+		Event:    event,
+	}
+
+	if err := service.SendInvite(context.Background(), req, emailRepo); err != nil {
+		t.Fatalf("Expected no error on render failure (should fall back), got %v", err)
+	}
+
+	if queuedEmail == nil {
+		t.Fatal("Expected email to be queued even when template render fails")
+	}
+	if queuedEmail.BodyText == "" {
+		t.Error("Expected plaintext fallback body to be non-empty")
+	}
+	expectedURL := "https://rsvp.example.com/rsvp/" + plainToken
+	if !contains(queuedEmail.BodyText, expectedURL) {
+		t.Errorf("Expected fallback body to contain RSVP URL %q, got: %s", expectedURL, queuedEmail.BodyText)
+	}
+}
+
+func TestSendInvite_WithoutTemplateService_UsesPlaintext(t *testing.T) {
+	now := time.Now()
+	expiresAt := now.Add(30 * 24 * time.Hour)
+	emailAddr := "guest@example.com"
+	plainToken := "test-token-abc123"
+
+	invite := &models.Invite{
+		ID:          2,
+		EventID:     10,
+		Email:       &emailAddr,
+		Name:        testutil.StringPtr("Carol"),
+		Token:       &plainToken,
+		TokenHash:   "somehash",
+		MaxPlusOnes: 0,
+		Status:      models.InviteStatusDraft,
+		ExpiresAt:   expiresAt,
+		CreatedAt:   now,
+		UpdatedAt:   now,
+	}
+
+	repo := &mockSendInviteRepo{
+		getByIDFunc: func(ctx context.Context, id int64) (*models.Invite, error) { return invite, nil },
+		updateFunc:  func(ctx context.Context, inv *models.Invite) error { return nil },
+	}
+
+	var queuedEmail *models.EmailQueue
+	emailRepo := &mockEmailQueueRepo{
+		createFunc: func(ctx context.Context, e *models.EmailQueue) error {
+			queuedEmail = e
+			return nil
+		},
+	}
+
+	generator := token.NewGenerator([]byte("test-secret-key-32-bytes-long!!"))
+	// No templateService — uses NewInviteService constructor path.
+	service := &inviteService{generator: generator, repo: repo}
+
+	req := &SendInviteRequest{InviteID: 2, BaseURL: "https://rsvp.example.com"}
+
+	if err := service.SendInvite(context.Background(), req, emailRepo); err != nil {
+		t.Fatalf("Expected no error, got %v", err)
+	}
+
+	if queuedEmail == nil {
+		t.Fatal("Expected email to be queued")
+	}
+	if queuedEmail.BodyHTML != nil {
+		t.Error("Expected BodyHTML to be nil when no template service is configured")
+	}
+	expectedURL := "https://rsvp.example.com/rsvp/" + plainToken
+	if !contains(queuedEmail.BodyText, expectedURL) {
+		t.Errorf("Expected plaintext body to contain RSVP URL %q, got: %s", expectedURL, queuedEmail.BodyText)
 	}
 }

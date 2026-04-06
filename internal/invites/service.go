@@ -8,6 +8,7 @@ import (
 
 	"github.com/lenaxia/tinyrsvp/internal/db/repositories"
 	"github.com/lenaxia/tinyrsvp/internal/models"
+	"github.com/lenaxia/tinyrsvp/internal/templates"
 	"github.com/lenaxia/tinyrsvp/pkg/token"
 )
 
@@ -46,6 +47,10 @@ type UpdateInviteRequest struct {
 type SendInviteRequest struct {
 	InviteID int64
 	BaseURL  string
+	// Event is optional. When provided and an InviteEmailRenderer is configured,
+	// the invite email is rendered using the invite_email template. When nil,
+	// a plain-text fallback body is used.
+	Event *models.Event
 }
 
 type RevokeInviteRequest struct {
@@ -97,14 +102,26 @@ type InviteService interface {
 }
 
 type inviteService struct {
-	generator token.Generator
-	repo      repositories.InviteRepository
+	generator       token.Generator
+	repo            repositories.InviteRepository
+	templateService templates.Service
 }
 
 func NewInviteService(generator token.Generator, repo repositories.InviteRepository) InviteService {
 	return &inviteService{
 		generator: generator,
 		repo:      repo,
+	}
+}
+
+// NewInviteServiceWithTemplates creates an InviteService that renders invite
+// emails using DB-backed templates via the supplied templates.Service.
+// Pass nil to fall back to the plain-text body (same as NewInviteService).
+func NewInviteServiceWithTemplates(generator token.Generator, repo repositories.InviteRepository, templateService templates.Service) InviteService {
+	return &inviteService{
+		generator:       generator,
+		repo:            repo,
+		templateService: templateService,
 	}
 }
 
@@ -272,13 +289,46 @@ func (s *inviteService) SendInvite(ctx context.Context, req *SendInviteRequest, 
 	}
 
 	subject := "You're Invited!"
-	bodyText := fmt.Sprintf("Hello %s,\n\nYou've been invited to an event.\n\nRSVP here: %s\n\nThis link expires on %s.",
-		name, rsvpURL, invite.ExpiresAt.Format("January 2, 2006"))
+	if req.Event != nil {
+		subject = fmt.Sprintf("You're Invited: %s", req.Event.Title)
+	}
+
+	// Build email body. Use the template service when both it and an Event are
+	// provided — this renders the DB-backed invite_email template (supporting
+	// per-event customization). Fall back to plain-text otherwise.
+	var bodyHTML, bodyText string
+	if s.templateService != nil && req.Event != nil {
+		templateData := map[string]interface{}{
+			"Event":       req.Event,
+			"Invite":      invite,
+			"RSVPURL":     rsvpURL,
+			"MaxPlusOnes": invite.MaxPlusOnes,
+		}
+		renderedHTML, renderedText, renderErr := s.templateService.RenderEmailTemplate(
+			ctx, invite.EventID, models.TemplateTypeInviteEmail, templateData,
+		)
+		if renderErr == nil {
+			bodyHTML = renderedHTML
+			bodyText = renderedText
+		}
+	}
+
+	// Fallback: plain-text body when template rendering was skipped or failed.
+	if bodyText == "" {
+		bodyText = fmt.Sprintf("Hello %s,\n\nYou've been invited to an event.\n\nRSVP here: %s\n\nThis link expires on %s.",
+			name, rsvpURL, invite.ExpiresAt.Format("January 2, 2006"))
+	}
+
+	var bodyHTMLPtr *string
+	if bodyHTML != "" {
+		bodyHTMLPtr = &bodyHTML
+	}
 
 	emailQueue := &models.EmailQueue{
 		ToEmail:      *invite.Email,
 		ToName:       invite.Name,
 		Subject:      subject,
+		BodyHTML:     bodyHTMLPtr,
 		BodyText:     bodyText,
 		Status:       models.EmailStatusPending,
 		Attempts:     0,

@@ -89,6 +89,7 @@ func (h *SendInviteHandlers) SendInvite(w http.ResponseWriter, r *http.Request) 
 	serviceReq := &invites.SendInviteRequest{
 		InviteID: inviteID,
 		BaseURL:  h.baseURL,
+		Event:    event,
 	}
 
 	if err := h.service.SendInvite(r.Context(), serviceReq, h.emailRepo); err != nil {

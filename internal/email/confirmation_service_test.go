@@ -120,6 +120,40 @@ func (m *mockICSGenerator) Generate(event *models.Event, rsvpURL string) ([]byte
 	return []byte("BEGIN:VCALENDAR\nEND:VCALENDAR"), nil
 }
 
+// mockQuestionRepository is a minimal stub for QuestionRepository used in
+// confirmation service tests. GetByEventID is the primary method exercised —
+// it filters the questions map by EventID, matching production behaviour.
+type mockQuestionRepository struct {
+	questions map[int64]*models.PreferenceQuestion
+}
+
+func (m *mockQuestionRepository) GetByID(ctx context.Context, id int64) (*models.PreferenceQuestion, error) {
+	if q, ok := m.questions[id]; ok {
+		return q, nil
+	}
+	return nil, fmt.Errorf("question %d not found", id)
+}
+
+func (m *mockQuestionRepository) Create(ctx context.Context, q *models.PreferenceQuestion) error {
+	return nil
+}
+func (m *mockQuestionRepository) GetByEventID(ctx context.Context, eventID int64) ([]*models.PreferenceQuestion, error) {
+	var result []*models.PreferenceQuestion
+	for _, q := range m.questions {
+		if q.EventID == eventID {
+			result = append(result, q)
+		}
+	}
+	return result, nil
+}
+func (m *mockQuestionRepository) Update(ctx context.Context, q *models.PreferenceQuestion) error {
+	return nil
+}
+func (m *mockQuestionRepository) Delete(ctx context.Context, id int64) error { return nil }
+func (m *mockQuestionRepository) Reorder(ctx context.Context, eventID int64, ids []int64) error {
+	return nil
+}
+
 func TestNewConfirmationService(t *testing.T) {
 	renderer := &mockTemplateRenderer{}
 	repo := &mockEmailQueueRepository{}
@@ -516,8 +550,14 @@ func TestSendConfirmationEmail_WithAnswers(t *testing.T) {
 	}
 	repo := &mockEmailQueueRepository{}
 	generator := &mockICSGenerator{}
+	questionRepo := &mockQuestionRepository{
+		questions: map[int64]*models.PreferenceQuestion{
+			1: {ID: 1, EventID: 1, QuestionText: "Dietary requirements?"},
+			2: {ID: 2, EventID: 1, QuestionText: "T-shirt size?"},
+		},
+	}
 
-	service := NewConfirmationService(renderer, repo, generator, "https://rsvp.example.com")
+	service := NewConfirmationServiceWithQuestions(renderer, repo, generator, "https://rsvp.example.com", questionRepo)
 
 	ctx := context.Background()
 	startTime := time.Now().Add(24 * time.Hour)
@@ -548,18 +588,8 @@ func TestSendConfirmationEmail_WithAnswers(t *testing.T) {
 	answer1 := "Vegetarian"
 	answer2 := "No allergies"
 	answers := []*models.RSVPAnswer{
-		{
-			ID:         1,
-			RSVPID:     1,
-			QuestionID: 1,
-			AnswerText: &answer1,
-		},
-		{
-			ID:         2,
-			RSVPID:     1,
-			QuestionID: 2,
-			AnswerText: &answer2,
-		},
+		{ID: 1, RSVPID: 1, QuestionID: 1, AnswerText: &answer1},
+		{ID: 2, RSVPID: 1, QuestionID: 2, AnswerText: &answer2},
 	}
 
 	err := service.SendConfirmationEmail(ctx, "test-token", rsvp, invite, event, answers)
@@ -593,16 +623,16 @@ func TestSendConfirmationEmail_WithAnswers(t *testing.T) {
 		t.Fatalf("Expected 2 answers, got %d", len(templateData.Answers))
 	}
 
-	if templateData.Answers[0].Question != "Question 1" {
-		t.Errorf("Expected first answer question to be 'Question 1', got %s", templateData.Answers[0].Question)
+	if templateData.Answers[0].Question != "Dietary requirements?" {
+		t.Errorf("Expected first answer question to be 'Dietary requirements?', got %s", templateData.Answers[0].Question)
 	}
 
 	if templateData.Answers[0].Answer != answer1 {
 		t.Errorf("Expected first answer to be %s, got %s", answer1, templateData.Answers[0].Answer)
 	}
 
-	if templateData.Answers[1].Question != "Question 2" {
-		t.Errorf("Expected second answer question to be 'Question 2', got %s", templateData.Answers[1].Question)
+	if templateData.Answers[1].Question != "T-shirt size?" {
+		t.Errorf("Expected second answer question to be 'T-shirt size?', got %s", templateData.Answers[1].Question)
 	}
 
 	if templateData.Answers[1].Answer != answer2 {
@@ -839,5 +869,101 @@ func TestSendConfirmationEmail_UsesBaseURL(t *testing.T) {
 		}
 	} else {
 		t.Errorf("Template data was not *RSVPConfirmationTemplateData, got %T", capturedTemplateData)
+	}
+}
+
+func TestSendConfirmationEmail_WithAnswers_FallsBackWhenQuestionNotFound(t *testing.T) {
+	var capturedData interface{}
+	renderer := &mockTemplateRenderer{
+		renderHTMLFunc: func(ctx context.Context, templateName string, data interface{}) (string, error) {
+			capturedData = data
+			return "<html>test</html>", nil
+		},
+	}
+
+	// Question repo that knows about question 1 (EventID 1) but not question 99.
+	// Answer for question 99 should be silently omitted.
+	questionRepo := &mockQuestionRepository{
+		questions: map[int64]*models.PreferenceQuestion{
+			1: {ID: 1, EventID: 1, QuestionText: "Dietary requirements?"},
+		},
+	}
+
+	service := NewConfirmationServiceWithQuestions(renderer, &mockEmailQueueRepository{}, &mockICSGenerator{}, "https://rsvp.example.com", questionRepo)
+
+	startTime := time.Now().Add(24 * time.Hour)
+	email := "test@example.com"
+	name := "Alice"
+	answer1 := "Vegan"
+	answer2 := "Medium"
+
+	answers := []*models.RSVPAnswer{
+		{ID: 1, RSVPID: 1, QuestionID: 1, AnswerText: &answer1},
+		{ID: 2, RSVPID: 1, QuestionID: 99, AnswerText: &answer2}, // question 99 doesn't exist
+	}
+
+	err := service.SendConfirmationEmail(
+		context.Background(), "tok",
+		&models.RSVP{ID: 1, Response: models.RSVPResponseYes},
+		&models.Invite{ID: 1, EventID: 1, Email: &email, Name: &name},
+		&models.Event{ID: 1, Title: "Test Event", StartTime: startTime},
+		answers,
+	)
+	if err != nil {
+		t.Fatalf("Expected no error on missing question, got %v", err)
+	}
+
+	td, ok := capturedData.(*RSVPConfirmationTemplateData)
+	if !ok {
+		t.Fatalf("Expected *RSVPConfirmationTemplateData, got %T", capturedData)
+	}
+	// Only the known question should appear; the deleted one is omitted.
+	if len(td.Answers) != 1 {
+		t.Fatalf("Expected 1 answer (deleted question omitted), got %d", len(td.Answers))
+	}
+	if td.Answers[0].Question != "Dietary requirements?" {
+		t.Errorf("Expected 'Dietary requirements?', got %q", td.Answers[0].Question)
+	}
+}
+
+func TestSendConfirmationEmail_WithAnswers_NoQuestionRepo_OmitsAnswers(t *testing.T) {
+	var capturedData interface{}
+	renderer := &mockTemplateRenderer{
+		renderHTMLFunc: func(ctx context.Context, templateName string, data interface{}) (string, error) {
+			capturedData = data
+			return "<html>test</html>", nil
+		},
+	}
+
+	// NewConfirmationService — no question repo.
+	// Answers cannot be labelled so they should be omitted entirely.
+	service := NewConfirmationService(renderer, &mockEmailQueueRepository{}, &mockICSGenerator{}, "https://rsvp.example.com")
+
+	startTime := time.Now().Add(24 * time.Hour)
+	email := "test@example.com"
+	name := "Bob"
+	answer := "Chicken"
+
+	answers := []*models.RSVPAnswer{
+		{ID: 1, RSVPID: 1, QuestionID: 5, AnswerText: &answer},
+	}
+
+	err := service.SendConfirmationEmail(
+		context.Background(), "tok",
+		&models.RSVP{ID: 1, Response: models.RSVPResponseYes},
+		&models.Invite{ID: 1, EventID: 1, Email: &email, Name: &name},
+		&models.Event{ID: 1, Title: "Dinner", StartTime: startTime},
+		answers,
+	)
+	if err != nil {
+		t.Fatalf("Expected no error, got %v", err)
+	}
+
+	td, ok := capturedData.(*RSVPConfirmationTemplateData)
+	if !ok {
+		t.Fatalf("Expected *RSVPConfirmationTemplateData, got %T", capturedData)
+	}
+	if len(td.Answers) != 0 {
+		t.Errorf("Expected answers to be omitted when no question repo is configured, got %d answers", len(td.Answers))
 	}
 }

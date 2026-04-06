@@ -227,7 +227,7 @@ func main() {
 		}
 	}
 	tokenGenerator := token.NewGenerator(tokenSecretBytes)
-	inviteService := invites.NewInviteService(tokenGenerator, inviteRepo)
+	inviteService := invites.NewInviteServiceWithTemplates(tokenGenerator, inviteRepo, templateService)
 	individualInviteService := invites.NewIndividualInviteService(tokenGenerator, inviteRepo, eventRepo)
 
 	logger.Info("Initialized invite services")
@@ -550,7 +550,7 @@ func main() {
 	logger.Info("User management templates loaded successfully")
 
 	icsGenerator := ics.NewGenerator()
-	emailService := email.NewConfirmationService(templateRenderer, emailQueueRepo, icsGenerator, cfg.Server.BaseURL)
+	emailService := email.NewConfirmationServiceWithQuestions(templateRenderer, emailQueueRepo, icsGenerator, cfg.Server.BaseURL, questionRepo)
 	logger.Info("Initialized email confirmation service")
 
 	rsvpService := rsvp.NewServiceWithEmail(database, inviteService, inviteRepo, eventRepo, rsvpRepo, answerRepo, questionRepo, emailService)

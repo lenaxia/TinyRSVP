@@ -26,22 +26,30 @@ Epic 10 is reserved for technical debt, improvements, and issues that don't fit 
 - [10_STORY_03_invite_management_ui.md](10_STORY_03_invite_management_ui.md) - Invite management UI with modals
 - [10_STORY_04_reduce_ui_padding.md](10_STORY_04_reduce_ui_padding.md) - Reduce excessive padding and spacing
 - [10_STORY_05_reusable_datetime_picker.md](10_STORY_05_reusable_datetime_picker.md) - Reusable datetime picker component
+- [10_STORY_09_event_filtering_sorting.md](10_STORY_09_event_filtering_sorting.md) - Event list filtering and sorting _(code-verified: handler + template both support status filter)_
+- [10_STORY_12_theme_switching.md](10_STORY_12_theme_switching.md) - Light/dark theme switching _(code-verified: `theme_controller.js` + `theme_toggle.css` + toggle button implemented)_
 
 ### In Progress
 - _(none)_
 
 ### Planned
-- [10_STORY_06_oidc_return_url.md](10_STORY_06_oidc_return_url.md) - Return URL preservation in OIDC flow
-- [10_STORY_07_event_list_stats.md](10_STORY_07_event_list_stats.md) - Event list stats display (invite/RSVP counts)
-- [10_STORY_08_dashboard_clickable_events.md](10_STORY_08_dashboard_clickable_events.md) - Dashboard recent events clickable links
-- [10_STORY_09_event_filtering_sorting.md](10_STORY_09_event_filtering_sorting.md) - Event list filtering and sorting
-- [10_STORY_10_admin_settings_page.md](10_STORY_10_admin_settings_page.md) - Admin settings page
-- [10_STORY_11_admin_metrics_dashboard.md](10_STORY_11_admin_metrics_dashboard.md) - Admin metrics dashboard
-- [10_STORY_12_theme_switching.md](10_STORY_12_theme_switching.md) - Light/dark theme switching with real-time toggle
-- [10_STORY_13_admin_theme_integration.md](10_STORY_13_admin_theme_integration.md) - Admin template theme integration (identified in Epic 11 validation)
-- [10_STORY_14_rsvp_summary_template_fix.md](10_STORY_14_rsvp_summary_template_fix.md) - RSVP summary template structure fix (identified in Epic 11 validation)
-- [10_STORY_15_auth_test_expectations.md](10_STORY_15_auth_test_expectations.md) - Auth test expectations fix (identified in Epic 11 validation)
-- [10_STORY_16_auth_test_compilation.md](10_STORY_16_auth_test_compilation.md) - Auth test compilation fix (identified in Epic 11 validation)
+- [10_STORY_06_oidc_return_url.md](10_STORY_06_oidc_return_url.md) - Return URL preservation in OIDC flow _(partial: `ValidateReturnURL` exists in `internal/auth/redirect.go` but not confirmed wired into OIDC login handler — needs verification)_
+- [10_STORY_07_event_list_stats.md](10_STORY_07_event_list_stats.md) - Event list stats display (invite/RSVP counts) _(not implemented: event list template has no InviteCount/RSVPCount fields)_
+- [10_STORY_08_dashboard_clickable_events.md](10_STORY_08_dashboard_clickable_events.md) - Dashboard recent events clickable links _(not implemented: `ActivityItem` struct has no EventID or URL field; dashboard activity items are plain text)_
+- [10_STORY_10_admin_settings_page.md](10_STORY_10_admin_settings_page.md) - Admin settings page _(not implemented: no template, no route in router.go)_
+- [10_STORY_11_admin_metrics_dashboard.md](10_STORY_11_admin_metrics_dashboard.md) - Admin metrics dashboard _(not implemented)_
+- [10_STORY_13_admin_theme_integration.md](10_STORY_13_admin_theme_integration.md) - Admin template theme integration
+- [10_STORY_14_rsvp_summary_template_fix.md](10_STORY_14_rsvp_summary_template_fix.md) - RSVP summary template structure fix
+- [10_STORY_15_auth_test_expectations.md](10_STORY_15_auth_test_expectations.md) - Auth test expectations fix
+- [10_STORY_16_auth_test_compilation.md](10_STORY_16_auth_test_compilation.md) - Auth test compilation fix
+
+### New Issues Added (2026-04-06 code validation)
+- **10_STORY_17**: Remove or gate `X-Test-User-ID` bypass in `internal/middleware/rbac.go:16` — move to Epic 09 if preferred
+- **10_STORY_18**: Fix `MockService` in production file — move `internal/email/service.go`'s `MockService` struct to `internal/testutil/mocks/services/`
+- **10_STORY_19**: Wire template editor (`internal/handlers/template_editor.go`) into router, or delete it
+- **10_STORY_20**: Fix invite email to render `TemplateTypeInviteEmail` instead of hardcoded plaintext (`internal/invites/service.go:275`) — move to Epic 05 if preferred
+- **10_STORY_21**: Fix confirmation email question names (`internal/email/confirmation_service.go:157`) — move to Epic 05 if preferred
+- **10_STORY_22**: Fix unsubscribe page — add `templates/web/unsubscribe.html` to rsvpPageTemplates in `main.go` — move to Epic 05 if preferred
 
 ### Analysis Documents
 - [10_ANALYSIS_image_templates_wysiwyg.md](10_ANALYSIS_image_templates_wysiwyg.md) - Image templates & WYSIWYG editor analysis

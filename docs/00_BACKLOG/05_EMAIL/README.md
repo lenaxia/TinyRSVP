@@ -1,12 +1,12 @@
 # Epic: Email System & Calendar Integration
 
 **Priority:** High  
-**Status:** ✅ Complete  
+**Status:** ⚠️ Mostly Complete — 1 known bug  
 **Target Version:** v0  
 **Completed:** 2026-01-09
-**Confidence:** HIGH (95%)
-**Test Pass Rate:** 100% (all tests passing, SMTP wire tests via MailHog)
-**Production Ready:** Yes
+**Confidence:** HIGH (90%)
+**Test Pass Rate:** 100%
+**Production Ready:** Partial (unsubscribe page still broken — see BUG-3)
 
 ---
 
@@ -28,11 +28,34 @@ Implement reliable email delivery system with queue management, retry logic, and
 - [x] ICS calendar files generated correctly (RFC 5545)
 - [x] Bounce handling for failed deliveries
 - [x] Email templates support HTML and plain text
-- [x] Unsubscribe mechanism functional
+- [~] Unsubscribe mechanism functional — DB unsubscribe succeeds but success page returns garbled body (see Known Bugs)
+
+## Known Bugs (Code-Verified)
+
+**BUG-1: ~~Invite emails ignore the template system~~** ✅ Fixed 2026-04-06
+- `SendInvite` now calls `templates.Service.RenderEmailTemplate` with the event's `TemplateTypeInviteEmail` template (per-event, falling back to system default).
+- `templates.Service` gained a `RenderEmailTemplate(ctx, eventID, templateType, data)` method.
+- `inviteService` created via `NewInviteServiceWithTemplates` in production.
+- Falls back to plain-text body if template service is nil or render fails.
+- 3 new tests added: template rendering path, fallback on error, no-service path.
+
+**BUG-2: ~~Confirmation emails show "Question 1", "Question 2" instead of question text~~** ✅ Fixed 2026-04-06
+- `confirmationService` gains an optional `questionRepo repositories.QuestionRepository` field.
+- `NewConfirmationServiceWithQuestions` constructor used in production.
+- `prepareTemplateData` now receives a pre-built `map[int64]string` of question texts, looked up per-answer in `SendConfirmationEmail`.
+- Graceful fallback to `"Question N"` if question was deleted after RSVP, or if no repo is configured.
+- `TestSendConfirmationEmail_WithAnswers` updated to assert real question labels. Two new fallback tests added.
+
+**BUG-3: Unsubscribe success page renders garbled**
+- `unsubscribe.html` is not included in `rsvpPageTemplates` (main.go:410-414 parses only base, navigation, rsvp_page).
+- `renderUnsubscribePage` calls `h.templates.ExecuteTemplate("unsubscribe.html", ...)`, which errors.
+- Since `w.WriteHeader(status)` was already called before `ExecuteTemplate`, the subsequent `http.Error` cannot change the status code and writes "Failed to render page\n" as the body.
+- The DB unsubscribe itself succeeds; only the success page is broken.
+- Fix: add `"templates/web/unsubscribe.html"` to the rsvpPageTemplates ParseFiles call in main.go.
 
 ---
 
-## User Stories
+
 
 ### Phase 1: SMTP Integration
 - [x] [`05_STORY_01_email_queue_repository.md`](05_STORY_01_email_queue_repository.md) - Email queue repository

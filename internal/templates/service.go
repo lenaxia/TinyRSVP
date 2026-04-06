@@ -24,6 +24,11 @@ type Service interface {
 	PreviewTemplate(ctx context.Context, req *PreviewRequest) (*PreviewResponse, error)
 	GetComponentRenderer() *ComponentRenderer
 	RenderRSVPPage(w io.Writer, event *models.Event, template *models.Template) error
+	// RenderEmailTemplate fetches the appropriate template for the event (falling back
+	// to the system default) and renders both HTML and text bodies with the supplied
+	// data. data is passed directly to the Go template engine, so field names must
+	// match the template variables.
+	RenderEmailTemplate(ctx context.Context, eventID int64, templateType models.TemplateType, data interface{}) (htmlBody, textBody string, err error)
 }
 
 type service struct {
@@ -304,6 +309,38 @@ func (s *service) PreviewTemplate(ctx context.Context, req *PreviewRequest) (*Pr
 	}
 
 	return response, nil
+}
+
+func (s *service) RenderEmailTemplate(ctx context.Context, eventID int64, templateType models.TemplateType, data interface{}) (string, string, error) {
+	tmpl, err := s.GetTemplateForEvent(ctx, eventID, templateType)
+	if err != nil {
+		return "", "", fmt.Errorf("failed to get template for event %d (type %s): %w", eventID, templateType, err)
+	}
+
+	engine := NewEngine()
+
+	htmlTmpl, err := engine.Parse(tmpl.HTMLContent)
+	if err != nil {
+		return "", "", fmt.Errorf("failed to parse HTML template: %w", err)
+	}
+	htmlBody, err := engine.ExecuteToString(htmlTmpl, data)
+	if err != nil {
+		return "", "", fmt.Errorf("failed to render HTML template: %w", err)
+	}
+
+	var textBody string
+	if tmpl.TextContent != nil && *tmpl.TextContent != "" {
+		textTmpl, err := engine.Parse(*tmpl.TextContent)
+		if err != nil {
+			return "", "", fmt.Errorf("failed to parse text template: %w", err)
+		}
+		textBody, err = engine.ExecuteToString(textTmpl, data)
+		if err != nil {
+			return "", "", fmt.Errorf("failed to render text template: %w", err)
+		}
+	}
+
+	return htmlBody, textBody, nil
 }
 
 func (s *service) RenderRSVPPage(w io.Writer, event *models.Event, template *models.Template) error {

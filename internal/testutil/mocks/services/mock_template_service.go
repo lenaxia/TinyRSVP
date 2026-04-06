@@ -161,6 +161,22 @@ func (mr *MockTemplateServiceMockRecorder) PreviewTemplate(ctx, req any) *gomock
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PreviewTemplate", reflect.TypeOf((*MockTemplateService)(nil).PreviewTemplate), ctx, req)
 }
 
+// RenderEmailTemplate mocks base method.
+func (m *MockTemplateService) RenderEmailTemplate(ctx context.Context, eventID int64, templateType models.TemplateType, data any) (string, string, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "RenderEmailTemplate", ctx, eventID, templateType, data)
+	ret0, _ := ret[0].(string)
+	ret1, _ := ret[1].(string)
+	ret2, _ := ret[2].(error)
+	return ret0, ret1, ret2
+}
+
+// RenderEmailTemplate indicates an expected call of RenderEmailTemplate.
+func (mr *MockTemplateServiceMockRecorder) RenderEmailTemplate(ctx, eventID, templateType, data any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RenderEmailTemplate", reflect.TypeOf((*MockTemplateService)(nil).RenderEmailTemplate), ctx, eventID, templateType, data)
+}
+
 // RenderRSVPPage mocks base method.
 func (m *MockTemplateService) RenderRSVPPage(w io.Writer, event *models.Event, template *models.Template) error {
 	m.ctrl.T.Helper()

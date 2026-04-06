@@ -1,11 +1,30 @@
 # Epic: Security Review & Penetration Testing
 
 **Priority:** Critical  
-**Status:** Not Started  
+**Status:** Not Started — **has one known critical vulnerability pre-identified**  
 **Target Version:** v0  
 **Estimated Effort:** 2 weeks
 
 ---
+
+## Pre-existing Security Findings (from code validation, 2026-04-06)
+
+These were found during general code review, before this epic begins. They must be fixed as part of Epic 09 or immediately before it:
+
+**CRITICAL: `X-Test-User-ID` header bypasses authentication in production**
+- File: `internal/middleware/rbac.go:16`
+- Any HTTP request with `X-Test-User-ID: <valid_user_id>` authenticates as that user, bypassing all session validation.
+- No build tag, no environment gate. Active in all deployments.
+- Fix: gate behind `//go:build testing` build tag, or replace with a proper test server setup that does not touch production middleware.
+
+**NOTE: Partial XSS coverage already exists**
+- `internal/templates/component_xss_test.go` and `xss_integration_test.go` cover XSS prevention for component rendering.
+- These do NOT cover XSS in event descriptions, invite names, or user-supplied fields rendered in HTML templates.
+- Epic 09 story 14 should extend coverage to those surfaces.
+
+---
+
+
 
 ## Overview
 

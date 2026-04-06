@@ -27,10 +27,11 @@ type RSVPConfirmationTemplateData struct {
 }
 
 type confirmationService struct {
-	renderer   TemplateRenderer
-	emailQueue repositories.EmailQueueRepository
-	icsGen     ics.Generator
-	baseURL    string
+	renderer     TemplateRenderer
+	emailQueue   repositories.EmailQueueRepository
+	icsGen       ics.Generator
+	baseURL      string
+	questionRepo repositories.QuestionRepository // optional; nil causes answers to be omitted from email
 }
 
 func NewConfirmationService(
@@ -47,6 +48,26 @@ func NewConfirmationService(
 	}
 }
 
+// NewConfirmationServiceWithQuestions creates a confirmationService that looks
+// up question text from the repository when building confirmation emails.
+// Use this in production so guests see real question labels in their confirmation.
+// Answers for questions not found (e.g. deleted after RSVP) are silently omitted.
+func NewConfirmationServiceWithQuestions(
+	renderer TemplateRenderer,
+	emailQueue repositories.EmailQueueRepository,
+	icsGen ics.Generator,
+	baseURL string,
+	questionRepo repositories.QuestionRepository,
+) Service {
+	return &confirmationService{
+		renderer:     renderer,
+		emailQueue:   emailQueue,
+		icsGen:       icsGen,
+		baseURL:      baseURL,
+		questionRepo: questionRepo,
+	}
+}
+
 func (s *confirmationService) SendConfirmationEmail(
 	ctx context.Context,
 	token string,
@@ -55,7 +76,22 @@ func (s *confirmationService) SendConfirmationEmail(
 	event *models.Event,
 	answers []*models.RSVPAnswer,
 ) error {
-	templateData := s.prepareTemplateData(token, rsvp, invite, event, answers)
+	// Build a question ID -> text map when a repository is available.
+	// One query fetches all questions for the event; answers for questions
+	// not found (deleted since RSVP) are silently omitted from the email.
+	questionTexts := make(map[int64]string)
+	if s.questionRepo != nil && len(answers) > 0 {
+		questions, err := s.questionRepo.GetByEventID(ctx, event.ID)
+		if err == nil {
+			for _, q := range questions {
+				questionTexts[q.ID] = q.QuestionText
+			}
+		}
+		// On error, questionTexts remains empty and all answers will be omitted —
+		// a non-fatal degradation (confirmation email still sends without Q&A section).
+	}
+
+	templateData := s.prepareTemplateData(token, rsvp, invite, event, answers, questionTexts)
 
 	htmlBody, err := s.renderer.RenderHTML(ctx, "rsvp_confirmation", templateData)
 	if err != nil {
@@ -113,6 +149,7 @@ func (s *confirmationService) prepareTemplateData(
 	invite *models.Invite,
 	event *models.Event,
 	answers []*models.RSVPAnswer,
+	questionTexts map[int64]string,
 ) *RSVPConfirmationTemplateData {
 	guestName := "Guest"
 	if invite.Name != nil {
@@ -139,8 +176,14 @@ func (s *confirmationService) prepareTemplateData(
 	}
 
 	if len(answers) > 0 {
-		answerData := make([]RSVPAnswerData, len(answers))
-		for i, answer := range answers {
+		answerData := make([]RSVPAnswerData, 0, len(answers))
+		for _, answer := range answers {
+			questionLabel, ok := questionTexts[answer.QuestionID]
+			if !ok || questionLabel == "" {
+				// Question not found (deleted since RSVP) or no repo available — skip.
+				continue
+			}
+
 			answerValue := ""
 			if answer.AnswerText != nil {
 				answerValue = *answer.AnswerText
@@ -153,12 +196,14 @@ func (s *confirmationService) prepareTemplateData(
 					answerValue = "No"
 				}
 			}
-			answerData[i] = RSVPAnswerData{
-				Question: fmt.Sprintf("Question %d", answer.QuestionID),
+			answerData = append(answerData, RSVPAnswerData{
+				Question: questionLabel,
 				Answer:   answerValue,
-			}
+			})
 		}
-		data.Answers = answerData
+		if len(answerData) > 0 {
+			data.Answers = answerData
+		}
 	}
 
 	return data
