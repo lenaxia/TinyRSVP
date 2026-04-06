@@ -58,7 +58,7 @@ func setupQuestionIntegrationTest(t *testing.T) (db.Database, *QuestionHandlers,
 	questionValidator := events.NewQuestionValidator()
 	authz := auth.NewAuthorizationChecker()
 
-	eventService := events.NewService(eventRepo, eventValidator, authz)
+	eventService := events.NewService(eventRepo, nil, eventValidator, authz)
 	questionService := events.NewQuestionService(eventRepo, questionRepo, questionValidator, authz)
 
 	eventHandlers := NewEventHandlers(eventService)

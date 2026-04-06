@@ -186,15 +186,24 @@ func TestSeeder_GetDefaultThemes_ReturnsSevenThemes(t *testing.T) {
 	}
 
 	plainCount := 0
-	cardCount := 0
+	namedThemeCount := 0
 	defaultCount := 0
 
+	namedCategories := map[models.TemplateCategory]bool{
+		models.CategoryWeddingElegance:     true,
+		models.CategoryBirthdayCelebration: true,
+		models.CategoryCorporatePro:        true,
+		models.CategoryHolidayFestive:      true,
+		models.CategoryGardenParty:         true,
+		models.CategoryModernMinimalist:    true,
+	}
+
 	for _, theme := range themes {
-		if theme.Category == models.CategoryPlain {
+		if theme.Category == models.CategoryPlainText {
 			plainCount++
 		}
-		if theme.Category == models.CategoryCard {
-			cardCount++
+		if namedCategories[theme.Category] {
+			namedThemeCount++
 		}
 		if theme.IsDefault {
 			defaultCount++
@@ -215,11 +224,11 @@ func TestSeeder_GetDefaultThemes_ReturnsSevenThemes(t *testing.T) {
 	}
 
 	if plainCount != 1 {
-		t.Errorf("Expected 1 plain theme, got %d", plainCount)
+		t.Errorf("Expected 1 plain-text theme, got %d", plainCount)
 	}
 
-	if cardCount != 6 {
-		t.Errorf("Expected 6 card themes, got %d", cardCount)
+	if namedThemeCount != 6 {
+		t.Errorf("Expected 6 named themes, got %d", namedThemeCount)
 	}
 
 	if defaultCount != 1 {

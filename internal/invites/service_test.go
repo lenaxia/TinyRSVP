@@ -201,6 +201,10 @@ func (m *mockInviteRepository) CountInvites(ctx context.Context) (int, error) {
 	return 0, nil
 }
 
+func (m *mockInviteRepository) UpdateExpiresAtByEventID(ctx context.Context, eventID int64, expiresAt time.Time) error {
+	return nil
+}
+
 type mockInviteRepositoryWithDeleteExpired struct {
 	mockInviteRepository
 	deleteExpiredFunc func(ctx context.Context, before time.Time) (int64, error)

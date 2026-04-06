@@ -248,3 +248,17 @@ func (mr *MockInviteRepositoryMockRecorder) Update(ctx, invite any) *gomock.Call
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Update", reflect.TypeOf((*MockInviteRepository)(nil).Update), ctx, invite)
 }
+
+// UpdateExpiresAtByEventID mocks base method.
+func (m *MockInviteRepository) UpdateExpiresAtByEventID(ctx context.Context, eventID int64, expiresAt time.Time) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpdateExpiresAtByEventID", ctx, eventID, expiresAt)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// UpdateExpiresAtByEventID indicates an expected call of UpdateExpiresAtByEventID.
+func (mr *MockInviteRepositoryMockRecorder) UpdateExpiresAtByEventID(ctx, eventID, expiresAt any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateExpiresAtByEventID", reflect.TypeOf((*MockInviteRepository)(nil).UpdateExpiresAtByEventID), ctx, eventID, expiresAt)
+}

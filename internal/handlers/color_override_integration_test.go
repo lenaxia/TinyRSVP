@@ -332,11 +332,11 @@ func TestColorOverrideSystem_FallbackToThemeDefault_Integration(t *testing.T) {
 		t.Error("Invalid color should not generate CSS override")
 	}
 
-	if !strings.Contains(body, `/static/css/themes/card.css`) {
+	if !strings.Contains(body, `/static/css/themes/wedding-elegance.css`) {
 		t.Error("Should still load theme CSS even when custom color is invalid")
 	}
 
-	if !strings.Contains(body, `data-event-theme="card"`) {
+	if !strings.Contains(body, `data-event-theme="wedding-elegance"`) {
 		t.Error("Should still apply theme category even when custom color is invalid")
 	}
 }
@@ -479,7 +479,7 @@ func TestColorOverrideSystem_TemplateIntegration(t *testing.T) {
 				ID:          3,
 				Name:        "Garden Party",
 				Type:        models.TemplateTypeRSVPPage,
-				Category:    models.CategoryCard,
+				Category:    models.CategoryPlain,
 				HTMLContent: "<html><body>{{.Event.Title}}</body></html>",
 			}, nil
 		},
@@ -520,12 +520,12 @@ func TestColorOverrideSystem_TemplateIntegration(t *testing.T) {
 
 	body := w.Body.String()
 
-	if !strings.Contains(body, `data-event-theme="card"`) {
-		t.Error("Expected theme category to be applied")
+	if strings.Contains(body, `data-event-theme=`) {
+		t.Error("Plain category should not set a theme attribute")
 	}
 
-	if !strings.Contains(body, `/static/css/themes/card.css`) {
-		t.Error("Expected theme CSS to be loaded")
+	if strings.Contains(body, `/static/css/themes/`) {
+		t.Error("Plain category should not load theme CSS")
 	}
 
 	if !strings.Contains(body, "--theme-primary: #16A34A") {

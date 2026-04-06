@@ -27,6 +27,7 @@ type InviteRepository interface {
 	DeleteExpired(ctx context.Context, before time.Time) (int64, error)
 	GetByEventIDs(ctx context.Context, eventIDs []int64) ([]*models.Invite, error)
 	CountInvites(ctx context.Context) (int, error)
+	UpdateExpiresAtByEventID(ctx context.Context, eventID int64, expiresAt time.Time) error
 }
 
 type InviteFilters struct {
@@ -323,6 +324,19 @@ func (r *inviteRepository) Update(ctx context.Context, invite *models.Invite) er
 
 	invite.UpdatedAt = now
 
+	return nil
+}
+
+func (r *inviteRepository) UpdateExpiresAtByEventID(ctx context.Context, eventID int64, expiresAt time.Time) error {
+	query := `
+		UPDATE invites
+		SET expires_at = ?, updated_at = ?
+		WHERE event_id = ?
+	`
+	_, err := r.db.Exec(ctx, query, expiresAt, time.Now(), eventID)
+	if err != nil {
+		return fmt.Errorf("failed to update invite expiry for event %d: %w", eventID, err)
+	}
 	return nil
 }
 

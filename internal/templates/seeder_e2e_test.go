@@ -59,8 +59,8 @@ func TestSeeder_EndToEnd_ApplicationStartup(t *testing.T) {
 		t.Errorf("Expected default theme to be 'Simple & Clean', got %q", defaultTheme.Name)
 	}
 
-	if defaultTheme.Category != models.CategoryPlain {
-		t.Errorf("Expected default theme category to be 'plain', got %q", defaultTheme.Category)
+	if defaultTheme.Category != models.CategoryPlainText {
+		t.Errorf("Expected default theme category to be 'plain-text', got %q", defaultTheme.Category)
 	}
 
 	for _, theme := range themes {
@@ -145,8 +145,8 @@ func TestSeeder_EndToEnd_ThemeRetrieval(t *testing.T) {
 		category models.TemplateCategory
 		expected int
 	}{
-		{"Plain themes", models.CategoryPlain, 1},
-		{"Card themes", models.CategoryCard, 6},
+		{"Plain-text themes", models.CategoryPlainText, 1},
+		{"Wedding-elegance themes", models.CategoryWeddingElegance, 1},
 	}
 
 	for _, tc := range testCases {

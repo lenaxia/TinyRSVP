@@ -219,8 +219,8 @@ func (h *RSVPHandler) GetRSVPPage(w http.ResponseWriter, r *http.Request) {
 	}
 
 	themeCategory := ""
-	if theme != nil {
-		themeCategory = string(theme.Category)
+	if theme != nil && theme.Category != models.CategoryPlain {
+		themeCategory = getThemeSlug(TemplateCategory(theme.Category))
 	}
 
 	data := &RSVPPageData{
@@ -238,7 +238,7 @@ func (h *RSVPHandler) GetRSVPPage(w http.ResponseWriter, r *http.Request) {
 		CSRFToken:      middleware.GetCSRFToken(r.Context()),
 		ThemeCategory:  themeCategory,
 		ThemeImageURL:  h.getThemeImageURL(event, theme),
-		ThemeColor:     h.getThemeColor(event),
+		ThemeColor:     h.getThemeColor(event, theme),
 	}
 
 	h.renderPage(w, http.StatusOK, data)
@@ -364,7 +364,13 @@ func (h *RSVPHandler) getThemeImageURL(event *models.Event, theme *models.Templa
 	return ""
 }
 
-func (h *RSVPHandler) getThemeColor(event *models.Event) template.HTML {
+func (h *RSVPHandler) getThemeColor(event *models.Event, theme *models.Template) template.HTML {
+	// Don't override colors when a full named theme is active — the theme defines its own palette.
+	// Only inject the custom color for plain/no-theme pages.
+	if theme != nil && theme.Category != models.CategoryPlain && theme.Category != models.CategoryPlainText {
+		return ""
+	}
+
 	if event.CustomThemeColor != nil && *event.CustomThemeColor != "" {
 		color := *event.CustomThemeColor
 		if !isValidHexColor(color) {
@@ -460,6 +466,9 @@ func (h *RSVPHandler) parseRSVPRequest(r *http.Request) (*rsvp.SubmitRSVPRequest
 		case "text":
 			if len(values) > 0 && values[0] != "" {
 				text := values[0]
+				if len(text) > 2000 {
+					text = text[:2000]
+				}
 				answer.AnswerText = &text
 			}
 		case "option":
@@ -840,16 +849,23 @@ func (h *RSVPHandler) renderConfirmationError(w http.ResponseWriter, status int,
 }
 
 func (h *RSVPHandler) renderConfirmationPage(w http.ResponseWriter, status int, data *ConfirmationPageData) {
-	w.Header().Set("Content-Type", "text/html; charset=utf-8")
-	w.WriteHeader(status)
-
 	if h.confirmationTemplates != nil {
-		if err := h.confirmationTemplates.ExecuteTemplate(w, "confirmation.html", data); err != nil {
+		// Buffer the render so we can still write a clean error response if
+		// template execution fails (writing w.WriteHeader before Execute would
+		// make any subsequent http.Error a no-op — headers already sent).
+		var buf bytes.Buffer
+		if err := h.confirmationTemplates.ExecuteTemplate(&buf, "confirmation.html", data); err != nil {
 			http.Error(w, "Failed to render page", http.StatusInternalServerError)
+			return
 		}
+		w.Header().Set("Content-Type", "text/html; charset=utf-8")
+		w.WriteHeader(status)
+		buf.WriteTo(w)
 		return
 	}
 
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+	w.WriteHeader(status)
 	fmt.Fprintf(w, `<!DOCTYPE html>
 <html lang="en">
 <head>

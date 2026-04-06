@@ -6,7 +6,17 @@ import (
 	"strings"
 	"testing"
 	"time"
+
+	"github.com/chromedp/cdproto/network"
+	"github.com/chromedp/chromedp"
 )
+
+// setTestAuthHeader sets the X-Test-User-ID header for test authentication bypass.
+func setTestAuthHeader() chromedp.Action {
+	return network.SetExtraHTTPHeaders(network.Headers{
+		"X-Test-User-ID": "1",
+	})
+}
 
 // testFuncMap returns the full production FuncMap for use in tests.
 // This matches the funcMap defined in cmd/server/main.go.

@@ -96,7 +96,7 @@ func (v *validator) ValidateUpdate(ctx context.Context, event *models.Event) err
 		return err
 	}
 
-	if err := v.validateRSVPDeadline(event.StartTime, event.RSVPDeadline); err != nil {
+	if err := v.validateRSVPDeadlineForUpdate(event.StartTime, event.RSVPDeadline); err != nil {
 		return err
 	}
 
@@ -261,6 +261,24 @@ func (v *validator) validateRSVPDeadline(startTime time.Time, rsvpDeadline *time
 			Field:   "rsvp_deadline",
 			Message: "RSVP deadline must be in the future",
 		}
+	}
+
+	if !rsvpDeadline.Before(startTime) {
+		return &models.ValidationError{
+			Field:   "rsvp_deadline",
+			Message: "RSVP deadline must be before event start time",
+		}
+	}
+
+	return nil
+}
+
+// validateRSVPDeadlineForUpdate only checks that the deadline is before the event
+// start time, without requiring it to be in the future. This allows updating an
+// event whose RSVP deadline has already passed without triggering a validation error.
+func (v *validator) validateRSVPDeadlineForUpdate(startTime time.Time, rsvpDeadline *time.Time) error {
+	if rsvpDeadline == nil {
+		return nil
 	}
 
 	if !rsvpDeadline.Before(startTime) {

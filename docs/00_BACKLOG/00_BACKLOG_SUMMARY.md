@@ -19,7 +19,7 @@ This document provides a comprehensive breakdown of the TinyRSVP v0 implementati
 
 ---
 
-## Epic Status Summary (UPDATED 2026-02-04)
+## Epic Status Summary (UPDATED 2026-03-03)
 
 | Epic | Status | Confidence | Test Pass Rate | Stories Complete | Critical Issues |
 |------|--------|-----------|----------------|------------------|-----------------|
@@ -35,6 +35,7 @@ This document provides a comprehensive breakdown of the TinyRSVP v0 implementati
 | 09: Security | ❌ Not Started | N/A | N/A | 0/40 | CRITICAL |
 | 11: RSVP Themes | ⚠️ BROKEN | LOW (25%) | 0% | 5/7 | Component rendering |
 | 12: Test Infra | ❌ Not Started | N/A | N/A | 0/20 | - |
+| 13: Guest Accounts | ❌ Not Started | N/A | N/A | 0/12 | - |
 
 **Production Ready:** NO (Critical blockers in Epic 06, 07, 09, 11)
 
@@ -345,6 +346,26 @@ This document provides a comprehensive breakdown of the TinyRSVP v0 implementati
 
 **Depends on:** None (can run parallel)  
 **Blocks:** None (improves developer experience)
+
+---
+
+### Epic 13: Guest Accounts & Encryption at Rest
+**Priority:** Medium | **Effort:** 3-4 weeks | **Stories:** 12  
+**Status:** ❌ Not Started | **Confidence:** N/A | **Test Pass Rate:** N/A
+
+**Purpose:** Implement optional passwordless guest accounts with OTP-based authentication (email/SMS), and encrypt all PII at rest across every table using application-level AES-256-GCM with HMAC-SHA256 blind indexes.
+
+**Key Deliverables:**
+- `pkg/crypto/` Encryptor (AES-256-GCM + HKDF + HMAC blind hash)
+- Encrypted PII in `users`, `invites`, `sessions`, `email_queue`
+- `guest_accounts`, `guest_sessions`, `guest_otp_codes` tables
+- OTP delivery via email (and optionally SMS)
+- `/guest/auth/` routes and `RequireGuestAuth` middleware
+- RSVP confirmation page opt-in prompt
+- Zero changes to existing staff auth system
+
+**Depends on:** Epic 00, 01, 03, 04, 05  
+**Blocks:** Nothing (additive feature)
 
 ---
 

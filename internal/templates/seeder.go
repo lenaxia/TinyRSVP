@@ -168,7 +168,7 @@ func (s *Seeder) getDefaultThemes() []*models.Template {
 		{
 			Name:            "Simple & Clean",
 			Type:            models.TemplateTypeRSVPPage,
-			Category:        models.CategoryPlain,
+			Category:        models.CategoryPlainText,
 			Description:     "Minimalist text-based invitation, perfect for accessibility and fast loading",
 			HTMLContent:     s.loadThemeTemplate("plain-text.html"),
 			CSSContent:      stringPtr(s.loadThemeCSS("plain-text.css")),
@@ -185,7 +185,7 @@ func (s *Seeder) getDefaultThemes() []*models.Template {
 		{
 			Name:            "Wedding Elegance",
 			Type:            models.TemplateTypeRSVPPage,
-			Category:        models.CategoryCard,
+			Category:        models.CategoryWeddingElegance,
 			Description:     "Elegant floral design perfect for weddings and formal celebrations",
 			HTMLContent:     s.loadThemeTemplate("wedding-elegance.html"),
 			CSSContent:      stringPtr(s.loadThemeCSS("wedding-elegance.css")),
@@ -202,7 +202,7 @@ func (s *Seeder) getDefaultThemes() []*models.Template {
 		{
 			Name:            "Birthday Celebration",
 			Type:            models.TemplateTypeRSVPPage,
-			Category:        models.CategoryCard,
+			Category:        models.CategoryBirthdayCelebration,
 			Description:     "Fun and colorful design for birthday parties and celebrations",
 			HTMLContent:     s.loadThemeTemplate("birthday-celebration.html"),
 			CSSContent:      stringPtr(s.loadThemeCSS("birthday-celebration.css")),
@@ -219,7 +219,7 @@ func (s *Seeder) getDefaultThemes() []*models.Template {
 		{
 			Name:            "Corporate Professional",
 			Type:            models.TemplateTypeRSVPPage,
-			Category:        models.CategoryCard,
+			Category:        models.CategoryCorporatePro,
 			Description:     "Clean and professional design for business events and meetings",
 			HTMLContent:     s.loadThemeTemplate("corporate-professional.html"),
 			CSSContent:      stringPtr(s.loadThemeCSS("corporate-professional.css")),
@@ -236,7 +236,7 @@ func (s *Seeder) getDefaultThemes() []*models.Template {
 		{
 			Name:            "Holiday Festive",
 			Type:            models.TemplateTypeRSVPPage,
-			Category:        models.CategoryCard,
+			Category:        models.CategoryHolidayFestive,
 			Description:     "Warm and festive design for holiday gatherings and seasonal events",
 			HTMLContent:     s.loadThemeTemplate("holiday-festive.html"),
 			CSSContent:      stringPtr(s.loadThemeCSS("holiday-festive.css")),
@@ -253,7 +253,7 @@ func (s *Seeder) getDefaultThemes() []*models.Template {
 		{
 			Name:            "Garden Party",
 			Type:            models.TemplateTypeRSVPPage,
-			Category:        models.CategoryCard,
+			Category:        models.CategoryGardenParty,
 			Description:     "Fresh botanical design for outdoor events and garden parties",
 			HTMLContent:     s.loadThemeTemplate("garden-party.html"),
 			CSSContent:      stringPtr(s.loadThemeCSS("garden-party.css")),
@@ -270,7 +270,7 @@ func (s *Seeder) getDefaultThemes() []*models.Template {
 		{
 			Name:            "Modern Minimalist",
 			Type:            models.TemplateTypeRSVPPage,
-			Category:        models.CategoryCard,
+			Category:        models.CategoryModernMinimalist,
 			Description:     "Contemporary minimal design with clean lines and bold typography",
 			HTMLContent:     s.loadThemeTemplate("modern-minimalist.html"),
 			CSSContent:      stringPtr(s.loadThemeCSS("modern-minimalist.css")),

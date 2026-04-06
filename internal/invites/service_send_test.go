@@ -78,6 +78,10 @@ func (m *mockSendInviteRepo) CountInvites(ctx context.Context) (int, error) {
 	return 0, nil
 }
 
+func (m *mockSendInviteRepo) UpdateExpiresAtByEventID(ctx context.Context, eventID int64, expiresAt time.Time) error {
+	return nil
+}
+
 type mockEmailQueueRepo struct {
 	createFunc func(ctx context.Context, email *models.EmailQueue) error
 }
@@ -149,12 +153,14 @@ func TestSendInvite_Success(t *testing.T) {
 	now := time.Now()
 	expiresAt := now.Add(30 * 24 * time.Hour)
 	email := "test@example.com"
+	existingToken := "existing-plain-token-abc123"
 
 	invite := &models.Invite{
 		ID:          1,
 		EventID:     100,
 		Email:       &email,
 		Name:        testutil.StringPtr("Test User"),
+		Token:       &existingToken,
 		TokenHash:   "dGVzdF90b2tlbl9oYXNoXzEyMzQ1Njc4OTBhYmNkZWZnaGlqa2xtbm9wcXJzdHV2d3h5eg==",
 		MaxPlusOnes: 2,
 		Status:      models.InviteStatusDraft,
@@ -163,17 +169,23 @@ func TestSendInvite_Success(t *testing.T) {
 		UpdatedAt:   now,
 	}
 
+	updateCalled := false
+	var updatedInvite *models.Invite
 	repo := &mockSendInviteRepo{
 		getByIDFunc: func(ctx context.Context, id int64) (*models.Invite, error) {
 			return invite, nil
 		},
 		updateFunc: func(ctx context.Context, inv *models.Invite) error {
+			updateCalled = true
+			updatedInvite = inv
 			return nil
 		},
 	}
 
+	var queuedEmail *models.EmailQueue
 	emailRepo := &mockEmailQueueRepo{
 		createFunc: func(ctx context.Context, email *models.EmailQueue) error {
+			queuedEmail = email
 			return nil
 		},
 	}
@@ -193,6 +205,36 @@ func TestSendInvite_Success(t *testing.T) {
 	if err != nil {
 		t.Errorf("Expected no error, got %v", err)
 	}
+
+	// Update should be called (to mark as sent), but token must not change
+	if !updateCalled {
+		t.Error("Expected repo.Update to be called to mark invite as sent")
+	}
+	if updatedInvite != nil && updatedInvite.Token != nil && *updatedInvite.Token != existingToken {
+		t.Errorf("Token must not change on send: got %q, want %q", *updatedInvite.Token, existingToken)
+	}
+
+	if queuedEmail == nil {
+		t.Fatal("Expected email to be queued")
+	}
+
+	expectedURL := "https://rsvp.example.com/rsvp/" + existingToken
+	if !contains(queuedEmail.BodyText, expectedURL) {
+		t.Errorf("Expected email body to contain %q, got: %s", expectedURL, queuedEmail.BodyText)
+	}
+}
+
+func contains(s, substr string) bool {
+	return len(s) >= len(substr) && (s == substr || len(s) > 0 && containsStr(s, substr))
+}
+
+func containsStr(s, substr string) bool {
+	for i := 0; i <= len(s)-len(substr); i++ {
+		if s[i:i+len(substr)] == substr {
+			return true
+		}
+	}
+	return false
 }
 
 func TestSendInvite_NoEmail(t *testing.T) {
@@ -277,5 +319,50 @@ func TestSendInvite_RevokedInvite(t *testing.T) {
 	err := service.SendInvite(context.Background(), req, emailRepo)
 	if err == nil {
 		t.Error("Expected error for revoked invite, got nil")
+	}
+}
+
+func TestSendInvite_NilToken_ReturnsError(t *testing.T) {
+	now := time.Now()
+	expiresAt := now.Add(30 * 24 * time.Hour)
+	email := "test@example.com"
+
+	// Invite with no plain token stored (e.g. created via old code path)
+	invite := &models.Invite{
+		ID:          1,
+		EventID:     100,
+		Email:       &email,
+		Name:        testutil.StringPtr("Test User"),
+		Token:       nil,
+		TokenHash:   "dGVzdF90b2tlbl9oYXNoXzEyMzQ1Njc4OTBhYmNkZWZnaGlqa2xtbm9wcXJzdHV2d3h5eg==",
+		MaxPlusOnes: 2,
+		Status:      models.InviteStatusDraft,
+		ExpiresAt:   expiresAt,
+		CreatedAt:   now,
+		UpdatedAt:   now,
+	}
+
+	repo := &mockSendInviteRepo{
+		getByIDFunc: func(ctx context.Context, id int64) (*models.Invite, error) {
+			return invite, nil
+		},
+	}
+
+	emailRepo := &mockEmailQueueRepo{}
+
+	generator := token.NewGenerator([]byte("test-secret-key-32-bytes-long!!"))
+	service := &inviteService{
+		generator: generator,
+		repo:      repo,
+	}
+
+	req := &SendInviteRequest{
+		InviteID: 1,
+		BaseURL:  "https://rsvp.example.com",
+	}
+
+	err := service.SendInvite(context.Background(), req, emailRepo)
+	if err == nil {
+		t.Error("Expected error for invite with nil token, got nil")
 	}
 }

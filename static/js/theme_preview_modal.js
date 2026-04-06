@@ -20,6 +20,9 @@ class ThemePreviewModal {
     }
 
     handlePreviewRequest(e) {
+        if (!this.modal || !this.modal.hidden) {
+            return;
+        }
         this.open(e.detail.themeId);
     }
 

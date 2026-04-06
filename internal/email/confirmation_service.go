@@ -30,17 +30,20 @@ type confirmationService struct {
 	renderer   TemplateRenderer
 	emailQueue repositories.EmailQueueRepository
 	icsGen     ics.Generator
+	baseURL    string
 }
 
 func NewConfirmationService(
 	renderer TemplateRenderer,
 	emailQueue repositories.EmailQueueRepository,
 	icsGen ics.Generator,
+	baseURL string,
 ) Service {
 	return &confirmationService{
 		renderer:   renderer,
 		emailQueue: emailQueue,
 		icsGen:     icsGen,
+		baseURL:    baseURL,
 	}
 }
 
@@ -64,7 +67,7 @@ func (s *confirmationService) SendConfirmationEmail(
 		return fmt.Errorf("failed to render text template: %w", err)
 	}
 
-	rsvpURL := fmt.Sprintf("https://example.com/rsvp/%s", token)
+	rsvpURL := fmt.Sprintf("%s/rsvp/%s", s.baseURL, token)
 	icsContent, err := s.icsGen.Generate(event, rsvpURL)
 	if err != nil {
 		return fmt.Errorf("failed to generate ICS attachment: %w", err)
@@ -123,7 +126,7 @@ func (s *confirmationService) prepareTemplateData(
 		eventLocation = *event.Location
 	}
 
-	updateURL := fmt.Sprintf("https://example.com/rsvp/%s", token)
+	updateURL := fmt.Sprintf("%s/rsvp/%s", s.baseURL, token)
 
 	data := &RSVPConfirmationTemplateData{
 		GuestName:     guestName,

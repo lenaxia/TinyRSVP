@@ -192,14 +192,14 @@ func main() {
 	}
 	logger.Info("Email template renderer initialized")
 
-	sessionMgr := auth.NewSessionManager(sessionRepo, false)
+	sessionMgr := auth.NewSessionManager(sessionRepo, strings.HasPrefix(cfg.Server.BaseURL, "https://"))
 	userService := auth.NewUserService(userRepo)
 	authChecker := auth.NewAuthorizationChecker()
 
 	logger.Info("Initialized auth services")
 
 	eventValidator := events.NewValidator(events.NewTimezoneValidator())
-	eventService := events.NewService(eventRepo, eventValidator, authChecker)
+	eventService := events.NewService(eventRepo, inviteRepo, eventValidator, authChecker)
 
 	logger.Info("Initialized event services")
 
@@ -291,12 +291,12 @@ func main() {
 	templateHandlers := handlers.NewTemplateHandlers(templateService)
 	customizationHandlers := handlers.NewEventCustomizationHandlers(customizationService)
 
-	storageType := os.Getenv("STORAGE_TYPE")
+	storageType := cfg.Storage.Type
 	if storageType == "" {
 		storageType = "local"
 	}
 
-	storagePath := os.Getenv("STORAGE_PATH")
+	storagePath := cfg.Storage.LocalPath
 	if storagePath == "" {
 		storagePath = "/data/uploads"
 	}
@@ -397,6 +397,13 @@ func main() {
 		},
 		"safeHTML": func(s string) template.HTML {
 			return template.HTML(s)
+		},
+		"timezoneAbbr": func(iana string) string {
+			loc, err := time.LoadLocation(iana)
+			if err != nil {
+				return iana
+			}
+			return time.Now().In(loc).Format("MST")
 		},
 	}
 
@@ -543,7 +550,7 @@ func main() {
 	logger.Info("User management templates loaded successfully")
 
 	icsGenerator := ics.NewGenerator()
-	emailService := email.NewConfirmationService(templateRenderer, emailQueueRepo, icsGenerator)
+	emailService := email.NewConfirmationService(templateRenderer, emailQueueRepo, icsGenerator, cfg.Server.BaseURL)
 	logger.Info("Initialized email confirmation service")
 
 	rsvpService := rsvp.NewServiceWithEmail(database, inviteService, inviteRepo, eventRepo, rsvpRepo, answerRepo, questionRepo, emailService)
@@ -765,7 +772,7 @@ func main() {
 	processorErrors := make(chan error, 1)
 	go func() {
 		if err := emailProcessor.Start(processorCtx); err != nil && err != context.Canceled {
-			logger.Error("Email processor error", "error", err)
+			logger.Error("Email processor crashed — emails will not be sent until restart", "error", err)
 			processorErrors <- err
 		}
 	}()
@@ -787,6 +794,15 @@ func main() {
 	case err := <-serverErrors:
 		logger.Error("Server error", "error", err)
 		os.Exit(1)
+
+	case err := <-processorErrors:
+		logger.Error("Email processor fatal error — server continuing but email delivery is stopped; restart to recover", "error", err)
+		// Do not exit — HTTP serving continues; operator must restart to restore email delivery.
+		// Wait for a shutdown signal before running cleanup.
+		shutdown = make(chan os.Signal, 1)
+		signal.Notify(shutdown, os.Interrupt, syscall.SIGTERM)
+		sig := <-shutdown
+		logger.Info("Shutdown signal received", "signal", sig)
 
 	case sig := <-shutdown:
 		logger.Info("Shutdown signal received", "signal", sig)

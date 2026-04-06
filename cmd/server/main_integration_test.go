@@ -79,7 +79,7 @@ func TestMain_RouterIntegration(t *testing.T) {
 	authChecker := auth.NewAuthorizationChecker()
 
 	eventValidator := events.NewValidator(events.NewTimezoneValidator())
-	eventService := events.NewService(eventRepo, eventValidator, authChecker)
+	eventService := events.NewService(eventRepo, nil, eventValidator, authChecker)
 
 	questionValidator := events.NewQuestionValidator()
 	questionService := events.NewQuestionService(eventRepo, questionRepo, questionValidator, authChecker)
@@ -108,7 +108,7 @@ func TestMain_RouterIntegration(t *testing.T) {
 	}
 
 	icsGenerator := ics.NewGenerator()
-	emailService := email.NewConfirmationService(templateRenderer, emailQueueRepo, icsGenerator)
+	emailService := email.NewConfirmationService(templateRenderer, emailQueueRepo, icsGenerator, "http://localhost:8080")
 
 	rsvpService := rsvp.NewServiceWithEmail(database, inviteService, inviteRepo, eventRepo, rsvpRepo, answerRepo, questionRepo, emailService)
 
@@ -344,7 +344,7 @@ func TestMain_RouterIntegration_AuthenticatedRoutes(t *testing.T) {
 	}
 
 	eventValidator := events.NewValidator(events.NewTimezoneValidator())
-	eventService := events.NewService(eventRepo, eventValidator, authChecker)
+	eventService := events.NewService(eventRepo, nil, eventValidator, authChecker)
 
 	questionValidator := events.NewQuestionValidator()
 	questionService := events.NewQuestionService(eventRepo, questionRepo, questionValidator, authChecker)
@@ -373,7 +373,7 @@ func TestMain_RouterIntegration_AuthenticatedRoutes(t *testing.T) {
 	}
 
 	icsGenerator := ics.NewGenerator()
-	emailService := email.NewConfirmationService(templateRenderer, emailQueueRepo, icsGenerator)
+	emailService := email.NewConfirmationService(templateRenderer, emailQueueRepo, icsGenerator, "http://localhost:8080")
 
 	rsvpService := rsvp.NewServiceWithEmail(database, inviteService, inviteRepo, eventRepo, rsvpRepo, answerRepo, questionRepo, emailService)
 
@@ -547,7 +547,7 @@ func TestMain_RouterIntegration_MiddlewareChain(t *testing.T) {
 	}
 
 	eventValidator := events.NewValidator(events.NewTimezoneValidator())
-	eventService := events.NewService(eventRepo, eventValidator, authChecker)
+	eventService := events.NewService(eventRepo, nil, eventValidator, authChecker)
 
 	eventHandlers := handlers.NewEventHandlers(eventService)
 

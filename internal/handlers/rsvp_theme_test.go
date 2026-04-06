@@ -171,8 +171,8 @@ func TestRSVPHandler_GetRSVPPage_WithEventTheme(t *testing.T) {
 	}
 
 	body := w.Body.String()
-	if !strings.Contains(body, "ThemeCategory:card") {
-		t.Errorf("Expected theme category 'card', got: %s", body)
+	if !strings.Contains(body, "ThemeCategory:wedding-elegance") {
+		t.Errorf("Expected theme category 'wedding-elegance', got: %s", body)
 	}
 	if !strings.Contains(body, "ThemeImageURL:/static/images/themes/wedding-elegance-header.svg") {
 		t.Errorf("Expected theme image URL, got: %s", body)
@@ -258,8 +258,12 @@ func TestRSVPHandler_GetRSVPPage_WithDefaultTheme(t *testing.T) {
 	}
 
 	body := w.Body.String()
-	if !strings.Contains(body, "ThemeCategory:plain") {
-		t.Errorf("Expected default theme category 'plain', got: %s", body)
+	if !strings.Contains(body, "ThemeCategory:") {
+		t.Errorf("Expected ThemeCategory field, got: %s", body)
+	}
+	// CategoryPlain produces no theme slug — plain events don't load a theme CSS
+	if strings.Contains(body, "ThemeCategory:plain") {
+		t.Errorf("CategoryPlain should not produce a theme slug, got: %s", body)
 	}
 }
 
@@ -343,8 +347,9 @@ func TestRSVPHandler_GetRSVPPage_ThemeLoadError_FallbackToDefault(t *testing.T) 
 	}
 
 	body := w.Body.String()
-	if !strings.Contains(body, "ThemeCategory:plain") {
-		t.Errorf("Expected fallback to default theme 'plain', got: %s", body)
+	// CategoryPlain produces no theme slug
+	if strings.Contains(body, "ThemeCategory:plain") {
+		t.Errorf("CategoryPlain fallback should produce no theme slug, got: %s", body)
 	}
 }
 
@@ -472,9 +477,9 @@ func TestRSVPHandler_GetRSVPPage_WithCustomThemeColor(t *testing.T) {
 		getByIDFunc: func(ctx context.Context, id int64) (*models.Template, error) {
 			return &models.Template{
 				ID:          5,
-				Name:        "Birthday Celebration",
+				Name:        "Plain Text",
 				Type:        models.TemplateTypeRSVPPage,
-				Category:    models.CategoryCard,
+				Category:    models.CategoryPlain,
 				HTMLContent: "<html><body>{{.Event.Title}}</body></html>",
 			}, nil
 		},
@@ -628,7 +633,7 @@ func TestRSVPHandler_GetRSVPPage_WithBothCustomOverrides(t *testing.T) {
 				ID:          5,
 				Name:        "Corporate Professional",
 				Type:        models.TemplateTypeRSVPPage,
-				Category:    models.CategoryCard,
+				Category:    models.CategoryPlain,
 				ImageURL:    &defaultImageURL,
 				HTMLContent: "<html><body>{{.Event.Title}}</body></html>",
 			}, nil
@@ -906,8 +911,9 @@ func TestRSVPHandler_GetRSVPPage_ThemeWithNoImage(t *testing.T) {
 	}
 
 	body := w.Body.String()
-	if !strings.Contains(body, "ThemeCategory:plain") {
-		t.Errorf("Expected theme category 'plain', got: %s", body)
+	// CategoryPlain produces no theme slug
+	if strings.Contains(body, "ThemeCategory:plain") {
+		t.Errorf("CategoryPlain should not produce a theme slug, got: %s", body)
 	}
 	if strings.Contains(body, "ThemeImageURL:/") {
 		t.Errorf("Expected empty image URL for plain theme, got: %s", body)

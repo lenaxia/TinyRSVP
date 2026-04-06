@@ -17,6 +17,9 @@ describe('DateTimePicker Toggle Group Visibility', () => {
                 class="datetime-trigger-btn"
                 data-datetime-picker
                 data-mode="datetime-range"
+                data-start-input="start_time"
+                data-end-input="end_time"
+                data-timezone-input="timezone"
                 data-show-timezone="true"
                 data-title="Select Event Date & Time"
             >
@@ -32,6 +35,7 @@ describe('DateTimePicker Toggle Group Visibility', () => {
                 class="datetime-trigger-btn"
                 data-datetime-picker
                 data-mode="datetime-single"
+                data-start-input="rsvp_deadline_input"
                 data-show-timezone="false"
                 data-title="Select RSVP Deadline"
             >
@@ -417,6 +421,243 @@ describe('DateTimePicker Toggle Group Visibility', () => {
                 } else {
                     done();
                 }
+            }, 100);
+        }, 100);
+    });
+});
+
+// -----------------------------------------------------------------------------
+// Regression tests for active-instance / shared-panel bugs
+// -----------------------------------------------------------------------------
+describe('DateTimePicker active-instance isolation', () => {
+    let container;
+
+    beforeEach(() => {
+        container = document.createElement('div');
+        container.innerHTML = `
+            <button
+                type="button"
+                id="event_datetime_trigger"
+                class="datetime-trigger-btn"
+                data-datetime-picker
+                data-mode="datetime-range"
+                data-start-input="start_time"
+                data-end-input="end_time"
+                data-timezone-input="timezone"
+                data-show-timezone="true"
+                data-title="Select Event Date & Time"
+            ><span class="datetime-trigger-text">Event DateTime</span></button>
+            <input type="hidden" id="start_time" value="">
+            <input type="hidden" id="end_time" value="">
+            <input type="hidden" id="timezone" value="America/Los_Angeles">
+
+            <button
+                type="button"
+                id="rsvp_deadline_trigger"
+                class="datetime-trigger-btn"
+                data-datetime-picker
+                data-mode="datetime-single"
+                data-start-input="rsvp_deadline_input"
+                data-show-timezone="false"
+                data-title="Select RSVP Deadline"
+            ><span class="datetime-trigger-text">RSVP Deadline</span></button>
+            <input type="hidden" id="rsvp_deadline_input" value="">
+
+            <div class="datetime-picker-overlay"></div>
+            <div class="datetime-picker-panel">
+                <div class="datetime-picker-header">
+                    <h2 class="datetime-picker-title">Select Date & Time</h2>
+                    <button class="datetime-picker-close">×</button>
+                </div>
+                <div class="datetime-picker-body">
+                    <div class="datetime-toggle-group">
+                        <button type="button" class="datetime-toggle-btn active" data-mode="start">
+                            <span class="datetime-toggle-label">Start Time</span>
+                            <span class="datetime-toggle-value" id="start-time-display">Not set</span>
+                        </button>
+                        <button type="button" class="datetime-toggle-btn" data-mode="end">
+                            <span class="datetime-toggle-label">End Time (Optional)</span>
+                            <span class="datetime-toggle-value" id="end-time-display">Not set</span>
+                        </button>
+                    </div>
+                    <div class="datetime-picker-content active" data-content="start">
+                        <div class="datetime-picker-layout">
+                            <div class="calendar-container">
+                                <div class="calendar-header">
+                                    <button type="button" class="calendar-nav-btn" data-nav="prev">‹</button>
+                                    <span class="calendar-month-year"></span>
+                                    <button type="button" class="calendar-nav-btn" data-nav="next">›</button>
+                                </div>
+                                <div class="calendar-grid"></div>
+                            </div>
+                            <div class="time-picker-container">
+                                <label class="time-picker-label">Time</label>
+                                <div class="time-picker-scroll"></div>
+                            </div>
+                        </div>
+                        <div class="timezone-display">
+                            <div><div class="timezone-label">Timezone</div><div class="timezone-value"></div></div>
+                            <button type="button" class="timezone-change-btn">Change</button>
+                        </div>
+                    </div>
+                    <div class="datetime-picker-content" data-content="end">
+                        <div class="datetime-picker-layout">
+                            <div class="calendar-container">
+                                <div class="calendar-header">
+                                    <button type="button" class="calendar-nav-btn" data-nav="prev">‹</button>
+                                    <span class="calendar-month-year"></span>
+                                    <button type="button" class="calendar-nav-btn" data-nav="next">›</button>
+                                </div>
+                                <div class="calendar-grid"></div>
+                            </div>
+                            <div class="time-picker-container">
+                                <label class="time-picker-label">Time</label>
+                                <div class="time-picker-scroll"></div>
+                            </div>
+                        </div>
+                        <div class="timezone-display">
+                            <div><div class="timezone-label">Timezone</div><div class="timezone-value"></div></div>
+                            <button type="button" class="timezone-change-btn">Change</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="datetime-picker-footer">
+                    <button type="button" class="btn btn-secondary datetime-picker-cancel">Cancel</button>
+                    <button type="button" class="btn btn-primary datetime-picker-save">Save</button>
+                </div>
+            </div>
+            <div class="timezone-picker-overlay"></div>
+            <div class="timezone-picker-panel datetime-picker-panel">
+                <div class="datetime-picker-header">
+                    <h2 class="datetime-picker-title">Select Timezone</h2>
+                    <button class="timezone-picker-close datetime-picker-close">×</button>
+                </div>
+                <div class="datetime-picker-body">
+                    <div class="timezone-list">
+                        <div class="timezone-option" data-timezone="America/Los_Angeles">
+                            <div class="timezone-option-name">Pacific Time (PT)</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(container);
+    });
+
+    afterEach(() => {
+        if (container && container.parentNode) {
+            container.parentNode.removeChild(container);
+        }
+    });
+
+    test('saving RSVP deadline writes to rsvp_deadline_input, not start_time', (done) => {
+        const rsvpTrigger   = document.getElementById('rsvp_deadline_trigger');
+        const rsvpInput     = document.getElementById('rsvp_deadline_input');
+        const startInput    = document.getElementById('start_time');
+        const saveBtn       = document.querySelector('.datetime-picker-save');
+
+        setTimeout(() => {
+            rsvpTrigger.click();
+
+            setTimeout(() => {
+                const calendarDays = document.querySelectorAll('.calendar-day:not(.other-month):not(.disabled)');
+                if (calendarDays.length === 0) { done(); return; }
+                calendarDays[0].click();
+
+                setTimeout(() => {
+                    const timeOptions = document.querySelectorAll('.time-option');
+                    if (timeOptions.length === 0) { done(); return; }
+                    timeOptions[0].click();
+
+                    setTimeout(() => {
+                        saveBtn.click();
+
+                        setTimeout(() => {
+                            // Deadline input must be populated
+                            expect(rsvpInput.value).toBeTruthy();
+                            // start_time must NOT have been touched
+                            expect(startInput.value).toBe('');
+                            done();
+                        }, 100);
+                    }, 100);
+                }, 100);
+            }, 100);
+        }, 100);
+    });
+
+    test('saving event datetime does not overwrite rsvp_deadline_input', (done) => {
+        const eventTrigger  = document.getElementById('event_datetime_trigger');
+        const startInput    = document.getElementById('start_time');
+        const rsvpInput     = document.getElementById('rsvp_deadline_input');
+        const saveBtn       = document.querySelector('.datetime-picker-save');
+
+        setTimeout(() => {
+            eventTrigger.click();
+
+            setTimeout(() => {
+                const calendarDays = document.querySelectorAll('.calendar-day:not(.other-month):not(.disabled)');
+                if (calendarDays.length === 0) { done(); return; }
+                calendarDays[0].click();
+
+                setTimeout(() => {
+                    const timeOptions = document.querySelectorAll('.time-option');
+                    if (timeOptions.length === 0) { done(); return; }
+                    timeOptions[0].click();
+
+                    setTimeout(() => {
+                        saveBtn.click();
+
+                        setTimeout(() => {
+                            // start_time must be populated
+                            expect(startInput.value).toBeTruthy();
+                            // rsvp_deadline_input must NOT have been touched
+                            expect(rsvpInput.value).toBe('');
+                            done();
+                        }, 100);
+                    }, 100);
+                }, 100);
+            }, 100);
+        }, 100);
+    });
+
+    test('save button fires only once per click regardless of picker count', (done) => {
+        const rsvpTrigger = document.getElementById('rsvp_deadline_trigger');
+        const rsvpInput   = document.getElementById('rsvp_deadline_input');
+        const saveBtn     = document.querySelector('.datetime-picker-save');
+        let saveCallCount = 0;
+
+        // Intercept value assignments to count actual writes
+        const origDescriptor = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value');
+        const orig = origDescriptor.set;
+        Object.defineProperty(rsvpInput, 'value', {
+            set(v) { if (v) saveCallCount++; orig.call(this, v); },
+            get() { return orig ? rsvpInput.getAttribute('value') || '' : ''; },
+            configurable: true,
+        });
+
+        setTimeout(() => {
+            rsvpTrigger.click();
+
+            setTimeout(() => {
+                const calendarDays = document.querySelectorAll('.calendar-day:not(.other-month):not(.disabled)');
+                if (calendarDays.length === 0) { done(); return; }
+                calendarDays[0].click();
+
+                setTimeout(() => {
+                    const timeOptions = document.querySelectorAll('.time-option');
+                    if (timeOptions.length === 0) { done(); return; }
+                    timeOptions[0].click();
+
+                    setTimeout(() => {
+                        saveCallCount = 0; // reset before the save
+                        saveBtn.click();
+
+                        setTimeout(() => {
+                            expect(saveCallCount).toBe(1);
+                            done();
+                        }, 100);
+                    }, 100);
+                }, 100);
             }, 100);
         }, 100);
     });

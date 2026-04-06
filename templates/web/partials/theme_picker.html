@@ -2,6 +2,28 @@
 <div class="theme-picker" data-mode="gallery">
     <div class="theme-picker-header">
         <h3>Select Theme</h3>
+        <div class="theme-mode-controls" role="tablist" aria-label="Theme picker mode">
+            <button
+                type="button"
+                id="gallery-mode-btn"
+                class="mode-btn active"
+                role="tab"
+                aria-selected="true"
+                aria-controls="theme-gallery-container"
+                tabindex="0">
+                Browse Themes
+            </button>
+            <button
+                type="button"
+                id="design-mode-btn"
+                class="mode-btn"
+                role="tab"
+                aria-selected="false"
+                aria-controls="design-mode-container"
+                tabindex="-1">
+                Preview
+            </button>
+        </div>
         <div class="theme-filter">
             <label for="theme-category-filter">Category:</label>
             <select id="theme-category-filter" class="theme-category-select">
@@ -15,7 +37,7 @@
         </div>
     </div>
     
-    <div id="theme-gallery-container" class="theme-gallery" role="region" aria-label="Theme gallery">
+    <div id="theme-gallery-container" class="theme-gallery" role="tabpanel" aria-labelledby="gallery-mode-btn">
         {{range .Themes}}
         <div class="theme-card {{if eq .ID $.SelectedThemeID}}selected{{end}}" 
              data-theme-id="{{.ID}}"
@@ -67,16 +89,8 @@
         {{end}}
     </div>
     
-    <div id="design-mode-container" class="design-mode-container" role="region" aria-label="Live preview" hidden aria-hidden="true">
+    <div id="design-mode-container" class="design-mode-container" role="tabpanel" aria-labelledby="design-mode-btn" hidden aria-hidden="true">
         <div class="design-mode-header">
-            <button 
-                type="button" 
-                id="gallery-mode-btn" 
-                class="btn-back" 
-                aria-label="Back to theme gallery">
-                ← Back to Themes
-            </button>
-            
             <div class="form-group">
                 <label for="design-theme-select">Theme:</label>
                 <select id="design-theme-select" class="form-select">
@@ -122,13 +136,12 @@
                 class="live-preview-frame" 
                 title="Live preview of invitation theme"
                 aria-live="polite"
+                sandbox="allow-same-origin allow-scripts"
                 src="about:blank">
             </iframe>
         </div>
     </div>
     
     <input type="hidden" id="selected-theme-id" name="template_id" value="{{.SelectedThemeID}}">
-    <!-- Hidden button to keep code compatible, but won't be visible -->
-    <button type="button" id="design-mode-btn" style="display: none;" aria-hidden="true"></button>
 </div>
 {{end}}

@@ -77,7 +77,7 @@ func setupInviteTestServer(t *testing.T) *inviteTestServer {
 	authChecker := auth.NewAuthorizationChecker()
 
 	eventValidator := events.NewValidator(events.NewTimezoneValidator())
-	eventService := events.NewService(eventRepo, eventValidator, authChecker)
+	eventService := events.NewService(eventRepo, nil, eventValidator, authChecker)
 
 	tokenSecret := "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef"
 	tokenSecretBytes, _ := hex.DecodeString(tokenSecret)

@@ -307,6 +307,9 @@ func (h *EventWebHandlers) UpdateEventFromForm(w http.ResponseWriter, r *http.Re
 		PrivateGuestList:       existing.PrivateGuestList,
 		FamilyHeadcount:        existing.FamilyHeadcount,
 		EventCapacity:          existing.EventCapacity,
+		TemplateID:             existing.TemplateID,
+		CustomThemeColor:       existing.CustomThemeColor,
+		CustomThemeImageURL:    existing.CustomThemeImageURL,
 	}
 
 	if title := r.FormValue("title"); title != "" {
@@ -352,33 +355,56 @@ func (h *EventWebHandlers) UpdateEventFromForm(w http.ResponseWriter, r *http.Re
 		}
 	}
 
-	if deadlineStr := r.FormValue("rsvp_deadline"); deadlineStr != "" {
-		deadline, err := time.Parse("2006-01-02T15:04", deadlineStr)
-		if err == nil {
-			event.RSVPDeadline = &deadline
+	if r.Form.Has("rsvp_settings_saved") {
+		if deadlineStr := r.FormValue("rsvp_deadline"); deadlineStr != "" {
+			deadline, err := time.Parse("2006-01-02T15:04", deadlineStr)
+			if err == nil {
+				event.RSVPDeadline = &deadline
+			}
+		} else {
+			event.RSVPDeadline = nil
 		}
-	} else if r.Form.Has("rsvp_deadline") {
-		event.RSVPDeadline = nil
-	}
 
-	event.AllowRSVPAfterDeadline = r.FormValue("allow_rsvp_after_deadline") == "on"
-	event.AllowMaybeRSVP = r.FormValue("allow_maybe_rsvp") == "on"
-	event.PrivateGuestList = r.FormValue("private_guest_list") == "on"
-	event.FamilyHeadcount = r.FormValue("family_headcount") == "on"
+		event.AllowRSVPAfterDeadline = r.FormValue("allow_rsvp_after_deadline") == "on"
+		event.AllowMaybeRSVP = r.FormValue("allow_maybe_rsvp") == "on"
+		event.PrivateGuestList = r.FormValue("private_guest_list") == "on"
+		event.FamilyHeadcount = r.FormValue("family_headcount") == "on"
 
-	if capacityStr := r.FormValue("event_capacity"); capacityStr != "" {
-		capacity, err := strconv.Atoi(capacityStr)
-		if err == nil && capacity > 0 {
-			event.EventCapacity = &capacity
+		if capacityStr := r.FormValue("event_capacity"); capacityStr != "" {
+			capacity, err := strconv.Atoi(capacityStr)
+			if err == nil && capacity > 0 {
+				event.EventCapacity = &capacity
+			}
+		} else {
+			event.EventCapacity = nil
 		}
-	} else if r.Form.Has("event_capacity") {
-		event.EventCapacity = nil
 	}
 
 	if friendlyName := strings.TrimSpace(r.FormValue("friendly_name")); friendlyName != "" {
 		event.FriendlyName = &friendlyName
 	} else if r.Form.Has("friendly_name") {
 		event.FriendlyName = nil
+	}
+
+	if templateIDStr := strings.TrimSpace(r.FormValue("template_id")); templateIDStr != "" {
+		templateID, err := strconv.ParseInt(templateIDStr, 10, 64)
+		if err == nil && templateID > 0 {
+			event.TemplateID = &templateID
+		}
+	} else if r.Form.Has("template_id") {
+		event.TemplateID = nil
+	}
+
+	if color := strings.TrimSpace(r.FormValue("custom_theme_color")); color != "" {
+		event.CustomThemeColor = &color
+	} else if r.Form.Has("custom_theme_color") {
+		event.CustomThemeColor = nil
+	}
+
+	if imageURL := strings.TrimSpace(r.FormValue("custom_theme_image_url")); imageURL != "" {
+		event.CustomThemeImageURL = &imageURL
+	} else if r.Form.Has("custom_theme_image_url") {
+		event.CustomThemeImageURL = nil
 	}
 
 	if err := h.service.UpdateEvent(r.Context(), event); err != nil {

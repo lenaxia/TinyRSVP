@@ -125,7 +125,7 @@ func TestNewConfirmationService(t *testing.T) {
 	repo := &mockEmailQueueRepository{}
 	generator := &mockICSGenerator{}
 
-	service := NewConfirmationService(renderer, repo, generator)
+	service := NewConfirmationService(renderer, repo, generator, "https://rsvp.example.com")
 
 	if service == nil {
 		t.Fatal("Expected service to be created, got nil")
@@ -137,7 +137,7 @@ func TestSendConfirmationEmail_HappyPath_Attending(t *testing.T) {
 	repo := &mockEmailQueueRepository{}
 	generator := &mockICSGenerator{}
 
-	service := NewConfirmationService(renderer, repo, generator)
+	service := NewConfirmationService(renderer, repo, generator, "https://rsvp.example.com")
 
 	ctx := context.Background()
 	startTime := time.Now().Add(24 * time.Hour)
@@ -249,7 +249,7 @@ func TestSendConfirmationEmail_HappyPath_Declined(t *testing.T) {
 	repo := &mockEmailQueueRepository{}
 	generator := &mockICSGenerator{}
 
-	service := NewConfirmationService(renderer, repo, generator)
+	service := NewConfirmationService(renderer, repo, generator, "https://rsvp.example.com")
 
 	ctx := context.Background()
 	startTime := time.Now().Add(24 * time.Hour)
@@ -293,7 +293,7 @@ func TestSendConfirmationEmail_HappyPath_Tentative(t *testing.T) {
 	repo := &mockEmailQueueRepository{}
 	generator := &mockICSGenerator{}
 
-	service := NewConfirmationService(renderer, repo, generator)
+	service := NewConfirmationService(renderer, repo, generator, "https://rsvp.example.com")
 
 	ctx := context.Background()
 	startTime := time.Now().Add(24 * time.Hour)
@@ -335,7 +335,7 @@ func TestSendConfirmationEmail_TemplateRenderingError_HTML(t *testing.T) {
 	repo := &mockEmailQueueRepository{}
 	generator := &mockICSGenerator{}
 
-	service := NewConfirmationService(renderer, repo, generator)
+	service := NewConfirmationService(renderer, repo, generator, "https://rsvp.example.com")
 
 	ctx := context.Background()
 	startTime := time.Now().Add(24 * time.Hour)
@@ -380,7 +380,7 @@ func TestSendConfirmationEmail_TemplateRenderingError_Text(t *testing.T) {
 	repo := &mockEmailQueueRepository{}
 	generator := &mockICSGenerator{}
 
-	service := NewConfirmationService(renderer, repo, generator)
+	service := NewConfirmationService(renderer, repo, generator, "https://rsvp.example.com")
 
 	ctx := context.Background()
 	startTime := time.Now().Add(24 * time.Hour)
@@ -425,7 +425,7 @@ func TestSendConfirmationEmail_ICSGenerationError(t *testing.T) {
 		},
 	}
 
-	service := NewConfirmationService(renderer, repo, generator)
+	service := NewConfirmationService(renderer, repo, generator, "https://rsvp.example.com")
 
 	ctx := context.Background()
 	startTime := time.Now().Add(24 * time.Hour)
@@ -470,7 +470,7 @@ func TestSendConfirmationEmail_EmailQueueError(t *testing.T) {
 	}
 	generator := &mockICSGenerator{}
 
-	service := NewConfirmationService(renderer, repo, generator)
+	service := NewConfirmationService(renderer, repo, generator, "https://rsvp.example.com")
 
 	ctx := context.Background()
 	startTime := time.Now().Add(24 * time.Hour)
@@ -517,7 +517,7 @@ func TestSendConfirmationEmail_WithAnswers(t *testing.T) {
 	repo := &mockEmailQueueRepository{}
 	generator := &mockICSGenerator{}
 
-	service := NewConfirmationService(renderer, repo, generator)
+	service := NewConfirmationService(renderer, repo, generator, "https://rsvp.example.com")
 
 	ctx := context.Background()
 	startTime := time.Now().Add(24 * time.Hour)
@@ -615,7 +615,7 @@ func TestSendConfirmationEmail_NilGuestName(t *testing.T) {
 	repo := &mockEmailQueueRepository{}
 	generator := &mockICSGenerator{}
 
-	service := NewConfirmationService(renderer, repo, generator)
+	service := NewConfirmationService(renderer, repo, generator, "https://rsvp.example.com")
 
 	ctx := context.Background()
 	startTime := time.Now().Add(24 * time.Hour)
@@ -661,7 +661,7 @@ func TestSendConfirmationEmail_ContextCancellation(t *testing.T) {
 	repo := &mockEmailQueueRepository{}
 	generator := &mockICSGenerator{}
 
-	service := NewConfirmationService(renderer, repo, generator)
+	service := NewConfirmationService(renderer, repo, generator, "https://rsvp.example.com")
 
 	ctx, cancel := context.WithCancel(context.Background())
 	cancel()
@@ -710,7 +710,7 @@ func TestConfirmationService_Integration(t *testing.T) {
 	repo := &mockEmailQueueRepository{}
 	generator := ics.NewGenerator()
 
-	service := NewConfirmationService(renderer, repo, generator)
+	service := NewConfirmationService(renderer, repo, generator, "https://rsvp.example.com")
 
 	ctx := context.Background()
 	startTime := time.Now().Add(24 * time.Hour)
@@ -788,5 +788,56 @@ func TestConfirmationService_Integration(t *testing.T) {
 
 	if len(attachments[0].Content) == 0 {
 		t.Error("Expected ICS attachment to have content")
+	}
+}
+
+func TestSendConfirmationEmail_UsesBaseURL(t *testing.T) {
+	baseURL := "https://rsvp.myserver.com"
+
+	var capturedICSURL string
+	generator := &mockICSGenerator{
+		generateFunc: func(event *models.Event, rsvpURL string) ([]byte, error) {
+			capturedICSURL = rsvpURL
+			return []byte("BEGIN:VCALENDAR\nEND:VCALENDAR"), nil
+		},
+	}
+
+	var capturedTemplateData interface{}
+	renderer := &mockTemplateRenderer{
+		renderHTMLFunc: func(ctx context.Context, templateName string, data interface{}) (string, error) {
+			capturedTemplateData = data
+			return "<html>test</html>", nil
+		},
+	}
+	repo := &mockEmailQueueRepository{}
+
+	service := NewConfirmationService(renderer, repo, generator, baseURL)
+
+	ctx := context.Background()
+	startTime := time.Now().Add(24 * time.Hour)
+	email := "guest@example.com"
+	name := "Guest"
+
+	event := &models.Event{ID: 1, Title: "My Event", StartTime: startTime, Timezone: "UTC"}
+	invite := &models.Invite{ID: 1, EventID: 1, Email: &email, Name: &name}
+	rsvp := &models.RSVP{ID: 1, InviteID: 1, Response: models.RSVPResponseYes}
+
+	err := service.SendConfirmationEmail(ctx, "abc123token", rsvp, invite, event, nil)
+	if err != nil {
+		t.Fatalf("Expected no error, got %v", err)
+	}
+
+	expectedURL := "https://rsvp.myserver.com/rsvp/abc123token"
+
+	if capturedICSURL != expectedURL {
+		t.Errorf("ICS rsvpURL = %q, want %q", capturedICSURL, expectedURL)
+	}
+
+	if td, ok := capturedTemplateData.(*RSVPConfirmationTemplateData); ok {
+		if td.UpdateURL != expectedURL {
+			t.Errorf("UpdateURL = %q, want %q", td.UpdateURL, expectedURL)
+		}
+	} else {
+		t.Errorf("Template data was not *RSVPConfirmationTemplateData, got %T", capturedTemplateData)
 	}
 }

@@ -46,6 +46,7 @@ type ConfirmationData struct {
 	RSVP                 ConfirmationRSVP
 	AnswersWithQuestions []ConfirmationAnswerWithQuestion
 	Token                string
+	ErrorMessage         string
 }
 
 func getConfirmationTemplate() (*template.Template, error) {

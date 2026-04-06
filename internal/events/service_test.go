@@ -253,7 +253,7 @@ func TestNewService(t *testing.T) {
 	validator := &mockValidator{}
 	authz := &mockAuthorizationChecker{}
 
-	service := NewService(repo, validator, authz)
+	service := NewService(repo, nil, validator, authz)
 
 	if service == nil {
 		t.Fatal("NewService() returned nil")
@@ -429,7 +429,7 @@ func TestService_CreateEvent(t *testing.T) {
 
 			tt.setupMocks(repo, validator, authz)
 
-			service := NewService(repo, validator, authz)
+			service := NewService(repo, nil, validator, authz)
 
 			ctx := context.Background()
 			if tt.user != nil {
@@ -572,7 +572,7 @@ func TestService_GetEvent(t *testing.T) {
 
 			tt.setupMocks(repo, validator, authz)
 
-			service := NewService(repo, validator, authz)
+			service := NewService(repo, nil, validator, authz)
 
 			ctx := context.Background()
 			if tt.user != nil {
@@ -801,7 +801,7 @@ func TestService_UpdateEvent(t *testing.T) {
 
 			tt.setupMocks(repo, validator, authz)
 
-			service := NewService(repo, validator, authz)
+			service := NewService(repo, nil, validator, authz)
 
 			ctx := context.Background()
 			if tt.user != nil {
@@ -939,7 +939,7 @@ func TestService_DeleteEvent(t *testing.T) {
 
 			tt.setupMocks(repo, validator, authz)
 
-			service := NewService(repo, validator, authz)
+			service := NewService(repo, nil, validator, authz)
 
 			ctx := context.Background()
 			if tt.user != nil {
@@ -1060,7 +1060,7 @@ func TestService_ListEvents(t *testing.T) {
 
 			tt.setupMocks(repo, validator, authz)
 
-			service := NewService(repo, validator, authz)
+			service := NewService(repo, nil, validator, authz)
 
 			ctx := context.Background()
 			if tt.user != nil {
@@ -1177,7 +1177,7 @@ func TestService_PublishEvent(t *testing.T) {
 
 			tt.setupMocks(repo, validator, authz)
 
-			service := NewService(repo, validator, authz)
+			service := NewService(repo, nil, validator, authz)
 
 			ctx := context.Background()
 			if tt.user != nil {
@@ -1283,7 +1283,7 @@ func TestService_CancelEvent(t *testing.T) {
 
 			tt.setupMocks(repo, validator, authz)
 
-			service := NewService(repo, validator, authz)
+			service := NewService(repo, nil, validator, authz)
 
 			ctx := context.Background()
 			if tt.user != nil {
@@ -1375,7 +1375,7 @@ func TestService_ArchiveEvent(t *testing.T) {
 
 			tt.setupMocks(repo, validator, authz)
 
-			service := NewService(repo, validator, authz)
+			service := NewService(repo, nil, validator, authz)
 
 			ctx := context.Background()
 			if tt.user != nil {
@@ -1450,7 +1450,7 @@ func TestService_GetEventsToArchive(t *testing.T) {
 
 			tt.setupMocks(repo, validator, authz)
 
-			service := NewService(repo, validator, authz)
+			service := NewService(repo, nil, validator, authz)
 
 			ctx := context.Background()
 			if tt.user != nil {

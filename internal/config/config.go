@@ -233,24 +233,12 @@ func (c *Config) setDefaults() {
 		c.Security.HMACSecretKey = generateHMACSecret()
 	}
 
-	if c.Token.HashingEnabled {
-		if c.Token.Secret == "" {
-			c.Token.Secret = getHardcodedTokenSecret()
-			fmt.Fprintln(os.Stderr, "WARNING: TOKEN_SECRET not set - using hardcoded fallback")
-			fmt.Fprintln(os.Stderr, "WARNING: Tokens will persist across restarts but use a known secret")
-			fmt.Fprintln(os.Stderr, "WARNING: For production, set TOKEN_SECRET environment variable")
-			fmt.Fprintf(os.Stderr, "WARNING: Generate with: openssl rand -hex 32\n")
-		}
-	} else {
+	if !c.Token.HashingEnabled {
 		c.Token.Secret = ""
 		fmt.Fprintln(os.Stderr, "WARNING: Token hashing disabled (TOKEN_HASHING_ENABLED=false)")
 		fmt.Fprintln(os.Stderr, "WARNING: Invite tokens will be stored in plain text in the database")
 		fmt.Fprintln(os.Stderr, "WARNING: This reduces security but simplifies operations")
 	}
-}
-
-func getHardcodedTokenSecret() string {
-	return "tinyrsvp_default_token_secret_change_in_production_da8f152a3cc3d58054cb988a463344503ad1ad09fba718a8a5e6e9513d16040f"
 }
 
 func (c *Config) Validate() error {
@@ -457,8 +445,15 @@ func (c *Config) validateSecurity() error {
 }
 
 func (c *Config) validateToken() error {
-	if c.Token.HashingEnabled && len(c.Token.Secret) < 32 {
-		return fmt.Errorf("token secret must be at least 32 bytes when hashing is enabled")
+	if c.Token.HashingEnabled {
+		if c.Token.Secret == "" {
+			return fmt.Errorf("TOKEN_SECRET is required when token hashing is enabled\n" +
+				"  Generate one with: openssl rand -hex 32\n" +
+				"  Then set: TOKEN_SECRET=<your-secret>")
+		}
+		if len(c.Token.Secret) < 32 {
+			return fmt.Errorf("token secret must be at least 32 bytes when hashing is enabled")
+		}
 	}
 
 	return nil

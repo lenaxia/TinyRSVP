@@ -30,20 +30,23 @@ type ListFilters struct {
 }
 
 type service struct {
-	repo      repositories.EventRepository
-	validator Validator
-	authz     auth.AuthorizationChecker
+	repo       repositories.EventRepository
+	inviteRepo repositories.InviteRepository
+	validator  Validator
+	authz      auth.AuthorizationChecker
 }
 
 func NewService(
 	repo repositories.EventRepository,
+	inviteRepo repositories.InviteRepository,
 	validator Validator,
 	authz auth.AuthorizationChecker,
 ) Service {
 	return &service{
-		repo:      repo,
-		validator: validator,
-		authz:     authz,
+		repo:       repo,
+		inviteRepo: inviteRepo,
+		validator:  validator,
+		authz:      authz,
 	}
 }
 
@@ -137,8 +140,21 @@ func (s *service) UpdateEvent(ctx context.Context, event *models.Event) error {
 		return err
 	}
 
+	startTimeChanged := !existing.StartTime.Equal(event.StartTime)
+
 	if err := s.repo.UpdateWithVersion(ctx, event, event.Version); err != nil {
 		return err
+	}
+
+	// Cascade start_time changes to invite expiry dates.
+	// Invites expire at event.StartTime + 30 days; when the event is rescheduled
+	// the old expiry becomes stale and links appear expired prematurely.
+	if startTimeChanged && s.inviteRepo != nil {
+		newExpiry := event.StartTime.Add(30 * 24 * 60 * 60 * 1e9) // 30 days
+		if err := s.inviteRepo.UpdateExpiresAtByEventID(ctx, event.ID, newExpiry); err != nil {
+			// Non-fatal: log but don't fail the event update
+			fmt.Printf("warning: failed to update invite expiries for event %d: %v\n", event.ID, err)
+		}
 	}
 
 	return nil

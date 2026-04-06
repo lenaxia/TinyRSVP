@@ -1,7 +1,7 @@
 # TinyRSVP - LLM Implementation Guide
 
 **Version:** 2.0  
-**Last Updated:** 2026-02-04  
+**Last Updated:** 2026-03-02  
 **Project Status:** Active Development (75% Complete)
 
 ---
@@ -671,7 +671,7 @@ docker-compose up -d
 
 **Naming:** `NNNN_YYYY-MM-DD_description.md` (continuous numbering from 0000)
 
-**Current Count:** 141 entries (0000-0140)
+**Current Count:** 151 entries (0000-0150)
 
 **Purpose:**
 - Progress updates
@@ -685,7 +685,7 @@ docker-compose up -d
 - When handing off to another session
 - When documenting blockers
 
-**Next Entry:** Use `0141_YYYY-MM-DD_description.md`
+**Next Entry:** Use `0151_YYYY-MM-DD_description.md`
 
 ### Backlog Stories
 
@@ -967,6 +967,36 @@ internal/
 - Use table-driven tests for multiple cases
 - Use subtests with `t.Run()`
 
+### UX Tests (Browser-Based)
+
+UX tests live in `tests/ux/` and use **chromedp** (headless Chrome) to exercise real browser flows against an in-process test server.
+
+**How to run:**
+```bash
+go test -timeout 180s -v ./tests/ux/...
+```
+
+**Key design decisions:**
+- Each test calls `setupUXTestServer(t)` which spins up a temp SQLite DB, runs migrations, wires all real handlers, and starts an `httptest.NewServer` — no external server or daemon needed.
+- Authentication bypass uses the `X-Test-User-ID` header (supported by production `RequireAuth` middleware in `internal/middleware/rbac.go`), injected via `network.SetExtraHTTPHeaders`.
+- `SeedDefaults` (not `SeedThemes`) is called so the default RSVP page renders as a legacy HTML form — the component renderer templates have no form elements and would break form-submission tests.
+- The RSVP form uses `name="response"` radio inputs (not `name="attending"`) from `internal/templates/defaults/rsvp_page.html`.
+- The invite list shows a "Copy" button (`data-action="copy-link"`) for the RSVP URL — there is no `<a href="/rsvp/...">` anchor in the table rows.
+- Template paths are relative from `tests/ux/`: `../../templates/web/`, `../../migrations/sqlite`, `../../static`.
+- A no-op `email.Service` stub is wired in — no SMTP required.
+
+**Test files:**
+```
+tests/ux/
+  server_test.go                  # Shared fixture: setupUXTestServer, newChromedpCtx, asAdmin helper
+  rsvp_flow_test.go               # RSVP guest flow (page loads, form submit, token validation)
+  event_creation_flow_test.go     # Event creation flow (auth, form fields, validation)
+  invite_management_flow_test.go  # Invite list (page load, copy-link button, auth redirect)
+  dashboard_flow_test.go          # Dashboard, event list, navigation, health endpoint
+```
+
+**Requirements:** Headless Chrome must be installed (chromedp manages this via `chromedp.DefaultExecAllocatorOptions`). Tests take ~1–2 minutes total due to browser startup overhead.
+
 ### Running Tests
 
 **ALWAYS use timeout:**
@@ -1111,6 +1141,8 @@ A: Set the `Accept: application/json` header in your test requests. Content nego
 |---------|------|---------|
 | 1.0 | 2026-01-06 | Initial creation |
 | 2.0 | 2026-02-04 | Major documentation reorganization: Added 02_DESIGN/, 03_REFERENCE/, 04_SUMMARIES/, 99_ARCHIVE/ folders. Updated all references to reflect new structure. Changed worklog naming to continuous numbering (0000-NNNN). Organized backlog into epic folders. |
+| 2.1 | 2026-03-02 | Updated worklog count to 149 (entries 0000-0148). Next entry: 0150. |
+| 2.2 | 2026-03-03 | Updated worklog count to 151 (entries 0000-0150). Next entry: 0151. |
 
 ---
 

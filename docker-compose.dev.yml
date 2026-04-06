@@ -1,0 +1,15 @@
+# Development overlay — mounts local static/ and templates/ into the container
+# so CSS/JS/template changes are live without a rebuild.
+#
+# Usage:
+#   docker compose -f docker-compose.test.yml -f docker-compose.dev.yml up -d
+#
+# Only Go source changes require a rebuild. Everything else is hot-reloaded
+# by just refreshing the browser.
+
+services:
+  tinyrsvp:
+    volumes:
+      - tinyrsvp-test-data:/data
+      - ./static:/app/static:ro
+      - ./templates:/app/templates:ro

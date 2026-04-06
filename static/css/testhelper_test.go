@@ -4,6 +4,9 @@ import (
 	"net/http"
 	"testing"
 	"time"
+
+	"github.com/chromedp/cdproto/network"
+	"github.com/chromedp/chromedp"
 )
 
 // requireServer skips the test if the local dev server is not running at localhost:8080.
@@ -17,4 +20,11 @@ func requireServer(t *testing.T) {
 		return
 	}
 	resp.Body.Close()
+}
+
+// setTestAuthHeader sets the X-Test-User-ID header for test authentication bypass.
+func setTestAuthHeader() chromedp.Action {
+	return network.SetExtraHTTPHeaders(network.Headers{
+		"X-Test-User-ID": "1",
+	})
 }

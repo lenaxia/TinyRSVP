@@ -24,7 +24,7 @@ func TestEventHandlers_FullCRUDFlow_Integration(t *testing.T) {
 	eventRepo := repositories.NewEventRepository(database)
 	authChecker := auth.NewAuthorizationChecker()
 	validator := events.NewValidator(events.NewTimezoneValidator())
-	eventService := events.NewService(eventRepo, validator, authChecker)
+	eventService := events.NewService(eventRepo, nil, validator, authChecker)
 	handlers := NewEventHandlers(eventService)
 
 	ctx := context.Background()
@@ -177,7 +177,7 @@ func TestEventHandlers_LifecycleTransitions_Integration(t *testing.T) {
 	eventRepo := repositories.NewEventRepository(database)
 	authChecker := auth.NewAuthorizationChecker()
 	validator := events.NewValidator(events.NewTimezoneValidator())
-	eventService := events.NewService(eventRepo, validator, authChecker)
+	eventService := events.NewService(eventRepo, nil, validator, authChecker)
 	handlers := NewEventHandlers(eventService)
 
 	ctx := context.Background()
@@ -260,7 +260,7 @@ func TestEventHandlers_PermissionEnforcement_Integration(t *testing.T) {
 	eventRepo := repositories.NewEventRepository(database)
 	authChecker := auth.NewAuthorizationChecker()
 	validator := events.NewValidator(events.NewTimezoneValidator())
-	eventService := events.NewService(eventRepo, validator, authChecker)
+	eventService := events.NewService(eventRepo, nil, validator, authChecker)
 	handlers := NewEventHandlers(eventService)
 
 	ctx := context.Background()
@@ -347,7 +347,7 @@ func TestEventHandlers_ConcurrentUpdates_Integration(t *testing.T) {
 	eventRepo := repositories.NewEventRepository(database)
 	authChecker := auth.NewAuthorizationChecker()
 	validator := events.NewValidator(events.NewTimezoneValidator())
-	eventService := events.NewService(eventRepo, validator, authChecker)
+	eventService := events.NewService(eventRepo, nil, validator, authChecker)
 	handlers := NewEventHandlers(eventService)
 
 	ctx := context.Background()

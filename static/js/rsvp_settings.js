@@ -56,7 +56,12 @@
                 document.getElementById('event_capacity_input').value = '';
             }
             
+            this.injectIntoForm();
             this.updateTriggerButtonText();
+        }
+        
+        injectIntoForm() {
+            injectRSVPSettingsIntoForm();
         }
         
         saveOriginalValues() {
@@ -127,10 +132,56 @@
         }
     }
 
+    function injectRSVPSettingsIntoForm() {
+        const form = document.querySelector('form.event-form');
+        if (!form) return;
+        
+        const setHidden = (name, value) => {
+            let input = form.querySelector(`input[name="${name}"][data-rsvp-injected]`);
+            if (!input) {
+                input = document.createElement('input');
+                input.type = 'hidden';
+                input.name = name;
+                input.setAttribute('data-rsvp-injected', '1');
+                form.appendChild(input);
+            }
+            input.value = value;
+        };
+        
+        // Sentinel: signals to the server that RSVP settings are being submitted
+        setHidden('rsvp_settings_saved', '1');
+        
+        // RSVP deadline
+        const deadlineEl = document.getElementById('rsvp_deadline_input');
+        setHidden('rsvp_deadline', deadlineEl ? deadlineEl.value : '');
+        
+        // Checkboxes — submit 'on' when checked, '' when unchecked
+        const cb = (id) => { const el = document.getElementById(id); return el && el.checked ? 'on' : ''; };
+        setHidden('allow_rsvp_after_deadline', cb('allow_rsvp_after_deadline'));
+        setHidden('allow_maybe_rsvp', cb('allow_maybe_rsvp'));
+        setHidden('private_guest_list', cb('private_guest_list'));
+        setHidden('family_headcount', cb('family_headcount'));
+        
+        // Max plus ones
+        const maxPlusOnesEl = document.getElementById('max_plus_ones_input');
+        if (maxPlusOnesEl) setHidden('max_plus_ones', maxPlusOnesEl.value);
+        
+        // Event capacity
+        const capacityEl = document.getElementById('event_capacity_input');
+        setHidden('event_capacity', capacityEl ? capacityEl.value : '');
+    }
+
     function initRSVPSettings() {
         const trigger = document.querySelector('[data-rsvp-settings-trigger]');
         if (trigger) {
             new RSVPSettingsPanel(trigger);
+        }
+        
+        // Attach submit listener independently so RSVP panel values are always
+        // injected into the form on submit, even if the panel was never opened.
+        const form = document.querySelector('form.event-form');
+        if (form) {
+            form.addEventListener('submit', injectRSVPSettingsIntoForm);
         }
     }
 

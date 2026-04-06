@@ -26,7 +26,7 @@ func TestService_CreateEvent_GeneratesPublicID(t *testing.T) {
 		return nil
 	}
 
-	service := NewService(mockRepo, mockValidator, mockAuthz)
+	service := NewService(mockRepo, nil, mockValidator, mockAuthz)
 
 	user := &models.User{
 		ID:    1,
@@ -77,7 +77,7 @@ func TestService_CreateEvent_PublicIDUniqueness(t *testing.T) {
 		return nil
 	}
 
-	service := NewService(mockRepo, mockValidator, mockAuthz)
+	service := NewService(mockRepo, nil, mockValidator, mockAuthz)
 
 	user := &models.User{
 		ID:    1,
@@ -132,7 +132,7 @@ func TestService_CreateEvent_PreservesUserProvidedFriendlyName(t *testing.T) {
 		return nil
 	}
 
-	service := NewService(mockRepo, mockValidator, mockAuthz)
+	service := NewService(mockRepo, nil, mockValidator, mockAuthz)
 
 	user := &models.User{
 		ID:    1,
@@ -183,7 +183,7 @@ func TestService_CreateEvent_AllowsNilFriendlyName(t *testing.T) {
 		return nil
 	}
 
-	service := NewService(mockRepo, mockValidator, mockAuthz)
+	service := NewService(mockRepo, nil, mockValidator, mockAuthz)
 
 	user := &models.User{
 		ID:    1,

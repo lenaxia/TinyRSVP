@@ -79,6 +79,14 @@
     line-height: var(--line-height-relaxed);
 }
 
+[data-event-theme="modern-minimalist"] .event-countdown {
+    --color-primary-50: rgba(15, 23, 42, 0.06);
+    --color-primary-700: #0f172a;
+    background-color: rgba(15, 23, 42, 0.06);
+    color: #0f172a;
+    border: 1px solid rgba(15, 23, 42, 0.15);
+}
+
 [data-event-theme="modern-minimalist"] .rsvp-form {
     margin-top: var(--spacing-8);
     padding-top: var(--spacing-6);

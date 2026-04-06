@@ -84,6 +84,14 @@
     line-height: var(--line-height-relaxed);
 }
 
+[data-event-theme="garden-party"] .event-countdown {
+    --color-primary-50: rgba(22, 163, 74, 0.1);
+    --color-primary-700: #14532d;
+    background-color: rgba(22, 163, 74, 0.1);
+    color: #14532d;
+    border: 1px solid rgba(22, 163, 74, 0.25);
+}
+
 [data-event-theme="garden-party"] .rsvp-form {
     margin-top: var(--spacing-8);
     padding-top: var(--spacing-6);

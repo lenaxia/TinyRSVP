@@ -17,11 +17,18 @@ import (
 type TemplateCategory = models.TemplateCategory
 
 const (
-	CategoryPlain   = models.CategoryPlain
-	CategoryCard    = models.CategoryCard
-	CategoryModern  = models.CategoryModern
-	CategoryClassic = models.CategoryClassic
-	CategoryFun     = models.CategoryFun
+	CategoryPlain               = models.CategoryPlain
+	CategoryCard                = models.CategoryCard
+	CategoryModern              = models.CategoryModern
+	CategoryClassic             = models.CategoryClassic
+	CategoryFun                 = models.CategoryFun
+	CategoryWeddingElegance     = models.CategoryWeddingElegance
+	CategoryBirthdayCelebration = models.CategoryBirthdayCelebration
+	CategoryCorporatePro        = models.CategoryCorporatePro
+	CategoryHolidayFestive      = models.CategoryHolidayFestive
+	CategoryGardenParty         = models.CategoryGardenParty
+	CategoryModernMinimalist    = models.CategoryModernMinimalist
+	CategoryPlainText           = models.CategoryPlainText
 )
 
 type TemplateHandlers struct {
@@ -435,17 +442,25 @@ func (h *TemplateHandlers) PreviewTemplate(w http.ResponseWriter, r *http.Reques
 }
 
 func getThemeSlug(category TemplateCategory) string {
-	mapping := map[TemplateCategory]string{
-		CategoryPlain:   "plain-text",
-		CategoryCard:    "wedding-elegance",
-		CategoryModern:  "modern-minimalist",
-		CategoryClassic: "corporate-professional",
-		CategoryFun:     "birthday-celebration",
+	// New per-theme categories match CSS filenames directly
+	switch category {
+	case CategoryWeddingElegance, CategoryBirthdayCelebration, CategoryCorporatePro,
+		CategoryHolidayFestive, CategoryGardenParty, CategoryModernMinimalist, CategoryPlainText:
+		return string(category)
+	// Legacy coarse category fallbacks
+	case CategoryPlain:
+		return "plain-text"
+	case CategoryCard:
+		return "wedding-elegance"
+	case CategoryModern:
+		return "modern-minimalist"
+	case CategoryClassic:
+		return "corporate-professional"
+	case CategoryFun:
+		return "birthday-celebration"
+	default:
+		return "plain-text"
 	}
-	if slug, ok := mapping[category]; ok {
-		return slug
-	}
-	return "modern-minimalist"
 }
 
 func (h *TemplateHandlers) HandleThemePreview(w http.ResponseWriter, r *http.Request) {
@@ -506,109 +521,105 @@ func (h *TemplateHandlers) HandleThemePreview(w http.ResponseWriter, r *http.Req
 	dataTheme := themeMode
 	themeSlug := getThemeSlug(template.Category)
 
+	// Determine header image: prefer custom upload, fall back to theme's default SVG
+	headerImageURL := customImageURL
+	if headerImageURL == "" && template.ImageURL != nil && *template.ImageURL != "" {
+		headerImageURL = *template.ImageURL
+	}
+
 	headerImageHTML := ""
-	if customImageURL != "" {
+	if headerImageURL != "" {
 		headerImageHTML = fmt.Sprintf(`
-	               <div class="event-header-image">
-	                   <img src="%s" alt="Event header image" />
-	               </div>`, customImageURL)
+			<div class="rsvp-card-header">
+				<img class="theme-header-image" src="%s" alt="%s theme" loading="eager" style="width: 100%%; object-fit: cover; max-height: 400px;" />
+			</div>`, headerImageURL, template.Name)
 	}
 
 	customColorCSS := ""
 	if customColor != "" && isValidHexColor(customColor) {
 		customColorCSS = fmt.Sprintf(`
-	   <style>
-	       :root {
-	           --primary-color: %s;
-	           --primary-color-hover: %s;
-	           --primary-color-alpha: %s33;
-	       }
-	   </style>`, customColor, customColor, customColor)
+	<style>
+		:root {
+			--primary-color: %s;
+			--primary-color-hover: %s;
+			--primary-color-alpha: %s33;
+		}
+	</style>`, customColor, customColor, customColor)
 	}
 
 	fmt.Fprintf(w, `<!DOCTYPE html>
 <html lang="en" data-theme="%s" data-event-theme="%s">
 <head>
-	   <meta charset="UTF-8">
-	   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-	   <title>Theme Preview</title>
-	   <link rel="stylesheet" href="/static/css/variables.css">
-	   <link rel="stylesheet" href="/static/css/typography.css">
-	   <link rel="stylesheet" href="/static/css/colors.css">
-	   <link rel="stylesheet" href="/static/css/buttons.css">
-	   <link rel="stylesheet" href="/static/css/forms.css">
-	   <link rel="stylesheet" href="/static/css/rsvp_page.css">
-	   <link rel="stylesheet" href="/static/css/themes/%s.css">
-	   <style>
-	       .event-header-image {
-	           width: 100%%;
-	           max-height: 400px;
-	           overflow: hidden;
-	           margin-bottom: 2rem;
-	           border-radius: 8px;
-	       }
-	       .event-header-image img {
-	           width: 100%%;
-	           height: 100%%;
-	           object-fit: cover;
-	       }
-	   </style>%s
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Theme Preview - %s</title>
+	<link rel="stylesheet" href="/static/css/variables.css">
+	<link rel="stylesheet" href="/static/css/typography.css">
+	<link rel="stylesheet" href="/static/css/colors.css">
+	<link rel="stylesheet" href="/static/css/buttons.css">
+	<link rel="stylesheet" href="/static/css/forms.css">
+	<link rel="stylesheet" href="/static/css/rsvp_page.css">
+	<link rel="stylesheet" href="/static/css/themes/%s.css">
+	%s
 </head>
 <body>
-	   <div class="rsvp-page">
-	       <div class="rsvp-container">
-	           <article class="event-details">%s
-	               <header>
-	                   <h1 class="event-title">%s</h1>
-	               </header>
-	               <section class="event-info">
-	                   <div class="event-info-item">
-	                       <div class="event-info-content">
-	                           <div class="event-info-label">Date & Time</div>
-	                           <time>%s</time>
-	                       </div>
-	                   </div>
-	                   <div class="event-info-item">
-	                       <div class="event-info-content">
-	                           <div class="event-info-label">Location</div>
-	                           <address class="event-location">%s</address>
-	                       </div>
-	                   </div>
-	               </section>
-	               <section class="event-description">
-	                   <h2>About This Event</h2>
-	                   <p>%s</p>
-	               </section>
-	           </article>
-	           <form class="rsvp-form">
-	               <h2 class="rsvp-form-title">Please Respond</h2>
-	               <div class="form-group">
-	                   <fieldset>
-	                       <legend class="form-label">Will you attend?</legend>
-	                       <div class="response-options">
-	                           <div class="response-option">
-	                               <input type="radio" name="response" value="yes" id="response_yes">
-	                               <label for="response_yes">Yes, I'll be there</label>
-	                           </div>
-	                           <div class="response-option">
-	                               <input type="radio" name="response" value="maybe" id="response_maybe">
-	                               <label for="response_maybe">Maybe</label>
-	                           </div>
-	                           <div class="response-option">
-	                               <input type="radio" name="response" value="no" id="response_no">
-	                               <label for="response_no">No, I can't make it</label>
-	                           </div>
-	                       </div>
-	                   </fieldset>
-	               </div>
-	               <div class="rsvp-actions">
-	                   <button type="button" class="btn btn-primary" disabled>Submit RSVP (Preview Only)</button>
-	               </div>
-	           </form>
-	       </div>
-	       </div>
-	   </body>
-	   </html>`, dataTheme, themeSlug, themeSlug, customColorCSS, headerImageHTML, title, startTime.Format("Monday, January 2, 2006 at 3:04 PM MST"), location, description)
+	<div class="rsvp-page">
+		<div class="rsvp-container">
+			<div class="rsvp-card">
+				%s
+				<div class="rsvp-card-content">
+					<div class="event-details">
+						<h1 class="event-title">%s</h1>
+						<div class="event-info">
+							<div class="event-info-item">
+								<div class="event-info-content">
+									<div class="event-info-label">Date &amp; Time</div>
+									<time>%s</time>
+								</div>
+							</div>
+							<div class="event-info-item">
+								<div class="event-info-content">
+									<div class="event-info-label">Location</div>
+									<address class="event-location">%s</address>
+								</div>
+							</div>
+						</div>
+						<div class="event-description">
+							<h2>About This Event</h2>
+							<p>%s</p>
+						</div>
+					</div>
+					<form class="rsvp-form">
+						<h2 class="rsvp-form-title">Please Respond</h2>
+						<div class="form-group">
+							<fieldset>
+								<legend class="form-label">Will you attend?</legend>
+								<div class="response-options">
+									<div class="response-option">
+										<input type="radio" name="response" value="yes" id="response_yes">
+										<label for="response_yes">Yes, I'll be there</label>
+									</div>
+									<div class="response-option">
+										<input type="radio" name="response" value="maybe" id="response_maybe">
+										<label for="response_maybe">Maybe</label>
+									</div>
+									<div class="response-option">
+										<input type="radio" name="response" value="no" id="response_no">
+										<label for="response_no">No, I can't make it</label>
+									</div>
+								</div>
+							</fieldset>
+						</div>
+						<div class="rsvp-actions">
+							<button type="button" class="btn btn-primary" disabled>Submit RSVP (Preview Only)</button>
+						</div>
+					</form>
+				</div>
+			</div>
+		</div>
+	</div>
+</body>
+</html>`, dataTheme, themeSlug, template.Name, themeSlug, customColorCSS, headerImageHTML, title, startTime.Format("Monday, January 2, 2006 at 3:04 PM MST"), location, description)
 }
 
 func isValidHexColor(color string) bool {

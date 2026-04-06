@@ -84,7 +84,7 @@ func TestEventArchiver_Integration(t *testing.T) {
 	tzValidator := events.NewTimezoneValidator()
 	validator := events.NewValidator(tzValidator)
 	authz := &mockAuthz{}
-	service := events.NewService(repo, validator, authz)
+	service := events.NewService(repo, nil, validator, authz)
 	archiver := NewEventArchiver(service, 30)
 
 	adminUser := &models.User{

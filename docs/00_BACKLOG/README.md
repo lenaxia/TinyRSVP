@@ -63,22 +63,23 @@ This folder contains sprint stories, epics, and user stories for the TinyRSVP pr
 
 | # | Epic | Priority | Status | Stories | Effort | Dependencies |
 |---|------|----------|--------|---------|--------|--------------|
-| 00 | [Foundation & Project Setup](00_FOUNDATION/) | High | Not Started | 7 | 1 week | None |
-| 01 | [Authentication & Authorization](01_AUTH/) | High | Not Started | 8 | 1 week | Epic 00 |
-| 02 | [Event Management](02_EVENTS/) | High | Not Started | 6 | 2 weeks | Epic 00, 01 |
-| 03 | [Invite & Token Management](03_INVITES/) | High | Not Started | 12 | 1.5 weeks | Epic 00, 01, 02 |
-| 04 | [RSVP & Guest Experience](04_RSVP/) | High | Not Started | 12 | 1 week | Epic 00, 02, 03 |
-| 05 | [Email System & Calendar](05_EMAIL/) | High | Not Started | 8 | 1.5 weeks | Epic 00, 02, 03, 06 |
-| 06 | [Templates & Asset Management](06_TEMPLATES/) | Medium | Not Started | 13 | 1 week | Epic 00, 01 |
-| 07 | [Frontend & User Experience](07_FRONTEND/) | High | Not Started | 22 | 1 week | Epic 08 |
-| 08 | [API & HTTP Layer](08_API/) | High | Not Started | 19 | 1.5 weeks | All |
+| 00 | [Foundation & Project Setup](00_FOUNDATION/) | High | ✅ Complete | 7 | 1 week | None |
+| 01 | [Authentication & Authorization](01_AUTH/) | High | ✅ Complete | 8 | 1 week | Epic 00 |
+| 02 | [Event Management](02_EVENTS/) | High | ✅ Complete | 6 | 2 weeks | Epic 00, 01 |
+| 03 | [Invite & Token Management](03_INVITES/) | High | ✅ Complete | 12 | 1.5 weeks | Epic 00, 01, 02 |
+| 04 | [RSVP & Guest Experience](04_RSVP/) | High | ✅ Complete | 12 | 1 week | Epic 00, 02, 03 |
+| 05 | [Email System & Calendar](05_EMAIL/) | High | ✅ Complete | 8 | 1.5 weeks | Epic 00, 02, 03, 06 |
+| 06 | [Templates & Asset Management](06_TEMPLATES/) | Medium | ✅ Complete | 13 | 1 week | Epic 00, 01 |
+| 07 | [Frontend & User Experience](07_FRONTEND/) | High | ✅ Complete | 22 | 1 week | Epic 08 |
+| 08 | [API & HTTP Layer](08_API/) | High | ✅ Complete | 19 | 1.5 weeks | All |
 | 09 | [Security](09_SECURITY/) | High | Not Started | 1 | 1 week | Epic 08 |
-| 10 | [Technical Debt](10_TECHNICAL_DEBT/) | Medium | Not Started | 16 | 1 week | Various |
-| 11 | [RSVP Themes](11_RSVP_THEMES/) | Medium | Not Started | 12 | 1 week | Epic 06 |
-| 12 | [Test Infrastructure](12_TEST_INFRASTRUCTURE/) | Medium | Not Started | 20 | 3-4 weeks | None |
+| 10 | [Technical Debt](10_TECHNICAL_DEBT/) | Medium | In Progress | 16 | 1 week | Various |
+| 11 | [RSVP Themes](11_RSVP_THEMES/) | Medium | ✅ Complete | 12 | 1 week | Epic 06 |
+| 12 | [Test Infrastructure](12_TEST_INFRASTRUCTURE/) | Medium | In Progress | 20 | 3-4 weeks | None |
+| 13 | [Guest Accounts & Encryption at Rest](13_GUEST_ACCOUNTS/) | Medium | Not Started | 12 | 3-4 weeks | Epic 00, 01, 03, 04, 05 |
 
-**Total Stories:** 150+  
-**Total Effort:** ~15 weeks  
+**Total Stories:** 165+  
+**Total Effort:** ~18-19 weeks  
 **v0 Target:** Epics 00-08 complete
 
 ---
@@ -164,28 +165,31 @@ Epic 07: Frontend & User Experience (Week 9-10)
 ## Epic Dependency Graph
 
 ```
-                    Epic 00 (Foundation)
-                           │
-                           ▼
-                    Epic 01 (Auth)
-                           │
-                ┌──────────┴──────────┐
-                ▼                     ▼
-         Epic 02 (Events)      Epic 06 (Templates)
-                │                     │
-                ▼                     │
-         Epic 03 (Invites)            │
-                │                     │
-         ┌──────┴──────┐              │
-         ▼             ▼              │
-  Epic 04 (RSVP)  Epic 05 (Email)◄───┘
-         │             │
-         └──────┬──────┘
-                ▼
-         Epic 08 (API)
-                │
-                ▼
-         Epic 07 (Frontend)
+                     Epic 00 (Foundation)
+                            │
+                            ▼
+                     Epic 01 (Auth)
+                            │
+                 ┌──────────┴──────────┐
+                 ▼                     ▼
+          Epic 02 (Events)      Epic 06 (Templates)
+                 │                     │
+                 ▼                     │
+          Epic 03 (Invites)            │
+                 │                     │
+          ┌──────┴──────┐              │
+          ▼             ▼              │
+   Epic 04 (RSVP)  Epic 05 (Email)◄───┘
+          │             │
+          └──────┬──────┘
+                 ▼
+          Epic 08 (API)
+                 │
+                 ▼
+          Epic 07 (Frontend)
+
+Epic 13 (Guest Accounts) depends on: Epic 00, 01, 03, 04, 05
+Epic 13 blocks: nothing (additive)
 ```
 
 ---
@@ -210,13 +214,13 @@ Epic 07: Frontend & User Experience (Week 9-10)
 ## Epic Completion Tracking
 
 ### Overall Progress
-- **Epics Complete:** 0/9 (0%)
-- **Stories Complete:** 0/115 (0%)
-- **Estimated Remaining:** 10 weeks
+- **Epics Complete:** 9/14 (64%) — Epics 00–08, 11
+- **Stories Complete:** ~138/165+ (84%)
+- **Estimated Remaining:** Epic 09 (Security, ~1 week), Epic 13 (Guest Accounts, ~4 weeks), Tech Debt/Test Infra cleanup
 
 ### By Priority
-- **High Priority:** 0/8 complete
-- **Medium Priority:** 0/1 complete
+- **High Priority:** 8/8 complete (Epics 00–08)
+- **Medium Priority:** 1/5 complete (Epic 11)
 
 ---
 
@@ -296,14 +300,14 @@ Epic 07: Frontend & User Experience (Week 9-10)
 ## Quick Reference
 
 ### Current Sprint Focus
-**Sprint 1:** Epic 00 (Foundation)  
-**Next:** Epic 01 (Authentication)
+**Current:** Epic 09 (Security) — required before public beta  
+**Next:** Epic 13 (Guest Accounts) or Tech Debt cleanup
 
 ### Blocked Stories
 None currently
 
 ### High Priority Incomplete
-All epics (project just starting)
+- Epic 09 (Security) — not started
 
 ---
 
@@ -331,8 +335,9 @@ All epics (project just starting)
 - [10: Technical Debt](10_TECHNICAL_DEBT/) - Refactoring, improvements
 - [11: RSVP Themes](11_RSVP_THEMES/) - Theme system, customization
 - [12: Test Infrastructure](12_TEST_INFRASTRUCTURE/) - Testing modernization
+- [13: Guest Accounts & Encryption at Rest](13_GUEST_ACCOUNTS/) - Passwordless guest accounts, PII encryption
 
 ---
 
-**Last Updated:** 2026-02-04  
-**Next Review:** After Epic 00 completion
+**Last Updated:** 2026-03-05  
+**Next Review:** After Epic 09 completion

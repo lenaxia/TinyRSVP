@@ -492,6 +492,39 @@ func TestEventValidator_ValidateUpdate(t *testing.T) {
 			wantErr: true,
 			errMsg:  "invalid timezone",
 		},
+		{
+			name: "past RSVP deadline allowed on update (deadline already passed)",
+			event: &models.Event{
+				Title:        "Event",
+				StartTime:    time.Now().Add(24 * time.Hour),
+				Timezone:     "America/Los_Angeles",
+				Status:       models.EventStatusPublished,
+				RSVPDeadline: testutil.TimePtr(time.Now().Add(-1 * time.Hour)),
+			},
+			wantErr: false,
+		},
+		{
+			name: "RSVP deadline after start time rejected on update",
+			event: &models.Event{
+				Title:        "Event",
+				StartTime:    time.Now().Add(24 * time.Hour),
+				Timezone:     "America/Los_Angeles",
+				Status:       models.EventStatusDraft,
+				RSVPDeadline: testutil.TimePtr(time.Now().Add(48 * time.Hour)),
+			},
+			wantErr: true,
+			errMsg:  "RSVP deadline must be before event start time",
+		},
+		{
+			name: "nil RSVP deadline allowed on update",
+			event: &models.Event{
+				Title:     "Event",
+				StartTime: time.Now().Add(24 * time.Hour),
+				Timezone:  "America/Los_Angeles",
+				Status:    models.EventStatusDraft,
+			},
+			wantErr: false,
+		},
 	}
 
 	validator := NewValidator(NewTimezoneValidator())

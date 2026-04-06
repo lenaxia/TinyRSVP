@@ -74,7 +74,7 @@ func TestRSVPPage_TemplateRendersThemeData(t *testing.T) {
 		t.Error("Template should include theme header image")
 	}
 
-	if !strings.Contains(html, `<img src="/static/images/themes/wedding-elegance-header.svg"`) {
+	if !strings.Contains(html, `class="theme-header-image" src="/static/images/themes/wedding-elegance-header.svg"`) {
 		t.Error("Template should render theme image tag")
 	}
 }

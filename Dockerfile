@@ -1,8 +1,10 @@
-FROM golang:1.24-alpine AS builder
+FROM golang:1.24-bookworm AS builder
 
 WORKDIR /build
 
-RUN apk add --no-cache git gcc musl-dev sqlite-dev
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    git gcc libsqlite3-dev \
+    && rm -rf /var/lib/apt/lists/*
 
 COPY go.mod go.sum ./
 COPY vendor ./vendor
@@ -14,9 +16,11 @@ RUN CGO_ENABLED=1 GOOS=linux go build -a -installsuffix cgo \
     -mod=vendor \
     -o tinyrsvp ./cmd/server
 
-FROM alpine:latest
+FROM debian:bookworm-slim
 
-RUN apk --no-cache add ca-certificates sqlite-libs wget tzdata
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    ca-certificates libsqlite3-0 wget tzdata \
+    && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
 
@@ -32,8 +36,8 @@ EXPOSE 8080
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
     CMD wget --no-verbose --tries=1 --spider http://localhost:8080/health || exit 1
 
-RUN addgroup -g 1000 tinyrsvp && \
-    adduser -D -u 1000 -G tinyrsvp tinyrsvp && \
+RUN groupadd -g 1000 tinyrsvp && \
+    useradd -D -u 1000 -g tinyrsvp tinyrsvp && \
     chown -R tinyrsvp:tinyrsvp /app /data
 
 USER tinyrsvp

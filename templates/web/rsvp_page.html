@@ -47,8 +47,18 @@
                 </div>
                 {{end}}
 
+            {{if .ThemeCategory}}<div class="rsvp-card">{{end}}
+                {{if .ThemeCategory}}
+                {{if .ThemeImageURL}}
+                <div class="rsvp-card-header">
+                    <img class="theme-header-image" src="{{.ThemeImageURL}}" alt="Event theme" loading="lazy">
+                </div>
+                {{end}}
+                <div class="rsvp-card-content">
+                {{end}}
+
                 <article class="event-details" role="main" aria-label="Main content" id="main-content">
-                    {{if .ThemeImageURL}}
+                    {{if and .ThemeImageURL (not .ThemeCategory)}}
                     <div class="theme-header-image">
                         <img src="{{.ThemeImageURL}}" alt="Event theme" loading="lazy">
                     </div>
@@ -306,7 +316,9 @@
                 </form>
                 {{end}}
                 {{end}}
+                {{if .ThemeCategory}}</div>{{end}}{{/* close rsvp-card-content */}}
             {{end}}
+            {{if .ThemeCategory}}</div>{{end}}{{/* close rsvp-card */}}
         </div>
     </div>
     <script>

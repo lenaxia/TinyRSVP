@@ -14,6 +14,7 @@ func TestConfig_Load_ValidMinimalConfig(t *testing.T) {
 		"SMTP_HOST":       "localhost",
 		"EMAIL_FROM":      "test@example.com",
 		"SERVER_BASE_URL": "http://localhost:8080",
+		"TOKEN_SECRET":    "da8f152a3cc3d58054cb988a463344503ad1ad09fba718a8a5e6e9513d16040f",
 	}
 	setTestEnv(t, env)
 
@@ -198,6 +199,7 @@ func TestConfig_Load_WithAllFields(t *testing.T) {
 		"SECURITY_SESSION_DURATION": "240h",
 		"SECURITY_TOKEN_EXPIRY":     "168h",
 		"SECURITY_HMAC_SECRET":      "my-secret-key-exactly-32-bytes!!",
+		"TOKEN_SECRET":              "da8f152a3cc3d58054cb988a463344503ad1ad09fba718a8a5e6e9513d16040f",
 	}
 	setTestEnv(t, env)
 
@@ -254,6 +256,7 @@ func TestConfig_Load_EmailProcessorDefaults(t *testing.T) {
 		"SMTP_HOST":       "localhost",
 		"EMAIL_FROM":      "test@example.com",
 		"SERVER_BASE_URL": "http://localhost:8080",
+		"TOKEN_SECRET":    "da8f152a3cc3d58054cb988a463344503ad1ad09fba718a8a5e6e9513d16040f",
 	}
 	setTestEnv(t, env)
 
@@ -278,6 +281,7 @@ func TestConfig_Load_EmailProcessorCustomValues(t *testing.T) {
 		"SMTP_HOST":                     "localhost",
 		"EMAIL_FROM":                    "test@example.com",
 		"SERVER_BASE_URL":               "http://localhost:8080",
+		"TOKEN_SECRET":                  "da8f152a3cc3d58054cb988a463344503ad1ad09fba718a8a5e6e9513d16040f",
 		"EMAIL_PROCESSOR_BATCH_SIZE":    "100",
 		"EMAIL_PROCESSOR_POLL_INTERVAL": "30s",
 	}

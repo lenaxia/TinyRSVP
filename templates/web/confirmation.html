@@ -1,6 +1,6 @@
 {{template "base" .}}
 
-{{define "title"}}RSVP Confirmed - {{.Event.Title}} - TinyRSVP{{end}}
+{{define "title"}}{{if .Event}}RSVP Confirmed - {{.Event.Title}} - TinyRSVP{{else}}RSVP - TinyRSVP{{end}}{{end}}
 
 {{define "css-extra"}}
     <link rel="stylesheet" href="/static/css/confirmation.css">
@@ -9,6 +9,13 @@
 {{define "main-class"}}confirmation-main{{end}}
 
 {{define "content"}}
+    {{if .ErrorMessage}}
+    <section class="confirmation-error" role="alert">
+        <h1 class="confirmation-error-title">Unable to Load Confirmation</h1>
+        <p class="confirmation-error-message">{{.ErrorMessage}}</p>
+        <a href="/" class="btn btn-secondary">Return Home</a>
+    </section>
+    {{else}}
     <section class="confirmation-success" role="status" aria-live="polite">
         <span class="confirmation-success-icon" aria-hidden="true">✓</span>
         <div>
@@ -99,4 +106,5 @@
             Update RSVP
         </a>
     </div>
+    {{end}}
 {{end}}

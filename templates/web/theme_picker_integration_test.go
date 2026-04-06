@@ -87,13 +87,13 @@ func TestThemePickerPartialIntegration(t *testing.T) {
 			t.Error("Should render theme-gallery")
 		}
 
-		// Theme gallery uses role="region" with aria-label for accessibility
-		if !strings.Contains(html, `role="region"`) && !strings.Contains(html, `role="radiogroup"`) {
-			t.Error("Theme gallery should have a landmark role (region or radiogroup)")
+		// Theme gallery uses role="tabpanel" (tabs pattern) or role="region"/"radiogroup" for accessibility
+		if !strings.Contains(html, `role="tabpanel"`) && !strings.Contains(html, `role="region"`) && !strings.Contains(html, `role="radiogroup"`) {
+			t.Error("Theme gallery should have a landmark role (tabpanel, region, or radiogroup)")
 		}
 
-		if !strings.Contains(html, `aria-label="Theme gallery"`) && !strings.Contains(html, `aria-label="Select theme"`) {
-			t.Error("Theme gallery should have aria-label")
+		if !strings.Contains(html, `aria-labelledby=`) && !strings.Contains(html, `aria-label="Theme gallery"`) && !strings.Contains(html, `aria-label="Select theme"`) {
+			t.Error("Theme gallery should have aria-labelledby or aria-label")
 		}
 	})
 

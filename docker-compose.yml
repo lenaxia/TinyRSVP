@@ -9,10 +9,12 @@ services:
     environment:
       - SERVER_HOST=0.0.0.0
       - SERVER_PORT=8080
+      # SERVER_BASE_URL is used in all email links and ICS attachments.
+      # Set this to your public URL or every link in emails will point to localhost.
       - SERVER_BASE_URL=${SERVER_BASE_URL:-http://localhost:8080}
       - DATABASE_TYPE=sqlite
       - DATABASE_PATH=/data/tinyrsvp.db
-      - TOKEN_SECRET=${TOKEN_SECRET:-da8f152a3cc3d58054cb988a463344503ad1ad09fba718a8a5e6e9513d16040f}
+      - TOKEN_SECRET=${TOKEN_SECRET:?TOKEN_SECRET is required. Generate with: openssl rand -hex 32}
       - SMTP_HOST=${SMTP_HOST:-localhost}
       - SMTP_PORT=${SMTP_PORT:-587}
       - EMAIL_FROM=${EMAIL_FROM:-noreply@example.com}

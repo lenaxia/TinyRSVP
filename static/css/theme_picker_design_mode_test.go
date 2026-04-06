@@ -32,6 +32,7 @@ func TestCSS_RequiredClassesExist(t *testing.T) {
 	for _, class := range requiredClasses {
 		var exists bool
 		err := chromedp.Run(ctx,
+			setTestAuthHeader(),
 			chromedp.Navigate("http://localhost:8080/events/new"),
 			chromedp.WaitVisible(`#design-mode-btn`, chromedp.ByID),
 			chromedp.Click(`#design-mode-btn`, chromedp.ByID),
@@ -61,6 +62,7 @@ func TestCSS_MobileToggleVisibility(t *testing.T) {
 	// Test on desktop (should be hidden)
 	var desktopDisplay string
 	err := chromedp.Run(ctx,
+		setTestAuthHeader(),
 		chromedp.EmulateViewport(1024, 768), // Desktop size
 		chromedp.Navigate("http://localhost:8080/events/new"),
 		chromedp.WaitVisible(`#design-mode-btn`, chromedp.ByID),
@@ -108,6 +110,7 @@ func TestCSS_DesktopLayoutColumns(t *testing.T) {
 
 	var layoutDisplay string
 	err := chromedp.Run(ctx,
+		setTestAuthHeader(),
 		chromedp.EmulateViewport(1024, 768), // Desktop size
 		chromedp.Navigate("http://localhost:8080/events/new"),
 		chromedp.WaitVisible(`.event-form-layout`, chromedp.ByQuery),
@@ -135,6 +138,7 @@ func TestCSS_LoadingErrorStates(t *testing.T) {
 	// Check loading spinner exists
 	var spinnerExists bool
 	err := chromedp.Run(ctx,
+		setTestAuthHeader(),
 		chromedp.Navigate("http://localhost:8080/events/new"),
 		chromedp.WaitVisible(`#design-mode-btn`, chromedp.ByID),
 		chromedp.Click(`#design-mode-btn`, chromedp.ByID),
@@ -176,6 +180,7 @@ func TestCSS_TouchTargetSize(t *testing.T) {
 
 	var minHeight float64
 	err := chromedp.Run(ctx,
+		setTestAuthHeader(),
 		chromedp.EmulateViewport(375, 667), // Mobile size
 		chromedp.Navigate("http://localhost:8080/events/new"),
 		chromedp.WaitVisible(`#design-mode-btn`, chromedp.ByID),
@@ -202,6 +207,7 @@ func TestCSS_PreviewIframeDimensions(t *testing.T) {
 
 	var width, height string
 	err := chromedp.Run(ctx,
+		setTestAuthHeader(),
 		chromedp.Navigate("http://localhost:8080/events/new"),
 		chromedp.WaitVisible(`#design-mode-btn`, chromedp.ByID),
 		chromedp.Click(`#design-mode-btn`, chromedp.ByID),
@@ -234,6 +240,7 @@ func TestCSS_ActiveModeButtonStyling(t *testing.T) {
 
 	var galleryBtnBg, designBtnBg string
 	err := chromedp.Run(ctx,
+		setTestAuthHeader(),
 		chromedp.Navigate("http://localhost:8080/events/new"),
 		chromedp.WaitVisible(`#gallery-mode-btn`, chromedp.ByID),
 
@@ -268,6 +275,7 @@ func TestCSS_HiddenAttributeWorks(t *testing.T) {
 
 	var galleryDisplay string
 	err := chromedp.Run(ctx,
+		setTestAuthHeader(),
 		chromedp.Navigate("http://localhost:8080/events/new"),
 		chromedp.WaitVisible(`#design-mode-btn`, chromedp.ByID),
 		chromedp.Click(`#design-mode-btn`, chromedp.ByID),

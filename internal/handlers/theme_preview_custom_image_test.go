@@ -75,8 +75,8 @@ func TestHandleThemePreview_CustomImageInHeader(t *testing.T) {
 	}
 
 	body := w.Body.String()
-	if !strings.Contains(body, "event-header-image") {
-		t.Error("Expected response to contain event-header-image class")
+	if !strings.Contains(body, "theme-header-image") {
+		t.Error("Expected response to contain theme-header-image class")
 	}
 	if !strings.Contains(body, customImageURL) {
 		t.Errorf("Expected header image to use custom URL %s", customImageURL)

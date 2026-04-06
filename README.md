@@ -16,7 +16,7 @@ TinyRSVP is a lightweight alternative to services like Evite, designed specifica
 - 📧 **Email Invitations**: Send invites with calendar attachments
 - 📱 **Mobile-Friendly**: Responsive design for all devices
 - 🐳 **Docker-Ready**: Single container deployment
-- 🔐 **Flexible Auth**: OIDC or forward auth for admins
+- 🔐 **Flexible Auth**: Forward auth (tested) or OIDC (implemented, not yet integration-tested) for admins
 
 ---
 
@@ -60,73 +60,77 @@ TinyRSVP is a lightweight alternative to services like Evite, designed specifica
 
 ```bash
 # Server
-PORT=8080
-BASE_URL=https://rsvp.yourdomain.com
+SERVER_PORT=8080
+SERVER_BASE_URL=https://rsvp.yourdomain.com   # Required — used in emails and ICS attachments
 
-# Database
-DATABASE_TYPE=sqlite  # or postgres
+# Database (SQLite only in v0)
 DATABASE_PATH=/data/tinyrsvp.db
 
-# Token Security (IMPORTANT)
-TOKEN_SECRET=<generate-with-openssl-rand-hex-32>  # Required for production
-TOKEN_HASHING_ENABLED=true  # Default: true, set false for plain token mode
+# Token Security (REQUIRED)
+TOKEN_SECRET=<generate with: openssl rand -hex 32>
+TOKEN_HASHING_ENABLED=true   # default: true
 
-# Authentication
-AUTH_MODE=oidc  # or forward_auth
-OIDC_ISSUER_URL=https://auth.yourdomain.com
-OIDC_CLIENT_ID=your-client-id
-OIDC_CLIENT_SECRET=your-client-secret
+# Authentication — choose one
+FORWARD_AUTH_ENABLED=true
+FORWARD_AUTH_USER_HEADER=X-Forwarded-User
+FORWARD_AUTH_EMAIL_HEADER=X-Forwarded-Email
+FORWARD_AUTH_TRUSTED_IPS=127.0.0.1,172.17.0.1
 
 # SMTP
 SMTP_HOST=smtp.gmail.com
 SMTP_PORT=587
 SMTP_USERNAME=your-email@gmail.com
 SMTP_PASSWORD=your-app-password
-SMTP_FROM=noreply@yourdomain.com
+EMAIL_FROM=noreply@yourdomain.com
 
-# Storage
-STORAGE_TYPE=local  # or s3
-STORAGE_PATH=/data/uploads
+# Storage (local filesystem only in v0)
+STORAGE_TYPE=local
+STORAGE_LOCAL_PATH=/data/uploads
 ```
 
-### Token Security Configuration
+See [`.env.example`](.env.example) for the full annotated list of all environment variables.
 
-**IMPORTANT:** Invite tokens must persist across server restarts. Configure `TOKEN_SECRET` to prevent invite links from breaking.
+### Token Security
+
+**`TOKEN_SECRET` is required.** The app will refuse to start without it.
 
 **Generate a secure secret:**
 ```bash
 openssl rand -hex 32
 ```
 
-**Configuration modes:**
-
 | Mode | Configuration | Behavior |
 |------|---------------|----------|
-| **Production (Recommended)** | `TOKEN_SECRET=<your-secret>`<br>`TOKEN_HASHING_ENABLED=true` | Tokens hashed with your secret, maximum security |
-| **Homelab (Default)** | `TOKEN_SECRET` not set<br>`TOKEN_HASHING_ENABLED=true` | Tokens hashed with hardcoded fallback, tokens persist |
-| **Plain Token** | `TOKEN_HASHING_ENABLED=false` | Tokens stored in plain text, simplest operations |
-
-**⚠️ Warning:** If `TOKEN_SECRET` is not set, the application will show warnings on startup but will use a hardcoded fallback to ensure tokens persist across restarts.
+| **Production** | `TOKEN_SECRET=<secret>`<br>`TOKEN_HASHING_ENABLED=true` | Tokens HMAC-hashed with your secret |
+| **Plain Token** | `TOKEN_HASHING_ENABLED=false` | Tokens stored in plain text (simpler but less secure) |
 
 ### Docker Compose Example
 
 ```yaml
-version: '3.8'
-
 services:
   tinyrsvp:
     image: tinyrsvp:latest
     ports:
       - "8080:8080"
     volumes:
-      - ./data:/data
+      - tinyrsvp-data:/data
     environment:
+      - SERVER_BASE_URL=https://rsvp.yourdomain.com   # Set this — used in all email links
+      - TOKEN_SECRET=${TOKEN_SECRET}                   # Required: openssl rand -hex 32
       - DATABASE_PATH=/data/tinyrsvp.db
-      - SMTP_HOST=smtp.gmail.com
-      - SMTP_PORT=587
+      - FORWARD_AUTH_ENABLED=true
+      - FORWARD_AUTH_USER_HEADER=X-Forwarded-User
+      - FORWARD_AUTH_EMAIL_HEADER=X-Forwarded-Email
+      - FORWARD_AUTH_TRUSTED_IPS=172.17.0.1,172.18.0.1
+      - SMTP_HOST=${SMTP_HOST}
+      - SMTP_PORT=${SMTP_PORT:-587}
+      - EMAIL_FROM=${EMAIL_FROM}
       - SMTP_USERNAME=${SMTP_USERNAME}
       - SMTP_PASSWORD=${SMTP_PASSWORD}
     restart: unless-stopped
+
+volumes:
+  tinyrsvp-data:
 ```
 
 ---
@@ -139,8 +143,7 @@ services:
 - **Manage Invites**: Send personalized invitations via email
 - **Track Responses**: View who's coming, who's not, and who hasn't responded
 - **Preference Questions**: Ask custom questions (dietary restrictions, +1s, etc.)
-- **Email Reminders**: Automatically remind non-responders
-- **Export Data**: Download guest lists as CSV
+- **Theme Picker**: Choose from 7 built-in themes or customize colors and images
 
 ### For Guests
 
@@ -174,14 +177,14 @@ services:
 │              │                         │
 │              ▼                         │
 │     ┌─────────────────┐               │
-│     │  SQLite/Postgres │               │
+│     │     SQLite      │               │
 │     └─────────────────┘               │
 └─────────────────────────────────────────┘
          │              │
          ▼              ▼
   ┌──────────┐   ┌──────────┐
-  │   SMTP   │   │  Storage │
-  │  Server  │   │ (FS/S3)  │
+   │   SMTP   │   │  Storage │
+   │  Server  │   │  (local) │
   └──────────┘   └──────────┘
 ```
 
@@ -192,9 +195,9 @@ services:
 - **Backend**: Go
 - **Frontend**: Plain CSS + Vanilla JavaScript (mobile-first)
 - **Templates**: Go `html/template`
-- **Database**: SQLite (default) or PostgreSQL
-- **Authentication**: OIDC or Forward Auth
-- **Storage**: Local filesystem or S3-compatible
+- **Database**: SQLite (PostgreSQL planned for v1)
+- **Authentication**: Forward Auth (tested) or OIDC (implemented, not integration-tested in beta)
+- **Storage**: Local filesystem (S3-compatible planned for v1)
 
 ---
 
@@ -224,7 +227,7 @@ services:
 
 - **No Guest Accounts**: Guests access via unique, unguessable tokens
 - **Token Security**: 256-bit cryptographically secure tokens, hashed in database
-- **Admin Authentication**: OIDC or forward auth (no local passwords)
+- **Admin Authentication**: Forward auth (tested) or OIDC (implemented, not integration-tested — no local passwords)
 - **Self-Hosted**: Your data stays on your server
 - **Optional Passphrases**: Add extra security to invites
 - **HTTPS Required**: TLS termination at reverse proxy
@@ -273,7 +276,7 @@ go mod download
 go test -timeout 30s ./...
 
 # Build binary
-go build -o bin/tinyrsvp cmd/server/main.go
+go build -o bin/tinyrsvp ./cmd/server
 
 # Run locally
 ./bin/tinyrsvp
@@ -316,30 +319,30 @@ For humans interested in contributing:
 
 ## Roadmap
 
-### v0 (Current)
-- [x] Project setup and documentation
-- [ ] Core event management
-- [ ] Invite system with tokens
-- [ ] RSVP handling
-- [ ] Email sending with ICS attachments
-- [ ] Basic templates
-- [ ] SQLite support
-- [ ] OIDC authentication
+### v0 (Current — feature complete, beta)
+- [x] Project setup and infrastructure
+- [x] Core event management (create, edit, publish, cancel, archive)
+- [x] Invite system with cryptographic tokens (individual, bulk CSV)
+- [x] RSVP handling (yes/no/maybe, plus ones, preference questions)
+- [x] Email sending with ICS calendar attachments
+- [x] Template system with theme picker (7 themes, custom images, color overrides)
+- [x] SQLite database
+- [x] OIDC and forward-auth admin authentication
+- [x] Mobile-responsive UI
+- [x] Docker / Docker Compose deployment
 
-### v1 (Future)
+### v1 (Planned)
 - [ ] PostgreSQL support
 - [ ] S3-compatible storage
-- [ ] Guest OIDC (optional)
-- [ ] Public event links
 - [ ] Reminder scheduling UI
-- [ ] Advanced templates
 - [ ] Multi-language support
+- [ ] Advanced template editor
 
 ### v2 (Future)
+- [ ] Guest OIDC (optional passwordless accounts)
 - [ ] SMS notifications
-- [ ] Calendar sync (CalDAV)
-- [ ] Event analytics
-- [ ] Custom branding
+- [ ] CalDAV calendar sync
+- [ ] Event analytics dashboard
 - [ ] API for integrations
 
 ---
@@ -359,7 +362,7 @@ A: Any SMTP server works (Gmail, SendGrid, Mailgun, self-hosted, etc.).
 A: Yes, templates and CSS can be customized. See documentation for details.
 
 **Q: Is this production-ready?**  
-A: Currently in active development (v0). Use at your own risk.
+A: v0 is feature-complete and suitable for homelab / private use behind a reverse proxy. A full security audit (Epic 09) is planned before recommending public internet exposure.
 
 **Q: How do I backup my data?**  
 A: Backup the database file and uploads directory. For SQLite, copy `/data/tinyrsvp.db`.
@@ -379,7 +382,9 @@ A: Not currently, but manual import is possible by creating events and invites.
 
 ## License
 
-[License TBD - To be determined]
+TinyRSVP is released under the [GNU Affero General Public License v3.0](LICENSE) (AGPL-3.0).
+
+If you modify and run this software as a network service, you must make the modified source available to users of that service under the same license.
 
 ---
 

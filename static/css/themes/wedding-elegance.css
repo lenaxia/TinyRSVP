@@ -80,6 +80,14 @@
     line-height: var(--line-height-relaxed);
 }
 
+[data-event-theme="wedding-elegance"] .event-countdown {
+    --color-primary-50: rgba(244, 194, 194, 0.2);
+    --color-primary-700: #8b3a3a;
+    background-color: rgba(244, 194, 194, 0.2);
+    color: #8b3a3a;
+    border: 1px solid rgba(244, 194, 194, 0.4);
+}
+
 [data-event-theme="wedding-elegance"] .rsvp-form {
     margin-top: var(--spacing-8);
     padding-top: var(--spacing-6);

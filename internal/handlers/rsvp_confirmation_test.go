@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"fmt"
 	"html/template"
 	"net/http"
 	"net/http/httptest"
@@ -418,5 +419,109 @@ func TestRSVPHandler_GetConfirmationPage_CanUpdateFalse_DeadlinePassed(t *testin
 	body := w.Body.String()
 	if !strings.Contains(body, "CanUpdate:false") {
 		t.Errorf("Expected CanUpdate to be false, got: %s", body)
+	}
+}
+
+// TestRSVPHandler_ConfirmationPage_ErrorPath_NilEvent verifies that when the
+// confirmation page is rendered with an error message (Event/RSVP are nil),
+// the template does not panic and returns the correct error status code.
+// This is a regression test for the bug where {{.Event.Title}} in the title
+// block caused a nil-pointer template execution failure, which (due to headers
+// already being written) was silently swallowed and produced a 500.
+func TestRSVPHandler_ConfirmationPage_ErrorPath_NilEvent(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockInviteSvc := mocksvcs.NewMockInviteService(ctrl)
+	mockInviteSvc.EXPECT().GetInviteByToken(gomock.Any(), gomock.Any()).Return(nil, &models.NotFoundError{Resource: "invite"})
+
+	mockEventRepo := mockrepos.NewMockEventRepository(ctrl)
+	mockRSVPRepo := mockrepos.NewMockRSVPRepository(ctrl)
+	mockQuestionRepo := mockrepos.NewMockQuestionRepository(ctrl)
+
+	handler := NewRSVPHandler(mockInviteSvc, mockEventRepo, mockRSVPRepo, mockQuestionRepo)
+
+	// Use a template that mimics the real one: accesses .Event.Title in title
+	// block and branches on .ErrorMessage in content — should not panic when
+	// Event is nil.
+	tmpl := template.Must(template.New("confirmation.html").Parse(
+		`{{if .Event}}Title:{{.Event.Title}}{{else}}Error:{{.ErrorMessage}}{{end}}`,
+	))
+	handler.SetConfirmationTemplates(tmpl)
+
+	r := chi.NewRouter()
+	r.Get("/rsvp/{token}/confirmation", handler.GetConfirmationPage)
+
+	req := httptest.NewRequest("GET", "/rsvp/badtoken/confirmation", nil)
+	w := httptest.NewRecorder()
+	r.ServeHTTP(w, req)
+
+	// Should be a 4xx (not found), definitely not 500.
+	if w.Code == http.StatusInternalServerError {
+		t.Errorf("renderConfirmationPage returned 500 on error path — nil-event bug not fixed. Body: %s", w.Body.String())
+	}
+	if w.Code != http.StatusNotFound {
+		t.Errorf("Expected 404 for bad token, got %d", w.Code)
+	}
+	if !strings.Contains(w.Body.String(), "Error:") {
+		t.Errorf("Expected error message in body, got: %s", w.Body.String())
+	}
+}
+
+// TestRSVPHandler_ConfirmationPage_TemplateExecError_Returns500 verifies that
+// when template execution fails (e.g. calls an undefined function), the handler
+// returns a proper 500 with an error message — not a partial response with the
+// wrong status. This is a regression test for the buffered-write fix.
+func TestRSVPHandler_ConfirmationPage_TemplateExecError_Returns500(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	email := "test@example.com"
+	name := "Test"
+	startTime := time.Now().Add(24 * time.Hour)
+
+	mockInviteSvc := mocksvcs.NewMockInviteService(ctrl)
+	mockInviteSvc.EXPECT().GetInviteByToken(gomock.Any(), gomock.Any()).Return(&models.Invite{
+		ID: 1, EventID: 1, Email: &email, Name: &name,
+		Status: models.InviteStatusResponded, ExpiresAt: time.Now().Add(30 * 24 * time.Hour),
+	}, nil)
+
+	mockEventRepo := mockrepos.NewMockEventRepository(ctrl)
+	mockEventRepo.EXPECT().GetByID(gomock.Any(), gomock.Any()).Return(&models.Event{
+		ID: 1, Title: "Test Event", StartTime: startTime,
+		Timezone: "UTC", Status: models.EventStatusPublished,
+	}, nil)
+
+	mockRSVPRepo := mockrepos.NewMockRSVPRepository(ctrl)
+	mockRSVPRepo.EXPECT().GetByInviteID(gomock.Any(), gomock.Any()).Return(&models.RSVP{
+		ID: 1, InviteID: 1, Response: models.RSVPResponseYes,
+	}, nil)
+
+	mockQuestionRepo := mockrepos.NewMockQuestionRepository(ctrl)
+	mockQuestionRepo.EXPECT().GetByEventID(gomock.Any(), gomock.Any()).Return([]*models.PreferenceQuestion{}, nil)
+
+	mockAnswerRepo := mockrepos.NewMockAnswerRepository(ctrl)
+	mockAnswerRepo.EXPECT().GetByRSVPID(gomock.Any(), gomock.Any()).Return([]*models.RSVPAnswer{}, nil)
+
+	handler := NewRSVPHandler(mockInviteSvc, mockEventRepo, mockRSVPRepo, mockQuestionRepo)
+	handler.SetAnswerRepository(mockAnswerRepo)
+
+	// Template that calls an undefined function — will fail at Execute time.
+	tmpl := template.Must(template.New("confirmation.html").Funcs(template.FuncMap{
+		"willFail": func() (string, error) { return "", fmt.Errorf("intentional template failure") },
+	}).Parse(`{{willFail}}`))
+	handler.SetConfirmationTemplates(tmpl)
+
+	r := chi.NewRouter()
+	r.Get("/rsvp/{token}/confirmation", handler.GetConfirmationPage)
+
+	req := httptest.NewRequest("GET", "/rsvp/validtoken/confirmation", nil)
+	w := httptest.NewRecorder()
+	r.ServeHTTP(w, req)
+
+	// With the buffered-write fix, we must get a clean 500 — not 200 with a
+	// partial body.
+	if w.Code != http.StatusInternalServerError {
+		t.Errorf("Expected 500 on template execution failure, got %d. Body: %s", w.Code, w.Body.String())
 	}
 }

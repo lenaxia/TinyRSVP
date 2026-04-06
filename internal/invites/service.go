@@ -123,6 +123,7 @@ func (s *inviteService) CreateInvite(ctx context.Context, eventID int64, name *s
 		EventID:     eventID,
 		Name:        name,
 		Email:       email,
+		Token:       &plainToken,
 		TokenHash:   tokenHash,
 		MaxPlusOnes: maxPlusOnes,
 		Status:      models.InviteStatusDraft,
@@ -259,24 +260,11 @@ func (s *inviteService) SendInvite(ctx context.Context, req *SendInviteRequest, 
 		return fmt.Errorf("cannot send revoked invite")
 	}
 
-	plainToken, err := s.generator.Generate()
-	if err != nil {
-		return fmt.Errorf("failed to generate token: %w", err)
+	if invite.Token == nil || *invite.Token == "" {
+		return fmt.Errorf("invite has no token; regenerate the token before sending")
 	}
 
-	tokenHash, err := s.generator.Hash(plainToken)
-	if err != nil {
-		return fmt.Errorf("failed to hash token: %w", err)
-	}
-
-	invite.TokenHash = tokenHash
-	invite.UpdatedAt = time.Now()
-
-	if err := s.repo.Update(ctx, invite); err != nil {
-		return fmt.Errorf("failed to update invite: %w", err)
-	}
-
-	rsvpURL := fmt.Sprintf("%s/rsvp/%s", req.BaseURL, plainToken)
+	rsvpURL := fmt.Sprintf("%s/rsvp/%s", req.BaseURL, *invite.Token)
 
 	name := "Guest"
 	if invite.Name != nil {

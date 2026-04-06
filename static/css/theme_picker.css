@@ -8,6 +8,40 @@
     display: none !important;
 }
 
+/* Mode toggle tabs */
+.theme-mode-controls {
+    display: flex;
+    gap: var(--spacing-2);
+    border-bottom: 2px solid var(--color-border);
+    margin-bottom: var(--spacing-4);
+}
+
+.mode-btn {
+    background: none;
+    border: none;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -2px;
+    padding: var(--spacing-2) var(--spacing-4);
+    cursor: pointer;
+    font-size: var(--font-size-base);
+    color: var(--color-text-secondary);
+    transition: color var(--transition-fast), border-color var(--transition-fast), background-color var(--transition-fast);
+    min-height: 44px;
+}
+
+.mode-btn:hover {
+    color: var(--color-primary);
+    background-color: var(--color-surface-hover, rgba(0,0,0,0.04));
+}
+
+.mode-btn.active,
+.mode-btn[aria-selected="true"] {
+    color: var(--color-primary);
+    border-bottom-color: var(--color-primary);
+    font-weight: var(--font-weight-semibold, 600);
+    background-color: var(--color-primary-light, rgba(var(--color-primary-rgb, 79,70,229),0.08));
+}
+
 .theme-picker-header {
     display: flex;
     justify-content: space-between;

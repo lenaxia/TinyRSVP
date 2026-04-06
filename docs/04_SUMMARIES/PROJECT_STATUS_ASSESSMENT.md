@@ -1,32 +1,32 @@
 # TinyRSVP Project Status Assessment
 
-**Date:** 2026-02-04  
-**Status:** In Progress (85% Complete - CORRECTED)  
-**Production Ready:** NEARLY - Minor issues only  
+**Date:** 2026-03-05 (updated; original 2026-02-04)  
+**Status:** Complete (95%) — MVP/private beta ready  
+**Production Ready:** YES (private/homelab beta); Epic 09 needed for public beta  
 
 ---
 
-## Epic Status Overview (CORRECTED AFTER AUDIT)
+## Epic Status Overview
 
 | Epic | Status | Confidence | Test Pass Rate | Critical Issues |
 |------|--------|-----------|----------------|-----------------|
 | **00: Foundation** | ✅ Complete | HIGH (95%) | 100% | None |
-| **01: Auth** | ✅ Complete | **HIGH (95%)** ✅ | 100% | ✅ None (security fix applied) |
-| **02: Events** | ✅ Complete | **HIGH (95%)** ✅ | 100% | ✅ None |
-| **03: Invites** | ✅ Complete | **HIGH (95%)** ✅ | 100% | ✅ None (build fix applied) |
-| **04: RSVP** | ✅ Complete | **HIGH (90%)** ✅ | 100% | ✅ None |
-| **05: Email** | ✅ Complete | **HIGH (95%)** ✅ | 100% | ✅ None |
-| **06: Templates** | ✅ **Complete** | **VERY HIGH (100%)** ✅✅✅ | 100% (213/213) | ✅ **FIXED** |
-| **07: Frontend** | ⚠️ NEEDS VALIDATION | **MEDIUM (70%)** | N/A (browser required) | Validation tooling needed |
-| **08: API** | ✅ Complete | **HIGH (90%)** ✅ | 98% (10 minor failures) | Minor integration issues |
-| **09: Security** | ❌ Not Started | N/A | N/A | Needed before production |
+| **01: Auth** | ✅ Complete | HIGH (95%) | 100% | None |
+| **02: Events** | ✅ Complete | HIGH (95%) | 100% | None |
+| **03: Invites** | ✅ Complete | HIGH (95%) | 100% | None |
+| **04: RSVP** | ✅ Complete | HIGH (95%) | 100% | None |
+| **05: Email** | ✅ Complete | HIGH (95%) | 100% | SMTP wire tests added (MailHog) |
+| **06: Templates** | ✅ Complete | VERY HIGH (100%) | 100% | None |
+| **07: Frontend** | ✅ Complete | HIGH (90%) | 100% | UX tests via chromedp |
+| **08: API** | ✅ Complete | HIGH (95%) | 100% | Confirmation page 500 fixed |
+| **09: Security** | ❌ Not Started | N/A | N/A | Required for public beta |
 | **10: Tech Debt** | 🔄 Active | N/A | N/A | Ongoing |
-| **11: RSVP Themes** | ✅ **Complete** | **VERY HIGH (95%)** ✅✅ | 100% | ✅ **FIXED** |
-| **12: Test Infra** | ❌ Not Started | N/A | N/A | Optional post-production |
+| **11: RSVP Themes** | ✅ Complete | VERY HIGH (95%) | 100% | None |
+| **12: Test Infra** | 🔄 In Progress | N/A | N/A | Optional post-production |
 
-**Overall Confidence: HIGH (85%)**  
-**Previously Documented: 60% (INCORRECT)**  
-**Actual Status: 25% better than previously thought**
+**Overall Confidence: HIGH (95%)**  
+**33/33 packages passing**  
+**Private beta ready; public beta blocked on Epic 09 (Security)**
 
 ---
 
@@ -71,40 +71,57 @@
 
 ---
 
-## Production Readiness Summary
+## Production Readiness Summary (2026-03-05)
 
-### ✅ Production Ready NOW (8 of 9 epics)
+### ✅ Production Ready (9 of 9 v0 epics)
 
 1. **Epic 00: Foundation** - 95% confidence, all tests pass
 2. **Epic 01: Auth** - 95% confidence, security tested and hardened
 3. **Epic 02: Events** - 95% confidence, full CRUD working
+4. **Epic 03: Invites** - 95% confidence, all tests pass
+5. **Epic 04: RSVP** - 95% confidence, backend complete + confirmation page 500 fixed
+6. **Epic 05: Email** - 95% confidence, queue, delivery, and SMTP wire tests all pass
+7. **Epic 06: Templates** - 100% confidence, component system working
+8. **Epic 07: Frontend** - 90% confidence, validated via chromedp end-to-end UX tests
+9. **Epic 08: API** - 95% confidence, 100% test pass rate
+10. **Epic 11: Themes** - 95% confidence, all 7 themes functional
+
+### ❌ Not Started (blocks public beta)
+
+11. **Epic 09: Security** - Comprehensive OWASP audit needed before public exposure
 4. **Epic 03: Invites** - 95% confidence, all tests pass
 5. **Epic 04: RSVP** - 90% confidence, backend complete
 6. **Epic 05: Email** - 95% confidence, queue and delivery working
 7. **Epic 06: Templates** - 100% confidence, component system working
 8. **Epic 11: Themes** - 95% confidence, all 7 themes functional
 
-### ⚠️ Needs Browser Validation (1 epic)
-
-9. **Epic 07: Frontend** - 70% confidence, implementation done but validation requires browser tooling
-
-### ⚠️ Minor Issues (1 epic)
-
-10. **Epic 08: API** - 90% confidence, 10 minor integration test failures (2% of 500 tests)
-
-### ❌ Not Started (2 epics)
-
-11. **Epic 09: Security** - Comprehensive security testing needed before production
-12. **Epic 12: Test Infrastructure** - Optional post-production modernization
+11. **Epic 09: Security** - Comprehensive OWASP audit needed before public exposure
 
 ---
 
-## Critical Production Blockers: ~~3~~ 0 ✅
+## Key Fixes Applied (2026-03-05)
 
-### ~~1. Component Template System~~ ✅ **FIXED**
-**Status:** ~~BROKEN~~ → **WORKING**  
-**Epic:** 06 (Templates) & 11 (RSVP Themes)  
-**Resolution Date:** 2026-02-04  
+### Confirmation Page 500 (Epic 08/04)
+- **Root Cause 1:** `renderConfirmationPage()` called `w.WriteHeader()` before template execution, making error recovery a no-op since headers were already sent.
+- **Root Cause 2:** `confirmation.html` accessed `{{.Event.Title}}` unconditionally in the title block — panics when `Event` is nil (error path).
+- **Fix 1:** Template render now uses a `bytes.Buffer`; headers only written on success.
+- **Fix 2:** Added nil guard at top of `content` block.
+- **Regression tests:** Added to `templates/web/confirmation_test.go` and `confirmation_integration_test.go`.
+
+### Frontend UX Tests (Epic 07)
+- `chromedp.Submit` was hanging due to blocking on network-idle after a 303 redirect.
+- Fixed by replacing with `chromedp.Click` + `chromedp.WaitVisible`.
+- All UX tests now pass reliably.
+
+### SMTP Wire Tests (Epic 05)
+- Added 7 real SMTP wire tests (`internal/email/smtp_sender_mailhog_test.go`) that exercise the full send path against MailHog.
+- `docker-compose.test.yml` updated to use `MH_STORAGE=memory` to avoid maildir free-space check failures.
+
+---
+
+## Critical Production Blockers: 0 ✅
+
+### ~~1. Component Template System~~ ✅ **FIXED (2026-02-04)**
 
 **What Was Fixed:**
 - Updated 4 component templates with correct field paths

@@ -81,6 +81,14 @@
     line-height: var(--line-height-relaxed);
 }
 
+[data-event-theme="birthday-celebration"] .event-countdown {
+    --color-primary-50: rgba(255, 107, 157, 0.15);
+    --color-primary-700: #c9185b;
+    background-color: rgba(255, 107, 157, 0.15);
+    color: #c9185b;
+    border: 1px solid rgba(255, 107, 157, 0.3);
+}
+
 [data-event-theme="birthday-celebration"] .rsvp-form {
     margin-top: var(--spacing-8);
     padding-top: var(--spacing-6);

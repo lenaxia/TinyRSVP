@@ -38,6 +38,10 @@
 .datetime-trigger-text {
     flex: 1;
     color: var(--color-text-secondary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    min-width: 0;
 }
 
 .datetime-trigger-btn:not(:has(.datetime-trigger-text:empty)) .datetime-trigger-text {

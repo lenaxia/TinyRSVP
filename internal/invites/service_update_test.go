@@ -77,6 +77,10 @@ func (m *mockUpdateInviteRepo) CountInvites(ctx context.Context) (int, error) {
 	return 0, nil
 }
 
+func (m *mockUpdateInviteRepo) UpdateExpiresAtByEventID(ctx context.Context, eventID int64, expiresAt time.Time) error {
+	return nil
+}
+
 func TestUpdateInvite_Success(t *testing.T) {
 	now := time.Now()
 	expiresAt := now.Add(30 * 24 * time.Hour)

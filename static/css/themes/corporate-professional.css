@@ -78,6 +78,14 @@
     line-height: var(--line-height-relaxed);
 }
 
+[data-event-theme="corporate-professional"] .event-countdown {
+    --color-primary-50: rgba(37, 99, 235, 0.08);
+    --color-primary-700: #1d4ed8;
+    background-color: rgba(37, 99, 235, 0.08);
+    color: #1d4ed8;
+    border: 1px solid rgba(37, 99, 235, 0.2);
+}
+
 [data-event-theme="corporate-professional"] .rsvp-form {
     margin-top: var(--spacing-8);
     padding-top: var(--spacing-6);

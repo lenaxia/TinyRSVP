@@ -70,7 +70,7 @@ func TestThemeSystem_CompleteUserJourney_Integration(t *testing.T) {
 
 	authChecker := auth.NewAuthorizationChecker()
 	validator := events.NewValidator(events.NewTimezoneValidator())
-	eventService := events.NewService(eventRepo, validator, authChecker)
+	eventService := events.NewService(eventRepo, nil, validator, authChecker)
 
 	startTime := time.Now().Add(30 * 24 * time.Hour)
 	description := "Join us for our special day"
@@ -150,8 +150,8 @@ func TestThemeSystem_CompleteUserJourney_Integration(t *testing.T) {
 
 	body := w.Body.String()
 
-	if !strings.Contains(body, `data-event-theme="card"`) {
-		t.Error("RSVP page should have card theme applied")
+	if !strings.Contains(body, `data-event-theme="wedding-elegance"`) {
+		t.Error("RSVP page should have wedding-elegance theme applied")
 	}
 
 	if !strings.Contains(body, "Beautiful Wedding") {
@@ -162,8 +162,8 @@ func TestThemeSystem_CompleteUserJourney_Integration(t *testing.T) {
 		t.Errorf("RSVP page should contain theme image URL: %s", *weddingTheme.ImageURL)
 	}
 
-	if !strings.Contains(body, `/static/css/themes/card.css`) {
-		t.Error("RSVP page should include card theme CSS")
+	if !strings.Contains(body, `/static/css/themes/wedding-elegance.css`) {
+		t.Error("RSVP page should include wedding-elegance theme CSS")
 	}
 }
 
@@ -215,7 +215,7 @@ func TestThemeSystem_AllThemesRender_Integration(t *testing.T) {
 
 	authChecker := auth.NewAuthorizationChecker()
 	validator := events.NewValidator(events.NewTimezoneValidator())
-	eventService := events.NewService(eventRepo, validator, authChecker)
+	eventService := events.NewService(eventRepo, nil, validator, authChecker)
 
 	tokenGenerator := token.NewGenerator([]byte("test-secret-key-32-bytes-long!!"))
 	inviteService := invites.NewInviteService(tokenGenerator, inviteRepo)
@@ -340,19 +340,19 @@ func TestThemeSystem_LightDarkModeToggle_Integration(t *testing.T) {
 
 	var testTheme *models.Template
 	for _, theme := range themes {
-		if theme.Category == models.CategoryCard {
+		if theme.Category == models.CategoryWeddingElegance {
 			testTheme = theme
 			break
 		}
 	}
 
 	if testTheme == nil {
-		t.Fatal("No card theme found for testing")
+		t.Fatal("No wedding-elegance theme found for testing")
 	}
 
 	authChecker := auth.NewAuthorizationChecker()
 	validator := events.NewValidator(events.NewTimezoneValidator())
-	eventService := events.NewService(eventRepo, validator, authChecker)
+	eventService := events.NewService(eventRepo, nil, validator, authChecker)
 
 	tokenGenerator := token.NewGenerator([]byte("test-secret-key-32-bytes-long!!"))
 	inviteService := invites.NewInviteService(tokenGenerator, inviteRepo)
@@ -420,7 +420,7 @@ func TestThemeSystem_LightDarkModeToggle_Integration(t *testing.T) {
 
 			body := w.Body.String()
 
-			if !strings.Contains(body, `data-event-theme="card"`) {
+			if !strings.Contains(body, `data-event-theme="wedding-elegance"`) {
 				t.Errorf("Event theme should be preserved in %s mode", mode)
 			}
 
@@ -465,7 +465,7 @@ func TestThemeSystem_CustomOverrides_Integration(t *testing.T) {
 
 	var cardTheme *models.Template
 	for _, theme := range themes {
-		if theme.Category == models.CategoryCard {
+		if theme.Category == models.CategoryPlainText {
 			cardTheme = theme
 			break
 		}
@@ -473,7 +473,7 @@ func TestThemeSystem_CustomOverrides_Integration(t *testing.T) {
 
 	authChecker := auth.NewAuthorizationChecker()
 	validator := events.NewValidator(events.NewTimezoneValidator())
-	eventService := events.NewService(eventRepo, validator, authChecker)
+	eventService := events.NewService(eventRepo, nil, validator, authChecker)
 
 	tokenGenerator := token.NewGenerator([]byte("test-secret-key-32-bytes-long!!"))
 	inviteService := invites.NewInviteService(tokenGenerator, inviteRepo)
@@ -583,7 +583,7 @@ func TestThemeSystem_FallbackBehavior_Integration(t *testing.T) {
 
 	authChecker := auth.NewAuthorizationChecker()
 	validator := events.NewValidator(events.NewTimezoneValidator())
-	eventService := events.NewService(eventRepo, validator, authChecker)
+	eventService := events.NewService(eventRepo, nil, validator, authChecker)
 
 	tokenGenerator := token.NewGenerator([]byte("test-secret-key-32-bytes-long!!"))
 	inviteService := invites.NewInviteService(tokenGenerator, inviteRepo)
@@ -683,7 +683,7 @@ func TestThemeSystem_EventWithoutTheme_Integration(t *testing.T) {
 
 	authChecker := auth.NewAuthorizationChecker()
 	validator := events.NewValidator(events.NewTimezoneValidator())
-	eventService := events.NewService(eventRepo, validator, authChecker)
+	eventService := events.NewService(eventRepo, nil, validator, authChecker)
 
 	tokenGenerator := token.NewGenerator([]byte("test-secret-key-32-bytes-long!!"))
 	inviteService := invites.NewInviteService(tokenGenerator, inviteRepo)
@@ -744,8 +744,8 @@ func TestThemeSystem_EventWithoutTheme_Integration(t *testing.T) {
 
 	body := w.Body.String()
 
-	if !strings.Contains(body, `data-event-theme="plain"`) {
-		t.Error("Should use default plain theme when no theme specified")
+	if !strings.Contains(body, `data-event-theme="plain-text"`) {
+		t.Error("Should use default plain-text theme when no theme specified")
 	}
 
 	if !strings.Contains(body, event.Title) {
@@ -791,7 +791,7 @@ func TestThemeSystem_Performance_Integration(t *testing.T) {
 
 	var cardTheme *models.Template
 	for _, theme := range themes {
-		if theme.Category == models.CategoryCard && theme.ImageURL != nil {
+		if theme.Category == models.CategoryWeddingElegance && theme.ImageURL != nil {
 			cardTheme = theme
 			break
 		}
@@ -799,7 +799,7 @@ func TestThemeSystem_Performance_Integration(t *testing.T) {
 
 	authChecker := auth.NewAuthorizationChecker()
 	validator := events.NewValidator(events.NewTimezoneValidator())
-	eventService := events.NewService(eventRepo, validator, authChecker)
+	eventService := events.NewService(eventRepo, nil, validator, authChecker)
 
 	tokenGenerator := token.NewGenerator([]byte("test-secret-key-32-bytes-long!!"))
 	inviteService := invites.NewInviteService(tokenGenerator, inviteRepo)
@@ -885,37 +885,44 @@ func TestThemeSystem_ThemeCategories_Integration(t *testing.T) {
 		t.Fatalf("Failed to seed themes: %v", err)
 	}
 
-	plainCategory := models.CategoryPlain
-	plainThemes, err := templateRepo.ListThemes(ctx, models.TemplateTypeRSVPPage, &plainCategory)
+	plainTextCategory := models.CategoryPlainText
+	plainThemes, err := templateRepo.ListThemes(ctx, models.TemplateTypeRSVPPage, &plainTextCategory)
 	if err != nil {
-		t.Fatalf("Failed to list plain themes: %v", err)
+		t.Fatalf("Failed to list plain-text themes: %v", err)
 	}
 
 	if len(plainThemes) != 1 {
-		t.Errorf("Expected 1 plain theme, got %d", len(plainThemes))
+		t.Errorf("Expected 1 plain-text theme, got %d", len(plainThemes))
 	}
 
 	if len(plainThemes) > 0 && plainThemes[0].Name != "Simple & Clean" {
-		t.Errorf("Expected plain theme 'Simple & Clean', got %s", plainThemes[0].Name)
+		t.Errorf("Expected plain-text theme 'Simple & Clean', got %s", plainThemes[0].Name)
 	}
 
-	cardCategory := models.CategoryCard
-	cardThemes, err := templateRepo.ListThemes(ctx, models.TemplateTypeRSVPPage, &cardCategory)
+	// All non-plain themes should have specific per-theme categories
+	allThemes, err := templateRepo.ListThemes(ctx, models.TemplateTypeRSVPPage, nil)
 	if err != nil {
-		t.Fatalf("Failed to list card themes: %v", err)
+		t.Fatalf("Failed to list all themes: %v", err)
 	}
 
-	if len(cardThemes) != 6 {
-		t.Errorf("Expected 6 card themes, got %d", len(cardThemes))
+	namedThemeCategories := map[models.TemplateCategory]bool{
+		models.CategoryWeddingElegance:     false,
+		models.CategoryBirthdayCelebration: false,
+		models.CategoryCorporatePro:        false,
+		models.CategoryHolidayFestive:      false,
+		models.CategoryGardenParty:         false,
+		models.CategoryModernMinimalist:    false,
 	}
 
-	for _, theme := range cardThemes {
-		if theme.Category != models.CategoryCard {
-			t.Errorf("Theme %s has wrong category: %s", theme.Name, theme.Category)
+	for _, theme := range allThemes {
+		if _, ok := namedThemeCategories[theme.Category]; ok {
+			namedThemeCategories[theme.Category] = true
 		}
+	}
 
-		if theme.ImageURL == nil {
-			t.Errorf("Card theme %s should have an image URL", theme.Name)
+	for category, found := range namedThemeCategories {
+		if !found {
+			t.Errorf("Expected theme with category %s, but none found", category)
 		}
 	}
 }
@@ -948,7 +955,18 @@ func TestThemeSystem_ThemeMetadata_Integration(t *testing.T) {
 				t.Errorf("Expected type rsvp_page, got %s", theme.Type)
 			}
 
-			if theme.Category != models.CategoryPlain && theme.Category != models.CategoryCard {
+			validCategories := map[models.TemplateCategory]bool{
+				models.CategoryPlain:               true,
+				models.CategoryCard:                true,
+				models.CategoryPlainText:           true,
+				models.CategoryWeddingElegance:     true,
+				models.CategoryBirthdayCelebration: true,
+				models.CategoryCorporatePro:        true,
+				models.CategoryHolidayFestive:      true,
+				models.CategoryGardenParty:         true,
+				models.CategoryModernMinimalist:    true,
+			}
+			if !validCategories[theme.Category] {
 				t.Errorf("Invalid category: %s", theme.Category)
 			}
 

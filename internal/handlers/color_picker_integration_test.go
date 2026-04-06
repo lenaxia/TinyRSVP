@@ -28,8 +28,7 @@ func TestColorPickerIntegration(t *testing.T) {
 			wantStatus:  http.StatusOK,
 			wantContains: []string{
 				"--primary-color: #FF5733",
-				`<img src="https://example.com/image.jpg"`,
-				"event-header-image",
+				`<img class="theme-header-image" src="https://example.com/image.jpg"`,
 			},
 		},
 		{
@@ -52,7 +51,7 @@ func TestColorPickerIntegration(t *testing.T) {
 			customImage: "https://example.com/image.jpg",
 			wantStatus:  http.StatusOK,
 			wantContains: []string{
-				`<img src="https://example.com/image.jpg"`,
+				`<img class="theme-header-image" src="https://example.com/image.jpg"`,
 			},
 			wantNotContain: []string{
 				"--primary-color:",

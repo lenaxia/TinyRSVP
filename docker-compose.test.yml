@@ -78,10 +78,7 @@ services:
     networks:
       - tinyrsvp-test
     environment:
-      - MH_STORAGE=maildir
-      - MH_MAILDIR_PATH=/maildir
-    volumes:
-      - mailhog-data:/maildir
+      - MH_STORAGE=memory
     healthcheck:
       test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8025"]
       interval: 10s
@@ -116,12 +113,10 @@ services:
   # Traefik - Reverse Proxy (Optional, for advanced testing)
   # ============================================================================
   traefik:
-    image: traefik:v2.10
+    image: traefik:v3.3
     container_name: traefik-test
     command:
       - --api.insecure=true
-      - --providers.docker=true
-      - --providers.docker.exposedbydefault=false
       - --providers.file.directory=/etc/traefik/dynamic
       - --providers.file.watch=true
       - --entrypoints.web.address=:80
@@ -130,7 +125,6 @@ services:
       - "8081:80"      # HTTP with basic auth
       - "8082:8080"    # Traefik dashboard
     volumes:
-      - /var/run/docker.sock:/var/run/docker.sock:ro
       - ./test/traefik/dynamic.yml:/etc/traefik/dynamic/dynamic.yml:ro
     networks:
       - tinyrsvp-test
@@ -192,8 +186,6 @@ networks:
 
 volumes:
   tinyrsvp-test-data:
-    driver: local
-  mailhog-data:
     driver: local
   authelia-data:
     driver: local

@@ -15,11 +15,18 @@ const (
 type TemplateCategory string
 
 const (
-	CategoryPlain   TemplateCategory = "plain"
-	CategoryCard    TemplateCategory = "card"
-	CategoryModern  TemplateCategory = "modern"
-	CategoryClassic TemplateCategory = "classic"
-	CategoryFun     TemplateCategory = "fun"
+	CategoryPlain               TemplateCategory = "plain"
+	CategoryCard                TemplateCategory = "card"
+	CategoryModern              TemplateCategory = "modern"
+	CategoryClassic             TemplateCategory = "classic"
+	CategoryFun                 TemplateCategory = "fun"
+	CategoryWeddingElegance     TemplateCategory = "wedding-elegance"
+	CategoryBirthdayCelebration TemplateCategory = "birthday-celebration"
+	CategoryCorporatePro        TemplateCategory = "corporate-professional"
+	CategoryHolidayFestive      TemplateCategory = "holiday-festive"
+	CategoryGardenParty         TemplateCategory = "garden-party"
+	CategoryModernMinimalist    TemplateCategory = "modern-minimalist"
+	CategoryPlainText           TemplateCategory = "plain-text"
 )
 
 type Template struct {
@@ -104,7 +111,9 @@ func (tt TemplateType) String() string {
 
 func (tc TemplateCategory) IsValid() bool {
 	switch tc {
-	case CategoryPlain, CategoryCard, CategoryModern, CategoryClassic, CategoryFun:
+	case CategoryPlain, CategoryCard, CategoryModern, CategoryClassic, CategoryFun,
+		CategoryWeddingElegance, CategoryBirthdayCelebration, CategoryCorporatePro,
+		CategoryHolidayFestive, CategoryGardenParty, CategoryModernMinimalist, CategoryPlainText:
 		return true
 	default:
 		return false

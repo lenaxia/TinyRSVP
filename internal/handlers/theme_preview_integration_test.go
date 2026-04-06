@@ -82,8 +82,8 @@ func TestThemePreviewIntegration_CustomImageFlow(t *testing.T) {
 			}
 
 			if tt.expectImageClass {
-				if !strings.Contains(body, "event-header-image") {
-					t.Error("Expected HTML to contain event-header-image class")
+				if !strings.Contains(body, "theme-header-image") {
+					t.Error("Expected HTML to contain theme-header-image class")
 				}
 				if !strings.Contains(body, "<img") {
 					t.Error("Expected HTML to contain img tag")

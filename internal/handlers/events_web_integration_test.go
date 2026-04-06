@@ -27,7 +27,7 @@ func TestEventWebHandlers_FullWebUIFlow_Integration(t *testing.T) {
 	eventRepo := repositories.NewEventRepository(database)
 	authChecker := auth.NewAuthorizationChecker()
 	validator := events.NewValidator(events.NewTimezoneValidator())
-	eventService := events.NewService(eventRepo, validator, authChecker)
+	eventService := events.NewService(eventRepo, nil, validator, authChecker)
 
 	tmpl := template.Must(template.New("test").Parse(`
 		{{define "event_list.html"}}
@@ -300,7 +300,7 @@ func TestEventWebHandlers_PermissionEnforcement_Integration(t *testing.T) {
 	eventRepo := repositories.NewEventRepository(database)
 	authChecker := auth.NewAuthorizationChecker()
 	validator := events.NewValidator(events.NewTimezoneValidator())
-	eventService := events.NewService(eventRepo, validator, authChecker)
+	eventService := events.NewService(eventRepo, nil, validator, authChecker)
 
 	tmpl := template.Must(template.New("test").Parse(`
 		{{define "event_form.html"}}
@@ -399,7 +399,7 @@ func TestEventWebHandlers_RouterIntegration(t *testing.T) {
 	eventRepo := repositories.NewEventRepository(database)
 	authChecker := auth.NewAuthorizationChecker()
 	validator := events.NewValidator(events.NewTimezoneValidator())
-	eventService := events.NewService(eventRepo, validator, authChecker)
+	eventService := events.NewService(eventRepo, nil, validator, authChecker)
 
 	tmpl := template.Must(template.New("test").Parse(`
 		{{define "event_list.html"}}<html><body>Events</body></html>{{end}}
@@ -498,7 +498,7 @@ func TestEventWebHandlers_CSRFProtection_Integration(t *testing.T) {
 	eventRepo := repositories.NewEventRepository(database)
 	authChecker := auth.NewAuthorizationChecker()
 	validator := events.NewValidator(events.NewTimezoneValidator())
-	eventService := events.NewService(eventRepo, validator, authChecker)
+	eventService := events.NewService(eventRepo, nil, validator, authChecker)
 
 	tmpl := template.New("test")
 	handlers := NewEventWebHandlers(eventService, nil, tmpl, tmpl, tmpl)

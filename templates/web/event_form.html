@@ -69,6 +69,7 @@
                             class="form-input datetime-trigger-btn{{if or .Errors.StartTime .Errors.EndTime .Errors.Timezone}} error{{end}}"
                             data-datetime-picker
                             data-mode="datetime-range"
+                            data-start-input="start_time"
                             data-end-input="end_time"
                             data-timezone-input="timezone"
                             data-show-timezone="true"
@@ -78,7 +79,7 @@
                             <span class="datetime-trigger-icon">📅</span>
                             <span class="datetime-trigger-text" id="event_datetime_display">
                                 {{if and (not .Event.StartTime.IsZero) .Event.Timezone}}
-                                    {{.Event.StartTime.Format "Jan 2, 2006 at 3:04 PM"}}{{if .Event.EndTime}}{{if ne (.Event.StartTime.Format "2006-01-02") (.Event.EndTime.Format "2006-01-02")}} - {{.Event.EndTime.Format "Jan 2, 2006 at 3:04 PM"}}{{else}} - {{.Event.EndTime.Format "3:04 PM"}}{{end}}{{end}} ({{.Event.Timezone}})
+                                    {{.Event.StartTime.Format "Jan 2, 2006 at 3:04 PM"}}{{if .Event.EndTime}}{{if ne (.Event.StartTime.Format "2006-01-02") (.Event.EndTime.Format "2006-01-02")}} - {{.Event.EndTime.Format "Jan 2, 2006 at 3:04 PM"}}{{else}} - {{.Event.EndTime.Format "3:04 PM"}}{{end}}{{end}} ({{timezoneAbbr .Event.Timezone}})
                                 {{else}}
                                     Click to select date, time, and timezone
                                 {{end}}
@@ -183,6 +184,7 @@
                 <section class="form-section">
                     <h2 class="form-section-title">Preference Questions</h2>
                     <p class="form-help-text">Ask guests about dietary restrictions, meal preferences, etc.</p>
+                    <p class="form-help-text" style="color: var(--color-text-tertiary); font-style: italic;">Note: this feature is not yet implemented.</p>
                     
                     <div id="questions-container">
                         {{range $index, $question := .Questions}}

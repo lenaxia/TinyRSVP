@@ -47,6 +47,7 @@ func TestHTML_RequiredElementsPresent(t *testing.T) {
 	for id, description := range requiredElements {
 		var exists bool
 		err := chromedp.Run(ctx,
+			setTestAuthHeader(),
 			chromedp.Navigate("http://localhost:8080/events/new"),
 			chromedp.Sleep(500*time.Millisecond), // Wait for page load
 			chromedp.Evaluate(`document.getElementById('`+id+`') !== null`, &exists),
@@ -74,6 +75,7 @@ func TestHTML_ARIAAttributesForModeTabs(t *testing.T) {
 	// Check initial state (gallery mode active)
 	var galleryRole, designRole, gallerySelected, designSelected string
 	err := chromedp.Run(ctx,
+		setTestAuthHeader(),
 		chromedp.Navigate("http://localhost:8080/events/new"),
 		chromedp.WaitVisible(`#gallery-mode-btn`, chromedp.ByID),
 
@@ -120,6 +122,7 @@ func TestHTML_ARIAAttributesForTabpanels(t *testing.T) {
 
 	var galleryRole, designRole, galleryLabelledBy, designLabelledBy string
 	err := chromedp.Run(ctx,
+		setTestAuthHeader(),
 		chromedp.Navigate("http://localhost:8080/events/new"),
 		chromedp.WaitVisible(`#theme-gallery-container`, chromedp.ByID),
 
@@ -164,8 +167,9 @@ func TestHTML_IframeAccessibility(t *testing.T) {
 
 	var title, sandbox, ariaLive string
 	err := chromedp.Run(ctx,
+		setTestAuthHeader(),
 		chromedp.Navigate("http://localhost:8080/events/new"),
-		chromedp.WaitVisible(`#live-preview-frame`, chromedp.ByID),
+		chromedp.WaitVisible(`#gallery-mode-btn`, chromedp.ByID),
 
 		chromedp.AttributeValue(`#live-preview-frame`, `title`, &title, nil),
 		chromedp.AttributeValue(`#live-preview-frame`, `sandbox`, &sandbox, nil),
@@ -200,6 +204,7 @@ func TestHTML_LoadingErrorARIA(t *testing.T) {
 
 	var loadingRole, loadingLive, errorRole string
 	err := chromedp.Run(ctx,
+		setTestAuthHeader(),
 		chromedp.Navigate("http://localhost:8080/events/new"),
 		chromedp.WaitVisible(`#design-mode-btn`, chromedp.ByID),
 		chromedp.Click(`#design-mode-btn`, chromedp.ByID),
@@ -238,6 +243,7 @@ func TestHTML_MobileViewToggleARIA(t *testing.T) {
 
 	var editRole, previewRole, editSelected, previewSelected string
 	err := chromedp.Run(ctx,
+		setTestAuthHeader(),
 		chromedp.EmulateViewport(375, 667), // Mobile size
 		chromedp.Navigate("http://localhost:8080/events/new"),
 		chromedp.WaitVisible(`#design-mode-btn`, chromedp.ByID),
@@ -282,6 +288,7 @@ func TestHTML_ThemeSelectorLabel(t *testing.T) {
 
 	var labelFor, selectID string
 	err := chromedp.Run(ctx,
+		setTestAuthHeader(),
 		chromedp.Navigate("http://localhost:8080/events/new"),
 		chromedp.WaitVisible(`#design-mode-btn`, chromedp.ByID),
 		chromedp.Click(`#design-mode-btn`, chromedp.ByID),
@@ -315,8 +322,9 @@ func TestHTML_HiddenElementsARIA(t *testing.T) {
 
 	var designHidden string
 	err := chromedp.Run(ctx,
+		setTestAuthHeader(),
 		chromedp.Navigate("http://localhost:8080/events/new"),
-		chromedp.WaitVisible(`#design-mode-container`, chromedp.ByID),
+		chromedp.WaitVisible(`#gallery-mode-btn`, chromedp.ByID),
 
 		// In gallery mode, design container should be hidden with aria-hidden
 		chromedp.AttributeValue(`#design-mode-container`, `aria-hidden`, &designHidden, nil),
@@ -342,6 +350,7 @@ func TestHTML_RetryButtonAttributes(t *testing.T) {
 
 	var buttonType string
 	err := chromedp.Run(ctx,
+		setTestAuthHeader(),
 		chromedp.Navigate("http://localhost:8080/events/new"),
 		chromedp.WaitVisible(`#design-mode-btn`, chromedp.ByID),
 		chromedp.Click(`#design-mode-btn`, chromedp.ByID),
@@ -370,6 +379,7 @@ func TestHTML_DataAttributesPresent(t *testing.T) {
 
 	var pickerMode, formMobileView string
 	err := chromedp.Run(ctx,
+		setTestAuthHeader(),
 		chromedp.Navigate("http://localhost:8080/events/new"),
 		chromedp.WaitVisible(`.theme-picker`, chromedp.ByQuery),
 

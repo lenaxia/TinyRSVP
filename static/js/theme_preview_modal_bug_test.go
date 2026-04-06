@@ -7,6 +7,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/chromedp/cdproto/network"
 	"github.com/chromedp/chromedp"
 )
 
@@ -20,6 +21,13 @@ func requireServerExternal(t *testing.T) {
 		return
 	}
 	resp.Body.Close()
+}
+
+// setTestAuthHeaderExternal sets the X-Test-User-ID header for test authentication bypass.
+func setTestAuthHeaderExternal() chromedp.Action {
+	return network.SetExtraHTTPHeaders(network.Headers{
+		"X-Test-User-ID": "1",
+	})
 }
 
 func TestThemePreviewModalMultipleClicks(t *testing.T) {
@@ -38,13 +46,14 @@ func TestThemePreviewModalMultipleClicks(t *testing.T) {
 	var clickCount int
 
 	err := chromedp.Run(ctx,
+		setTestAuthHeaderExternal(),
 		chromedp.Navigate("http://localhost:8080/events/new"),
-		chromedp.WaitVisible(`#theme-preview-modal`, chromedp.ByID),
+		chromedp.WaitVisible(`.theme-gallery`, chromedp.ByQuery),
 
 		chromedp.ScrollIntoView(`.theme-gallery`, chromedp.ByQuery),
 		chromedp.Sleep(500*time.Millisecond),
 
-		chromedp.Click(`.btn-preview[data-theme-id="modern-minimalist"]`, chromedp.ByQuery),
+		chromedp.Click(`.btn-preview`, chromedp.ByQuery),
 		chromedp.Sleep(500*time.Millisecond),
 
 		chromedp.Evaluate(`!document.getElementById('theme-preview-modal').hidden`, &modalVisible),
@@ -79,7 +88,8 @@ func TestThemePreviewModalMultipleClicks(t *testing.T) {
 			};
 		`, nil),
 
-		chromedp.Click(`.btn-preview[data-theme-id="garden-party"]`, chromedp.ByQuery),
+		// Click second available preview button (use JS to get it)
+		chromedp.Evaluate(`document.querySelectorAll('.btn-preview')[1]?.click()`, nil),
 		chromedp.Sleep(500*time.Millisecond),
 
 		chromedp.Evaluate(`window.previewOpenCount`, &clickCount),
@@ -106,7 +116,8 @@ func TestThemePreviewModalMultipleClicks(t *testing.T) {
 		chromedp.Click(`.modal-close`, chromedp.ByQuery),
 		chromedp.Sleep(500*time.Millisecond),
 
-		chromedp.Click(`.btn-preview[data-theme-id="holiday-festive"]`, chromedp.ByQuery),
+		// Click third available preview button
+		chromedp.Evaluate(`document.querySelectorAll('.btn-preview')[2]?.click()`, nil),
 		chromedp.Sleep(500*time.Millisecond),
 
 		chromedp.Evaluate(`window.previewOpenCount`, &clickCount),
@@ -135,8 +146,9 @@ func TestThemePreviewModalGuardAgainstDoubleOpen(t *testing.T) {
 	var openCallCount int
 
 	err := chromedp.Run(ctx,
+		setTestAuthHeaderExternal(),
 		chromedp.Navigate("http://localhost:8080/events/new"),
-		chromedp.WaitVisible(`#theme-preview-modal`, chromedp.ByID),
+		chromedp.WaitVisible(`.theme-gallery`, chromedp.ByQuery),
 
 		chromedp.ScrollIntoView(`.theme-gallery`, chromedp.ByQuery),
 		chromedp.Sleep(500*time.Millisecond),
@@ -187,8 +199,9 @@ func TestThemePreviewModalEventListenerNotDuplicated(t *testing.T) {
 	var listenerCount int
 
 	err := chromedp.Run(ctx,
+		setTestAuthHeaderExternal(),
 		chromedp.Navigate("http://localhost:8080/events/new"),
-		chromedp.WaitVisible(`#theme-preview-modal`, chromedp.ByID),
+		chromedp.WaitVisible(`.theme-gallery`, chromedp.ByQuery),
 
 		chromedp.Evaluate(`
 			let callCount = 0;

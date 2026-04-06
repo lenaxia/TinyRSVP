@@ -43,60 +43,23 @@ func TestConfig_TokenStrategy_HMAC_WithSecret(t *testing.T) {
 	}
 }
 
-func TestConfig_TokenStrategy_HMAC_WithHardcodedFallback(t *testing.T) {
+func TestConfig_TokenStrategy_HMAC_NoSecret_FailsToStart(t *testing.T) {
 	env := map[string]string{
 		"SERVER_PORT":     "8080",
 		"DATABASE_PATH":   "/tmp/test.db",
 		"SMTP_HOST":       "localhost",
 		"EMAIL_FROM":      "test@example.com",
 		"SERVER_BASE_URL": "http://localhost:8080",
+		// TOKEN_SECRET intentionally omitted
 	}
 	setTestEnv(t, env)
 
-	oldStderr := os.Stderr
-	r, w, _ := os.Pipe()
-	os.Stderr = w
-
-	cfg1, err := Load()
-	if err != nil {
-		t.Fatalf("First Load() error = %v, want nil", err)
+	_, err := Load()
+	if err == nil {
+		t.Fatal("Load() should fail when TOKEN_SECRET is not set, got nil error")
 	}
-
-	w.Close()
-	os.Stderr = oldStderr
-
-	var buf bytes.Buffer
-	buf.ReadFrom(r)
-	output := buf.String()
-
-	if !strings.Contains(output, "WARNING: TOKEN_SECRET not set") {
-		t.Error("Expected warning about TOKEN_SECRET not set")
-	}
-
-	if !strings.Contains(output, "using hardcoded fallback") {
-		t.Error("Expected warning about hardcoded fallback")
-	}
-
-	r2, w2, _ := os.Pipe()
-	os.Stderr = w2
-
-	cfg2, err := Load()
-	if err != nil {
-		t.Fatalf("Second Load() error = %v, want nil", err)
-	}
-
-	w2.Close()
-	os.Stderr = oldStderr
-
-	var buf2 bytes.Buffer
-	buf2.ReadFrom(r2)
-
-	if cfg1.Token.Secret != cfg2.Token.Secret {
-		t.Error("Hardcoded fallback secret should be consistent across loads")
-	}
-
-	if len(cfg1.Token.Secret) < 32 {
-		t.Errorf("Hardcoded fallback secret length = %d, want >= 32", len(cfg1.Token.Secret))
+	if !strings.Contains(err.Error(), "TOKEN_SECRET is required") {
+		t.Errorf("Expected error about TOKEN_SECRET being required, got: %v", err)
 	}
 }
 
@@ -149,16 +112,9 @@ func TestConfig_TokenStrategy_HMACEnabledByDefault(t *testing.T) {
 		"SMTP_HOST":       "localhost",
 		"EMAIL_FROM":      "test@example.com",
 		"SERVER_BASE_URL": "http://localhost:8080",
+		"TOKEN_SECRET":    "da8f152a3cc3d58054cb988a463344503ad1ad09fba718a8a5e6e9513d16040f",
 	}
 	setTestEnv(t, env)
-
-	oldStderr := os.Stderr
-	devNull, _ := os.Open(os.DevNull)
-	os.Stderr = devNull
-	defer func() {
-		os.Stderr = oldStderr
-		devNull.Close()
-	}()
 
 	cfg, err := Load()
 	if err != nil {
