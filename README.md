@@ -1,6 +1,6 @@
 # TinyRSVP
 
-> **Note for LLMs:** If you are an AI assistant working on this project, you MUST read [`README-LLM.md`](README-LLM.md) instead before moving on to any other task.. This file is for human users.
+> **Note for LLMs:** If you are an AI assistant working on this project, you MUST read [`README-LLM.md`](README-LLM.md) before doing anything else. This file is for human users.
 
 A self-hosted, privacy-focused RSVP and invitation platform for family events, clubs, and private gatherings.
 
@@ -8,120 +8,132 @@ A self-hosted, privacy-focused RSVP and invitation platform for family events, c
 
 ## Overview
 
-TinyRSVP is a lightweight alternative to services like Evite, designed specifically for self-hosting in homelab environments. It prioritizes simplicity, privacy, and ease of deployment.
+TinyRSVP is a lightweight alternative to services like Evite, designed for self-hosting in homelab environments. It prioritizes simplicity, privacy, and ease of deployment.
 
 **Key Features:**
-- 🔒 **Privacy-First**: Self-hosted, no data sharing with third parties
-- 👥 **No Guest Accounts Required**: Token-based access for guests
-- 📧 **Email Invitations**: Send invites with calendar attachments
-- 📱 **Mobile-Friendly**: Responsive design for all devices
-- 🐳 **Docker-Ready**: Single container deployment
-- 🔐 **Flexible Auth**: Forward auth (tested) or OIDC (implemented, not yet integration-tested) for admins
+- **Privacy-First** — self-hosted, no data sharing with third parties
+- **No Guest Accounts** — token-based access, guests just click a link
+- **Email Invitations** — personalized invites with .ics calendar attachments
+- **Theme Picker** — 7 built-in themes, custom colors and images
+- **Mobile-Friendly** — responsive design for all devices
+- **Docker-Ready** — single container, multi-arch (amd64 + arm64)
+- **Flexible Auth** — Forward Auth (Traefik/Caddy) or OIDC for admins
 
 ---
 
 ## Quick Start
 
-### Prerequisites
+### Using the published image (recommended)
 
-- Docker and Docker Compose
-- SMTP server for sending emails
-- (Optional) OIDC provider (Authentik, Keycloak, etc.)
+```bash
+docker run -d \
+  --name tinyrsvp \
+  -p 8080:8080 \
+  -v tinyrsvp-data:/data \
+  -e TOKEN_SECRET=$(openssl rand -hex 32) \
+  -e SERVER_BASE_URL=http://localhost:8080 \
+  -e DATABASE_PATH=/data/tinyrsvp.db \
+  -e STORAGE_TYPE=local \
+  -e STORAGE_LOCAL_PATH=/data/uploads \
+  -e SMTP_HOST=your-smtp-host \
+  -e SMTP_PORT=587 \
+  -e EMAIL_FROM=noreply@example.com \
+  -e FORWARD_AUTH_ENABLED=true \
+  -e FORWARD_AUTH_USER_HEADER=X-Forwarded-User \
+  -e FORWARD_AUTH_EMAIL_HEADER=X-Forwarded-Email \
+  -e FORWARD_AUTH_TRUSTED_IPS=172.16.0.0/12 \
+  ghcr.io/lenaxia/tinyrsvp:latest
+```
 
-### Installation
+### Using Docker Compose
 
-1. **Clone the repository:**
-   ```bash
-   git clone https://github.com/lenaxia/tinyrsvp.git
-   cd tinyrsvp
-   ```
-
-2. **Configure environment:**
-   ```bash
-   cp .env.example .env
-   # Edit .env with your settings
-   ```
-
-3. **Start the application:**
-   ```bash
-   docker-compose up -d
-   ```
-
-4. **Access the application:**
-   ```
-   http://localhost:8080
-   ```
+```bash
+git clone https://github.com/lenaxia/TinyRSVP.git
+cd TinyRSVP
+cp .env.example .env
+# Edit .env with your settings
+docker compose up -d
+```
 
 ---
 
 ## Configuration
 
-### Environment Variables
+### Required Variables
+
+| Variable | Description |
+|----------|-------------|
+| `TOKEN_SECRET` | 256-bit secret for signing invite tokens. **Required — app refuses to start without it.** Generate with `openssl rand -hex 32`. |
+| `SERVER_BASE_URL` | Public URL guests use to reach TinyRSVP. Used in all email links and .ics attachments. |
+| `SMTP_HOST` | SMTP server hostname. |
+| `EMAIL_FROM` | From address for outbound email. |
+| One of: `FORWARD_AUTH_ENABLED=true` or `OIDC_ENABLED=true` | Authentication method (see below). |
+
+### Authentication
+
+TinyRSVP has no local user accounts. Admins authenticate via a reverse proxy (Forward Auth) or an OIDC provider. You must configure one.
+
+#### Option A — Forward Auth (tested, recommended for beta)
+
+Your reverse proxy injects `X-Forwarded-User` and `X-Forwarded-Email` headers after authenticating the user. Works with Traefik + Authelia, Caddy + authz middleware, nginx, etc.
 
 ```bash
-# Server
-SERVER_PORT=8080
-SERVER_BASE_URL=https://rsvp.yourdomain.com   # Required — used in emails and ICS attachments
-
-# Database (SQLite only in v0)
-DATABASE_PATH=/data/tinyrsvp.db
-
-# Token Security (REQUIRED)
-TOKEN_SECRET=<generate with: openssl rand -hex 32>
-TOKEN_HASHING_ENABLED=true   # default: true
-
-# Authentication — choose one
 FORWARD_AUTH_ENABLED=true
 FORWARD_AUTH_USER_HEADER=X-Forwarded-User
 FORWARD_AUTH_EMAIL_HEADER=X-Forwarded-Email
-FORWARD_AUTH_TRUSTED_IPS=127.0.0.1,172.17.0.1
-
-# SMTP
-SMTP_HOST=smtp.gmail.com
-SMTP_PORT=587
-SMTP_USERNAME=your-email@gmail.com
-SMTP_PASSWORD=your-app-password
-EMAIL_FROM=noreply@yourdomain.com
-
-# Storage (local filesystem only in v0)
-STORAGE_TYPE=local
-STORAGE_LOCAL_PATH=/data/uploads
+# Individual IPs or CIDR ranges are both accepted:
+FORWARD_AUTH_TRUSTED_IPS=127.0.0.1,172.16.0.0/12
 ```
 
-See [`.env.example`](.env.example) for the full annotated list of all environment variables.
+`FORWARD_AUTH_TRUSTED_IPS` must include the IP of your reverse proxy container. Using a CIDR like `172.16.0.0/12` covers all Docker bridge subnets (`172.16.x.x`–`172.31.x.x`) regardless of which subnet Docker assigns.
 
-### Token Security
+#### Option B — OIDC (implemented, not yet integration-tested in beta)
 
-**`TOKEN_SECRET` is required.** The app will refuse to start without it.
-
-**Generate a secure secret:**
 ```bash
-openssl rand -hex 32
+OIDC_ENABLED=true
+OIDC_ISSUER_URL=https://auth.example.com/application/o/tinyrsvp/
+OIDC_CLIENT_ID=your-client-id
+OIDC_CLIENT_SECRET=your-client-secret
+OIDC_REDIRECT_URL=https://rsvp.example.com/auth/oidc/callback
 ```
 
-| Mode | Configuration | Behavior |
-|------|---------------|----------|
-| **Production** | `TOKEN_SECRET=<secret>`<br>`TOKEN_HASHING_ENABLED=true` | Tokens HMAC-hashed with your secret |
-| **Plain Token** | `TOKEN_HASHING_ENABLED=false` | Tokens stored in plain text (simpler but less secure) |
+OIDC is fully implemented (go-oidc library, full login/callback/logout flow) but has not been integration-tested against a real provider in this beta. Unit tests pass with a mock provider. If you try it, please report results via GitHub Issues.
+
+### SMTP
+
+```bash
+SMTP_HOST=smtp.example.com
+SMTP_PORT=587
+SMTP_USERNAME=your-username
+SMTP_PASSWORD=your-password
+EMAIL_FROM=noreply@example.com
+# SMTP_TLS=true     # default: true (STARTTLS). Set false for port 25 or MailHog.
+```
+
+### Full Reference
+
+See [`.env.example`](.env.example) for the complete annotated list of all environment variables.
 
 ### Docker Compose Example
 
 ```yaml
 services:
   tinyrsvp:
-    image: tinyrsvp:latest
+    image: ghcr.io/lenaxia/tinyrsvp:latest
     ports:
       - "8080:8080"
     volumes:
       - tinyrsvp-data:/data
     environment:
-      - SERVER_BASE_URL=https://rsvp.yourdomain.com   # Set this — used in all email links
-      - TOKEN_SECRET=${TOKEN_SECRET}                   # Required: openssl rand -hex 32
+      - SERVER_BASE_URL=https://rsvp.yourdomain.com
+      - TOKEN_SECRET=${TOKEN_SECRET}               # openssl rand -hex 32
       - DATABASE_PATH=/data/tinyrsvp.db
+      - STORAGE_TYPE=local
+      - STORAGE_LOCAL_PATH=/data/uploads
       - FORWARD_AUTH_ENABLED=true
       - FORWARD_AUTH_USER_HEADER=X-Forwarded-User
       - FORWARD_AUTH_EMAIL_HEADER=X-Forwarded-Email
-      - FORWARD_AUTH_TRUSTED_IPS=172.17.0.1,172.18.0.1
+      - FORWARD_AUTH_TRUSTED_IPS=172.16.0.0/12
       - SMTP_HOST=${SMTP_HOST}
       - SMTP_PORT=${SMTP_PORT:-587}
       - EMAIL_FROM=${EMAIL_FROM}
@@ -139,146 +151,118 @@ volumes:
 
 ### For Event Organizers
 
-- **Create Events**: Set date, time, location, and RSVP deadline
-- **Manage Invites**: Send personalized invitations via email
-- **Track Responses**: View who's coming, who's not, and who hasn't responded
-- **Preference Questions**: Ask custom questions (dietary restrictions, +1s, etc.)
-- **Theme Picker**: Choose from 7 built-in themes or customize colors and images
+- **Create Events** — set title, date/time, location, RSVP deadline, timezone
+- **Manage Invites** — send personalized email invitations individually or via CSV bulk import
+- **Track Responses** — see who's coming, who declined, who hasn't replied
+- **Preference Questions** — ask custom questions (dietary restrictions, t-shirt size, song requests, etc.)
+- **Theme Picker** — 7 built-in themes (Wedding Elegance, Birthday Celebration, Garden Party, Corporate Professional, Holiday Festive, Modern Minimalist, and more), color overrides, custom header images
+- **Lifecycle Management** — draft → published → cancelled → archived, with automatic archiving of past events
 
 ### For Guests
 
-- **Easy RSVP**: Click link in email, no account needed
-- **Calendar Integration**: Add event to calendar with .ics attachment
-- **Update Anytime**: Change RSVP until deadline
-- **Bring Guests**: Specify number of +1s
-- **Answer Questions**: Provide dietary preferences, song requests, etc.
+- **No Account Required** — click the link in the email, done
+- **Calendar Integration** — .ics attachment adds the event to any calendar app
+- **Update Anytime** — change RSVP response until the deadline
+- **Plus Ones** — specify number of additional guests
+- **Unsubscribe** — opt out of reminder emails at any time
 
 ---
 
 ## Architecture
 
 ```
-┌─────────────────────────────────────────┐
-│     Reverse Proxy (Traefik/Nginx)      │
-│         - TLS Termination               │
-│         - Forward Auth (Optional)       │
-└─────────────────────────────────────────┘
-                    │
-                    ▼
-┌─────────────────────────────────────────┐
-│          TinyRSVP Application           │
-│                                         │
-│  ┌──────────┐  ┌──────────┐           │
-│  │  Events  │  │ Invites  │           │
-│  │  Manager │  │  System  │           │
-│  └──────────┘  └──────────┘           │
-│         │            │                 │
-│         └────────────┘                 │
-│              │                         │
-│              ▼                         │
-│     ┌─────────────────┐               │
-│     │     SQLite      │               │
-│     └─────────────────┘               │
-└─────────────────────────────────────────┘
-         │              │
-         ▼              ▼
-  ┌──────────┐   ┌──────────┐
-   │   SMTP   │   │  Storage │
-   │  Server  │   │  (local) │
-  └──────────┘   └──────────┘
+Browser / Mobile
+      │
+      ▼
+Reverse Proxy  (Traefik, Caddy, nginx)
+  - TLS termination
+  - Authentication  (Forward Auth or OIDC)
+      │
+      ▼
+TinyRSVP Application  :8080
+  - Event management
+  - Invite & token system
+  - RSVP handling
+  - Theme / template rendering
+  - Email queue processor
+      │              │
+      ▼              ▼
+   SQLite         Local storage
+  /data/          /data/uploads/
+  tinyrsvp.db
+      │
+      ▼
+   SMTP server
 ```
 
 ---
 
 ## Technology Stack
 
-- **Backend**: Go
-- **Frontend**: Plain CSS + Vanilla JavaScript (mobile-first)
-- **Templates**: Go `html/template`
-- **Database**: SQLite (PostgreSQL planned for v1)
-- **Authentication**: Forward Auth (tested) or OIDC (implemented, not integration-tested in beta)
-- **Storage**: Local filesystem (S3-compatible planned for v1)
+| Layer | Technology |
+|-------|-----------|
+| Backend | Go 1.24 |
+| Frontend | Plain CSS + Vanilla JS (no build step) |
+| Templates | Go `html/template` |
+| Database | SQLite (PostgreSQL planned for v1) |
+| Authentication | Forward Auth (tested) or OIDC (implemented) |
+| Storage | Local filesystem (S3-compatible planned for v1) |
+| Container | Docker, multi-arch (linux/amd64, linux/arm64) |
 
 ---
 
-## Use Cases
-
-### Family Events
-- Birthday parties
-- Holiday gatherings
-- Family reunions
-- Graduation celebrations
-
-### Clubs & Organizations
-- Book club meetings
-- Sports team events
-- Community gatherings
-- Volunteer activities
-
-### Private Events
-- Wedding receptions
-- Baby showers
-- Dinner parties
-- Game nights
-
----
-
-## Security & Privacy
-
-- **No Guest Accounts**: Guests access via unique, unguessable tokens
-- **Token Security**: 256-bit cryptographically secure tokens, hashed in database
-- **Admin Authentication**: Forward auth (tested) or OIDC (implemented, not integration-tested — no local passwords)
-- **Self-Hosted**: Your data stays on your server
-- **Optional Passphrases**: Add extra security to invites
-- **HTTPS Required**: TLS termination at reverse proxy
-
----
-
-## Deployment Options
+## Deployment
 
 ### Homelab (Recommended)
 
-Perfect for:
-- Raspberry Pi
-- NAS devices (Synology, QNAP)
+Works great on:
+- Raspberry Pi 4/5 (arm64 image available)
+- NAS devices (Synology, QNAP) with Docker
 - Home servers
-- Docker hosts
+- Any Docker host
 
-Requirements:
-- 512MB RAM minimum
-- 1GB disk space
-- Docker support
+Minimum requirements: 256MB RAM, 1GB disk, Docker.
 
-### Cloud Hosting
+### Cloud / VPS
 
-Works with:
-- DigitalOcean Droplets
-- AWS EC2
-- Google Cloud Compute
-- Linode
-- Any VPS provider
+Works on any VPS that runs Docker. Typical deployment: VPS + Traefik as reverse proxy + Authelia for authentication.
+
+### Typical Traefik + Authelia Setup
+
+Traefik handles TLS termination and authentication. After a successful login, Traefik injects `X-Forwarded-User` and `X-Forwarded-Email` headers. TinyRSVP trusts those headers from the Traefik container IP.
+
+Set `FORWARD_AUTH_TRUSTED_IPS` to include Traefik's container IP or the Docker bridge CIDR (`172.16.0.0/12`).
 
 ---
 
-## Development
-
-### Building from Source
+## Building from Source
 
 ```bash
-# Clone repository
-git clone https://github.com/lenaxia/tinyrsvp.git
-cd tinyrsvp
+git clone https://github.com/lenaxia/TinyRSVP.git
+cd TinyRSVP
 
-# Install dependencies
+# Download dependencies
 go mod download
 
 # Run tests
 go test -timeout 30s ./...
 
-# Build binary
-go build -o bin/tinyrsvp ./cmd/server
+# Build binary (requires CGO for SQLite)
+CGO_ENABLED=1 go build -o bin/tinyrsvp ./cmd/server
 
-# Run locally
+# Run (set required env vars first)
+export TOKEN_SECRET=$(openssl rand -hex 32)
+export SERVER_BASE_URL=http://localhost:8080
+export DATABASE_PATH=/tmp/tinyrsvp.db
+export STORAGE_TYPE=local
+export STORAGE_LOCAL_PATH=/tmp/tinyrsvp-uploads
+export SMTP_HOST=localhost
+export SMTP_PORT=1025
+export EMAIL_FROM=noreply@localhost
+export FORWARD_AUTH_ENABLED=true
+export FORWARD_AUTH_USER_HEADER=X-Forwarded-User
+export FORWARD_AUTH_EMAIL_HEADER=X-Forwarded-Email
+export "FORWARD_AUTH_TRUSTED_IPS=127.0.0.1,::1"
 ./bin/tinyrsvp
 ```
 
@@ -286,97 +270,98 @@ go build -o bin/tinyrsvp ./cmd/server
 
 ```
 TinyRSVP/
-├── cmd/                # Application entrypoints
-├── internal/           # Private application code
-├── pkg/                # Public packages
-├── templates/          # HTML templates
+├── cmd/server/         # Application entrypoint
+├── internal/           # Core application packages
+│   ├── auth/           # OIDC + Forward Auth
+│   ├── email/          # SMTP sender, queue processor
+│   ├── events/         # Event service
+│   ├── handlers/       # HTTP handlers and router
+│   ├── invites/        # Invite + token management
+│   ├── rsvp/           # RSVP service
+│   └── templates/      # Theme/template engine
+├── pkg/                # Shared packages (ICS, token generation)
+├── templates/          # HTML templates (web + email)
 ├── static/             # CSS, JS, images
-├── migrations/         # Database migrations
-├── docs/               # Documentation
-└── tests/              # Integration tests
+├── migrations/sqlite/  # Database migrations
+├── docs/               # Backlog, worklogs, design docs
+└── tests/              # e2e and UX test suites
 ```
-
-### Contributing
-
-This project is 100% LLM-implemented with human oversight. If you're an LLM working on this project, please read [`README-LLM.md`](README-LLM.md) for detailed guidelines.
-
-For humans interested in contributing:
-1. Read [`docs/00_INITIAL_HLD.md`](docs/00_INITIAL_HLD.md) for the complete specification
-2. Check [`docs/00_BACKLOG/`](docs/00_BACKLOG/) for current work items
-3. Follow the development workflow in [`README-LLM.md`](README-LLM.md)
-
----
-
-## Documentation
-
-- **[README-LLM.md](README-LLM.md)** - LLM implementation guide (for AI assistants)
-- **[docs/00_INITIAL_HLD.md](docs/00_INITIAL_HLD.md)** - High-level design specification
-- **[docs/00_BACKLOG/](docs/00_BACKLOG/)** - Sprint stories and epics
-- **[docs/01_WORKLOG/](docs/01_WORKLOG/)** - Progress updates and handoffs
-- **[llm-workflows/](llm-workflows/)** - LLM workflow templates
 
 ---
 
 ## Roadmap
 
-### v0 (Current — feature complete, beta)
-- [x] Project setup and infrastructure
-- [x] Core event management (create, edit, publish, cancel, archive)
-- [x] Invite system with cryptographic tokens (individual, bulk CSV)
-- [x] RSVP handling (yes/no/maybe, plus ones, preference questions)
-- [x] Email sending with ICS calendar attachments
-- [x] Template system with theme picker (7 themes, custom images, color overrides)
-- [x] SQLite database
-- [x] OIDC and forward-auth admin authentication
+### v0.1 (Current — beta)
+- [x] Event CRUD with lifecycle management
+- [x] Cryptographic invite tokens (256-bit, HMAC-hashed)
+- [x] Bulk CSV invite import
+- [x] RSVP (yes/no/maybe, plus ones, preference questions)
+- [x] Email queue with retry, ICS attachments, unsubscribe
+- [x] 7 built-in themes, color overrides, custom images
+- [x] Forward Auth + OIDC admin authentication
 - [x] Mobile-responsive UI
-- [x] Docker / Docker Compose deployment
+- [x] Docker / Docker Compose, multi-arch image (amd64 + arm64)
+- [x] Published to GHCR: `ghcr.io/lenaxia/tinyrsvp`
 
 ### v1 (Planned)
 - [ ] PostgreSQL support
 - [ ] S3-compatible storage
 - [ ] Reminder scheduling UI
+- [ ] Security audit (OWASP Top 10)
 - [ ] Multi-language support
-- [ ] Advanced template editor
 
 ### v2 (Future)
 - [ ] Guest OIDC (optional passwordless accounts)
 - [ ] SMS notifications
 - [ ] CalDAV calendar sync
-- [ ] Event analytics dashboard
+- [ ] Advanced template editor (UI)
 - [ ] API for integrations
 
 ---
 
 ## FAQ
 
-**Q: Do guests need to create accounts?**  
-A: No, guests access events via unique links sent in email invitations.
+**Q: Do guests need accounts?**
+No. Guests access their invite via a unique link. No signup, no password.
 
-**Q: Can I use this for large events?**  
-A: TinyRSVP is designed for small to medium events (up to a few hundred guests). For larger events, consider a dedicated service.
+**Q: How do I create the first admin user?**
+TinyRSVP has no local accounts. The first person to log in via your auth provider (Forward Auth or OIDC) is automatically created as an admin. Just set up your reverse proxy or OIDC provider and log in.
 
-**Q: What email providers are supported?**  
-A: Any SMTP server works (Gmail, SendGrid, Mailgun, self-hosted, etc.).
+**Q: What SMTP providers work?**
+Any SMTP server: Gmail (app password), SendGrid, Mailgun, Fastmail, Zoho, self-hosted Postfix, MailHog for local testing, etc.
 
-**Q: Can I customize the look and feel?**  
-A: Yes, templates and CSS can be customized. See documentation for details.
+**Q: Is this production-ready?**
+v0.1 is feature-complete and suitable for homelab / private use behind a reverse proxy. A formal security audit is planned before recommending public internet exposure to untrusted users.
 
-**Q: Is this production-ready?**  
-A: v0 is feature-complete and suitable for homelab / private use behind a reverse proxy. A full security audit (Epic 09) is planned before recommending public internet exposure.
+**Q: Can I use this on a Raspberry Pi?**
+Yes — the `arm64` image is published alongside `amd64` in the same manifest.
 
-**Q: How do I backup my data?**  
-A: Backup the database file and uploads directory. For SQLite, copy `/data/tinyrsvp.db`.
+**Q: How do I back up my data?**
+Copy the SQLite database file (`/data/tinyrsvp.db`) and the uploads directory (`/data/uploads/`). For Docker: `docker cp tinyrsvp:/data ./backup`.
 
-**Q: Can I migrate from Evite/Paperless Post?**  
-A: Not currently, but manual import is possible by creating events and invites.
+**Q: What if I lose TOKEN_SECRET?**
+All existing invite links will stop working. Store `TOKEN_SECRET` in a password manager or secrets vault alongside your other deployment credentials.
+
+**Q: Can I customize templates?**
+Yes — templates live in `templates/` and can be bind-mounted into the container. The theme picker also supports per-event color and image overrides through the UI.
 
 ---
 
-## Support
+## Security & Privacy
 
-- **Issues**: [GitHub Issues](https://github.com/lenaxia/tinyrsvp/issues)
-- **Documentation**: [docs/](docs/)
-- **Discussions**: [GitHub Discussions](https://github.com/lenaxia/tinyrsvp/discussions)
+- Guests access events via unique 256-bit cryptographically secure tokens — no passwords, no accounts
+- Tokens are HMAC-hashed in the database; the plain token is never stored after send
+- Admin authentication is fully delegated to your existing auth infrastructure (no local passwords to compromise)
+- All data stays on your server — nothing is sent to third parties
+- TLS is handled at the reverse proxy layer; run TinyRSVP behind Traefik/Caddy/nginx in production
+
+---
+
+## Support & Contributing
+
+- **Issues / Bug Reports**: [GitHub Issues](https://github.com/lenaxia/TinyRSVP/issues)
+- **Discussions**: [GitHub Discussions](https://github.com/lenaxia/TinyRSVP/discussions)
+- **Contributing**: See [`README-LLM.md`](README-LLM.md) for project structure and development workflow
 
 ---
 
@@ -388,12 +373,4 @@ If you modify and run this software as a network service, you must make the modi
 
 ---
 
-## Acknowledgments
-
-- Built with Go and love for self-hosting
-- Inspired by Evite, Paperless Post, and the homelab community
-- 100% LLM-implemented with human oversight
-
----
-
-**Made with ❤️ for the self-hosting community**
+*Built with Go. Designed for self-hosters.*
