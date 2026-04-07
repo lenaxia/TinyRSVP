@@ -383,7 +383,10 @@ func main() {
 		"formatDateTime": func(t time.Time) string {
 			return t.Format("Monday, January 2, 2006 at 3:04 PM MST")
 		},
-		"formatTime": func(t time.Time) string {
+		"formatTime": func(t *time.Time) string {
+			if t == nil {
+				return ""
+			}
 			return t.Format("3:04 PM MST")
 		},
 		"dict": func(values ...interface{}) (map[string]interface{}, error) {
