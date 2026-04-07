@@ -716,6 +716,7 @@ type AnswerWithQuestion struct {
 }
 
 type ConfirmationPageData struct {
+	ActivePage           string
 	Event                *models.Event
 	Invite               *models.Invite
 	RSVP                 *models.RSVP
