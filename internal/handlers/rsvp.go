@@ -855,6 +855,7 @@ func (h *RSVPHandler) renderConfirmationPage(w http.ResponseWriter, status int, 
 		// make any subsequent http.Error a no-op — headers already sent).
 		var buf bytes.Buffer
 		if err := h.confirmationTemplates.ExecuteTemplate(&buf, "confirmation.html", data); err != nil {
+			fmt.Printf("ERROR: confirmation template execution failed: %v\n", err)
 			http.Error(w, "Failed to render page", http.StatusInternalServerError)
 			return
 		}
