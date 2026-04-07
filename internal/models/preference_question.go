@@ -26,6 +26,11 @@ type PreferenceQuestion struct {
 	UpdatedAt    time.Time    `db:"updated_at" json:"updated_at"`
 }
 
+// Text returns QuestionText as an alias for use in Go templates (.Question.Text).
+func (q *PreferenceQuestion) Text() string {
+	return q.QuestionText
+}
+
 func (q *PreferenceQuestion) ParseOptions() ([]string, error) {
 	if q.Options == nil || *q.Options == "" {
 		return nil, nil

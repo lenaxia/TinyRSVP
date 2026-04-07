@@ -65,6 +65,7 @@
 
     <section class="confirmation-details" aria-labelledby="details-title">
         <h2 id="details-title" class="confirmation-details-title">Event Details</h2>
+        {{if .Event}}
         <div class="confirmation-details-item">
             <span class="confirmation-details-label">When:</span>
             <time datetime="{{.Event.StartTime.Format "2006-01-02T15:04:05Z07:00"}}" class="confirmation-details-value">
@@ -95,6 +96,7 @@
         <div class="confirmation-details-item">
             <p class="confirmation-details-value">{{.Event.Description}}</p>
         </div>
+        {{end}}
         {{end}}
     </section>
 

@@ -173,12 +173,12 @@
                                 </div>
                                 {{if .Event.AllowMaybeRSVP}}
                                 <div class="response-option">
-                                    <input type="radio" name="response" value="maybe" id="response_maybe" {{if .ExistingRSVP}}{{if eq .ExistingRSVP.Response "maybe"}}checked{{end}}{{end}}>
+                                    <input type="radio" name="response" value="maybe" id="response_maybe" {{if .ExistingRSVP}}{{if eq .ExistingRSVP.Response "maybe"}}checked{{end}}{{end}} required>
                                     <label for="response_maybe">Maybe</label>
                                 </div>
                                 {{end}}
                                 <div class="response-option">
-                                    <input type="radio" name="response" value="no" id="response_no" {{if .ExistingRSVP}}{{if eq .ExistingRSVP.Response "no"}}checked{{end}}{{end}}>
+                                    <input type="radio" name="response" value="no" id="response_no" {{if .ExistingRSVP}}{{if eq .ExistingRSVP.Response "no"}}checked{{end}}{{end}} required>
                                     <label for="response_no">No, I can't make it</label>
                                 </div>
                             </div>

@@ -41,6 +41,213 @@
         }, 5000);
     }
 
+    // ── Checkbox / bulk-button wiring ─────────────────────────────────────────
+
+    function getSelectedIds() {
+        return Array.from(
+            document.querySelectorAll('.invite-checkbox:checked:not(#select-all)')
+        ).map(cb => cb.value).filter(Boolean);
+    }
+
+    function updateBulkButtons() {
+        const selected = getSelectedIds();
+        const hasSelection = selected.length > 0;
+        const sendBtn   = document.getElementById('bulk-send');
+        const revokeBtn = document.getElementById('bulk-revoke');
+        if (sendBtn)   sendBtn.disabled   = !hasSelection;
+        if (revokeBtn) revokeBtn.disabled = !hasSelection;
+    }
+
+    function initCheckboxWiring() {
+        // Select-all checkbox
+        const selectAll = document.getElementById('select-all');
+        if (selectAll) {
+            selectAll.addEventListener('change', function() {
+                document.querySelectorAll('.invite-checkbox:not(#select-all)').forEach(cb => {
+                    cb.checked = selectAll.checked;
+                });
+                updateBulkButtons();
+            });
+        }
+
+        // Individual checkboxes — use event delegation on the document
+        document.addEventListener('change', function(e) {
+            if (e.target.classList.contains('invite-checkbox') && e.target.id !== 'select-all') {
+                updateBulkButtons();
+                // Update select-all indeterminate state
+                if (selectAll) {
+                    const all  = document.querySelectorAll('.invite-checkbox:not(#select-all)');
+                    const checked = document.querySelectorAll('.invite-checkbox:not(#select-all):checked');
+                    selectAll.indeterminate = checked.length > 0 && checked.length < all.length;
+                    selectAll.checked = checked.length === all.length && all.length > 0;
+                }
+            }
+        });
+
+        // Bulk send
+        const bulkSend = document.getElementById('bulk-send');
+        if (bulkSend) {
+            bulkSend.addEventListener('click', function() {
+                const ids = getSelectedIds();
+                if (ids.length === 0) return;
+                handleBulkSend(ids);
+            });
+        }
+
+        // Bulk revoke
+        const bulkRevoke = document.getElementById('bulk-revoke');
+        if (bulkRevoke) {
+            bulkRevoke.addEventListener('click', function() {
+                const ids = getSelectedIds();
+                if (ids.length === 0) return;
+                if (!confirm(`Revoke ${ids.length} invite(s)? This cannot be undone.`)) return;
+                handleBulkRevoke(ids);
+            });
+        }
+    }
+
+    // ── Inject per-row Send button (template doesn't include one) ─────────────
+
+    function injectSendButtons() {
+        // Table rows
+        document.querySelectorAll('.invite-table-row').forEach(row => {
+            const actionsCell = row.querySelector('.invite-table-actions.invite-actions');
+            if (!actionsCell) return;
+            const inviteId = row.getAttribute('data-invite-id');
+            if (!inviteId) return;
+            // Only add if not already there
+            if (actionsCell.querySelector('[data-action="send"]')) return;
+
+            const btn = document.createElement('button');
+            btn.className = 'btn btn-ghost btn-sm invite-action-btn';
+            btn.setAttribute('data-action', 'send');
+            btn.setAttribute('data-invite-id', inviteId);
+            btn.textContent = 'Send';
+            // Insert before the Delete button
+            const deleteBtn = actionsCell.querySelector('[data-action="delete"]');
+            if (deleteBtn) {
+                actionsCell.insertBefore(btn, deleteBtn);
+            } else {
+                actionsCell.appendChild(btn);
+            }
+        });
+
+        // Card footers
+        document.querySelectorAll('.invite-card').forEach(card => {
+            const actionsDiv = card.querySelector('.invite-card-footer.invite-actions');
+            if (!actionsDiv) return;
+            const inviteId = card.getAttribute('data-invite-id');
+            if (!inviteId) return;
+            if (actionsDiv.querySelector('[data-action="send"]')) return;
+
+            const btn = document.createElement('button');
+            btn.className = 'btn btn-ghost btn-sm invite-action-btn';
+            btn.setAttribute('data-action', 'send');
+            btn.setAttribute('data-invite-id', inviteId);
+            btn.textContent = 'Send';
+            const deleteBtn = actionsDiv.querySelector('[data-action="delete"]');
+            if (deleteBtn) {
+                actionsDiv.insertBefore(btn, deleteBtn);
+            } else {
+                actionsDiv.appendChild(btn);
+            }
+        });
+    }
+
+    // ── Single-invite send ────────────────────────────────────────────────────
+
+    function handleSendInvite(inviteId) {
+        fetch(`/api/invites/${inviteId}/send`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-Token': getCSRFToken(),
+            },
+        })
+        .then(response => {
+            if (!response.ok) {
+                return response.json().then(data => {
+                    throw new Error(data.error || 'Failed to send invite');
+                });
+            }
+            return response.json();
+        })
+        .then(() => {
+            showFeedback('Invite queued for sending', 'success');
+            setTimeout(() => window.location.reload(), 1000);
+        })
+        .catch(error => {
+            showFeedback(error.message || 'Failed to send invite', 'error');
+        });
+    }
+
+    // ── Bulk operations ───────────────────────────────────────────────────────
+
+    function handleBulkSend(ids) {
+        const sendBtn = document.getElementById('bulk-send');
+        if (sendBtn) { sendBtn.disabled = true; sendBtn.textContent = 'Sending...'; }
+
+        Promise.allSettled(
+            ids.map(id =>
+                fetch(`/api/invites/${id}/send`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-Token': getCSRFToken(),
+                    },
+                }).then(r => {
+                    if (!r.ok) return r.json().then(d => Promise.reject(d.error || 'error'));
+                    return r.json();
+                })
+            )
+        ).then(results => {
+            const succeeded = results.filter(r => r.status === 'fulfilled').length;
+            const failed    = results.filter(r => r.status === 'rejected').length;
+            if (failed === 0) {
+                showFeedback(`${succeeded} invite(s) queued for sending`, 'success');
+            } else {
+                showFeedback(`${succeeded} sent, ${failed} failed`, 'error');
+            }
+            setTimeout(() => window.location.reload(), 1000);
+        }).finally(() => {
+            if (sendBtn) { sendBtn.disabled = false; sendBtn.textContent = 'Send Selected'; }
+        });
+    }
+
+    function handleBulkRevoke(ids) {
+        const revokeBtn = document.getElementById('bulk-revoke');
+        if (revokeBtn) { revokeBtn.disabled = true; revokeBtn.textContent = 'Revoking...'; }
+
+        Promise.allSettled(
+            ids.map(id =>
+                fetch(`/api/invites/${id}/revoke`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-Token': getCSRFToken(),
+                    },
+                    body: JSON.stringify({}),
+                }).then(r => {
+                    if (!r.ok) return r.json().then(d => Promise.reject(d.error || 'error'));
+                    return r.json();
+                })
+            )
+        ).then(results => {
+            const succeeded = results.filter(r => r.status === 'fulfilled').length;
+            const failed    = results.filter(r => r.status === 'rejected').length;
+            if (failed === 0) {
+                showFeedback(`${succeeded} invite(s) revoked`, 'success');
+            } else {
+                showFeedback(`${succeeded} revoked, ${failed} failed`, 'error');
+            }
+            setTimeout(() => window.location.reload(), 1000);
+        }).finally(() => {
+            if (revokeBtn) { revokeBtn.disabled = false; revokeBtn.textContent = 'Revoke Selected'; }
+        });
+    }
+
+    // ── Existing handlers (unchanged) ─────────────────────────────────────────
+
     function handleImportSubmit(e) {
         e.preventDefault();
 
@@ -83,12 +290,8 @@
         .then(data => {
             showFeedback(`Successfully imported ${data.imported || 0} invites`, 'success');
             form.reset();
-            if (importModal) {
-                importModal.close();
-            }
-            setTimeout(() => {
-                window.location.reload();
-            }, 1000);
+            if (importModal) importModal.close();
+            setTimeout(() => window.location.reload(), 1000);
         })
         .catch(error => {
             showFeedback(error.message || 'Failed to import invites', 'error');
@@ -110,20 +313,8 @@
         const name = nameInput.value.trim();
         const email = emailInput.value.trim();
 
-        if (!name) {
-            showFeedback('Guest name is required', 'error');
-            return;
-        }
-
-        if (!email) {
-            showFeedback('Email is required', 'error');
-            return;
-        }
-
-        const requestBody = {
-            name: name,
-            email: email,
-        };
+        if (!name) { showFeedback('Guest name is required', 'error'); return; }
+        if (!email) { showFeedback('Email is required', 'error'); return; }
 
         submitBtn.disabled = true;
         submitBtn.textContent = 'Adding...';
@@ -134,7 +325,7 @@
                 'Content-Type': 'application/json',
                 'X-CSRF-Token': getCSRFToken(),
             },
-            body: JSON.stringify(requestBody),
+            body: JSON.stringify({ name, email }),
         })
         .then(response => {
             if (!response.ok) {
@@ -145,15 +336,10 @@
             return response.json();
         })
         .then(data => {
-            const guestName = data.invite?.name || 'Guest';
-            showFeedback(`Successfully added ${guestName}`, 'success');
+            showFeedback(`Successfully added ${data.invite?.name || 'Guest'}`, 'success');
             form.reset();
-            if (createModal) {
-                createModal.close();
-            }
-            setTimeout(() => {
-                window.location.reload();
-            }, 1000);
+            if (createModal) createModal.close();
+            setTimeout(() => window.location.reload(), 1000);
         })
         .catch(error => {
             showFeedback(error.message || 'Failed to add guest', 'error');
@@ -167,9 +353,7 @@
     function handleCopyLink(inviteId) {
         fetch(`/api/invites/${inviteId}`, {
             method: 'GET',
-            headers: {
-                'Accept': 'application/json',
-            },
+            headers: { 'Accept': 'application/json' },
         })
         .then(response => {
             if (!response.ok) {
@@ -181,12 +365,8 @@
         })
         .then(data => {
             const token = data.token;
-            if (!token) {
-                throw new Error('No token available for this invite');
-            }
-            const baseURL = window.location.origin;
-            const inviteURL = `${baseURL}/rsvp/${token}`;
-
+            if (!token) throw new Error('No token available for this invite');
+            const inviteURL = `${window.location.origin}/rsvp/${token}`;
             return navigator.clipboard.writeText(inviteURL);
         })
         .then(() => {
@@ -198,15 +378,11 @@
     }
 
     function handleDeleteWithConfirm(inviteId) {
-        if (!confirm('Are you sure you want to delete this invite? This action cannot be undone.')) {
-            return;
-        }
+        if (!confirm('Are you sure you want to delete this invite? This action cannot be undone.')) return;
 
         fetch(`/api/invites/${inviteId}`, {
             method: 'DELETE',
-            headers: {
-                'X-CSRF-Token': getCSRFToken(),
-            },
+            headers: { 'X-CSRF-Token': getCSRFToken() },
         })
         .then(response => {
             if (!response.ok) {
@@ -218,9 +394,7 @@
         })
         .then(() => {
             showFeedback('Invite deleted successfully', 'success');
-            setTimeout(() => {
-                window.location.reload();
-            }, 1000);
+            setTimeout(() => window.location.reload(), 1000);
         })
         .catch(error => {
             showFeedback(error.message || 'Failed to delete invite', 'error');
@@ -231,24 +405,21 @@
         const btn = e.target.closest('[data-action]');
         if (!btn) return;
 
-        const action = btn.getAttribute('data-action');
+        const action   = btn.getAttribute('data-action');
         const inviteId = btn.getAttribute('data-invite-id');
 
         switch (action) {
-            case 'copy-link':
-                handleCopyLink(inviteId);
-                break;
-            case 'delete':
-                handleDeleteWithConfirm(inviteId);
-                break;
+            case 'copy-link': handleCopyLink(inviteId); break;
+            case 'delete':    handleDeleteWithConfirm(inviteId); break;
+            case 'send':      handleSendInvite(inviteId); break;
         }
     }
 
+    // ── Init ──────────────────────────────────────────────────────────────────
+
     function initInviteManagement() {
         currentEventId = getEventIdFromURL();
-        if (!currentEventId) {
-            return;
-        }
+        if (!currentEventId) return;
 
         const importModalEl = document.getElementById('import-modal');
         const createModalEl = document.getElementById('create-modal');
@@ -256,20 +427,19 @@
         if (importModalEl) {
             importModal = new window.Modal('import-modal');
             const importForm = document.getElementById('import-form');
-            if (importForm) {
-                importForm.addEventListener('submit', handleImportSubmit);
-            }
+            if (importForm) importForm.addEventListener('submit', handleImportSubmit);
         }
 
         if (createModalEl) {
             createModal = new window.Modal('create-modal');
             const createForm = document.getElementById('create-form');
-            if (createForm) {
-                createForm.addEventListener('submit', handleCreateSubmit);
-            }
+            if (createForm) createForm.addEventListener('submit', handleCreateSubmit);
         }
 
         document.addEventListener('click', handleActionClick);
+
+        initCheckboxWiring();
+        injectSendButtons();
     }
 
     if (document.readyState === 'loading') {
