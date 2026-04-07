@@ -300,6 +300,24 @@ func TestForwardAuthenticator_IPValidation(t *testing.T) {
 			remoteAddr: "[::1]:12345",
 			wantErr:    false,
 		},
+		{
+			name:       "trusted via CIDR range",
+			trustedIPs: []string{"172.16.0.0/12"},
+			remoteAddr: "172.19.0.6:12345",
+			wantErr:    false,
+		},
+		{
+			name:       "untrusted outside CIDR range",
+			trustedIPs: []string{"172.16.0.0/12"},
+			remoteAddr: "10.0.0.1:12345",
+			wantErr:    true,
+		},
+		{
+			name:       "trusted via mixed IPs and CIDR",
+			trustedIPs: []string{"127.0.0.1", "172.16.0.0/12"},
+			remoteAddr: "172.21.0.3:12345",
+			wantErr:    false,
+		},
 	}
 
 	for _, tt := range tests {

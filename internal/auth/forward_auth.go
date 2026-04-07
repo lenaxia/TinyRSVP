@@ -2,6 +2,7 @@ package auth
 
 import (
 	"fmt"
+	"net"
 	"net/http"
 	"strings"
 )
@@ -103,9 +104,20 @@ func (a *forwardAuthenticator) validateTrustedProxy(r *http.Request) error {
 		return fmt.Errorf("unable to determine client IP")
 	}
 
-	for _, trustedIP := range a.config.TrustedIPs {
-		if clientIP == trustedIP {
-			return nil
+	parsedClient := net.ParseIP(clientIP)
+
+	for _, entry := range a.config.TrustedIPs {
+		if strings.Contains(entry, "/") {
+			// CIDR range
+			_, ipNet, err := net.ParseCIDR(entry)
+			if err == nil && parsedClient != nil && ipNet.Contains(parsedClient) {
+				return nil
+			}
+		} else {
+			// Individual IP
+			if clientIP == entry {
+				return nil
+			}
 		}
 	}
 

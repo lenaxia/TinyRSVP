@@ -214,6 +214,37 @@ func TestForwardAuthConfig_Validate(t *testing.T) {
 			},
 			wantErr: false,
 		},
+		{
+			name: "valid CIDR range",
+			config: ForwardAuthConfig{
+				Enabled:     true,
+				UserHeader:  "Remote-User",
+				EmailHeader: "Remote-Email",
+				TrustedIPs:  []string{"172.16.0.0/12"},
+			},
+			wantErr: false,
+		},
+		{
+			name: "mixed IPs and CIDR",
+			config: ForwardAuthConfig{
+				Enabled:     true,
+				UserHeader:  "Remote-User",
+				EmailHeader: "Remote-Email",
+				TrustedIPs:  []string{"127.0.0.1", "::1", "172.16.0.0/12"},
+			},
+			wantErr: false,
+		},
+		{
+			name: "invalid CIDR range",
+			config: ForwardAuthConfig{
+				Enabled:     true,
+				UserHeader:  "Remote-User",
+				EmailHeader: "Remote-Email",
+				TrustedIPs:  []string{"999.999.0.0/8"},
+			},
+			wantErr: true,
+			errMsg:  "invalid CIDR range",
+		},
 	}
 
 	for _, tt := range tests {

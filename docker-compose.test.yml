@@ -32,6 +32,7 @@ services:
       - SMTP_PORT=1025
       - SMTP_USERNAME=
       - SMTP_PASSWORD=
+      - SMTP_TLS=false
       - EMAIL_FROM=noreply@tinyrsvp.test
       - EMAIL_FROM_NAME=TinyRSVP Test
       
@@ -41,10 +42,8 @@ services:
       - FORWARD_AUTH_ENABLED=true
       - FORWARD_AUTH_USER_HEADER=X-Forwarded-User
       - FORWARD_AUTH_EMAIL_HEADER=X-Forwarded-Email
-      - FORWARD_AUTH_TRUSTED_IPS=0.0.0.0/0
-      - FORWARD_AUTH_USER_HEADER=X-Forwarded-User
-      - FORWARD_AUTH_EMAIL_HEADER=X-Forwarded-Email
-      - FORWARD_AUTH_TRUSTED_IPS=127.0.0.1,::1,172.18.0.1,172.18.0.2,172.18.0.3,172.18.0.4,172.18.0.5,172.18.0.6,172.21.0.1,172.21.0.2,172.21.0.3,172.21.0.4,172.21.0.5,172.21.0.6
+      # Trust any Docker bridge network — CIDR supported as of fix 2026-04-07
+      - FORWARD_AUTH_TRUSTED_IPS=127.0.0.1,::1,172.16.0.0/12
       
       # Storage
       - STORAGE_TYPE=local

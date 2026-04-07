@@ -45,9 +45,16 @@ func (c *Config) validateForwardAuth() error {
 		return fmt.Errorf("at least one trusted IP is required when forward auth is enabled")
 	}
 
-	for _, ip := range c.ForwardAuth.TrustedIPs {
-		if net.ParseIP(ip) == nil {
-			return fmt.Errorf("invalid IP address: %s", ip)
+	for _, entry := range c.ForwardAuth.TrustedIPs {
+		// Accept both individual IPs and CIDR ranges (e.g. 172.19.0.0/16).
+		if strings.Contains(entry, "/") {
+			if _, _, err := net.ParseCIDR(entry); err != nil {
+				return fmt.Errorf("invalid CIDR range: %s", entry)
+			}
+		} else {
+			if net.ParseIP(entry) == nil {
+				return fmt.Errorf("invalid IP address: %s", entry)
+			}
 		}
 	}
 
