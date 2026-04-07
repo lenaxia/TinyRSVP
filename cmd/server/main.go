@@ -35,7 +35,12 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 )
 
-const appVersion = "0.1.0"
+// version is the application version. Set at build time via:
+//
+//	-ldflags="-X main.version=v1.2.3"
+//
+// Falls back to the hardcoded default when building locally without ldflags.
+var version = "0.1.0"
 
 func main() {
 	logLevel := config.GetLogLevelFromEnv()
@@ -99,12 +104,12 @@ func main() {
 		os.Exit(1)
 	}
 
-	version, dirty, err := migrator.Version(migrationCtx)
+	migrationVersion, dirty, err := migrator.Version(migrationCtx)
 	if err != nil {
 		logger.Warn("Failed to get migration version", "error", err)
 	} else {
 		logger.Info("Database migrations completed",
-			"version", version,
+			"version", migrationVersion,
 			"dirty", dirty,
 		)
 	}
@@ -266,8 +271,8 @@ func main() {
 	callbackHandler := auth.NewCallbackHandler(authenticator, userService, sessionMgr)
 	logoutHandler := auth.NewLogoutHandler(authenticator)
 
-	healthHandler := handlers.NewHealthHandler(appVersion)
-	readinessHandler := handlers.NewReadinessHandler(appVersion, database, migrator)
+	healthHandler := handlers.NewHealthHandler(version)
+	readinessHandler := handlers.NewReadinessHandler(version, database, migrator)
 
 	metricsCollector := middleware.NewPrometheusMetricsWithRegistry(prometheus.DefaultRegisterer)
 	metricsHandler := middleware.MetricsHandler(metricsCollector)

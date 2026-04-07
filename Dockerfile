@@ -11,8 +11,9 @@ COPY vendor ./vendor
 
 COPY . .
 
+ARG APP_VERSION=dev
 RUN CGO_ENABLED=1 GOOS=linux go build -a -installsuffix cgo \
-    -ldflags="-w -s" \
+    -ldflags="-w -s -X main.version=${APP_VERSION}" \
     -mod=vendor \
     -o tinyrsvp ./cmd/server
 
