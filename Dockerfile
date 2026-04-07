@@ -7,12 +7,12 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && rm -rf /var/lib/apt/lists/*
 
 COPY go.mod go.sum ./
-COPY vendor/ vendor/
+RUN go mod download
 
 COPY . .
 
 ARG APP_VERSION=dev
-RUN CGO_ENABLED=1 GOOS=linux go build -mod=vendor -a -installsuffix cgo \
+RUN CGO_ENABLED=1 GOOS=linux go build -a -installsuffix cgo \
     -ldflags="-w -s -X main.version=${APP_VERSION}" \
     -o tinyrsvp ./cmd/server
 
