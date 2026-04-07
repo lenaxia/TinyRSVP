@@ -30,8 +30,8 @@
         <h2 id="summary-title" class="confirmation-summary-title">Your Response</h2>
         <div class="confirmation-summary-item">
             <span class="confirmation-summary-label">Status:</span>
-            <span class="response-status response-{{lower .RSVP.Response}}" aria-label="Response status: {{.RSVP.Response}}">
-                {{upper .RSVP.Response}}
+            <span class="response-status response-{{lower (printf "%s" .RSVP.Response)}}" aria-label="Response status: {{.RSVP.Response}}">
+                {{upper (printf "%s" .RSVP.Response)}}
             </span>
         </div>
         {{if gt .RSVP.PlusOnes 0}}
