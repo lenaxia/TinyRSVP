@@ -25,7 +25,6 @@ func TestConfirmationTemplateIntegration(t *testing.T) {
 		RSVP: ConfirmationRSVP{
 			Response: "yes",
 			PlusOnes: 2,
-			Notes:    "Excited to attend!",
 		},
 		AnswersWithQuestions: []ConfirmationAnswerWithQuestion{
 			{
@@ -55,7 +54,6 @@ func TestConfirmationTemplateIntegration(t *testing.T) {
 		"America/New_York",
 		"YES",
 		"2",
-		"Excited to attend!",
 		"Dietary restrictions?",
 		"Vegetarian",
 		"T-shirt size?",

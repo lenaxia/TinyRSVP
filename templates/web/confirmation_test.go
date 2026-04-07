@@ -38,7 +38,6 @@ type ConfirmationEvent struct {
 type ConfirmationRSVP struct {
 	Response string
 	PlusOnes int
-	Notes    string
 }
 
 type ConfirmationData struct {
@@ -80,7 +79,6 @@ func TestConfirmationTemplateRenders(t *testing.T) {
 		RSVP: ConfirmationRSVP{
 			Response: "yes",
 			PlusOnes: 2,
-			Notes:    "Looking forward to it!",
 		},
 		Token: "test-token-123",
 	}
@@ -231,7 +229,6 @@ func TestConfirmationTemplateRSVPSummary(t *testing.T) {
 		RSVP: ConfirmationRSVP{
 			Response: "yes",
 			PlusOnes: 2,
-			Notes:    "Looking forward to it!",
 		},
 		Token: "test-token",
 	}
@@ -248,7 +245,6 @@ func TestConfirmationTemplateRSVPSummary(t *testing.T) {
 		"Your Response",
 		"YES",
 		"2",
-		"Looking forward to it!",
 	}
 
 	for _, detail := range rsvpDetails {
