@@ -41,15 +41,19 @@ type ConfirmationRSVP struct {
 }
 
 type ConfirmationData struct {
+	ActivePage           string
 	Event                ConfirmationEvent
 	RSVP                 ConfirmationRSVP
 	AnswersWithQuestions []ConfirmationAnswerWithQuestion
 	Token                string
 	ErrorMessage         string
+	CanUpdate            bool
+	LocalStartTime       string
+	LocalEndTime         string
 }
 
 func getConfirmationTemplate() (*template.Template, error) {
-	return parseWithBase("confirmation.html")
+	return template.New("confirmation.html").Funcs(testFuncMap()).ParseFiles("confirmation.html")
 }
 
 func TestConfirmationTemplateExists(t *testing.T) {
