@@ -82,4 +82,4 @@ jobs:
             - Close or resolve issues
             - Make changes to authentication, secrets, or security-sensitive code (internal/auth/, OIDC config, tokens)
 
-            Always end your comment by tagging @lenaxia to review your response.
+            Only tag @lenaxia if you genuinely need their input to proceed (e.g. ambiguous requirements, security-sensitive changes, or a decision only the maintainer can make). Do not tag them otherwise.
