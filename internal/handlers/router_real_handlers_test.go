@@ -107,6 +107,12 @@ func (m *mockRSVPHandler) Unsubscribe(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte("Unsubscribed"))
 }
 
+func (m *mockRSVPHandler) GetCalendar(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "text/calendar; charset=utf-8")
+	w.WriteHeader(http.StatusOK)
+	w.Write([]byte("BEGIN:VCALENDAR\r\nEND:VCALENDAR\r\n"))
+}
+
 type mockUserHandler struct {
 	listCalled   bool
 	getCalled    bool

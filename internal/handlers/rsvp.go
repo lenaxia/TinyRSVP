@@ -9,6 +9,7 @@ import (
 	"html/template"
 	"io"
 	"net/http"
+	"net/url"
 	"strconv"
 	"strings"
 	"time"
@@ -19,6 +20,7 @@ import (
 	"github.com/lenaxia/tinyrsvp/internal/middleware"
 	"github.com/lenaxia/tinyrsvp/internal/models"
 	"github.com/lenaxia/tinyrsvp/internal/rsvp"
+	"github.com/lenaxia/tinyrsvp/pkg/ics"
 )
 
 type RSVPInviteService interface {
@@ -235,6 +237,7 @@ func (h *RSVPHandler) GetRSVPPage(w http.ResponseWriter, r *http.Request) {
 		LocalEndTime:   localEndTime,
 		TimeUntilEvent: timeUntilEvent,
 		CanUpdate:      canUpdate,
+		ErrorMessage:   r.URL.Query().Get("error"),
 		CSRFToken:      middleware.GetCSRFToken(r.Context()),
 		ThemeCategory:  themeCategory,
 		ThemeImageURL:  h.getThemeImageURL(event, theme),
@@ -514,7 +517,7 @@ func (h *RSVPHandler) SubmitRSVP(w http.ResponseWriter, r *http.Request) {
 	if h.rsvpRepo != nil {
 		invite, inviteErr := h.inviteService.GetInviteByToken(r.Context(), token)
 		if inviteErr != nil {
-			h.handleSubmitError(w, inviteErr)
+			h.handleSubmitError(w, r, token, inviteErr)
 			return
 		}
 
@@ -522,9 +525,7 @@ func (h *RSVPHandler) SubmitRSVP(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			var notFoundErr *models.NotFoundError
 			if !errors.As(err, &notFoundErr) {
-				h.respondJSON(w, http.StatusInternalServerError, map[string]string{
-					"error": "failed to check RSVP status",
-				})
+				h.handleSubmitError(w, r, token, fmt.Errorf("failed to check RSVP status"))
 				return
 			}
 		}
@@ -533,13 +534,13 @@ func (h *RSVPHandler) SubmitRSVP(w http.ResponseWriter, r *http.Request) {
 	if existingRSVP != nil {
 		result, err = h.rsvpService.UpdateRSVP(r.Context(), token, req)
 		if err != nil {
-			h.handleUpdateError(w, err)
+			h.handleUpdateError(w, r, token, err)
 			return
 		}
 	} else {
 		result, err = h.rsvpService.SubmitRSVP(r.Context(), token, req)
 		if err != nil {
-			h.handleSubmitError(w, err)
+			h.handleSubmitError(w, r, token, err)
 			return
 		}
 	}
@@ -562,56 +563,92 @@ func (h *RSVPHandler) SubmitRSVP(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, fmt.Sprintf("/rsvp/%s/confirmation", token), http.StatusSeeOther)
 }
 
-func (h *RSVPHandler) handleSubmitError(w http.ResponseWriter, err error) {
+func (h *RSVPHandler) isJSONRequest(r *http.Request) bool {
+	return strings.Contains(r.Header.Get("Accept"), "application/json") ||
+		strings.Contains(r.Header.Get("Content-Type"), "application/json")
+}
+
+func (h *RSVPHandler) handleSubmitError(w http.ResponseWriter, r *http.Request, token string, err error) {
+	var msg string
+
 	var validationErr *models.ValidationError
-	if errors.As(err, &validationErr) {
-		h.respondJSON(w, http.StatusBadRequest, map[string]string{
-			"error": validationErr.Message,
-			"field": validationErr.Field,
-		})
-		return
-	}
-
 	var deadlineErr *models.DeadlinePassedError
-	if errors.As(err, &deadlineErr) {
-		h.respondJSON(w, http.StatusForbidden, map[string]string{
-			"error": deadlineErr.Message,
-		})
+
+	switch {
+	case errors.As(err, &validationErr):
+		msg = validationErr.Message
+	case errors.As(err, &deadlineErr):
+		msg = deadlineErr.Message
+	case errors.Is(err, rsvp.ErrDuplicateRSVP):
+		msg = "you have already responded to this invite"
+	case strings.Contains(err.Error(), "expired"):
+		msg = "this invite has expired"
+	case strings.Contains(err.Error(), "revoked"):
+		msg = "this invite has been revoked"
+	case strings.Contains(err.Error(), "cancelled"):
+		msg = "this event has been cancelled"
+	default:
+		msg = "failed to save RSVP, please try again"
+	}
+
+	if h.isJSONRequest(r) {
+		status := http.StatusInternalServerError
+		if errors.As(err, &validationErr) {
+			status = http.StatusBadRequest
+		} else if errors.As(err, &deadlineErr) || strings.Contains(err.Error(), "expired") || strings.Contains(err.Error(), "revoked") {
+			status = http.StatusForbidden
+		} else if errors.Is(err, rsvp.ErrDuplicateRSVP) {
+			status = http.StatusConflict
+		} else if strings.Contains(err.Error(), "cancelled") {
+			status = http.StatusBadRequest
+		}
+		h.respondJSON(w, status, map[string]string{"error": msg})
 		return
 	}
 
-	if errors.Is(err, rsvp.ErrDuplicateRSVP) {
-		h.respondJSON(w, http.StatusConflict, map[string]string{
-			"error": "you have already responded to this invite",
-		})
+	http.Redirect(w, r, fmt.Sprintf("/rsvp/%s?error=%s", token, url.QueryEscape(msg)), http.StatusSeeOther)
+}
+
+func (h *RSVPHandler) handleUpdateError(w http.ResponseWriter, r *http.Request, token string, err error) {
+	var msg string
+
+	var validationErr *models.ValidationError
+	var notFoundErr *models.NotFoundError
+	var deadlineErr *models.DeadlinePassedError
+
+	switch {
+	case errors.As(err, &validationErr):
+		msg = validationErr.Message
+	case errors.As(err, &notFoundErr):
+		msg = "no existing RSVP found to update"
+	case errors.As(err, &deadlineErr):
+		msg = deadlineErr.Message
+	case strings.Contains(err.Error(), "expired"):
+		msg = "this invite has expired"
+	case strings.Contains(err.Error(), "revoked"):
+		msg = "this invite has been revoked"
+	case strings.Contains(err.Error(), "cancelled"):
+		msg = "this event has been cancelled"
+	default:
+		msg = "failed to update RSVP, please try again"
+	}
+
+	if h.isJSONRequest(r) {
+		status := http.StatusInternalServerError
+		if errors.As(err, &validationErr) {
+			status = http.StatusBadRequest
+		} else if errors.As(err, &notFoundErr) {
+			status = http.StatusNotFound
+		} else if errors.As(err, &deadlineErr) || strings.Contains(err.Error(), "expired") || strings.Contains(err.Error(), "revoked") {
+			status = http.StatusForbidden
+		} else if strings.Contains(err.Error(), "cancelled") {
+			status = http.StatusBadRequest
+		}
+		h.respondJSON(w, status, map[string]string{"error": msg})
 		return
 	}
 
-	errMsg := err.Error()
-	if strings.Contains(errMsg, "expired") {
-		h.respondJSON(w, http.StatusForbidden, map[string]string{
-			"error": "this invite has expired",
-		})
-		return
-	}
-
-	if strings.Contains(errMsg, "revoked") {
-		h.respondJSON(w, http.StatusForbidden, map[string]string{
-			"error": "this invite has been revoked",
-		})
-		return
-	}
-
-	if strings.Contains(errMsg, "cancelled") {
-		h.respondJSON(w, http.StatusBadRequest, map[string]string{
-			"error": "this event has been cancelled",
-		})
-		return
-	}
-
-	h.respondJSON(w, http.StatusInternalServerError, map[string]string{
-		"error": "failed to save RSVP, please try again",
-	})
+	http.Redirect(w, r, fmt.Sprintf("/rsvp/%s?error=%s", token, url.QueryEscape(msg)), http.StatusSeeOther)
 }
 
 func (h *RSVPHandler) respondJSON(w http.ResponseWriter, status int, data interface{}) {
@@ -639,7 +676,7 @@ func (h *RSVPHandler) UpdateRSVP(w http.ResponseWriter, r *http.Request) {
 
 	result, err := h.rsvpService.UpdateRSVP(r.Context(), token, req)
 	if err != nil {
-		h.handleUpdateError(w, err)
+		h.handleUpdateError(w, r, token, err)
 		return
 	}
 
@@ -655,59 +692,6 @@ func (h *RSVPHandler) UpdateRSVP(w http.ResponseWriter, r *http.Request) {
 	}
 
 	http.Redirect(w, r, fmt.Sprintf("/rsvp/%s/confirmation", token), http.StatusSeeOther)
-}
-
-func (h *RSVPHandler) handleUpdateError(w http.ResponseWriter, err error) {
-	var validationErr *models.ValidationError
-	if errors.As(err, &validationErr) {
-		h.respondJSON(w, http.StatusBadRequest, map[string]string{
-			"error": validationErr.Message,
-			"field": validationErr.Field,
-		})
-		return
-	}
-
-	var notFoundErr *models.NotFoundError
-	if errors.As(err, &notFoundErr) {
-		h.respondJSON(w, http.StatusNotFound, map[string]string{
-			"error": "no existing RSVP found to update",
-		})
-		return
-	}
-
-	var deadlineErr *models.DeadlinePassedError
-	if errors.As(err, &deadlineErr) {
-		h.respondJSON(w, http.StatusForbidden, map[string]string{
-			"error": deadlineErr.Message,
-		})
-		return
-	}
-
-	errMsg := err.Error()
-	if strings.Contains(errMsg, "expired") {
-		h.respondJSON(w, http.StatusForbidden, map[string]string{
-			"error": "this invite has expired",
-		})
-		return
-	}
-
-	if strings.Contains(errMsg, "revoked") {
-		h.respondJSON(w, http.StatusForbidden, map[string]string{
-			"error": "this invite has been revoked",
-		})
-		return
-	}
-
-	if strings.Contains(errMsg, "cancelled") {
-		h.respondJSON(w, http.StatusBadRequest, map[string]string{
-			"error": "this event has been cancelled",
-		})
-		return
-	}
-
-	h.respondJSON(w, http.StatusInternalServerError, map[string]string{
-		"error": "failed to update RSVP, please try again",
-	})
 }
 
 type AnswerWithQuestion struct {
@@ -994,4 +978,50 @@ func (h *RSVPHandler) renderUnsubscribePage(w http.ResponseWriter, status int, d
 		}
 		return "<p>Processing...</p>"
 	}())
+}
+
+func (h *RSVPHandler) GetCalendar(w http.ResponseWriter, r *http.Request) {
+	token := chi.URLParam(r, "token")
+	if token == "" {
+		http.Error(w, "token is required", http.StatusBadRequest)
+		return
+	}
+
+	invite, err := h.inviteService.GetInviteByToken(r.Context(), token)
+	if err != nil {
+		var notFoundErr *models.NotFoundError
+		if errors.As(err, &notFoundErr) {
+			http.Error(w, "invite not found", http.StatusNotFound)
+			return
+		}
+		http.Error(w, "failed to load invite", http.StatusInternalServerError)
+		return
+	}
+
+	event, err := h.eventRepo.GetByID(r.Context(), invite.EventID)
+	if err != nil {
+		var notFoundErr *models.NotFoundError
+		if errors.As(err, &notFoundErr) {
+			http.Error(w, "event not found", http.StatusNotFound)
+			return
+		}
+		http.Error(w, "failed to load event", http.StatusInternalServerError)
+		return
+	}
+
+	rsvpURL := fmt.Sprintf("%s/rsvp/%s", r.Header.Get("X-Forwarded-Proto")+"://"+r.Host, token)
+
+	generator := ics.NewGenerator()
+	data, err := generator.Generate(event, rsvpURL)
+	if err != nil {
+		http.Error(w, "failed to generate calendar file", http.StatusInternalServerError)
+		return
+	}
+
+	filename := fmt.Sprintf("%s.ics", strings.ReplaceAll(event.Title, " ", "_"))
+	w.Header().Set("Content-Type", "text/calendar; charset=utf-8")
+	w.Header().Set("Content-Disposition", fmt.Sprintf(`attachment; filename="%s"`, filename))
+	w.Header().Set("Cache-Control", "no-cache")
+	w.WriteHeader(http.StatusOK)
+	w.Write(data)
 }

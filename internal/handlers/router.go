@@ -157,6 +157,7 @@ type RSVPHandlerInterface interface {
 	SubmitRSVP(w http.ResponseWriter, r *http.Request)
 	UpdateRSVP(w http.ResponseWriter, r *http.Request)
 	GetConfirmationPage(w http.ResponseWriter, r *http.Request)
+	GetCalendar(w http.ResponseWriter, r *http.Request)
 	Unsubscribe(w http.ResponseWriter, r *http.Request)
 }
 
@@ -485,7 +486,18 @@ func NewRouter(handlers *RouterHandlers) *Router {
 				parts := strings.Split(path, "/")
 				userID := parts[0]
 
-				switch req.Method {
+				// Support _method override for HTML form submissions
+				// (browsers can only submit GET/POST; forms use hidden _method field)
+				method := req.Method
+				if method == http.MethodPost {
+					if err := req.ParseForm(); err == nil {
+						if override := req.FormValue("_method"); override != "" {
+							method = strings.ToUpper(override)
+						}
+					}
+				}
+
+				switch method {
 				case http.MethodGet:
 					handlers.AuthMiddleware.RequireAuth(
 						handlers.AuthMiddleware.RequireAdmin(
@@ -549,6 +561,7 @@ func NewRouter(handlers *RouterHandlers) *Router {
 			r.Get("/confirmation", handlers.RSVPHandler.GetConfirmationPage)
 		})
 		r.Get("/unsubscribe/{token}", handlers.RSVPHandler.Unsubscribe)
+		r.Get("/api/calendar/{token}", handlers.RSVPHandler.GetCalendar)
 	} else {
 		r.Route("/rsvp/{token}", func(r chi.Router) {
 			r.Get("/", func(w http.ResponseWriter, r *http.Request) {
