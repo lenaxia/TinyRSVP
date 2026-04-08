@@ -121,6 +121,18 @@ func setupTestDB(t *testing.T) db.Database {
 	CREATE INDEX idx_invites_email ON invites(email);
 	CREATE INDEX idx_invites_status ON invites(status);
 	CREATE INDEX idx_invites_expires_at ON invites(expires_at);
+
+	CREATE TABLE rsvps (
+		id INTEGER PRIMARY KEY AUTOINCREMENT,
+		invite_id INTEGER NOT NULL UNIQUE REFERENCES invites(id) ON DELETE CASCADE,
+		response TEXT NOT NULL,
+		plus_ones INTEGER NOT NULL DEFAULT 0,
+		created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+		updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+		CHECK (response IN ('yes', 'no', 'maybe')),
+		CHECK (plus_ones >= 0)
+	);
+	CREATE INDEX idx_rsvps_invite_id ON rsvps(invite_id);
 	`
 
 	if _, err := sqlDB.Exec(schema); err != nil {

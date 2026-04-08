@@ -33,6 +33,8 @@ type Invite struct {
 	CreatedAt        time.Time    `db:"created_at" json:"created_at"`
 	UpdatedAt        time.Time    `db:"updated_at" json:"updated_at"`
 	ExpiresAt        time.Time    `db:"expires_at" json:"expires_at"`
+	// RSVPResponse is populated only when fetched via a JOIN with the rsvps table.
+	RSVPResponse *RSVPResponse `db:"rsvp_response" json:"rsvp_response,omitempty"`
 }
 
 func (i *Invite) Validate() error {

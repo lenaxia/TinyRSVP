@@ -365,41 +365,43 @@ func (r *inviteRepository) Delete(ctx context.Context, id int64) error {
 
 func (r *inviteRepository) ListByEventID(ctx context.Context, eventID int64, filters InviteFilters) ([]*models.Invite, error) {
 	query := `
-		SELECT id, event_id, name, email, token, token_hash, max_plus_ones, status,
-			sent_at, viewed_at, unsubscribed, email_invalid,
-			created_at, updated_at, expires_at
-		FROM invites
-		WHERE event_id = ?
+		SELECT i.id, i.event_id, i.name, i.email, i.token, i.token_hash, i.max_plus_ones, i.status,
+			i.sent_at, i.viewed_at, i.unsubscribed, i.email_invalid,
+			i.created_at, i.updated_at, i.expires_at,
+			r.response
+		FROM invites i
+		LEFT JOIN rsvps r ON r.invite_id = i.id
+		WHERE i.event_id = ?
 	`
 
 	args := []interface{}{eventID}
 
 	if filters.Status != nil {
-		query += " AND status = ?"
+		query += " AND i.status = ?"
 		args = append(args, *filters.Status)
 	}
 
 	if filters.Unsubscribed != nil {
-		query += " AND unsubscribed = ?"
+		query += " AND i.unsubscribed = ?"
 		args = append(args, *filters.Unsubscribed)
 	}
 
 	if filters.EmailInvalid != nil {
-		query += " AND email_invalid = ?"
+		query += " AND i.email_invalid = ?"
 		args = append(args, *filters.EmailInvalid)
 	}
 
 	if filters.Search != nil && *filters.Search != "" {
-		query += " AND (LOWER(email) LIKE LOWER(?) OR LOWER(name) LIKE LOWER(?))"
+		query += " AND (LOWER(i.email) LIKE LOWER(?) OR LOWER(i.name) LIKE LOWER(?))"
 		searchPattern := "%" + *filters.Search + "%"
 		args = append(args, searchPattern, searchPattern)
 	}
 
-	sortBy := "created_at"
+	sortBy := "i.created_at"
 	if filters.SortBy != nil && *filters.SortBy != "" {
 		switch *filters.SortBy {
 		case "created_at", "sent_at", "viewed_at", "email", "name", "status":
-			sortBy = *filters.SortBy
+			sortBy = "i." + *filters.SortBy
 		}
 	}
 
@@ -447,6 +449,7 @@ func (r *inviteRepository) ListByEventID(ctx context.Context, eventID int64, fil
 			&invite.CreatedAt,
 			&invite.UpdatedAt,
 			&invite.ExpiresAt,
+			&invite.RSVPResponse,
 		)
 		if err != nil {
 			return nil, fmt.Errorf("failed to scan invite: %w", err)

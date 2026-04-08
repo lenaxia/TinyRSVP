@@ -239,8 +239,16 @@
                     </td>
                     <td class="invite-table-plus-ones">{{.MaxPlusOnes}}</td>
                     <td class="invite-table-rsvp">
-                        {{if eq .Status "responded"}}
-                            <span class="invite-rsvp-yes">✓ Yes</span>
+                        {{if .RSVPResponse}}
+                            {{if eq (printf "%s" .RSVPResponse) "yes"}}
+                                <span class="invite-rsvp-yes">✓ Yes</span>
+                            {{else if eq (printf "%s" .RSVPResponse) "no"}}
+                                <span class="invite-rsvp-no">✗ No</span>
+                            {{else if eq (printf "%s" .RSVPResponse) "maybe"}}
+                                <span class="invite-rsvp-maybe">? Maybe</span>
+                            {{else}}
+                                <span class="invite-rsvp-yes">✓ {{printf "%s" .RSVPResponse}}</span>
+                            {{end}}
                         {{else}}
                             <span class="invite-table-empty">—</span>
                         {{end}}
