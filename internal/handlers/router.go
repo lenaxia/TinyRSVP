@@ -317,6 +317,13 @@ func NewRouter(handlers *RouterHandlers) *Router {
 		})
 	}
 
+	// Not-implemented placeholder page — no auth required so back-navigation works
+	r.Get("/not-implemented", func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "text/html; charset=utf-8")
+		w.WriteHeader(http.StatusOK)
+		fmt.Fprint(w, notImplementedHTML)
+	})
+
 	if handlers.DashboardHandler != nil && handlers.AuthMiddleware != nil {
 		r.Handle("/", handlers.AuthMiddleware.RequireAuth(
 			http.HandlerFunc(handlers.DashboardHandler.Dashboard),
@@ -676,3 +683,32 @@ func GetTokenFromRequest(r *http.Request) (string, error) {
 	token := chi.URLParam(r, "token")
 	return GetStringParam(token)
 }
+
+const notImplementedHTML = `<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Coming Soon - TinyRSVP</title>
+    <link rel="stylesheet" href="/static/css/base.css">
+    <link rel="stylesheet" href="/static/css/variables.css">
+    <link rel="stylesheet" href="/static/css/typography.css">
+    <link rel="stylesheet" href="/static/css/colors.css">
+    <link rel="stylesheet" href="/static/css/spacing.css">
+    <link rel="stylesheet" href="/static/css/buttons.css">
+    <link rel="stylesheet" href="/static/css/app_navigation.css">
+    <link rel="stylesheet" href="/static/css/mobile_optimization.css">
+    <link rel="stylesheet" href="/static/css/theme_toggle.css">
+</head>
+<body>
+    <div style="max-width:480px;margin:var(--spacing-16,4rem) auto;text-align:center;padding:var(--spacing-8,2rem)">
+        <div style="font-size:64px;margin-bottom:1rem">🚧</div>
+        <h1 style="margin-bottom:0.75rem">Coming Soon</h1>
+        <p style="color:var(--color-text-secondary,#666);margin-bottom:1.5rem;line-height:1.6">
+            This feature is not yet implemented. It&#39;s on the roadmap and will be available in a future release.
+        </p>
+        <a href="javascript:history.back()" class="btn btn-secondary">Go Back</a>
+    </div>
+    <script src="/static/js/theme_controller.js"></script>
+</body>
+</html>`

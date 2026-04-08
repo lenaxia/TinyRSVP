@@ -45,7 +45,7 @@
     <section class="event-filters">
         <div class="filter-group">
             <label for="status-filter" class="filter-label">Status</label>
-            <select id="status-filter" class="form-select filter-select" name="status" aria-label="Filter by status">
+             <select id="status-filter" class="form-select filter-select" name="status" aria-label="Filter by status" onchange="window.location.href='/not-implemented'">
                 <option value="all" {{if eq .Filter "all"}}selected{{end}}>All Events</option>
                 <option value="draft" {{if eq .Filter "draft"}}selected{{end}}>Draft</option>
                 <option value="published" {{if eq .Filter "published"}}selected{{end}}>Published</option>
@@ -61,12 +61,13 @@
                 placeholder="Search events..."
                 aria-label="Search events"
                 name="search"
+                onfocus="window.location.href='/not-implemented'"
             >
         </div>
 
         <div class="event-sort">
             <label for="sort-select" class="filter-label">Sort by</label>
-            <select id="sort-select" class="form-select sort-select" name="sort" aria-label="Sort events">
+             <select id="sort-select" class="form-select sort-select" name="sort" aria-label="Sort events" onchange="window.location.href='/not-implemented'">
                 <option value="date" {{if eq .Sort "date"}}selected{{end}}>Date</option>
                 <option value="name" {{if eq .Sort "name"}}selected{{end}}>Name</option>
                 <option value="rsvp" {{if eq .Sort "rsvp"}}selected{{end}}>RSVP Count</option>

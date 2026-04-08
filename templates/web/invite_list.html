@@ -67,7 +67,7 @@
         <div class="invite-filters">
             <div class="filter-group">
                 <label for="status-filter" class="filter-label">Status</label>
-                <select id="status-filter" class="form-select filter-select" name="status" aria-label="Filter by status">
+                <select id="status-filter" class="form-select filter-select" name="status" aria-label="Filter by status" onchange="window.location.href='/not-implemented'">
                     <option value="all" {{if eq .Filter "all"}}selected{{end}}>All Invites</option>
                     <option value="draft" {{if eq .Filter "draft"}}selected{{end}}>Draft</option>
                     <option value="sent" {{if eq .Filter "sent"}}selected{{end}}>Sent</option>
@@ -86,6 +86,7 @@
                     aria-label="Search invites by name or email"
                     name="search"
                     value="{{.Search}}"
+                    onfocus="window.location.href='/not-implemented'"
                 >
             </div>
         </div>
@@ -103,7 +104,7 @@
                 <button class="btn btn-secondary btn-sm" id="bulk-revoke" disabled>Revoke Selected</button>
             </div>
             <div class="invite-actions-right">
-                <button class="btn btn-secondary export-btn" aria-label="Export invites">Export</button>
+                <button class="btn btn-secondary export-btn" aria-label="Export invites" onclick="window.location.href='/not-implemented'">Export</button>
                 <button class="btn btn-primary create-btn" data-modal-trigger="create-modal" aria-label="Add guest">Add Guest</button>
                 <button class="btn btn-primary import-btn" data-modal-trigger="import-modal" aria-label="Import guest list">Import Guest List</button>
             </div>

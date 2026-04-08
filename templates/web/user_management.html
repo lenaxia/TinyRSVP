@@ -69,7 +69,7 @@
                     </td>
                     <td>
                         <div class="action-buttons">
-                            <button class="btn btn-sm btn-secondary" onclick="editUser({{.ID}})">Edit</button>
+                            <button class="btn btn-sm btn-secondary" onclick="window.location.href='/not-implemented'">Edit</button>
                             <form class="delete-form" method="POST" action="/api/users/{{.ID}}" style="display: inline;">
                                 <input type="hidden" name="_method" value="DELETE">
                                 <input type="hidden" name="csrf_token" value="{{$.CSRFToken}}">
@@ -97,9 +97,4 @@
 
 {{define "js-extra"}}
     <script src="/static/js/csrf.js"></script>
-    <script>
-        function editUser(userId) {
-            alert('Edit user functionality coming soon');
-        }
-    </script>
 {{end}}
