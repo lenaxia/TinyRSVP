@@ -86,6 +86,7 @@ jobs:
         with:
           model: openai/${{ vars.OPENAI_MODEL }}
           use_github_token: "true"
+          token: ${{ secrets.GITHUB_TOKEN }}
           share: "false"
           prompt: |
             You are an AI assistant that analyzes Renovatebot pull requests for TinyRSVP, a self-hosted RSVP and event invitation platform built in Go (Chi router, SQLite/PostgreSQL, OIDC + Forward Auth, Docker-first deployment).
