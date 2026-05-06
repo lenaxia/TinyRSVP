@@ -112,7 +112,7 @@ services:
   # Traefik - Reverse Proxy (Optional, for advanced testing)
   # ============================================================================
   traefik:
-    image: traefik:v3.3
+    image: traefik:v3.7
     container_name: traefik-test
     command:
       - --api.insecure=true
