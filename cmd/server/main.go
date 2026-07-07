@@ -644,6 +644,21 @@ func main() {
 		json.NewEncoder(w).Encode(status)
 	})
 
+	metricsTemplates, err := template.New("admin_metrics.html").Funcs(funcMap).ParseFiles(
+		"templates/web/partials/base.html",
+		"templates/web/partials/navigation.html",
+		"templates/web/partials/page_header.html",
+		"templates/web/admin_metrics.html",
+	)
+	if err != nil {
+		logger.Error("Failed to load admin metrics templates", "error", err)
+		os.Exit(1)
+	}
+	metricsDataSource := handlers.NewMetricsDataSource(adminService, emailHealthChecker, database)
+	adminMetricsHandler := handlers.NewMetricsHandler(metricsDataSource)
+	adminMetricsHandler.SetTemplates(metricsTemplates)
+	logger.Info("Admin metrics templates loaded successfully")
+
 	router := handlers.NewRouter(&handlers.RouterHandlers{
 		LoginHandler:             loginHandler,
 		CallbackHandler:          callbackHandler,
@@ -673,6 +688,7 @@ func main() {
 		AdminDashboardHandler:    adminDashboardHandler,
 		UserManagementHandler:    userManagementHandler,
 		SettingsHandler:          settingsHandler,
+		AdminMetricsHandler:      adminMetricsHandler,
 		TemplateHandlers:         templateHandlers,
 		TemplateEditorHandlers:   templateEditorHandlers,
 		CustomizationHandlers:    customizationHandlers,
