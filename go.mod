@@ -2,15 +2,17 @@ module github.com/lenaxia/tinyrsvp
 
 go 1.24.0
 
-toolchain go1.24.11
+toolchain go1.26.5
 
 require (
+	github.com/chromedp/cdproto v0.0.0-20250724212937-08a3db8b4327
 	github.com/chromedp/chromedp v0.14.2
 	github.com/coreos/go-oidc/v3 v3.17.0
 	github.com/go-chi/chi/v5 v5.0.11
 	github.com/go-jose/go-jose/v4 v4.1.3
 	github.com/golang-migrate/migrate/v4 v4.19.1
 	github.com/mattn/go-sqlite3 v1.14.22
+	github.com/mxschmitt/playwright-go v0.6100.0
 	github.com/prometheus/client_golang v1.23.2
 	go.uber.org/mock v0.6.0
 	golang.org/x/oauth2 v0.34.0
@@ -19,7 +21,6 @@ require (
 require (
 	github.com/beorn7/perks v1.0.1 // indirect
 	github.com/cespare/xxhash/v2 v2.3.0 // indirect
-	github.com/chromedp/cdproto v0.0.0-20250724212937-08a3db8b4327 // indirect
 	github.com/chromedp/sysutil v1.1.0 // indirect
 	github.com/deckarep/golang-set/v2 v2.8.0 // indirect
 	github.com/go-jose/go-jose/v3 v3.0.5 // indirect
@@ -30,7 +31,6 @@ require (
 	github.com/gobwas/ws v1.4.0 // indirect
 	github.com/kr/text v0.2.0 // indirect
 	github.com/munnerz/goautoneg v0.0.0-20191010083416-a7dc8b61c822 // indirect
-	github.com/mxschmitt/playwright-go v0.6100.0 // indirect
 	github.com/prometheus/client_model v0.6.2 // indirect
 	github.com/prometheus/common v0.66.1 // indirect
 	github.com/prometheus/procfs v0.16.1 // indirect
