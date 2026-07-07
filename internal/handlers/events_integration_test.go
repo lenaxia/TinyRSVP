@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -38,13 +39,14 @@ func TestEventHandlers_FullCRUDFlow_Integration(t *testing.T) {
 		t.Fatalf("Failed to create manager: %v", err)
 	}
 
-	createReq := `{
+	futureTime := time.Now().Add(24 * time.Hour).Format(time.RFC3339)
+	createReq := fmt.Sprintf(`{
 		"title": "Integration Test Event",
 		"description": "Testing full CRUD flow",
-		"start_time": "2026-06-15T14:00:00-07:00",
+		"start_time": "%s",
 		"timezone": "America/Los_Angeles",
 		"max_plus_ones": 2
-	}`
+	}`, futureTime)
 
 	req := httptest.NewRequest(http.MethodPost, "/api/events", bytes.NewReader([]byte(createReq)))
 	req.Header.Set("Content-Type", "application/json")
