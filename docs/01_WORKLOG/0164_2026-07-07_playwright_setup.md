@@ -61,8 +61,9 @@ Currently wires only what's needed for the PoC tests. The full migration (all 5 
 ### Unhappy-path (added per review feedback)
 
 - `TestDashboard_UnauthenticatedRedirect` — no `X-Test-User-ID` header → redirect to `/login`
-- `TestAdminSettings_NonExistentRedirect` — admin visiting non-existent `/admin/nonexistent` gets 404 (not a server error)
-- `TestDashboard_NavigationTimeoutHandled` — test harness gracefully handles a slow-load scenario
+- `TestNonExistentAdminPage_Returns404` — admin visiting non-existent `/admin/nonexistent` gets 404 (not a server error)
+- `TestDashboard_RendersOnEmptyDatabase` — empty DB shows zero counts and "No Recent Activity" empty state
+- `TestStaticAssets_Load` — every stylesheet link returns HTTP < 400 (catches broken static file server wiring)
 
 ## Status
 
