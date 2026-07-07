@@ -196,7 +196,7 @@ func (r *inviteRepository) CreateBatch(ctx context.Context, invites []*models.In
 func (r *inviteRepository) GetByID(ctx context.Context, id int64) (*models.Invite, error) {
 	query := `
 		SELECT id, event_id, name, email, token, token_hash, max_plus_ones, status,
-			sent_at, viewed_at, unsubscribed, email_invalid,
+			sent_at, viewed_at, revocation_reason, unsubscribed, email_invalid,
 			created_at, updated_at, expires_at
 		FROM invites
 		WHERE id = ?
@@ -214,6 +214,7 @@ func (r *inviteRepository) GetByID(ctx context.Context, id int64) (*models.Invit
 		&invite.Status,
 		&invite.SentAt,
 		&invite.ViewedAt,
+		&invite.RevocationReason,
 		&invite.Unsubscribed,
 		&invite.EmailInvalid,
 		&invite.CreatedAt,
@@ -237,7 +238,7 @@ func (r *inviteRepository) GetByID(ctx context.Context, id int64) (*models.Invit
 func (r *inviteRepository) GetByTokenHash(ctx context.Context, tokenHash string) (*models.Invite, error) {
 	query := `
 		SELECT id, event_id, name, email, token, token_hash, max_plus_ones, status,
-			sent_at, viewed_at, unsubscribed, email_invalid,
+			sent_at, viewed_at, revocation_reason, unsubscribed, email_invalid,
 			created_at, updated_at, expires_at
 		FROM invites
 		WHERE token_hash = ?
@@ -255,6 +256,7 @@ func (r *inviteRepository) GetByTokenHash(ctx context.Context, tokenHash string)
 		&invite.Status,
 		&invite.SentAt,
 		&invite.ViewedAt,
+		&invite.RevocationReason,
 		&invite.Unsubscribed,
 		&invite.EmailInvalid,
 		&invite.CreatedAt,
@@ -610,7 +612,7 @@ func (r *inviteRepository) GetByEventIDs(ctx context.Context, eventIDs []int64) 
 
 	query := fmt.Sprintf(`
 		SELECT id, event_id, name, email, token, token_hash, max_plus_ones, status,
-			sent_at, viewed_at, unsubscribed, email_invalid,
+			sent_at, viewed_at, revocation_reason, unsubscribed, email_invalid,
 			created_at, updated_at, expires_at
 		FROM invites
 		WHERE event_id IN (%s)
@@ -637,6 +639,7 @@ func (r *inviteRepository) GetByEventIDs(ctx context.Context, eventIDs []int64) 
 			&invite.Status,
 			&invite.SentAt,
 			&invite.ViewedAt,
+			&invite.RevocationReason,
 			&invite.Unsubscribed,
 			&invite.EmailInvalid,
 			&invite.CreatedAt,

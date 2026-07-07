@@ -71,6 +71,8 @@ type RouterHandlers struct {
 
 	AuthMiddleware AuthMiddlewareInterface
 
+	MetricsMiddleware func(http.Handler) http.Handler
+
 	StaticFileServer http.Handler
 
 	Logger *log.Logger
@@ -246,6 +248,10 @@ func NewRouter(handlers *RouterHandlers) *Router {
 			AdminLimit:         3000,
 		})(next)
 	})
+
+	if handlers.MetricsMiddleware != nil {
+		r.Use(handlers.MetricsMiddleware)
+	}
 
 	r.NotFound(NotFoundHandler)
 	r.MethodNotAllowed(MethodNotAllowedHandler)

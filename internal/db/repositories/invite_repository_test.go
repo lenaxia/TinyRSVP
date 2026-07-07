@@ -545,6 +545,61 @@ func TestInviteRepository_Update(t *testing.T) {
 	}
 }
 
+func TestInviteRepository_RevocationReasonRoundTrip(t *testing.T) {
+	database := setupInviteTestDB(t)
+	defer database.Close()
+
+	repo := NewInviteRepository(database)
+
+	email := "revoke@example.com"
+	invite := &models.Invite{
+		EventID:     1,
+		Email:       &email,
+		TokenHash:   strings.Repeat("b", 43),
+		MaxPlusOnes: 1,
+		Status:      models.InviteStatusSent,
+		ExpiresAt:   time.Now().Add(30 * 24 * time.Hour),
+	}
+
+	if err := repo.Create(context.Background(), invite); err != nil {
+		t.Fatalf("Failed to create invite: %v", err)
+	}
+
+	reason := "User requested cancellation"
+	invite.Status = models.InviteStatusRevoked
+	invite.RevocationReason = &reason
+
+	if err := repo.Update(context.Background(), invite); err != nil {
+		t.Fatalf("Failed to revoke invite: %v", err)
+	}
+
+	retrieved, err := repo.GetByID(context.Background(), invite.ID)
+	if err != nil {
+		t.Fatalf("Failed to retrieve revoked invite: %v", err)
+	}
+
+	if retrieved.Status != models.InviteStatusRevoked {
+		t.Errorf("Status = %s, want %s", retrieved.Status, models.InviteStatusRevoked)
+	}
+
+	if retrieved.RevocationReason == nil {
+		t.Fatal("RevocationReason is nil after read-back; SELECT must include revocation_reason")
+	}
+
+	if *retrieved.RevocationReason != reason {
+		t.Errorf("RevocationReason = %q, want %q", *retrieved.RevocationReason, reason)
+	}
+
+	retrievedByHash, err := repo.GetByTokenHash(context.Background(), invite.TokenHash)
+	if err != nil {
+		t.Fatalf("Failed to retrieve by token hash: %v", err)
+	}
+
+	if retrievedByHash.RevocationReason == nil || *retrievedByHash.RevocationReason != reason {
+		t.Errorf("GetByTokenHash RevocationReason = %v, want %q", retrievedByHash.RevocationReason, reason)
+	}
+}
+
 func TestInviteRepository_Delete(t *testing.T) {
 	database := setupInviteTestDB(t)
 	defer database.Close()
