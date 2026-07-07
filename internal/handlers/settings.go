@@ -193,10 +193,3 @@ func (h *SettingsHandler) renderPage(w http.ResponseWriter, status int, data *Se
 <body><h1>Admin Settings</h1><p>Template not loaded.</p></body>
 </html>`)
 }
-
-func redactedIfSet(set bool) string {
-	if set {
-		return redactedPlaceholder
-	}
-	return ""
-}

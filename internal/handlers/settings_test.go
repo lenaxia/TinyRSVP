@@ -71,15 +71,14 @@ func TestConfigToSettingsView_RedactsSecrets(t *testing.T) {
 		t.Errorf("OIDCClientID = %q, want my-client-id", view.Auth.OIDCClientID)
 	}
 
-	nonSecretFields := []string{
-		view.Server.Host,
-		view.Database.Path,
-		view.Email.SMTPHost,
-		view.Storage.Type,
+	nonSecretFields := map[string]string{
+		"Server.Host":    view.Server.Host,
+		"Database.Path":  view.Database.Path,
+		"Email.SMTPHost": view.Email.SMTPHost,
 	}
-	for _, v := range nonSecretFields {
-		if v == "" && v != "" {
-			t.Error("non-secret field should be populated")
+	for name, v := range nonSecretFields {
+		if v == "" {
+			t.Errorf("%s should be populated, got empty", name)
 		}
 	}
 }
