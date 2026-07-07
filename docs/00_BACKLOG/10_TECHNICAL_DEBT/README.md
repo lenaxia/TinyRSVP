@@ -29,6 +29,10 @@ Epic 10 is reserved for technical debt, improvements, and issues that don't fit 
 - [10_STORY_06_oidc_return_url.md](10_STORY_06_oidc_return_url.md) - Return URL preservation in OIDC flow _(implemented via short-lived cookie; 8 tests added)_
 - [10_STORY_09_event_filtering_sorting.md](10_STORY_09_event_filtering_sorting.md) - Event list filtering and sorting _(code-verified: handler + template both support status filter)_
 - [10_STORY_12_theme_switching.md](10_STORY_12_theme_switching.md) - Light/dark theme switching _(code-verified: `theme_controller.js` + `theme_toggle.css` + toggle button implemented)_
+- [10_STORY_13_admin_theme_integration.md](10_STORY_13_admin_theme_integration.md) - Admin template theme integration _(verified 2026-07-07: admin_dashboard.html extends base.html which loads variables.css/theme_toggle.css/theme_controller.js at base.html:29,42,51)_
+- [10_STORY_14_rsvp_summary_template_fix.md](10_STORY_14_rsvp_summary_template_fix.md) - RSVP summary template structure fix _(verified 2026-07-07: rsvp_summary.html uses `{{template "base" .}}`)_
+- [10_STORY_15_auth_test_expectations.md](10_STORY_15_auth_test_expectations.md) - Auth test expectations fix _(verified 2026-07-07: internal/auth tests pass)_
+- [10_STORY_16_auth_test_compilation.md](10_STORY_16_auth_test_compilation.md) - Auth test compilation fix _(verified 2026-07-07: internal/auth tests compile and pass)_
 - **10_STORY_18** - `MockService` removed from production `internal/email/service.go`; generated `MockEmailService` lives at `internal/testutil/mocks/services/mock_email_service.go` _(verified 2026-07-07; README example updated)_
 - **10_STORY_19** - Template editor wired into router via `TemplateEditorHandlers.RegisterRoutes` at `internal/handlers/router.go:559`; constructed and templated in `cmd/server/main.go:571-572` _(verified 2026-07-07)_
 - **10_STORY_20** - Invite email renders `models.TemplateTypeInviteEmail` at `internal/invites/service.go:308` _(verified 2026-07-07)_
@@ -43,10 +47,6 @@ Epic 10 is reserved for technical debt, improvements, and issues that don't fit 
 - [10_STORY_08_dashboard_clickable_events.md](10_STORY_08_dashboard_clickable_events.md) - Dashboard recent events clickable links _(not implemented: `ActivityItem` struct has no EventID or URL field; dashboard activity items are plain text)_
 - [10_STORY_10_admin_settings_page.md](10_STORY_10_admin_settings_page.md) - Admin settings page _(not implemented: no template, no route in router.go)_
 - [10_STORY_11_admin_metrics_dashboard.md](10_STORY_11_admin_metrics_dashboard.md) - Admin metrics dashboard _(not implemented)_
-- [10_STORY_13_admin_theme_integration.md](10_STORY_13_admin_theme_integration.md) - Admin template theme integration
-- [10_STORY_14_rsvp_summary_template_fix.md](10_STORY_14_rsvp_summary_template_fix.md) - RSVP summary template structure fix
-- [10_STORY_15_auth_test_expectations.md](10_STORY_15_auth_test_expectations.md) - Auth test expectations fix
-- [10_STORY_16_auth_test_compilation.md](10_STORY_16_auth_test_compilation.md) - Auth test compilation fix
 
 ### Deferred to Epic 09 (Security)
 - **10_STORY_17**: `X-Test-User-ID` auth bypass in `internal/middleware/rbac.go:16` — deferred per Epic 09 pre-finding; intentionally left in place for now (UX tests depend on it)
