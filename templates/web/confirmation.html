@@ -25,7 +25,7 @@
     <script src="/static/js/theme_controller.js"></script>
     <div class="rsvp-page">
         <div class="rsvp-container">
-            <main id="main-content" role="main">
+            <main id="main-content" role="main" aria-label="Main content">
             {{if .ErrorMessage}}
             <section class="confirmation-error" role="alert">
                 <h1 class="confirmation-error-title">Unable to Load Confirmation</h1>
@@ -121,5 +121,9 @@
             </main>
         </div>
     </div>
+    <script src="/static/js/loading_states.js"></script>
+    <script src="/static/js/keyboard_navigation.js"></script>
+    <script src="/static/js/screen_reader.js"></script>
+    <script src="/static/js/focus_management.js"></script>
 </body>
 </html>

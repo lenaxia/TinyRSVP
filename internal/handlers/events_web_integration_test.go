@@ -114,10 +114,12 @@ func TestEventWebHandlers_FullWebUIFlow_Integration(t *testing.T) {
 		t.Error("CSRF token not injected into form")
 	}
 
+	futureTime := time.Now().Add(24 * time.Hour).Format("2006-01-02T15:04")
+
 	formData := url.Values{
 		"title":         []string{"Integration Test Event"},
 		"description":   []string{"Testing full web UI flow"},
-		"start_time":    []string{"2026-06-15T14:00"},
+		"start_time":    []string{futureTime},
 		"timezone":      []string{"America/Los_Angeles"},
 		"location":      []string{"Test Location"},
 		"max_plus_ones": []string{"2"},
