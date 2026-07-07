@@ -546,6 +546,20 @@ func main() {
 	adminDashboardHandler.SetTemplates(adminDashboardTemplates)
 	logger.Info("Admin dashboard templates loaded successfully")
 
+	adminSettingsTemplates, err := template.New("admin_settings.html").Funcs(funcMap).ParseFiles(
+		"templates/web/partials/base.html",
+		"templates/web/partials/navigation.html",
+		"templates/web/partials/page_header.html",
+		"templates/web/admin_settings.html",
+	)
+	if err != nil {
+		logger.Error("Failed to load admin settings templates", "error", err)
+		os.Exit(1)
+	}
+	settingsHandler := handlers.NewSettingsHandler(cfg)
+	settingsHandler.SetTemplates(adminSettingsTemplates)
+	logger.Info("Admin settings templates loaded successfully")
+
 	userManagementTemplates, err := template.New("user_management.html").ParseFiles(
 		"templates/web/partials/base.html",
 		"templates/web/partials/navigation.html",
@@ -658,6 +672,7 @@ func main() {
 		UserHandler:              userHandler,
 		AdminDashboardHandler:    adminDashboardHandler,
 		UserManagementHandler:    userManagementHandler,
+		SettingsHandler:          settingsHandler,
 		TemplateHandlers:         templateHandlers,
 		TemplateEditorHandlers:   templateEditorHandlers,
 		CustomizationHandlers:    customizationHandlers,

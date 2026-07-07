@@ -1,0 +1,98 @@
+{{template "base" .}}
+
+{{define "title"}}Admin Settings - TinyRSVP{{end}}
+
+{{define "main-class"}}admin-settings{{end}}
+
+{{define "content"}}
+{{template "page-header" dict "Title" "System Settings" "Actions" (printf "<span>%s (%s)</span>" .User.Name .User.Role)}}
+
+<div class="settings-container">
+    <p class="settings-read-only-notice">
+        These settings are loaded from environment variables at startup and are read-only.
+    </p>
+
+    <section class="settings-section">
+        <h2 class="settings-section-title">Server</h2>
+        <dl class="settings-grid">
+            <dt>Host</dt><dd>{{.Settings.Server.Host}}</dd>
+            <dt>Port</dt><dd>{{.Settings.Server.Port}}</dd>
+            <dt>Base URL</dt><dd>{{.Settings.Server.BaseURL}}</dd>
+            <dt>Read Timeout</dt><dd>{{.Settings.Server.ReadTimeout}}</dd>
+            <dt>Write Timeout</dt><dd>{{.Settings.Server.WriteTimeout}}</dd>
+            <dt>Idle Timeout</dt><dd>{{.Settings.Server.IdleTimeout}}</dd>
+        </dl>
+    </section>
+
+    <section class="settings-section">
+        <h2 class="settings-section-title">Database</h2>
+        <dl class="settings-grid">
+            <dt>Type</dt><dd>{{.Settings.Database.Type}}</dd>
+            {{if eq .Settings.Database.Type "sqlite"}}
+            <dt>Path</dt><dd>{{.Settings.Database.Path}}</dd>
+            {{end}}
+            <dt>Max Open Connections</dt><dd>{{.Settings.Database.MaxOpenConns}}</dd>
+            <dt>Max Idle Connections</dt><dd>{{.Settings.Database.MaxIdleConns}}</dd>
+        </dl>
+    </section>
+
+    <section class="settings-section">
+        <h2 class="settings-section-title">Authentication</h2>
+        <dl class="settings-grid">
+            <dt>Method</dt><dd>{{.Settings.Auth.Method}}</dd>
+            {{if .Settings.Auth.OIDCEnabled}}
+            <dt>OIDC Issuer</dt><dd>{{.Settings.Auth.OIDCIssuerURL}}</dd>
+            <dt>OIDC Client ID</dt><dd>{{.Settings.Auth.OIDCClientID}}</dd>
+            <dt>OIDC Redirect URL</dt><dd>{{.Settings.Auth.OIDCRedirectURL}}</dd>
+            {{end}}
+            {{if .Settings.Auth.ForwardAuthEnabled}}
+            <dt>Forward Auth</dt><dd>Enabled</dd>
+            {{end}}
+        </dl>
+    </section>
+
+    <section class="settings-section">
+        <h2 class="settings-section-title">Email</h2>
+        <dl class="settings-grid">
+            <dt>SMTP Host</dt><dd>{{.Settings.Email.SMTPHost}}</dd>
+            <dt>SMTP Port</dt><dd>{{.Settings.Email.SMTPPort}}</dd>
+            <dt>SMTP User</dt><dd>{{.Settings.Email.SMTPUser}}</dd>
+            <dt>SMTP Password</dt><dd>{{if .Settings.Email.SMTPPasswordSet}}••••••••{{else}}<em>not set</em>{{end}}</dd>
+            <dt>From Email</dt><dd>{{.Settings.Email.FromEmail}}</dd>
+            <dt>From Name</dt><dd>{{.Settings.Email.FromName}}</dd>
+        </dl>
+    </section>
+
+    <section class="settings-section">
+        <h2 class="settings-section-title">Storage</h2>
+        <dl class="settings-grid">
+            <dt>Type</dt><dd>{{.Settings.Storage.Type}}</dd>
+            {{if eq .Settings.Storage.Type "local"}}
+            <dt>Local Path</dt><dd>{{.Settings.Storage.LocalPath}}</dd>
+            {{end}}
+            {{if eq .Settings.Storage.Type "s3"}}
+            <dt>S3 Bucket</dt><dd>{{.Settings.Storage.S3Bucket}}</dd>
+            <dt>S3 Region</dt><dd>{{.Settings.Storage.S3Region}}</dd>
+            <dt>S3 Endpoint</dt><dd>{{.Settings.Storage.S3Endpoint}}</dd>
+            {{end}}
+        </dl>
+    </section>
+
+    <section class="settings-section">
+        <h2 class="settings-section-title">Security</h2>
+        <dl class="settings-grid">
+            <dt>Session Duration</dt><dd>{{.Settings.Security.SessionDuration}}</dd>
+            <dt>Token Expiry</dt><dd>{{.Settings.Security.TokenExpiry}}</dd>
+            <dt>HMAC Key</dt><dd>{{if .Settings.Security.HMACKeySet}}••••••••{{else}}<em>not set</em>{{end}}</dd>
+        </dl>
+    </section>
+
+    <section class="settings-section">
+        <h2 class="settings-section-title">Token</h2>
+        <dl class="settings-grid">
+            <dt>Hashing Enabled</dt><dd>{{if .Settings.Token.HashingEnabled}}Yes{{else}}No{{end}}</dd>
+            <dt>Token Secret</dt><dd>{{if .Settings.Token.SecretSet}}••••••••{{else}}<em>not set</em>{{end}}</dd>
+        </dl>
+    </section>
+</div>
+{{end}}
