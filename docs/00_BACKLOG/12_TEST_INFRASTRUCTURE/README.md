@@ -53,7 +53,7 @@ This directory contains all user stories for Epic 12: Test Infrastructure Modern
 | Story | Title | Effort | Status |
 |-------|-------|--------|--------|
 | [14](12_STORY_14_cleanup_old_mocks.md) | Remove Manual Mocks and Duplicates | 1 hour | ❌ Not Done — ~67 local mock struct definitions remain in test files |
-| [15](12_STORY_15_testing_docs.md) | Create TESTING.md | 1 hour | ❌ Not Done — no `TESTING.md` at repo root |
+| [15](12_STORY_15_testing_docs.md) | Create TESTING.md | 1 hour | ✅ Done — `docs/TESTING.md` exists; mock table verified against generated code; UX tests + running-tests sections expanded |
 | [16](12_STORY_16_testutil_readme.md) | Document testutil Package | 30 min | ✅ Done — `internal/testutil/README.md` exists |
 | [17](12_STORY_17_update_llm_guide.md) | Update README-LLM with Testing | 30 min | ✅ Done — `README-LLM.md` has testutil/mockgen section at line 890 |
 
