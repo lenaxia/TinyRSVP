@@ -77,6 +77,10 @@ func (m *mockRSVPEventRepository) List(ctx context.Context, filters repositories
 	return nil, nil
 }
 
+func (m *mockRSVPEventRepository) ListWithStats(ctx context.Context, filters repositories.ListFilters) ([]*models.EventWithStats, error) {
+	return nil, nil
+}
+
 func (m *mockRSVPEventRepository) GetByStatus(ctx context.Context, status models.EventStatus) ([]*models.Event, error) {
 	return nil, nil
 }

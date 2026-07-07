@@ -104,6 +104,24 @@
                         </time>
                     </div>
                 </div>
+
+                <div class="event-card-stats" role="list">
+                    <span class="event-card-stat" role="listitem">
+                        <span class="event-card-meta-icon" aria-hidden="true">✉️</span>
+                        <span class="event-card-stat-value">{{.InviteCount}}</span>
+                        <span>Invites</span>
+                    </span>
+                    <span class="event-card-stat" role="listitem">
+                        <span class="event-card-meta-icon" aria-hidden="true">📝</span>
+                        <span class="event-card-stat-value">{{.RSVPCount}}</span>
+                        <span>RSVPs</span>
+                    </span>
+                    <span class="event-card-stat" role="listitem">
+                        <span class="event-card-meta-icon" aria-hidden="true">✅</span>
+                        <span class="event-card-stat-value">{{.AcceptCount}}</span>
+                        <span>Accepted</span>
+                    </span>
+                </div>
             </div>
 
             <footer class="event-card-footer">

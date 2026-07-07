@@ -219,6 +219,21 @@ func (mr *MockEventRepositoryMockRecorder) List(ctx, filters any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "List", reflect.TypeOf((*MockEventRepository)(nil).List), ctx, filters)
 }
 
+// ListWithStats mocks base method.
+func (m *MockEventRepository) ListWithStats(ctx context.Context, filters repositories.ListFilters) ([]*models.EventWithStats, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ListWithStats", ctx, filters)
+	ret0, _ := ret[0].([]*models.EventWithStats)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ListWithStats indicates an expected call of ListWithStats.
+func (mr *MockEventRepositoryMockRecorder) ListWithStats(ctx, filters any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListWithStats", reflect.TypeOf((*MockEventRepository)(nil).ListWithStats), ctx, filters)
+}
+
 // Update mocks base method.
 func (m *MockEventRepository) Update(ctx context.Context, event *models.Event) error {
 	m.ctrl.T.Helper()

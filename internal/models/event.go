@@ -39,3 +39,10 @@ type Event struct {
 	CreatedAt              time.Time   `db:"created_at" json:"created_at"`
 	UpdatedAt              time.Time   `db:"updated_at" json:"updated_at"`
 }
+
+type EventWithStats struct {
+	Event
+	InviteCount int `db:"invite_count" json:"invite_count"`
+	RSVPCount   int `db:"rsvp_count" json:"rsvp_count"`
+	AcceptCount int `db:"accept_count" json:"accept_count"`
+}

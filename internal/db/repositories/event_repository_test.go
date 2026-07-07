@@ -1362,3 +1362,115 @@ func TestEventRepository_CountEvents_Empty(t *testing.T) {
 		t.Errorf("CountEvents() = %d, want 0", count)
 	}
 }
+
+func TestEventRepository_ListWithStats(t *testing.T) {
+	database := setupEventTestDB(t)
+	defer database.Close()
+
+	repo := NewEventRepository(database)
+	ctx := context.Background()
+
+	event := &models.Event{
+		Title:       "Stats Event",
+		StartTime:   time.Now().Add(24 * time.Hour),
+		Timezone:    "America/Los_Angeles",
+		Status:      models.EventStatusPublished,
+		CreatedBy:   1,
+		MaxPlusOnes: 0,
+	}
+	if err := repo.Create(ctx, event); err != nil {
+		t.Fatalf("Failed to create event: %v", err)
+	}
+
+	emptyEvent := &models.Event{
+		Title:       "Empty Event",
+		StartTime:   time.Now().Add(48 * time.Hour),
+		Timezone:    "America/Los_Angeles",
+		Status:      models.EventStatusDraft,
+		CreatedBy:   1,
+		MaxPlusOnes: 0,
+	}
+	if err := repo.Create(ctx, emptyEvent); err != nil {
+		t.Fatalf("Failed to create empty event: %v", err)
+	}
+
+	_, err := database.Exec(ctx, `
+		INSERT INTO invites (event_id, email, token, token_hash, max_plus_ones, status, created_at, updated_at, expires_at)
+		VALUES
+		  (?, 'alice@example.com', 'tok1', 'hash1', 0, 'sent', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP + 86400),
+		  (?, 'bob@example.com',   'tok2', 'hash2', 0, 'sent', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP + 86400),
+		  (?, 'carol@example.com', 'tok3', 'hash3', 0, 'revoked', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP + 86400)
+	`, event.ID, event.ID, event.ID)
+	if err != nil {
+		t.Fatalf("Failed to create invites: %v", err)
+	}
+
+	_, err = database.Exec(ctx, `
+		INSERT INTO rsvps (invite_id, response, plus_ones, created_at, updated_at)
+		VALUES
+		  (1, 'yes',    0, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+		  (2, 'no',     0, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+	`)
+	if err != nil {
+		t.Fatalf("Failed to create rsvps: %v", err)
+	}
+
+	results, err := repo.ListWithStats(ctx, ListFilters{})
+	if err != nil {
+		t.Fatalf("ListWithStats failed: %v", err)
+	}
+
+	if len(results) != 2 {
+		t.Fatalf("Expected 2 events with stats, got %d", len(results))
+	}
+
+	var statsEvent, emptyStatsEvent *models.EventWithStats
+	for _, r := range results {
+		if r.ID == event.ID {
+			statsEvent = r
+		}
+		if r.ID == emptyEvent.ID {
+			emptyStatsEvent = r
+		}
+	}
+
+	if statsEvent == nil {
+		t.Fatal("Stats event not found in results")
+	}
+
+	if statsEvent.InviteCount != 2 {
+		t.Errorf("InviteCount = %d, want 2 (3 invites - 1 revoked)", statsEvent.InviteCount)
+	}
+
+	if statsEvent.RSVPCount != 2 {
+		t.Errorf("RSVPCount = %d, want 2", statsEvent.RSVPCount)
+	}
+
+	if statsEvent.AcceptCount != 1 {
+		t.Errorf("AcceptCount = %d, want 1 (only 1 'yes' response)", statsEvent.AcceptCount)
+	}
+
+	if statsEvent.Title != event.Title {
+		t.Errorf("Embedded event data wrong: Title = %q, want %q", statsEvent.Title, event.Title)
+	}
+
+	if emptyStatsEvent == nil {
+		t.Fatal("Empty stats event not found in results")
+	}
+
+	if emptyStatsEvent.InviteCount != 0 || emptyStatsEvent.RSVPCount != 0 || emptyStatsEvent.AcceptCount != 0 {
+		t.Errorf("Empty event stats should be zero: invites=%d rsvps=%d accepts=%d",
+			emptyStatsEvent.InviteCount, emptyStatsEvent.RSVPCount, emptyStatsEvent.AcceptCount)
+	}
+
+	filtered, err := repo.ListWithStats(ctx, ListFilters{
+		Status: statusPtr(models.EventStatusPublished),
+	})
+	if err != nil {
+		t.Fatalf("ListWithStats with filter failed: %v", err)
+	}
+
+	if len(filtered) != 1 {
+		t.Errorf("Status filter: expected 1 event, got %d", len(filtered))
+	}
+}
