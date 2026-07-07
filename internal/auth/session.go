@@ -14,8 +14,10 @@ import (
 )
 
 const (
-	SessionCookieName = "tinyrsvp_session"
-	SessionDuration   = 7 * 24 * time.Hour
+	SessionCookieName   = "tinyrsvp_session"
+	SessionDuration     = 7 * 24 * time.Hour
+	ReturnURLCookieName = "oidc_return_url"
+	ReturnURLMaxAge     = 10 * time.Minute
 )
 
 type sessionManager struct {

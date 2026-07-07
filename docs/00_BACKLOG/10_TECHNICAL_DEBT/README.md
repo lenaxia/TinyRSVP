@@ -26,6 +26,7 @@ Epic 10 is reserved for technical debt, improvements, and issues that don't fit 
 - [10_STORY_03_invite_management_ui.md](10_STORY_03_invite_management_ui.md) - Invite management UI with modals
 - [10_STORY_04_reduce_ui_padding.md](10_STORY_04_reduce_ui_padding.md) - Reduce excessive padding and spacing
 - [10_STORY_05_reusable_datetime_picker.md](10_STORY_05_reusable_datetime_picker.md) - Reusable datetime picker component
+- [10_STORY_06_oidc_return_url.md](10_STORY_06_oidc_return_url.md) - Return URL preservation in OIDC flow _(implemented via short-lived cookie; 8 tests added)_
 - [10_STORY_09_event_filtering_sorting.md](10_STORY_09_event_filtering_sorting.md) - Event list filtering and sorting _(code-verified: handler + template both support status filter)_
 - [10_STORY_12_theme_switching.md](10_STORY_12_theme_switching.md) - Light/dark theme switching _(code-verified: `theme_controller.js` + `theme_toggle.css` + toggle button implemented)_
 
@@ -33,7 +34,6 @@ Epic 10 is reserved for technical debt, improvements, and issues that don't fit 
 - _(none)_
 
 ### Planned
-- [10_STORY_06_oidc_return_url.md](10_STORY_06_oidc_return_url.md) - Return URL preservation in OIDC flow _(partial: `ValidateReturnURL` exists in `internal/auth/redirect.go` but not confirmed wired into OIDC login handler — needs verification)_
 - [10_STORY_07_event_list_stats.md](10_STORY_07_event_list_stats.md) - Event list stats display (invite/RSVP counts) _(not implemented: event list template has no InviteCount/RSVPCount fields)_
 - [10_STORY_08_dashboard_clickable_events.md](10_STORY_08_dashboard_clickable_events.md) - Dashboard recent events clickable links _(not implemented: `ActivityItem` struct has no EventID or URL field; dashboard activity items are plain text)_
 - [10_STORY_10_admin_settings_page.md](10_STORY_10_admin_settings_page.md) - Admin settings page _(not implemented: no template, no route in router.go)_
