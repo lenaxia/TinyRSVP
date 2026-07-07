@@ -64,6 +64,7 @@ type RouterHandlers struct {
 
 	AdminDashboardHandler AdminDashboardHandlerInterface
 	UserManagementHandler UserManagementHandlerInterface
+	SettingsHandler       SettingsHandlerInterface
 
 	CleanupHandler     http.Handler
 	EmailHealthHandler http.Handler
@@ -193,6 +194,10 @@ type AdminDashboardHandlerInterface interface {
 
 type UserManagementHandlerInterface interface {
 	UserManagementPage(w http.ResponseWriter, r *http.Request)
+}
+
+type SettingsHandlerInterface interface {
+	SettingsPage(w http.ResponseWriter, r *http.Request)
 }
 
 type AuthMiddlewareInterface interface {
@@ -352,6 +357,14 @@ func NewRouter(handlers *RouterHandlers) *Router {
 		r.Handle("/admin/users", handlers.AuthMiddleware.RequireAuth(
 			handlers.AuthMiddleware.RequireAdmin(
 				http.HandlerFunc(handlers.UserManagementHandler.UserManagementPage),
+			),
+		))
+	}
+
+	if handlers.SettingsHandler != nil && handlers.AuthMiddleware != nil {
+		r.Handle("/admin/settings", handlers.AuthMiddleware.RequireAuth(
+			handlers.AuthMiddleware.RequireAdmin(
+				http.HandlerFunc(handlers.SettingsHandler.SettingsPage),
 			),
 		))
 	}
