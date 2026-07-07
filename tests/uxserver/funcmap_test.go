@@ -179,3 +179,75 @@ func isValidTimezoneAbbr(s string) bool {
 		strings.Contains(upper, "EDT") ||
 		len(s) <= 5
 }
+
+func TestBuildTemplateFuncMap_Dict_DuplicateKeys(t *testing.T) {
+	funcMap := BuildTemplateFuncMap()
+	dictFn := funcMap["dict"].(func(...interface{}) (map[string]interface{}, error))
+
+	m, err := dictFn("k", "first", "k", "second", "k", "third")
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	if v, ok := m["k"]; !ok || v != "third" {
+		t.Errorf("duplicate key last-wins: got %v (ok=%v), want \"third\"", v, ok)
+	}
+	if len(m) != 1 {
+		t.Errorf("map length = %d, want 1 (single key after duplicates)", len(m))
+	}
+}
+
+func TestBuildTemplateFuncMap_Div_NegativeAndOverflow(t *testing.T) {
+	funcMap := BuildTemplateFuncMap()
+	divFn := funcMap["div"].(func(a, b int) int)
+
+	tests := []struct {
+		name string
+		a, b int
+		want int
+	}{
+		{"positive/positive", 10, 3, 3},
+		{"negative/positive", -10, 3, -3},
+		{"positive/negative", 10, -3, -3},
+		{"negative/negative", -10, -3, 3},
+		{"zero dividend", 0, 5, 0},
+		{"zero divisor", 5, 0, 0},
+		{"both zero", 0, 0, 0},
+		{"large dividend", 1 << 30, 2, 1 << 29},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := divFn(tt.a, tt.b); got != tt.want {
+				t.Errorf("div(%d, %d) = %d, want %d", tt.a, tt.b, got, tt.want)
+			}
+		})
+	}
+}
+
+func TestBuildTemplateFuncMap_TimezoneAbbr_KnownZones(t *testing.T) {
+	funcMap := BuildTemplateFuncMap()
+	tzFn := funcMap["timezoneAbbr"].(func(string) string)
+
+	knownZones := []string{
+		"America/Los_Angeles",
+		"America/New_York",
+		"America/Chicago",
+		"Europe/London",
+		"Europe/Paris",
+		"Asia/Tokyo",
+		"UTC",
+	}
+
+	for _, zone := range knownZones {
+		t.Run(zone, func(t *testing.T) {
+			result := tzFn(zone)
+			if result == "" {
+				t.Errorf("timezoneAbbr(%q) returned empty", zone)
+			}
+			if result == zone {
+				t.Logf("timezoneAbbr(%q) returned the input unchanged — timezone DB may be unavailable in this environment", zone)
+			}
+		})
+	}
+}
