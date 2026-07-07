@@ -131,12 +131,29 @@ rsvpService := rsvp.NewServiceWithEmail(
 
 ### Mock for Testing
 
+The `Service` interface has a generated gomock mock at
+`internal/testutil/mocks/services/mock_email_service.go`. Use it rather than
+defining a local mock struct:
+
 ```go
-mockEmail := &email.MockService{
-    SendConfirmationEmailFunc: func(ctx context.Context, rsvp *models.RSVP, invite *models.Invite, event *models.Event, answers []*models.RSVPAnswer) error {
-        return nil
-    },
-}
+import (
+    mocksvcs "github.com/lenaxia/tinyrsvp/internal/testutil/mocks/services"
+    "go.uber.org/mock/gomock"
+)
+
+ctrl := gomock.NewController(t)
+defer ctrl.Finish()
+
+mockEmail := mocksvcs.NewMockEmailService(ctrl)
+mockEmail.EXPECT().
+    SendConfirmationEmail(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
+    Return(nil)
+```
+
+Regenerate after changing the `Service` interface:
+
+```bash
+./scripts/generate_mocks.sh
 ```
 
 ## Queue Processor

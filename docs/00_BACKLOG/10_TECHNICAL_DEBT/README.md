@@ -29,6 +29,11 @@ Epic 10 is reserved for technical debt, improvements, and issues that don't fit 
 - [10_STORY_06_oidc_return_url.md](10_STORY_06_oidc_return_url.md) - Return URL preservation in OIDC flow _(implemented via short-lived cookie; 8 tests added)_
 - [10_STORY_09_event_filtering_sorting.md](10_STORY_09_event_filtering_sorting.md) - Event list filtering and sorting _(code-verified: handler + template both support status filter)_
 - [10_STORY_12_theme_switching.md](10_STORY_12_theme_switching.md) - Light/dark theme switching _(code-verified: `theme_controller.js` + `theme_toggle.css` + toggle button implemented)_
+- **10_STORY_18** - `MockService` removed from production `internal/email/service.go`; generated `MockEmailService` lives at `internal/testutil/mocks/services/mock_email_service.go` _(verified 2026-07-07; README example updated)_
+- **10_STORY_19** - Template editor wired into router via `TemplateEditorHandlers.RegisterRoutes` at `internal/handlers/router.go:559`; constructed and templated in `cmd/server/main.go:571-572` _(verified 2026-07-07)_
+- **10_STORY_20** - Invite email renders `models.TemplateTypeInviteEmail` at `internal/invites/service.go:308` _(verified 2026-07-07)_
+- **10_STORY_21** - Confirmation email uses `questionTexts map[int64]string` resolved from question IDs at `internal/email/confirmation_service.go:152` _(verified 2026-07-07)_
+- **10_STORY_22** - `templates/web/unsubscribe.html` registered in `rsvpPageTemplates` at `cmd/server/main.go:422`; rendered by `internal/handlers/rsvp.go:955` _(verified 2026-07-07)_
 
 ### In Progress
 - _(none)_
@@ -43,13 +48,8 @@ Epic 10 is reserved for technical debt, improvements, and issues that don't fit 
 - [10_STORY_15_auth_test_expectations.md](10_STORY_15_auth_test_expectations.md) - Auth test expectations fix
 - [10_STORY_16_auth_test_compilation.md](10_STORY_16_auth_test_compilation.md) - Auth test compilation fix
 
-### New Issues Added (2026-04-06 code validation)
-- **10_STORY_17**: Remove or gate `X-Test-User-ID` bypass in `internal/middleware/rbac.go:16` — move to Epic 09 if preferred
-- **10_STORY_18**: Fix `MockService` in production file — move `internal/email/service.go`'s `MockService` struct to `internal/testutil/mocks/services/`
-- **10_STORY_19**: Wire template editor (`internal/handlers/template_editor.go`) into router, or delete it
-- **10_STORY_20**: Fix invite email to render `TemplateTypeInviteEmail` instead of hardcoded plaintext (`internal/invites/service.go:275`) — move to Epic 05 if preferred
-- **10_STORY_21**: Fix confirmation email question names (`internal/email/confirmation_service.go:157`) — move to Epic 05 if preferred
-- **10_STORY_22**: Fix unsubscribe page — add `templates/web/unsubscribe.html` to rsvpPageTemplates in `main.go` — move to Epic 05 if preferred
+### Deferred to Epic 09 (Security)
+- **10_STORY_17**: `X-Test-User-ID` auth bypass in `internal/middleware/rbac.go:16` — deferred per Epic 09 pre-finding; intentionally left in place for now (UX tests depend on it)
 
 ### Analysis Documents
 - [10_ANALYSIS_image_templates_wysiwyg.md](10_ANALYSIS_image_templates_wysiwyg.md) - Image templates & WYSIWYG editor analysis
