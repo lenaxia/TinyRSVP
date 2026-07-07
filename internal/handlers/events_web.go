@@ -32,6 +32,7 @@ type EventListPageData struct {
 	Events     []*models.Event
 	Total      int
 	Page       int
+	PageSize   int
 	Filter     string
 	Sort       string
 	Error      string
@@ -122,6 +123,7 @@ func (h *EventWebHandlers) ListEventsPage(w http.ResponseWriter, r *http.Request
 		Events:     eventList,
 		Total:      len(eventList),
 		Page:       page,
+		PageSize:   limit,
 		Filter:     r.URL.Query().Get("status"),
 		Sort:       r.URL.Query().Get("sort"),
 	}

@@ -116,7 +116,7 @@
         {{end}}
     </section>
 
-    {{if gt .Total 10}}
+    {{if and (gt .Total 0) (gt .Total .PageSize)}}
     <nav class="event-pagination" aria-label="Pagination">
         <ul class="pagination">
             {{if gt .Page 1}}
@@ -132,7 +132,7 @@
             {{end}}
 
             {{$currentPage := .Page}}
-            {{$totalPages := div (add .Total 9) 10}}
+            {{$totalPages := div (add .Total (sub .PageSize 1)) .PageSize}}
             
             {{range $i := until $totalPages}}
             {{$pageNum := add $i 1}}

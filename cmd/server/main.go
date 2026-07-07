@@ -665,6 +665,7 @@ func main() {
 		CleanupHandler:           cleanupHandler,
 		EmailHealthHandler:       emailHealthHandler,
 		AuthMiddleware:           middlewareAdapter,
+		MetricsMiddleware:        middleware.PrometheusMetrics(metricsCollector),
 		StaticFileServer:         staticFS,
 	})
 

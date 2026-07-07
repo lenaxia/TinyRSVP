@@ -27,6 +27,7 @@ type EventListData struct {
 	Sort    string
 	Page    int
 	Total   int
+	PageSize int
 }
 
 func getEventListTemplate() (*template.Template, error) {
@@ -364,8 +365,9 @@ func TestEventListTemplatePagination(t *testing.T) {
 		Events: []EventListEvent{
 			{ID: 1, Title: "Event 1"},
 		},
-		Page:  2,
-		Total: 50,
+		Page:     2,
+		Total:    50,
+		PageSize: 10,
 	}
 
 	var buf strings.Builder
