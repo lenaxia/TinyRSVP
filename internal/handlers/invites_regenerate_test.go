@@ -135,6 +135,10 @@ func (m *mockRegenerateEventRepository) List(ctx context.Context, filters reposi
 	return []*models.Event{}, nil
 }
 
+func (m *mockRegenerateEventRepository) ListWithStats(ctx context.Context, filters repositories.ListFilters) ([]*models.EventWithStats, error) {
+	return nil, nil
+}
+
 func (m *mockRegenerateEventRepository) GetByCreatorID(ctx context.Context, creatorID int64) ([]*models.Event, error) {
 	return []*models.Event{}, nil
 }

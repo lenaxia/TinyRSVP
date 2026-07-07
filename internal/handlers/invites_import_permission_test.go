@@ -53,6 +53,10 @@ func (m *mockEventRepository) List(ctx context.Context, filters repositories.Lis
 	return nil, nil
 }
 
+func (m *mockEventRepository) ListWithStats(ctx context.Context, filters repositories.ListFilters) ([]*models.EventWithStats, error) {
+	return nil, nil
+}
+
 func (m *mockEventRepository) GetByStatus(ctx context.Context, status models.EventStatus) ([]*models.Event, error) {
 	return nil, nil
 }

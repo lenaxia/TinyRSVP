@@ -17,15 +17,16 @@ import (
 )
 
 type mockEventService struct {
-	CreateEventFunc        func(ctx context.Context, event *models.Event) error
-	GetEventFunc           func(ctx context.Context, id int64) (*models.Event, error)
-	UpdateEventFunc        func(ctx context.Context, event *models.Event) error
-	DeleteEventFunc        func(ctx context.Context, id int64) error
-	ListEventsFunc         func(ctx context.Context, filters events.ListFilters) ([]*models.Event, error)
-	PublishEventFunc       func(ctx context.Context, id int64) error
-	CancelEventFunc        func(ctx context.Context, id int64, reason string) error
-	ArchiveEventFunc       func(ctx context.Context, id int64) error
-	GetEventsToArchiveFunc func(ctx context.Context, daysAfterEvent int) ([]*models.Event, error)
+	CreateEventFunc           func(ctx context.Context, event *models.Event) error
+	GetEventFunc              func(ctx context.Context, id int64) (*models.Event, error)
+	UpdateEventFunc           func(ctx context.Context, event *models.Event) error
+	DeleteEventFunc           func(ctx context.Context, id int64) error
+	ListEventsFunc            func(ctx context.Context, filters events.ListFilters) ([]*models.Event, error)
+	ListEventsWithStatsFunc   func(ctx context.Context, filters events.ListFilters) ([]*models.EventWithStats, error)
+	PublishEventFunc          func(ctx context.Context, id int64) error
+	CancelEventFunc           func(ctx context.Context, id int64, reason string) error
+	ArchiveEventFunc          func(ctx context.Context, id int64) error
+	GetEventsToArchiveFunc    func(ctx context.Context, daysAfterEvent int) ([]*models.Event, error)
 }
 
 func (m *mockEventService) CreateEvent(ctx context.Context, event *models.Event) error {
@@ -59,6 +60,13 @@ func (m *mockEventService) DeleteEvent(ctx context.Context, id int64) error {
 func (m *mockEventService) ListEvents(ctx context.Context, filters events.ListFilters) ([]*models.Event, error) {
 	if m.ListEventsFunc != nil {
 		return m.ListEventsFunc(ctx, filters)
+	}
+	return nil, nil
+}
+
+func (m *mockEventService) ListEventsWithStats(ctx context.Context, filters events.ListFilters) ([]*models.EventWithStats, error) {
+	if m.ListEventsWithStatsFunc != nil {
+		return m.ListEventsWithStatsFunc(ctx, filters)
 	}
 	return nil, nil
 }

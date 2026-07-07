@@ -29,7 +29,7 @@ type EventWebHandlers struct {
 
 type EventListPageData struct {
 	ActivePage string
-	Events     []*models.Event
+	Events     []*models.EventWithStats
 	Total      int
 	Page       int
 	PageSize   int
@@ -109,7 +109,7 @@ func (h *EventWebHandlers) ListEventsPage(w http.ResponseWriter, r *http.Request
 		}
 	}
 
-	eventList, err := h.service.ListEvents(r.Context(), filters)
+	eventList, err := h.service.ListEventsWithStats(r.Context(), filters)
 	if err != nil {
 		h.renderListPage(w, http.StatusOK, &EventListPageData{
 			ActivePage: "events",

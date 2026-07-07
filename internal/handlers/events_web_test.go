@@ -60,10 +60,11 @@ func TestEventWebHandlers_ListEventsPage(t *testing.T) {
 				ID:   1,
 				Role: models.RoleEventManager,
 			},
-			setupMock: func(m *mockEventService) {
-				m.ListEventsFunc = func(ctx context.Context, filters events.ListFilters) ([]*models.Event, error) {
-					return []*models.Event{
-						{
+		setupMock: func(m *mockEventService) {
+			m.ListEventsWithStatsFunc = func(ctx context.Context, filters events.ListFilters) ([]*models.EventWithStats, error) {
+				return []*models.EventWithStats{
+					{
+						Event: models.Event{
 							ID:        1,
 							Title:     "Test Event",
 							StartTime: time.Date(2026, 6, 15, 14, 0, 0, 0, time.UTC),
@@ -74,42 +75,46 @@ func TestEventWebHandlers_ListEventsPage(t *testing.T) {
 							CreatedAt: time.Now(),
 							UpdatedAt: time.Now(),
 						},
-					}, nil
-				}
-			},
-			wantStatus: http.StatusOK,
-			wantBody:   "Test Event",
+						InviteCount: 5,
+						RSVPCount:   3,
+						AcceptCount: 2,
+					},
+				}, nil
+			}
 		},
-		{
-			name:  "list events page empty",
-			query: "",
-			user: &models.User{
-				ID:   1,
-				Role: models.RoleEventManager,
-			},
-			setupMock: func(m *mockEventService) {
-				m.ListEventsFunc = func(ctx context.Context, filters events.ListFilters) ([]*models.Event, error) {
-					return []*models.Event{}, nil
-				}
-			},
-			wantStatus: http.StatusOK,
-			wantBody:   "No Events Found",
+		wantStatus: http.StatusOK,
+		wantBody:   "Test Event",
+	},
+	{
+		name:  "list events page empty",
+		query: "",
+		user: &models.User{
+			ID:   1,
+			Role: models.RoleEventManager,
 		},
-		{
-			name:  "list events with status filter",
-			query: "?status=published",
-			user: &models.User{
-				ID:   1,
-				Role: models.RoleEventManager,
-			},
-			setupMock: func(m *mockEventService) {
-				m.ListEventsFunc = func(ctx context.Context, filters events.ListFilters) ([]*models.Event, error) {
-					if filters.Status == nil || *filters.Status != models.EventStatusPublished {
-						t.Error("Expected published status filter")
-					}
-					return []*models.Event{}, nil
+		setupMock: func(m *mockEventService) {
+			m.ListEventsWithStatsFunc = func(ctx context.Context, filters events.ListFilters) ([]*models.EventWithStats, error) {
+				return []*models.EventWithStats{}, nil
+			}
+		},
+		wantStatus: http.StatusOK,
+		wantBody:   "No Events Found",
+	},
+	{
+		name:  "list events with status filter",
+		query: "?status=published",
+		user: &models.User{
+			ID:   1,
+			Role: models.RoleEventManager,
+		},
+		setupMock: func(m *mockEventService) {
+			m.ListEventsWithStatsFunc = func(ctx context.Context, filters events.ListFilters) ([]*models.EventWithStats, error) {
+				if filters.Status == nil || *filters.Status != models.EventStatusPublished {
+					t.Error("Expected published status filter")
 				}
-			},
+				return []*models.EventWithStats{}, nil
+			}
+		},
 			wantStatus: http.StatusOK,
 		},
 		{

@@ -23,6 +23,7 @@ type EventRepository interface {
 	UpdateStatus(ctx context.Context, id int64, status models.EventStatus) error
 	Delete(ctx context.Context, id int64) error
 	List(ctx context.Context, filters ListFilters) ([]*models.Event, error)
+	ListWithStats(ctx context.Context, filters ListFilters) ([]*models.EventWithStats, error)
 	GetByStatus(ctx context.Context, status models.EventStatus) ([]*models.Event, error)
 	GetEventsToArchive(ctx context.Context, daysAfterEvent int) ([]*models.Event, error)
 	GetByCreatorID(ctx context.Context, creatorID int64) ([]*models.Event, error)
@@ -529,6 +530,103 @@ func (r *eventRepository) List(ctx context.Context, filters ListFilters) ([]*mod
 	}
 
 	return events, nil
+}
+
+func (r *eventRepository) ListWithStats(ctx context.Context, filters ListFilters) ([]*models.EventWithStats, error) {
+	baseSelect := `
+		e.id, e.public_id, e.friendly_name, e.title, e.description, e.start_time, e.end_time, e.timezone, e.location,
+		e.status, e.created_by, e.version, e.ics_sequence, e.max_plus_ones, e.rsvp_deadline,
+		e.allow_rsvp_after_deadline, e.allow_maybe_rsvp, e.private_guest_list, e.family_headcount, e.event_capacity,
+		e.template_id, e.custom_theme_image_url, e.custom_theme_color, e.component_overrides,
+		e.created_at, e.updated_at`
+
+	query := fmt.Sprintf(`
+		SELECT %s,
+			COUNT(DISTINCT i.id) AS invite_count,
+			COUNT(DISTINCT r.id) AS rsvp_count,
+			COUNT(DISTINCT CASE WHEN r.response = 'yes' THEN r.id END) AS accept_count
+		FROM events e
+		LEFT JOIN invites i ON e.id = i.event_id AND i.status != 'revoked'
+		LEFT JOIN rsvps r ON i.id = r.invite_id
+		WHERE 1=1
+	`, baseSelect)
+
+	args := []interface{}{}
+
+	if filters.CreatorID != nil {
+		query += " AND e.created_by = ?"
+		args = append(args, *filters.CreatorID)
+	}
+
+	if filters.Status != nil {
+		query += " AND e.status = ?"
+		args = append(args, *filters.Status)
+	}
+
+	query += " GROUP BY e.id"
+	query += " ORDER BY e.start_time DESC"
+
+	if filters.Limit > 0 {
+		query += " LIMIT ?"
+		args = append(args, filters.Limit)
+	}
+
+	if filters.Offset > 0 {
+		query += " OFFSET ?"
+		args = append(args, filters.Offset)
+	}
+
+	rows, err := r.db.Query(ctx, query, args...)
+	if err != nil {
+		return nil, fmt.Errorf("failed to list events with stats: %w", err)
+	}
+	defer rows.Close()
+
+	var results []*models.EventWithStats
+	for rows.Next() {
+		ews := &models.EventWithStats{}
+		err := rows.Scan(
+			&ews.ID,
+			&ews.PublicID,
+			&ews.FriendlyName,
+			&ews.Title,
+			&ews.Description,
+			&ews.StartTime,
+			&ews.EndTime,
+			&ews.Timezone,
+			&ews.Location,
+			&ews.Status,
+			&ews.CreatedBy,
+			&ews.Version,
+			&ews.ICSSequence,
+			&ews.MaxPlusOnes,
+			&ews.RSVPDeadline,
+			&ews.AllowRSVPAfterDeadline,
+			&ews.AllowMaybeRSVP,
+			&ews.PrivateGuestList,
+			&ews.FamilyHeadcount,
+			&ews.EventCapacity,
+			&ews.TemplateID,
+			&ews.CustomThemeImageURL,
+			&ews.CustomThemeColor,
+			&ews.ComponentOverrides,
+			&ews.CreatedAt,
+			&ews.UpdatedAt,
+			&ews.InviteCount,
+			&ews.RSVPCount,
+			&ews.AcceptCount,
+		)
+		if err != nil {
+			return nil, fmt.Errorf("failed to scan event with stats: %w", err)
+		}
+		results = append(results, ews)
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("error iterating events with stats: %w", err)
+	}
+
+	return results, nil
 }
 
 func (r *eventRepository) GetByStatus(ctx context.Context, status models.EventStatus) ([]*models.Event, error) {

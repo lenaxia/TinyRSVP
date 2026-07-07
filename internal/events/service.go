@@ -16,6 +16,7 @@ type Service interface {
 	UpdateEvent(ctx context.Context, event *models.Event) error
 	DeleteEvent(ctx context.Context, id int64) error
 	ListEvents(ctx context.Context, filters ListFilters) ([]*models.Event, error)
+	ListEventsWithStats(ctx context.Context, filters ListFilters) ([]*models.EventWithStats, error)
 	PublishEvent(ctx context.Context, id int64) error
 	CancelEvent(ctx context.Context, id int64, reason string) error
 	ArchiveEvent(ctx context.Context, id int64) error
@@ -222,6 +223,36 @@ func (s *service) ListEvents(ctx context.Context, filters ListFilters) ([]*model
 	}
 
 	return events, nil
+}
+
+func (s *service) ListEventsWithStats(ctx context.Context, filters ListFilters) ([]*models.EventWithStats, error) {
+	user, ok := auth.UserFromContext(ctx)
+	if !ok {
+		return nil, &models.PermissionDeniedError{
+			Action:   "list events",
+			Resource: "Event",
+		}
+	}
+
+	if !s.authz.IsEventManager(user) {
+		return nil, &models.PermissionDeniedError{
+			Action:   "list events",
+			Resource: "Event",
+		}
+	}
+
+	repoFilters := repositories.ListFilters{
+		CreatorID: filters.CreatorID,
+		Status:    filters.Status,
+		Limit:     filters.Limit,
+		Offset:    filters.Offset,
+	}
+
+	if !s.authz.IsAdmin(user) {
+		repoFilters.CreatorID = &user.ID
+	}
+
+	return s.repo.ListWithStats(ctx, repoFilters)
 }
 
 func (s *service) PublishEvent(ctx context.Context, id int64) error {
