@@ -199,6 +199,12 @@ func TestDashboardService_GetRecentActivity_Success(t *testing.T) {
 	if len(activity) > 10 {
 		t.Errorf("expected max 10 activity items, got %d", len(activity))
 	}
+
+	for _, item := range activity {
+		if item.EventID == nil {
+			t.Errorf("activity item %q has nil EventID; all items should link to an event", item.Title)
+		}
+	}
 }
 
 func TestDashboardService_GetRecentActivity_NoUser(t *testing.T) {

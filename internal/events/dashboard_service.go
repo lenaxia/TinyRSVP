@@ -47,6 +47,7 @@ type ActivityItem struct {
 	Title       string
 	Description string
 	Time        string
+	EventID     *int64
 }
 
 type DashboardService interface {
@@ -244,6 +245,7 @@ func (s *dashboardService) GetRecentActivity(ctx context.Context, userID int64, 
 	var activityEvents []activityEvent
 
 	for _, event := range events {
+		eventID := event.ID
 		activityEvents = append(activityEvents, activityEvent{
 			timestamp: event.CreatedAt,
 			item: &ActivityItem{
@@ -251,6 +253,7 @@ func (s *dashboardService) GetRecentActivity(ctx context.Context, userID int64, 
 				Title:       "Event Created",
 				Description: fmt.Sprintf("%s created", event.Title),
 				Time:        FormatTimeAgo(event.CreatedAt),
+				EventID:     &eventID,
 			},
 		})
 	}
@@ -261,6 +264,7 @@ func (s *dashboardService) GetRecentActivity(ctx context.Context, userID int64, 
 			if invite.Email != nil {
 				email = *invite.Email
 			}
+			eventID := event.ID
 			activityEvents = append(activityEvents, activityEvent{
 				timestamp: invite.CreatedAt,
 				item: &ActivityItem{
@@ -268,6 +272,7 @@ func (s *dashboardService) GetRecentActivity(ctx context.Context, userID int64, 
 					Title:       "Invite Sent",
 					Description: fmt.Sprintf("Invite sent to %s for %s", email, event.Title),
 					Time:        FormatTimeAgo(invite.CreatedAt),
+					EventID:     &eventID,
 				},
 			})
 		}
@@ -291,15 +296,16 @@ func (s *dashboardService) GetRecentActivity(ctx context.Context, userID int64, 
 					email = *invite.Email
 				}
 
-				activityEvents = append(activityEvents, activityEvent{
-					timestamp: rsvp.CreatedAt,
-					item: &ActivityItem{
-						Icon:        icon,
-						Title:       "RSVP Received",
-						Description: fmt.Sprintf("%s %s for %s", email, response, event.Title),
-						Time:        FormatTimeAgo(rsvp.CreatedAt),
-					},
-				})
+			activityEvents = append(activityEvents, activityEvent{
+				timestamp: rsvp.CreatedAt,
+				item: &ActivityItem{
+					Icon:        icon,
+					Title:       "RSVP Received",
+					Description: fmt.Sprintf("%s %s for %s", email, response, event.Title),
+					Time:        FormatTimeAgo(rsvp.CreatedAt),
+					EventID:     &event.ID,
+				},
+			})
 			}
 		}
 	}

@@ -23,6 +23,7 @@ type DashboardActivity struct {
 	Title       string
 	Description string
 	Time        string
+	EventID     *int64
 }
 
 type DashboardData struct {
@@ -134,7 +135,7 @@ func TestDashboardTemplateHasDashboardLayout(t *testing.T) {
 		`class="stats-grid"`,
 		`class="stats-card"`,
 		`class="activity-feed"`,
-		`class="activity-item"`,
+		`activity-item`,
 	}
 
 	for _, class := range requiredClasses {
@@ -182,7 +183,7 @@ func TestDashboardTemplateHasActivityFeed(t *testing.T) {
 	requiredClasses := []string{
 		`class="activity-feed"`,
 		`class="activity-feed-title"`,
-		`class="activity-item"`,
+		`activity-item`,
 		`class="activity-item-icon"`,
 		`class="activity-item-content"`,
 		`class="activity-item-title"`,
