@@ -1,0 +1,82 @@
+{{template "base" .}}
+
+{{define "title"}}Admin Metrics - TinyRSVP{{end}}
+
+{{define "main-class"}}admin-metrics{{end}}
+
+{{define "content"}}
+{{template "page-header" dict "Title" "System Metrics" "Actions" (printf "<span>%s (%s)</span>" .User.Name .User.Role)}}
+
+<div class="metrics-container">
+    {{if .Error}}
+    <div class="error-state" role="alert">
+        <p>{{.Error}}</p>
+    </div>
+    {{end}}
+
+    {{if .Stats}}
+    <section class="metrics-section">
+        <h2 class="metrics-section-title">Business Metrics</h2>
+        <div class="metrics-grid">
+            <div class="metric-card">
+                <span class="metric-value">{{.Stats.TotalUsers}}</span>
+                <span class="metric-label">Total Users</span>
+            </div>
+            <div class="metric-card">
+                <span class="metric-value">{{.Stats.TotalEvents}}</span>
+                <span class="metric-label">Total Events</span>
+            </div>
+            <div class="metric-card">
+                <span class="metric-value">{{.Stats.TotalInvites}}</span>
+                <span class="metric-label">Total Invites</span>
+            </div>
+        </div>
+    </section>
+    {{end}}
+
+    {{if .DBPool}}
+    <section class="metrics-section">
+        <h2 class="metrics-section-title">Database Connection Pool</h2>
+        <dl class="metrics-detail-grid">
+            <dt>Open Connections</dt><dd>{{.DBPool.OpenConnections}} / {{.DBPool.MaxOpenConnections}}</dd>
+            <dt>In Use</dt><dd>{{.DBPool.InUse}}</dd>
+            <dt>Idle</dt><dd>{{.DBPool.Idle}}</dd>
+            <dt>Wait Count</dt><dd>{{.DBPool.WaitCount}}</dd>
+            <dt>Wait Duration</dt><dd>{{.DBPool.WaitDuration}}</dd>
+        </dl>
+    </section>
+    {{end}}
+
+    {{if .EmailQueue}}
+    <section class="metrics-section">
+        <h2 class="metrics-section-title">Email Queue</h2>
+        <dl class="metrics-detail-grid">
+            <dt>Status</dt>
+            <dd>
+                {{if .EmailQueue.Healthy}}
+                <span class="status-badge status-healthy">Healthy</span>
+                {{else}}
+                <span class="status-badge status-unhealthy">Unhealthy</span>
+                {{end}}
+            </dd>
+            <dt>Queue Size (pending)</dt><dd>{{.EmailQueue.QueueSize}}</dd>
+            <dt>Sending</dt><dd>{{.EmailQueue.SendingCount}}</dd>
+            <dt>Failed</dt><dd>{{.EmailQueue.FailedCount}}</dd>
+        </dl>
+    </section>
+    {{end}}
+
+    <section class="metrics-section">
+        <h2 class="metrics-section-title">Prometheus</h2>
+        <p class="metrics-note">
+            Raw Prometheus metrics are available at
+            <a href="/metrics">/metrics</a> for scraping by monitoring systems
+            (Prometheus, Grafana, Datadog).
+        </p>
+    </section>
+
+    <p class="metrics-generated-at">
+        Generated at {{.GeneratedAt.Format "Jan 2, 2006 at 3:04:05 PM"}}
+    </p>
+</div>
+{{end}}
