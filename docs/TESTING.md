@@ -58,6 +58,20 @@ func TestEventRepository_Create(t *testing.T) {
 - **Dependencies:** Full handler stack with mocked services
 - **Location:** `tests/e2e/` or `*_integration_test.go` files
 
+### UX Tests (Browser)
+- **Purpose:** Test real browser flows (form submit, navigation, copy-link) against an in-process test server
+- **Speed:** ~1-2 minutes total (browser startup overhead)
+- **Dependencies:** Headless Chrome via `chromedp`; in-process `httptest.NewServer` with real SQLite DB and all real handlers wired
+- **Location:** `tests/ux/`
+- **Auth bypass:** Uses the `X-Test-User-ID` header (supported by production `RequireAuth` middleware) injected via `chromedp` network headers — no separate test auth path
+- **Seed:** `SeedDefaults` (not `SeedThemes`) so the RSVP page renders as a legacy HTML form
+
+```bash
+go test -timeout 180s -v ./tests/ux/...
+```
+
+> **Note:** Headless Chrome must be installed. See `tests/ux/server_test.go` for the shared `setupUXTestServer` fixture and per-flow test files.
+
 ---
 
 ## When to Mock
@@ -88,7 +102,7 @@ All major interfaces have generated mocks in `internal/testutil/mocks/`. Regener
 |---|---|---|
 | `mocksvcs` | `internal/testutil/mocks/services` | `MockInviteService`, `MockRSVPService`, `MockDashboardService`, `MockEventService`, `MockEmailService`, `MockTemplateService`, `MockUserService`, `MockAdminDashboardService`, `MockUserListService` |
 | `mockrepos` | `internal/testutil/mocks/repositories` | `MockEventRepository`, `MockInviteRepository`, `MockRSVPRepository`, `MockQuestionRepository`, `MockAnswerRepository`, `MockEmailQueueRepository`, `MockSessionRepository`, `MockUserRepository`, `MockTemplateRepository`, `MockConfigRepository` |
-| `mockother` | `internal/testutil/mocks/other` | `MockDatabase`, `MockUserService` (auth), `MockSessionManager`, `MockAuthenticator`, `MockAuthorizationChecker`, `MockEventValidator`, `MockUserCounter`, `MockEventCounter`, `MockInviteCounter`, `MockSMTPSender`, `MockRateLimiter`, `MockTemplateRenderer`, `MockEmailMetrics` |
+| `mockother` | `internal/testutil/mocks/other` | `MockDatabase`, `MockUserService` (auth), `MockSessionManager`, `MockAuthenticator`, `MockProvider`, `MockAuthorizationChecker`, `MockEventValidator`, `MockTemplateValidator`, `MockUserCounter`, `MockEventCounter`, `MockInviteCounter`, `MockJobsEventService`, `MockSMTPSender`, `MockRateLimiter`, `MockTemplateRenderer`, `MockEmailMetrics` |
 
 ### Basic Setup
 
@@ -317,24 +331,32 @@ ctx := testutil.CreateTestContext(user)
 ## Running Tests
 
 ```bash
-# All tests
-go test ./...
+# All non-UX tests (excludes browser tests; fast feedback loop)
+go test -timeout 60s $(go list ./... | grep -v '/tests/ux')
+
+# All tests including UX (requires headless Chrome; slow)
+go test -timeout 180s ./...
+
+# UX tests only
+go test -timeout 180s -v ./tests/ux/...
 
 # Specific package
-go test ./internal/handlers/...
+go test -timeout 30s ./internal/handlers/...
 
 # Single test function
-go test ./internal/handlers/ -run TestGetInvite_Success
+go test -timeout 30s ./internal/handlers/ -run TestGetInvite_Success
 
 # With coverage
-go test ./... -cover
+go test -timeout 30s ./... -cover
 
-# With race detector
-go test -race ./...
+# With race detector (recommended before merging)
+go test -timeout 60s -race ./...
 
-# With timeout (recommended to detect hangs)
-go test -timeout 30s ./...
+# With verbose output
+go test -timeout 30s -v ./internal/auth/...
 ```
+
+> **Always pass `-timeout`** — without it, a hung test runs forever. The pre-commit hook enforces `-timeout 30s`.
 
 ---
 
