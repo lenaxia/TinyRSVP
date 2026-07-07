@@ -148,6 +148,25 @@
     color: var(--color-text-tertiary);
 }
 
+.activity-item-clickable {
+    transition: background-color 0.15s ease;
+    border-radius: var(--radius-md);
+}
+
+.activity-item-clickable:hover {
+    background-color: var(--color-surface-hover, rgba(0, 0, 0, 0.03));
+}
+
+.activity-item-link {
+    text-decoration: none;
+    color: inherit;
+    display: block;
+}
+
+.activity-item-link:hover .activity-item-title {
+    text-decoration: underline;
+}
+
 .quick-actions {
     display: flex;
     flex-direction: column;

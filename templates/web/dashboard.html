@@ -57,13 +57,20 @@
         
         {{if .Activities}}
         {{range .Activities}}
-        <div class="activity-item">
+        <div class="activity-item{{if .EventID}} activity-item-clickable{{end}}">
             <div class="activity-item-icon">
                 {{.Icon}}
             </div>
             <div class="activity-item-content">
+                {{if .EventID}}
+                <a href="/events/{{.EventID}}" class="activity-item-link">
+                    <h3 class="activity-item-title">{{.Title}}</h3>
+                    <p class="activity-item-description">{{.Description}}</p>
+                </a>
+                {{else}}
                 <h3 class="activity-item-title">{{.Title}}</h3>
                 <p class="activity-item-description">{{.Description}}</p>
+                {{end}}
                 <time class="activity-item-time">{{.Time}}</time>
             </div>
         </div>
