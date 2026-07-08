@@ -615,13 +615,12 @@ docker-compose up -d
 | Branch Name | Purpose | Status | Created | Owner |
 |-------------|---------|--------|---------|-------|
 | `main` | Stable code | Active | 2026-01-06 | - |
-| `feature/admin-dashboard-and-partials` | Redesign admin dashboard w/ drilldowns + system panels, extract reusable partials (`components.css` + upgraded `partials/components.html`), polish read-only settings/metrics pages | In Progress | 2026-07-07 | LLM |
 
 **Merged Branches:**
 
 | Branch Name | Purpose | Merged Date | PR/Commit |
 |-------------|---------|-------------|-----------|
-| _(none yet)_ | - | - | - |
+| `feature/admin-dashboard-and-partials` | Redesign admin dashboard w/ drilldowns + system panels, extract reusable partials (`components.css` + upgraded `partials/components.html`), polish read-only settings/metrics pages | 2026-07-08 | #50 (0e29593) |
 
 **Branch Naming Convention:**
 - Feature: `feature/short-description`
