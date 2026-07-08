@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"encoding/json"
+	"fmt"
 	"log"
 	"net/http"
 	"strings"
@@ -137,7 +138,7 @@ func registerPageRoutes(r chi.Router, h *RouterHandlers) {
 	r.Get("/not-implemented", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "text/html; charset=utf-8")
 		w.WriteHeader(http.StatusOK)
-		w.Write([]byte(notImplementedHTML))
+		fmt.Fprint(w, notImplementedHTML)
 	})
 
 	if h.DashboardHandler != nil && h.AuthMiddleware != nil {
