@@ -1047,3 +1047,48 @@ func TestInviteRepository_CountInvites_Empty(t *testing.T) {
 		t.Errorf("CountInvites() = %d, want 0", count)
 	}
 }
+
+func TestInviteRepository_UpdateExpiresAtByEventID(t *testing.T) {
+	database := setupInviteTestDB(t)
+	defer database.Close()
+
+	repo := NewInviteRepository(database)
+	ctx := context.Background()
+
+	email := "expire@test.com"
+	invite := &models.Invite{
+		EventID: 1, Email: &email, TokenHash: strings.Repeat("c", 43),
+		MaxPlusOnes: 0, Status: models.InviteStatusSent,
+		ExpiresAt: time.Now().Add(30 * 24 * time.Hour),
+	}
+	if err := repo.Create(ctx, invite); err != nil {
+		t.Fatalf("create: %v", err)
+	}
+
+	newExpiry := time.Now().Add(60 * 24 * time.Hour)
+	if err := repo.UpdateExpiresAtByEventID(ctx, 1, newExpiry); err != nil {
+		t.Fatalf("UpdateExpiresAtByEventID: %v", err)
+	}
+
+	updated, err := repo.GetByID(ctx, invite.ID)
+	if err != nil {
+		t.Fatalf("GetByID: %v", err)
+	}
+	if !updated.ExpiresAt.After(time.Now().Add(59 * 24 * time.Hour)) {
+		t.Error("ExpiresAt was not updated")
+	}
+}
+
+func TestInviteRepository_GetByEventIDs_EmptyInput(t *testing.T) {
+	database := setupInviteTestDB(t)
+	defer database.Close()
+
+	repo := NewInviteRepository(database)
+	result, err := repo.GetByEventIDs(context.Background(), []int64{})
+	if err != nil {
+		t.Fatalf("GetByEventIDs empty: %v", err)
+	}
+	if len(result) != 0 {
+		t.Errorf("expected 0 invites for empty input, got %d", len(result))
+	}
+}

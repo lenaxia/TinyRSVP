@@ -471,3 +471,17 @@ func TestRSVPRepository_GetStats_EmptyEvent(t *testing.T) {
 		t.Errorf("TotalGuests = %d, want 0", stats.TotalGuests)
 	}
 }
+
+func TestRSVPRepository_GetByInviteIDs_EmptyInput(t *testing.T) {
+	database := setupRSVPTestDB(t)
+	defer database.Close()
+
+	repo := NewRSVPRepository(database)
+	result, err := repo.GetByInviteIDs(context.Background(), []int64{})
+	if err != nil {
+		t.Fatalf("GetByInviteIDs empty: %v", err)
+	}
+	if len(result) != 0 {
+		t.Errorf("expected 0 RSVPs for empty input, got %d", len(result))
+	}
+}

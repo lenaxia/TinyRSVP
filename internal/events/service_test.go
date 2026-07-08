@@ -27,6 +27,7 @@ type mockEventRepository struct {
 	GetComponentOverridesFunc    func(ctx context.Context, eventID int64) (*models.ComponentOverrides, error)
 	UpdateComponentOverridesFunc func(ctx context.Context, eventID int64, overrides *models.ComponentOverrides) error
 	DeleteComponentOverridesFunc func(ctx context.Context, eventID int64) error
+	ListWithStatsFunc              func(ctx context.Context, filters repositories.ListFilters) ([]*models.EventWithStats, error)
 }
 
 func (m *mockEventRepository) Create(ctx context.Context, event *models.Event) error {
@@ -93,6 +94,9 @@ func (m *mockEventRepository) List(ctx context.Context, filters repositories.Lis
 }
 
 func (m *mockEventRepository) ListWithStats(ctx context.Context, filters repositories.ListFilters) ([]*models.EventWithStats, error) {
+	if m.ListWithStatsFunc != nil {
+		return m.ListWithStatsFunc(ctx, filters)
+	}
 	return nil, nil
 }
 
@@ -1477,4 +1481,41 @@ func TestService_GetEventsToArchive(t *testing.T) {
 
 func (m * mockEventRepository) GetDashboardStatsByCreator(ctx context.Context, creatorID int64) (*models.DashboardStats, error) {
 	return &models.DashboardStats{}, nil
+}
+
+func TestListEventsWithStats_Unauthorized(t *testing.T) {
+	repo := &mockEventRepository{}
+	authz := auth.NewAuthorizationChecker()
+	svc := NewService(repo, nil, NewValidator(NewTimezoneValidator()), authz)
+
+	_, err := svc.ListEventsWithStats(context.Background(), repositories.ListFilters{})
+	if err == nil {
+		t.Fatal("expected error without user in context")
+	}
+}
+
+func TestListEventsWithStats_AsEventManager(t *testing.T) {
+	repo := &mockEventRepository{
+		ListWithStatsFunc: func(ctx context.Context, filters repositories.ListFilters) ([]*models.EventWithStats, error) {
+			return []*models.EventWithStats{
+				{Event: models.Event{ID: 1, Title: "Test"}, InviteCount: 5, RSVPCount: 3, AcceptCount: 2},
+			}, nil
+		},
+	}
+	authz := auth.NewAuthorizationChecker()
+	svc := NewService(repo, nil, NewValidator(NewTimezoneValidator()), authz)
+
+	user := &models.User{ID: 1, Role: models.RoleEventManager}
+	ctx := auth.WithUser(context.Background(), user)
+
+	results, err := svc.ListEventsWithStats(ctx, repositories.ListFilters{})
+	if err != nil {
+		t.Fatalf("ListEventsWithStats: %v", err)
+	}
+	if len(results) != 1 {
+		t.Fatalf("expected 1 result, got %d", len(results))
+	}
+	if results[0].InviteCount != 5 {
+		t.Errorf("InviteCount = %d, want 5", results[0].InviteCount)
+	}
 }
