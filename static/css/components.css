@@ -1,0 +1,429 @@
+/*
+ * components.css — reusable UI components backing templates/web/partials/*.html
+ *
+ * This file is the CSS home for every partial in components.html that is
+ * intended to be used across multiple pages. Rules here:
+ *   1. Design tokens only. No hardcoded colors, no rgb(), no hex.
+ *   2. Every class must correspond to a partial or well-known page-level
+ *      hook (e.g. .ui-section is used by the "section" partial).
+ *   3. Dark mode Just Works via the tokens — do not add [data-theme="dark"]
+ *      overrides in this file. If a color feels wrong in dark mode, fix the
+ *      token or use a different one.
+ *   4. Mobile-first. Media queries at the bottom, min-width only.
+ */
+
+/* -------------------------------------------------------------------------
+ * header-user — small identity chip used in the page-header Actions slot on
+ * admin pages. Keeps user name + role visually cohesive without stealing
+ * attention from the primary CTA.
+ * ------------------------------------------------------------------------- */
+
+.header-user {
+    display: inline-flex;
+    align-items: baseline;
+    gap: var(--spacing-1);
+    color: var(--color-text-secondary);
+    font-size: var(--font-size-sm);
+}
+
+.header-user-role {
+    color: var(--color-text-tertiary);
+    font-size: var(--font-size-xs);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+
+/* -------------------------------------------------------------------------
+ * ui-section — a titled block of content with an optional description.
+ * Used all over the admin/settings/metrics pages.
+ * ------------------------------------------------------------------------- */.ui-section {
+    margin-bottom: var(--spacing-8);
+}
+
+.ui-section-header {
+    margin-bottom: var(--spacing-4);
+    padding-bottom: var(--spacing-2);
+    border-bottom: 1px solid var(--color-border);
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: var(--spacing-4);
+    flex-wrap: wrap;
+}
+
+.ui-section-title {
+    font-size: var(--font-size-lg);
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-text-primary);
+    margin: 0;
+    line-height: var(--line-height-tight);
+}
+
+.ui-section-description {
+    font-size: var(--font-size-sm);
+    color: var(--color-text-secondary);
+    margin: 0;
+}
+
+.ui-section-body {
+    /* Body is a plain wrapper; consumers apply their own grid/flex. */
+}
+
+/* -------------------------------------------------------------------------
+ * panel — a bordered card container. Used for the admin dashboard system
+ * panels (DB Pool, Email Queue, Storage) and anywhere else needing a
+ * bordered surface.
+ * ------------------------------------------------------------------------- */
+
+.panel {
+    background-color: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+.panel-header {
+    padding: var(--spacing-4);
+    border-bottom: 1px solid var(--color-border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--spacing-3);
+    flex-wrap: wrap;
+}
+
+.panel-header-title {
+    font-size: var(--font-size-base);
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-text-primary);
+    margin: 0;
+}
+
+.panel-body {
+    padding: var(--spacing-4);
+    flex: 1;
+}
+
+.panel-footer {
+    padding: var(--spacing-3) var(--spacing-4);
+    border-top: 1px solid var(--color-border);
+    background-color: var(--color-surface);
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: var(--spacing-3);
+}
+
+.panel-footer-link {
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-medium);
+    color: var(--color-primary-600);
+    text-decoration: none;
+}
+
+.panel-footer-link:hover,
+.panel-footer-link:focus {
+    text-decoration: underline;
+}
+
+/* -------------------------------------------------------------------------
+ * action-card — big-tap-target navigation card used on the admin dashboard
+ * "Quick Actions" section. Previously the .action-card / .action-grid /
+ * .admin-actions classes had no CSS at all — this fixes that.
+ * ------------------------------------------------------------------------- */
+
+.action-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--spacing-4);
+}
+
+.action-card {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-2);
+    padding: var(--spacing-5);
+    background-color: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    text-decoration: none;
+    color: inherit;
+    transition: border-color var(--transition-base),
+                box-shadow var(--transition-base),
+                transform var(--transition-fast);
+    min-height: 96px;
+}
+
+.action-card:hover {
+    border-color: var(--color-primary-400);
+    box-shadow: var(--shadow-md);
+    transform: translateY(-1px);
+}
+
+.action-card:focus {
+    outline: 2px solid var(--color-border-focus);
+    outline-offset: 2px;
+}
+
+.action-card:focus:not(:focus-visible) {
+    outline: none;
+}
+
+.action-card:active {
+    transform: translateY(0);
+}
+
+.action-card-icon {
+    font-size: var(--font-size-2xl);
+    line-height: 1;
+    color: var(--color-primary-600);
+}
+
+.action-card-title {
+    font-size: var(--font-size-base);
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-text-primary);
+    margin: 0;
+}
+
+.action-card-description {
+    font-size: var(--font-size-sm);
+    color: var(--color-text-secondary);
+    margin: 0;
+    line-height: var(--line-height-normal);
+}
+
+/* -------------------------------------------------------------------------
+ * status-badge — inline pill for state indicators. Consolidates the ad-hoc
+ * badges that were duplicated in admin_metrics.css (.status-healthy,
+ * .status-unhealthy) and invite_list.css (.invite-status-*).
+ * ------------------------------------------------------------------------- */
+
+.status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--spacing-1);
+    padding: var(--spacing-1) var(--spacing-3);
+    border-radius: var(--radius-full);
+    font-size: var(--font-size-xs);
+    font-weight: var(--font-weight-semibold);
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    line-height: 1;
+    white-space: nowrap;
+}
+
+.status-badge-success {
+    background-color: var(--color-success-light);
+    color: var(--color-success-dark);
+}
+
+.status-badge-warning {
+    background-color: var(--color-warning-light);
+    color: var(--color-warning-dark);
+}
+
+.status-badge-error {
+    background-color: var(--color-error-light);
+    color: var(--color-error-dark);
+}
+
+.status-badge-info {
+    background-color: var(--color-info-light);
+    color: var(--color-info);
+}
+
+.status-badge-neutral {
+    background-color: var(--color-surface-disabled);
+    color: var(--color-text-secondary);
+}
+
+/* -------------------------------------------------------------------------
+ * definition-list — <dl> with tabular labels for read-only settings /
+ * metrics grids. Replaces the two near-identical .settings-grid and
+ * .metrics-detail-grid rules that lived in per-page CSS files.
+ * ------------------------------------------------------------------------- */
+
+.definition-list {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--spacing-1);
+    margin: 0;
+}
+
+.definition-list dt {
+    font-size: var(--font-size-sm);
+    color: var(--color-text-secondary);
+    font-weight: var(--font-weight-semibold);
+}
+
+.definition-list dd {
+    font-size: var(--font-size-sm);
+    color: var(--color-text-primary);
+    margin: 0 0 var(--spacing-2) 0;
+    word-break: break-word;
+}
+
+.definition-list dd:last-child {
+    margin-bottom: 0;
+}
+
+/* -------------------------------------------------------------------------
+ * metric-tile — compact numeric-first tile. Backs the admin dashboard
+ * "at a glance" strip and the admin_metrics business-metrics section.
+ * Uses auto-fit so 3, 4, or 5 tiles all lay out without desktop orphans.
+ * ------------------------------------------------------------------------- */
+
+.metric-tile-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: var(--spacing-4);
+}
+
+.metric-tile {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--spacing-2);
+    padding: var(--spacing-5) var(--spacing-4);
+    background-color: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    text-decoration: none;
+    color: inherit;
+    transition: border-color var(--transition-base),
+                box-shadow var(--transition-base);
+    position: relative;
+    overflow: hidden;
+}
+
+a.metric-tile:hover,
+a.metric-tile:focus {
+    border-color: var(--color-primary-400);
+    box-shadow: var(--shadow-md);
+}
+
+a.metric-tile:focus {
+    outline: 2px solid var(--color-border-focus);
+    outline-offset: 2px;
+}
+
+a.metric-tile:focus:not(:focus-visible) {
+    outline: none;
+}
+
+.metric-tile-label {
+    font-size: var(--font-size-xs);
+    color: var(--color-text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    font-weight: var(--font-weight-semibold);
+    line-height: 1;
+}
+
+.metric-tile-value {
+    font-size: var(--font-size-3xl);
+    font-weight: var(--font-weight-bold);
+    color: var(--color-text-primary);
+    line-height: 1;
+}
+
+.metric-tile-sub {
+    font-size: var(--font-size-sm);
+    color: var(--color-text-tertiary);
+    line-height: var(--line-height-normal);
+}
+
+/* -------------------------------------------------------------------------
+ * stats-card accent modifiers — colored left border to visually differentiate
+ * categories on the admin dashboard. Layered on top of the base .stats-card
+ * rules in dashboard.css.
+ * ------------------------------------------------------------------------- */
+
+.stats-card-accent-primary { border-left: 4px solid var(--color-primary-500); }
+.stats-card-accent-success { border-left: 4px solid var(--color-success); }
+.stats-card-accent-warning { border-left: 4px solid var(--color-warning); }
+.stats-card-accent-error   { border-left: 4px solid var(--color-error); }
+
+.stats-card-accent-primary .metric-tile-value,
+.stats-card-accent-success .metric-tile-value,
+.stats-card-accent-warning .metric-tile-value,
+.stats-card-accent-error   .metric-tile-value { color: var(--color-text-primary); }
+
+/* -------------------------------------------------------------------------
+ * data-table — baseline styling for <table class="data-table"> used by the
+ * user management page and (in the future) other admin lists.
+ * ------------------------------------------------------------------------- */
+
+.data-table {
+    width: 100%;
+    border-collapse: collapse;
+    background-color: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    font-size: var(--font-size-sm);
+}
+
+.data-table thead {
+    background-color: var(--color-surface-disabled);
+}
+
+.data-table th {
+    text-align: left;
+    padding: var(--spacing-3) var(--spacing-4);
+    font-weight: var(--font-weight-semibold);
+    font-size: var(--font-size-xs);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--color-text-secondary);
+    border-bottom: 1px solid var(--color-border);
+}
+
+.data-table td {
+    padding: var(--spacing-3) var(--spacing-4);
+    border-bottom: 1px solid var(--color-border);
+    color: var(--color-text-primary);
+    vertical-align: middle;
+}
+
+.data-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+.data-table tbody tr:hover {
+    background-color: var(--color-surface-disabled);
+}
+
+/* -------------------------------------------------------------------------
+ * Responsive: two-column definition lists on tablet+, wider action grids.
+ * ------------------------------------------------------------------------- */
+
+@media (min-width: 768px) {
+    .definition-list {
+        grid-template-columns: minmax(160px, 240px) 1fr;
+        gap: var(--spacing-2) var(--spacing-5);
+        align-items: baseline;
+    }
+
+    .definition-list dd {
+        margin-bottom: 0;
+    }
+
+    .action-grid {
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    }
+}
+
+@media (min-width: 1024px) {
+    .metric-tile-grid {
+        gap: var(--spacing-5);
+    }
+
+    .action-grid {
+        gap: var(--spacing-5);
+    }
+}

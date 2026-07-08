@@ -417,6 +417,7 @@ func main() {
 
 	rsvpPageTemplates, err := template.New("rsvp_page.html").Funcs(funcMap).ParseFiles(
 		"templates/web/partials/base.html",
+		"templates/web/partials/components.html",
 		"templates/web/partials/navigation.html",
 		"templates/web/rsvp_page.html",
 		"templates/web/unsubscribe.html",
@@ -429,6 +430,7 @@ func main() {
 
 	confirmationTemplates, err := template.New("confirmation.html").Funcs(funcMap).ParseFiles(
 		"templates/web/partials/base.html",
+		"templates/web/partials/components.html",
 		"templates/web/partials/navigation.html",
 		"templates/web/confirmation.html",
 	)
@@ -440,6 +442,7 @@ func main() {
 
 	rsvpSummaryTemplates, err := template.New("rsvp_summary.html").Funcs(funcMap).ParseFiles(
 		"templates/web/partials/base.html",
+		"templates/web/partials/components.html",
 		"templates/web/partials/navigation.html",
 		"templates/web/rsvp_summary.html",
 	)
@@ -451,6 +454,7 @@ func main() {
 
 	dashboardTemplates, err := template.New("dashboard.html").Funcs(funcMap).ParseFiles(
 		"templates/web/partials/base.html",
+		"templates/web/partials/components.html",
 		"templates/web/partials/navigation.html",
 		"templates/web/partials/page_header.html",
 		"templates/web/dashboard.html",
@@ -464,6 +468,7 @@ func main() {
 
 	eventListTemplates, err := template.New("event_list.html").Funcs(funcMap).ParseFiles(
 		"templates/web/partials/base.html",
+		"templates/web/partials/components.html",
 		"templates/web/partials/navigation.html",
 		"templates/web/partials/page_header.html",
 		"templates/web/event_list.html",
@@ -476,6 +481,7 @@ func main() {
 
 	eventFormTemplates, err := template.New("event_form.html").Funcs(funcMap).ParseFiles(
 		"templates/web/partials/base.html",
+		"templates/web/partials/components.html",
 		"templates/web/partials/navigation.html",
 		"templates/web/partials/page_header.html",
 		"templates/web/partials/datetime_picker_panel.html",
@@ -494,6 +500,7 @@ func main() {
 
 	customizationTemplates, err := template.New("event_customization.html").Funcs(funcMap).ParseFiles(
 		"templates/web/partials/base.html",
+		"templates/web/partials/components.html",
 		"templates/web/partials/navigation.html",
 		"templates/web/event_customization.html",
 	)
@@ -505,6 +512,7 @@ func main() {
 
 	eventDetailTemplates, err := template.New("event_detail.html").Funcs(funcMap).ParseFiles(
 		"templates/web/partials/base.html",
+		"templates/web/partials/components.html",
 		"templates/web/partials/navigation.html",
 		"templates/web/partials/page_header.html",
 		"templates/web/event_detail.html",
@@ -521,6 +529,7 @@ func main() {
 
 	inviteListTemplates, err := template.New("invite_list.html").Funcs(funcMap).ParseFiles(
 		"templates/web/partials/base.html",
+		"templates/web/partials/components.html",
 		"templates/web/partials/navigation.html",
 		"templates/web/invite_list.html",
 	)
@@ -535,6 +544,7 @@ func main() {
 
 	adminDashboardTemplates, err := template.New("admin_dashboard.html").Funcs(funcMap).ParseFiles(
 		"templates/web/partials/base.html",
+		"templates/web/partials/components.html",
 		"templates/web/partials/navigation.html",
 		"templates/web/partials/page_header.html",
 		"templates/web/admin_dashboard.html",
@@ -548,6 +558,7 @@ func main() {
 
 	adminSettingsTemplates, err := template.New("admin_settings.html").Funcs(funcMap).ParseFiles(
 		"templates/web/partials/base.html",
+		"templates/web/partials/components.html",
 		"templates/web/partials/navigation.html",
 		"templates/web/partials/page_header.html",
 		"templates/web/admin_settings.html",
@@ -560,9 +571,11 @@ func main() {
 	settingsHandler.SetTemplates(adminSettingsTemplates)
 	logger.Info("Admin settings templates loaded successfully")
 
-	userManagementTemplates, err := template.New("user_management.html").ParseFiles(
+	userManagementTemplates, err := template.New("user_management.html").Funcs(funcMap).ParseFiles(
 		"templates/web/partials/base.html",
+		"templates/web/partials/components.html",
 		"templates/web/partials/navigation.html",
+		"templates/web/partials/page_header.html",
 		"templates/web/user_management.html",
 	)
 	if err != nil {
@@ -574,6 +587,7 @@ func main() {
 
 	templateEditorTemplates, err := template.New("template_editor.html").Funcs(funcMap).ParseFiles(
 		"templates/web/partials/base.html",
+		"templates/web/partials/components.html",
 		"templates/web/partials/navigation.html",
 		"templates/web/template_editor.html",
 	)
@@ -646,6 +660,7 @@ func main() {
 
 	metricsTemplates, err := template.New("admin_metrics.html").Funcs(funcMap).ParseFiles(
 		"templates/web/partials/base.html",
+		"templates/web/partials/components.html",
 		"templates/web/partials/navigation.html",
 		"templates/web/partials/page_header.html",
 		"templates/web/admin_metrics.html",
@@ -658,6 +673,10 @@ func main() {
 	adminMetricsHandler := handlers.NewMetricsHandler(metricsDataSource)
 	adminMetricsHandler.SetTemplates(metricsTemplates)
 	logger.Info("Admin metrics templates loaded successfully")
+
+	// Wire the same MetricsDataSource into the admin dashboard so the ops
+	// overview strip and system panels get live DB + email queue data.
+	adminDashboardHandler.SetSystemHealth(metricsDataSource)
 
 	router := handlers.NewRouter(&handlers.RouterHandlers{
 		LoginHandler:             loginHandler,

@@ -275,6 +275,7 @@ func Setup(opts Options) (*Server, func(), error) {
 
 	dashboardTemplates := mustParse("dashboard.html", funcMap,
 		filepath.Join(templateBase, "partials/base.html"),
+		filepath.Join(templateBase, "partials/components.html"),
 		filepath.Join(templateBase, "partials/navigation.html"),
 		filepath.Join(templateBase, "partials/page_header.html"),
 		filepath.Join(templateBase, "dashboard.html"),
@@ -283,6 +284,7 @@ func Setup(opts Options) (*Server, func(), error) {
 
 	eventListTemplates := mustParse("event_list.html", funcMap,
 		filepath.Join(templateBase, "partials/base.html"),
+		filepath.Join(templateBase, "partials/components.html"),
 		filepath.Join(templateBase, "partials/navigation.html"),
 		filepath.Join(templateBase, "partials/page_header.html"),
 		filepath.Join(templateBase, "event_list.html"),
@@ -290,6 +292,7 @@ func Setup(opts Options) (*Server, func(), error) {
 
 	eventFormTemplates := mustParse("event_form.html", funcMap,
 		filepath.Join(templateBase, "partials/base.html"),
+		filepath.Join(templateBase, "partials/components.html"),
 		filepath.Join(templateBase, "partials/navigation.html"),
 		filepath.Join(templateBase, "partials/page_header.html"),
 		filepath.Join(templateBase, "partials/datetime_picker_panel.html"),
@@ -303,6 +306,7 @@ func Setup(opts Options) (*Server, func(), error) {
 
 	eventDetailTemplates := mustParse("event_detail.html", funcMap,
 		filepath.Join(templateBase, "partials/base.html"),
+		filepath.Join(templateBase, "partials/components.html"),
 		filepath.Join(templateBase, "partials/navigation.html"),
 		filepath.Join(templateBase, "partials/page_header.html"),
 		filepath.Join(templateBase, "event_detail.html"),
@@ -312,6 +316,7 @@ func Setup(opts Options) (*Server, func(), error) {
 
 	customizationTemplates := mustParse("event_customization.html", funcMap,
 		filepath.Join(templateBase, "partials/base.html"),
+		filepath.Join(templateBase, "partials/components.html"),
 		filepath.Join(templateBase, "partials/navigation.html"),
 		filepath.Join(templateBase, "event_customization.html"),
 	)
@@ -319,6 +324,7 @@ func Setup(opts Options) (*Server, func(), error) {
 
 	inviteListTemplates := mustParse("invite_list.html", funcMap,
 		filepath.Join(templateBase, "partials/base.html"),
+		filepath.Join(templateBase, "partials/components.html"),
 		filepath.Join(templateBase, "partials/navigation.html"),
 		filepath.Join(templateBase, "invite_list.html"),
 	)
@@ -327,6 +333,7 @@ func Setup(opts Options) (*Server, func(), error) {
 
 	adminDashboardTemplates := mustParse("admin_dashboard.html", funcMap,
 		filepath.Join(templateBase, "partials/base.html"),
+		filepath.Join(templateBase, "partials/components.html"),
 		filepath.Join(templateBase, "partials/navigation.html"),
 		filepath.Join(templateBase, "partials/page_header.html"),
 		filepath.Join(templateBase, "admin_dashboard.html"),
@@ -335,6 +342,7 @@ func Setup(opts Options) (*Server, func(), error) {
 
 	adminSettingsTemplates := mustParse("admin_settings.html", funcMap,
 		filepath.Join(templateBase, "partials/base.html"),
+		filepath.Join(templateBase, "partials/components.html"),
 		filepath.Join(templateBase, "partials/navigation.html"),
 		filepath.Join(templateBase, "partials/page_header.html"),
 		filepath.Join(templateBase, "admin_settings.html"),
@@ -343,6 +351,7 @@ func Setup(opts Options) (*Server, func(), error) {
 
 	adminMetricsTemplates := mustParse("admin_metrics.html", funcMap,
 		filepath.Join(templateBase, "partials/base.html"),
+		filepath.Join(templateBase, "partials/components.html"),
 		filepath.Join(templateBase, "partials/navigation.html"),
 		filepath.Join(templateBase, "partials/page_header.html"),
 		filepath.Join(templateBase, "admin_metrics.html"),
@@ -351,25 +360,30 @@ func Setup(opts Options) (*Server, func(), error) {
 
 	userManagementTemplates := mustParse("user_management.html", funcMap,
 		filepath.Join(templateBase, "partials/base.html"),
+		filepath.Join(templateBase, "partials/components.html"),
 		filepath.Join(templateBase, "partials/navigation.html"),
+		filepath.Join(templateBase, "partials/page_header.html"),
 		filepath.Join(templateBase, "user_management.html"),
 	)
 	userManagementHandler.SetTemplates(userManagementTemplates)
 
 	rsvpPageTemplates := mustParse("rsvp_page.html", funcMap,
 		filepath.Join(templateBase, "partials/base.html"),
+		filepath.Join(templateBase, "partials/components.html"),
 		filepath.Join(templateBase, "partials/navigation.html"),
 		filepath.Join(templateBase, "rsvp_page.html"),
 	)
 
 	confirmationTemplates := mustParse("confirmation.html", funcMap,
 		filepath.Join(templateBase, "partials/base.html"),
+		filepath.Join(templateBase, "partials/components.html"),
 		filepath.Join(templateBase, "partials/navigation.html"),
 		filepath.Join(templateBase, "confirmation.html"),
 	)
 
 	rsvpSummaryTemplates := mustParse("rsvp_summary.html", funcMap,
 		filepath.Join(templateBase, "partials/base.html"),
+		filepath.Join(templateBase, "partials/components.html"),
 		filepath.Join(templateBase, "partials/navigation.html"),
 		filepath.Join(templateBase, "rsvp_summary.html"),
 	)

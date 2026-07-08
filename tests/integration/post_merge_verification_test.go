@@ -125,22 +125,24 @@ func setupVerificationServer(t *testing.T) (*httptest.Server, int64, db.Database
 	adminDashboardHandler := handlers.NewAdminDashboardHandler(adminSvc)
 	adminDashboardHandler.SetTemplates(mustParseTemplates(t, "admin_dashboard.html",
 		"../../templates/web/partials/base.html",
+		"../../templates/web/partials/components.html",
 		"../../templates/web/partials/navigation.html",
 		"../../templates/web/partials/page_header.html",
 		"../../templates/web/admin_dashboard.html",
 	))
 
 	cfg := &config.Config{
-		Server: config.ServerConfig{Host: "0.0.0.0", Port: 8080, BaseURL: "http://verify.test"},
+		Server:   config.ServerConfig{Host: "0.0.0.0", Port: 8080, BaseURL: "http://verify.test"},
 		Database: config.DatabaseConfig{Type: "sqlite", Path: ":memory:", MaxOpenConns: 1, MaxIdleConns: 1},
-		Email: config.EmailConfig{SMTPHost: "smtp.verify.test", SMTPPort: 587, SMTPUser: "u", SMTPPassword: "secret", FromEmail: "r@verify.test"},
-		OIDC: config.OIDCConfig{Enabled: true, IssuerURL: "https://idp.verify.test", ClientID: "verify-client", ClientSecret: "oidc-secret-value"},
+		Email:    config.EmailConfig{SMTPHost: "smtp.verify.test", SMTPPort: 587, SMTPUser: "u", SMTPPassword: "secret", FromEmail: "r@verify.test"},
+		OIDC:     config.OIDCConfig{Enabled: true, IssuerURL: "https://idp.verify.test", ClientID: "verify-client", ClientSecret: "oidc-secret-value"},
 		Security: config.SecurityConfig{HMACSecretKey: "hmac-verify-key", SessionDuration: 7 * 24 * time.Hour},
-		Token: config.TokenConfig{Secret: "token-secret-value", HashingEnabled: true},
+		Token:    config.TokenConfig{Secret: "token-secret-value", HashingEnabled: true},
 	}
 	settingsHandler := handlers.NewSettingsHandler(cfg)
 	settingsHandler.SetTemplates(mustParseTemplates(t, "admin_settings.html",
 		"../../templates/web/partials/base.html",
+		"../../templates/web/partials/components.html",
 		"../../templates/web/partials/navigation.html",
 		"../../templates/web/partials/page_header.html",
 		"../../templates/web/admin_settings.html",
@@ -151,10 +153,16 @@ func setupVerificationServer(t *testing.T) (*httptest.Server, int64, db.Database
 	metricsHandler := handlers.NewMetricsHandler(metricsDataSource)
 	metricsHandler.SetTemplates(mustParseTemplates(t, "admin_metrics.html",
 		"../../templates/web/partials/base.html",
+		"../../templates/web/partials/components.html",
 		"../../templates/web/partials/navigation.html",
 		"../../templates/web/partials/page_header.html",
 		"../../templates/web/admin_metrics.html",
 	))
+
+	// Wire the health provider so the admin dashboard renders its system
+	// panels + drilldown links. Without this, the DB pool and Email queue
+	// sections are hidden and the "System Metrics" drilldown link is absent.
+	adminDashboardHandler.SetSystemHealth(metricsDataSource)
 
 	metricsCollector := middleware.NewPrometheusMetrics()
 	promMetricsHandler := middleware.MetricsHandler(metricsCollector)

@@ -48,22 +48,43 @@
 
 .stats-grid {
     display: grid;
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
     gap: var(--spacing-4);
     margin-bottom: var(--spacing-6);
 }
 
 .stats-card {
     background-color: var(--color-surface);
-    padding: var(--spacing-3);
+    padding: var(--spacing-5) var(--spacing-4);
     border-radius: var(--radius-lg);
     border: 1px solid var(--color-border);
-    transition: var(--transition-base);
+    transition: border-color var(--transition-base),
+                box-shadow var(--transition-base),
+                transform var(--transition-fast);
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-2);
 }
 
 .stats-card:hover {
     border-color: var(--color-primary-300);
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    box-shadow: var(--shadow-md);
+    transform: translateY(-1px);
+}
+
+a.stats-card {
+    text-decoration: none;
+    color: inherit;
+    display: flex;
+}
+
+a.stats-card:focus {
+    outline: 2px solid var(--color-border-focus);
+    outline-offset: 2px;
+}
+
+a.stats-card:focus:not(:focus-visible) {
+    outline: none;
 }
 
 .stats-card-title {
@@ -255,7 +276,6 @@
     }
 
     .stats-grid {
-        grid-template-columns: repeat(2, 1fr);
         gap: var(--spacing-5);
     }
 
@@ -274,7 +294,6 @@
     }
 
     .stats-grid {
-        grid-template-columns: repeat(4, 1fr);
         gap: var(--spacing-6);
     }
 }

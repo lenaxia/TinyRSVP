@@ -1,11 +1,72 @@
+{{/*
+ * Reusable UI components. Every consumer template MUST include this file in
+ * its ParseFiles call. base.html does NOT include it, so callers stay in
+ * control (some pages only need one or two partials).
+ *
+ * All partials expect a dict/map with the documented keys. Optional keys are
+ * clearly marked. HTML content passed via non-Body keys is automatically
+ * escaped by html/template — pass an HTML value with `safeHTML` only when
+ * you intentionally want raw HTML rendered (used for the section Body slot).
+ */}}
+
 {{define "stats-card"}}
-<div class="stats-card">
+{{if .Href}}
+<a href="{{.Href}}" class="stats-card{{with .Accent}} stats-card-accent-{{.}}{{end}}">
+{{else}}
+<div class="stats-card{{with .Accent}} stats-card-accent-{{.}}{{end}}">
+{{end}}
+    {{with .Icon}}<div class="stats-card-icon" aria-hidden="true">{{.}}</div>{{end}}
     <h2 class="stats-card-title">{{.Title}}</h2>
     <div class="stats-card-value">{{.Value}}</div>
-    {{if .Subtitle}}
-    <p class="stats-card-subtitle">{{.Subtitle}}</p>
+    {{with .Subtitle}}<p class="stats-card-subtitle">{{.}}</p>{{end}}
+{{if .Href}}</a>{{else}}</div>{{end}}
+{{end}}
+
+{{define "section"}}
+<section class="ui-section">
+    <header class="ui-section-header">
+        <h2 class="ui-section-title">{{.Title}}</h2>
+        {{with .Description}}<p class="ui-section-description">{{.}}</p>{{end}}
+        {{with .Actions}}<div class="ui-section-actions">{{. | safeHTML}}</div>{{end}}
+    </header>
+    <div class="ui-section-body">
+        {{with .Body}}{{. | safeHTML}}{{end}}
+    </div>
+</section>
+{{end}}
+
+{{define "action-card"}}
+<a href="{{.Href}}" class="action-card">
+    {{with .Icon}}<div class="action-card-icon" aria-hidden="true">{{.}}</div>{{end}}
+    <h3 class="action-card-title">{{.Title}}</h3>
+    {{with .Description}}<p class="action-card-description">{{.}}</p>{{end}}
+</a>
+{{end}}
+
+{{define "status-badge"}}
+{{$variant := .Variant}}{{if not $variant}}{{$variant = "neutral"}}{{end}}
+<span class="status-badge status-badge-{{$variant}}">{{.Label}}</span>
+{{end}}
+
+{{define "metric-tile"}}
+{{if .Href}}
+<a href="{{.Href}}" class="metric-tile{{with .Accent}} stats-card-accent-{{.}}{{end}}">
+{{else}}
+<div class="metric-tile{{with .Accent}} stats-card-accent-{{.}}{{end}}">
+{{end}}
+    <span class="metric-tile-label">{{.Label}}</span>
+    <span class="metric-tile-value">{{.Value}}</span>
+    {{with .Sub}}<span class="metric-tile-sub">{{.}}</span>{{end}}
+{{if .Href}}</a>{{else}}</div>{{end}}
+{{end}}
+
+{{define "definition-list"}}
+<dl class="definition-list">
+    {{range .Rows}}
+    <dt>{{.Label}}</dt>
+    <dd>{{.Value}}</dd>
     {{end}}
-</div>
+</dl>
 {{end}}
 
 {{define "empty-state"}}
