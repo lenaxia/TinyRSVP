@@ -83,6 +83,58 @@ Initial beta release. Feature-complete for v0 scope. Suitable for homelab / self
 
 ---
 
+## [0.4.0] - 2026-07-08
+
+Admin dashboard redesign, reusable UI partials + component CSS, and a security fix removing a production auth bypass.
+
+### Added
+
+**Admin dashboard redesign**
+- Ops-at-a-glance strip: 4 metric tiles (Users, Events, Invites, System Health) with drilldowns to their respective admin pages
+- System panels: Database connection pool and Email queue KPIs rendered inline on the admin dashboard, each linking to `/admin/metrics` for full details
+- Quick Actions grid: properly styled action-cards for Users, Settings, Metrics, and raw Prometheus scrape endpoint. Previously the `.action-card` / `.action-grid` classes had **no CSS backing at all** — they rendered as unstyled boxes.
+- Optional `AdminSystemHealthProvider` wired into `AdminDashboardHandler`. Best-effort — provider failures are logged but do not block page rendering.
+
+**Reusable UI components**
+- New `static/css/components.css` — CSS home for every reusable partial. Design tokens only (no hardcoded hex/rgb). Loaded ambient via `partials/base.html` so any page can use partials without per-file plumbing.
+- New partials in `templates/web/partials/components.html`: `section`, `action-card`, `status-badge`, `metric-tile`, `definition-list`. Existing `stats-card` extended with optional `Href` (drilldown), `Icon`, and `Accent` (semantic color variant).
+- `templates/web/PATTERNS.md` — cookbook mapping design needs to partial + CSS class, with an explicit DON'T-DO list to prevent future duplication.
+- `templates/web/partials/README.md` — rewritten with the extended component set and a TDD workflow for adding new partials.
+
+**Test coverage for the new UI**
+- 9 CSS tests asserting class presence, design-token usage, no hardcoded colors, and auto-fit grid layout for `metric-tile-grid`
+- 5 CSS guardrail tests bringing `admin_metrics.css` and `admin_settings.css` under the same "tokens only" rule that already covered `dashboard.css`
+- 21 template-partial render tests, all including HTML-escaping (XSS) assertions
+- 3 handler tests for `SetSystemHealth` — happy path, nil-provider backward-compat, provider errors don't blank the page
+- 8 Playwright browser tests covering metric-tile drilldown links, action-card computed styles (proves components.css loaded), and admin_settings/admin_metrics migration
+
+### Fixed
+
+**Security**
+- **Removed the `X-Test-User-ID` auth bypass from production middleware.** The `RequireAuth` middleware previously honored any HTTP request with a valid user ID header, bypassing all session authentication. No build tag, no env gate — active in every deployment. Anyone able to enumerate user IDs got full admin access. Fix moves the bypass to a `TestRequireAuth` wrapper in `rbac_test_bypass.go` used only by the test harness, plus 5 security regression tests. (Called out as a known limitation in v0.3.0.)
+
+**UI**
+- `.stats-grid` in `dashboard.css` stepped from 1 → 2 → 4 columns via media queries, producing an orphan card whenever a page had 3 stats. Now uses `auto-fit minmax(200px, 1fr)` so 3-, 4-, or 5-card layouts all lay out without desktop orphans.
+- `.stats-card` hover state used a hardcoded `rgba(0, 0, 0, 0.05)` shadow. Now uses the `--shadow-md` design token, giving correct behavior in both light and dark themes.
+- `admin_metrics.css` and `admin_settings.css` contained hardcoded fallback colors (`#f5f5f5`, `#d4edda`, `#721c24`) that broke dark mode. All replaced with design tokens.
+
+### Changed
+
+**Template system**
+- `admin_dashboard.html`, `admin_settings.html`, `admin_metrics.html`, and `user_management.html` all migrated to use the new reusable partials. Per-page CSS (`admin_metrics.css`, `admin_settings.css`) slimmed from ~110 lines each to ~30 lines of truly page-specific concerns.
+- Every page now gets `partials/components.html` and `components.css` loaded automatically via `partials/base.html` — no per-page plumbing needed.
+
+**Handler**
+- `AdminDashboardHandler` gained a `LastPageData()` getter exposed for testing (matches the `Handler.SetTemplates` pattern already used elsewhere).
+
+### Known limitations (carried forward)
+
+- Not every consumer template has been migrated yet. `dashboard.html`, `event_list.html`, `invite_list.html`, `rsvp_page.html`, `confirmation.html`, `rsvp_summary.html`, `event_form.html`, `event_detail.html`, `event_customization.html`, and `template_editor.html` still hand-roll patterns that could use the new partials. Marked as an Epic 10 follow-up.
+- `GetRecentActivity` still loads all user events/invites/RSVPs into memory (from v0.3.0).
+- OIDC implementation still not integration-tested against a real provider (from v0.1.0).
+
+---
+
 ## [0.3.0] - 2026-07-08
 
 Major quality, testing, and infrastructure release. No breaking changes to user-facing functionality, but significant internal improvements in performance, test coverage, and developer experience.
@@ -153,5 +205,6 @@ Major quality, testing, and infrastructure release. No breaking changes to user-
 
 ---
 
+[0.4.0]: https://github.com/lenaxia/tinyrsvp/releases/tag/v0.4.0
 [0.3.0]: https://github.com/lenaxia/tinyrsvp/releases/tag/v0.3.0
 [0.1.0]: https://github.com/lenaxia/tinyrsvp/releases/tag/v0.1.0
