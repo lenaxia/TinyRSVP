@@ -1474,3 +1474,85 @@ func TestEventRepository_ListWithStats(t *testing.T) {
 		t.Errorf("Status filter: expected 1 event, got %d", len(filtered))
 	}
 }
+
+func TestEventRepository_GetDashboardStatsByCreator(t *testing.T) {
+	database := setupEventTestDB(t)
+	defer database.Close()
+
+	repo := NewEventRepository(database)
+	ctx := context.Background()
+
+	event1 := &models.Event{
+		Title: "Published Event", StartTime: time.Now().Add(24 * time.Hour),
+		Timezone: "UTC", Status: models.EventStatusPublished, CreatedBy: 1,
+	}
+	event2 := &models.Event{
+		Title: "Draft Event", StartTime: time.Now().Add(48 * time.Hour),
+		Timezone: "UTC", Status: models.EventStatusDraft, CreatedBy: 1,
+	}
+	if err := repo.Create(ctx, event1); err != nil {
+		t.Fatalf("create event1: %v", err)
+	}
+	if err := repo.Create(ctx, event2); err != nil {
+		t.Fatalf("create event2: %v", err)
+	}
+
+	_, err := database.Exec(ctx, `
+		INSERT INTO invites (event_id, email, token, token_hash, max_plus_ones, status, created_at, updated_at, expires_at)
+		VALUES
+		  (?, 'a@test.com', 't1', 'h1', 0, 'sent', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP + 86400),
+		  (?, 'b@test.com', 't2', 'h2', 0, 'viewed', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP + 86400),
+		  (?, 'c@test.com', 't3', 'h3', 0, 'revoked', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP + 86400)
+	`, event1.ID, event1.ID, event2.ID)
+	if err != nil {
+		t.Fatalf("create invites: %v", err)
+	}
+
+	_, err = database.Exec(ctx, `
+		INSERT INTO rsvps (invite_id, response, plus_ones, created_at, updated_at)
+		VALUES
+		  (1, 'yes', 0, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+		  (2, 'no', 0, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+	`)
+	if err != nil {
+		t.Fatalf("create rsvps: %v", err)
+	}
+
+	stats, err := repo.GetDashboardStatsByCreator(ctx, 1)
+	if err != nil {
+		t.Fatalf("GetDashboardStatsByCreator: %v", err)
+	}
+
+	if stats.TotalEvents != 2 {
+		t.Errorf("TotalEvents = %d, want 2", stats.TotalEvents)
+	}
+	if stats.PublishedEvents != 1 {
+		t.Errorf("PublishedEvents = %d, want 1", stats.PublishedEvents)
+	}
+	if stats.DraftEvents != 1 {
+		t.Errorf("DraftEvents = %d, want 1", stats.DraftEvents)
+	}
+	if stats.TotalInvites != 3 {
+		t.Errorf("TotalInvites = %d, want 3", stats.TotalInvites)
+	}
+	if stats.PendingInvites != 1 {
+		t.Errorf("PendingInvites = %d, want 1 (only 'sent' status)", stats.PendingInvites)
+	}
+	if stats.TotalRSVPs != 2 {
+		t.Errorf("TotalRSVPs = %d, want 2", stats.TotalRSVPs)
+	}
+	if stats.AcceptedRSVPs != 1 {
+		t.Errorf("AcceptedRSVPs = %d, want 1", stats.AcceptedRSVPs)
+	}
+	if stats.DeclinedRSVPs != 1 {
+		t.Errorf("DeclinedRSVPs = %d, want 1", stats.DeclinedRSVPs)
+	}
+
+	emptyStats, err := repo.GetDashboardStatsByCreator(ctx, 999)
+	if err != nil {
+		t.Fatalf("GetDashboardStatsByCreator for non-existent user: %v", err)
+	}
+	if emptyStats.TotalEvents != 0 {
+		t.Errorf("non-existent user: TotalEvents = %d, want 0", emptyStats.TotalEvents)
+	}
+}

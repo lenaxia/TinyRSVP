@@ -12,6 +12,7 @@ import (
 
 type DashboardEventRepository interface {
 	GetByCreatorID(ctx context.Context, creatorID int64) ([]*models.Event, error)
+	GetDashboardStatsByCreator(ctx context.Context, creatorID int64) (*DashboardStats, error)
 }
 
 type DashboardInviteRepository interface {
@@ -22,25 +23,7 @@ type DashboardRSVPRepository interface {
 	GetByInviteIDs(ctx context.Context, inviteIDs []int64) ([]*models.RSVP, error)
 }
 
-type DashboardStats struct {
-	TotalEvents     int
-	DraftEvents     int
-	PublishedEvents int
-	TotalInvites    int
-	PendingInvites  int
-	TotalRSVPs      int
-	AcceptedRSVPs   int
-	DeclinedRSVPs   int
-	ResponseRate    int
-}
-
-func (s *DashboardStats) CalculateResponseRate() {
-	if s.TotalInvites == 0 {
-		s.ResponseRate = 0
-		return
-	}
-	s.ResponseRate = (s.TotalRSVPs * 100) / s.TotalInvites
-}
+type DashboardStats = models.DashboardStats
 
 type ActivityItem struct {
 	Icon        string
@@ -117,68 +100,13 @@ func (s *dashboardService) GetDashboardStats(ctx context.Context, userID int64) 
 		}
 	}
 
-	events, err := s.eventRepo.GetByCreatorID(ctx, userID)
+	stats, err := s.eventRepo.GetDashboardStatsByCreator(ctx, userID)
 	if err != nil {
-		return nil, fmt.Errorf("failed to get events: %w", err)
+		return nil, fmt.Errorf("failed to get dashboard stats: %w", err)
 	}
 
-	stats := &DashboardStats{}
-
-	stats.TotalEvents = len(events)
-	for _, event := range events {
-		switch event.Status {
-		case models.EventStatusDraft:
-			stats.DraftEvents++
-		case models.EventStatusPublished:
-			stats.PublishedEvents++
-		}
-	}
-
-	if len(events) == 0 {
-		stats.CalculateResponseRate()
-		return stats, nil
-	}
-
-	eventIDs := make([]int64, len(events))
-	for i, event := range events {
-		eventIDs[i] = event.ID
-	}
-
-	invites, err := s.inviteRepo.GetByEventIDs(ctx, eventIDs)
-	if err != nil {
-		return nil, fmt.Errorf("failed to get invites: %w", err)
-	}
-
-	stats.TotalInvites = len(invites)
-	for _, invite := range invites {
-		if invite.Status == models.InviteStatusDraft || invite.Status == models.InviteStatusSent {
-			stats.PendingInvites++
-		}
-	}
-
-	if len(invites) == 0 {
-		stats.CalculateResponseRate()
-		return stats, nil
-	}
-
-	inviteIDs := make([]int64, len(invites))
-	for i, invite := range invites {
-		inviteIDs[i] = invite.ID
-	}
-
-	rsvps, err := s.rsvpRepo.GetByInviteIDs(ctx, inviteIDs)
-	if err != nil {
-		return nil, fmt.Errorf("failed to get rsvps: %w", err)
-	}
-
-	stats.TotalRSVPs = len(rsvps)
-	for _, rsvp := range rsvps {
-		switch rsvp.Response {
-		case models.RSVPResponseYes:
-			stats.AcceptedRSVPs++
-		case models.RSVPResponseNo:
-			stats.DeclinedRSVPs++
-		}
+	if stats == nil {
+		stats = &DashboardStats{}
 	}
 
 	stats.CalculateResponseRate()

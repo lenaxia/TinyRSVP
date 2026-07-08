@@ -16,42 +16,24 @@ func TestDashboardService_GetDashboardStats_Success(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	now := time.Now()
-	events := []*models.Event{
-		{ID: 1, Status: models.EventStatusDraft, CreatedBy: 1, CreatedAt: now},
-		{ID: 2, Status: models.EventStatusPublished, CreatedBy: 1, CreatedAt: now},
-		{ID: 3, Status: models.EventStatusPublished, CreatedBy: 1, CreatedAt: now},
-	}
-
-	invites := []*models.Invite{
-		{ID: 1, EventID: 1, Status: models.InviteStatusDraft},
-		{ID: 2, EventID: 2, Status: models.InviteStatusSent},
-		{ID: 3, EventID: 2, Status: models.InviteStatusViewed},
-		{ID: 4, EventID: 3, Status: models.InviteStatusViewed},
-	}
-
-	rsvps := []*models.RSVP{
-		{ID: 1, InviteID: 2, Response: models.RSVPResponseYes},
-		{ID: 2, InviteID: 3, Response: models.RSVPResponseYes},
-		{ID: 3, InviteID: 4, Response: models.RSVPResponseNo},
+	expectedStats := &models.DashboardStats{
+		TotalEvents:     3,
+		DraftEvents:     1,
+		PublishedEvents: 2,
+		TotalInvites:    4,
+		PendingInvites:  2,
+		TotalRSVPs:      3,
+		AcceptedRSVPs:   2,
+		DeclinedRSVPs:   1,
 	}
 
 	mockEventRepo := repositories.NewMockEventRepository(ctrl)
 	mockInviteRepo := repositories.NewMockInviteRepository(ctrl)
 	mockRSVPRepo := repositories.NewMockRSVPRepository(ctrl)
 
-	// Set expectations
 	mockEventRepo.EXPECT().
-		GetByCreatorID(gomock.Any(), int64(1)).
-		Return(events, nil)
-
-	mockInviteRepo.EXPECT().
-		GetByEventIDs(gomock.Any(), []int64{1, 2, 3}).
-		Return(invites, nil)
-
-	mockRSVPRepo.EXPECT().
-		GetByInviteIDs(gomock.Any(), []int64{1, 2, 3, 4}).
-		Return(rsvps, nil)
+		GetDashboardStatsByCreator(gomock.Any(), int64(1)).
+		Return(expectedStats, nil)
 
 	service := NewDashboardService(mockEventRepo, mockInviteRepo, mockRSVPRepo)
 
@@ -102,8 +84,8 @@ func TestDashboardService_GetDashboardStats_NoEvents(t *testing.T) {
 
 	// Set expectation
 	mockEventRepo.EXPECT().
-		GetByCreatorID(gomock.Any(), int64(1)).
-		Return([]*models.Event{}, nil)
+		GetDashboardStatsByCreator(gomock.Any(), int64(1)).
+		Return(&models.DashboardStats{}, nil)
 
 	service := NewDashboardService(mockEventRepo, mockInviteRepo, mockRSVPRepo)
 

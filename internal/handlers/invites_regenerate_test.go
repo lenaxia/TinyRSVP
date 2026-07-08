@@ -499,3 +499,7 @@ func (m *mockRegenerateEventRepository) GetByPublicID(ctx context.Context, publi
 func (m *mockRegenerateEventRepository) GetByFriendlyName(ctx context.Context, friendlyName string) (*models.Event, error) {
 	return nil, errors.New("not implemented")
 }
+
+func (m * mockRegenerateEventRepository) GetDashboardStatsByCreator(ctx context.Context, creatorID int64) (*models.DashboardStats, error) {
+	return &models.DashboardStats{}, nil
+}

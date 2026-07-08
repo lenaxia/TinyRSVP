@@ -1474,3 +1474,7 @@ func TestService_GetEventsToArchive(t *testing.T) {
 		})
 	}
 }
+
+func (m * mockEventRepository) GetDashboardStatsByCreator(ctx context.Context, creatorID int64) (*models.DashboardStats, error) {
+	return &models.DashboardStats{}, nil
+}
