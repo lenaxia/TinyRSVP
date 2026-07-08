@@ -5,24 +5,12 @@
 {{define "main-class"}}dashboard-main{{end}}
 
 {{define "content"}}
-    <header class="dashboard-header">
-        <h1>User Management</h1>
-        <div class="user-info">
-            <span>{{.User.Name}} ({{.User.Role}})</span>
-        </div>
-    </header>
+    {{template "page-header" dict "Title" "User Management" "Actions" (printf `<span class="header-user">%s <span class="header-user-role">(%s)</span></span>` .User.Name .User.Role)}}
 
     {{if .Error}}
-    <div class="error-state" role="alert">
-        <h2 class="error-state-title">Error Loading Users</h2>
-        <p class="error-state-description">{{.Error}}</p>
-        <a href="/admin/users" class="btn btn-primary">Retry</a>
-    </div>
+        {{template "error-state" dict "Title" "Error Loading Users" "Description" .Error "ActionURL" "/admin/users" "ActionText" "Retry"}}
     {{else if .Loading}}
-    <div class="loading-state" aria-live="polite" aria-busy="true">
-        <div class="loading-spinner" role="status"></div>
-        <p class="loading-state-text">Loading users...</p>
-    </div>
+        {{template "loading-state" dict "Message" "Loading users..."}}
     {{else}}
 
     {{if .Success}}
@@ -31,7 +19,12 @@
     </div>
     {{end}}
 
-    <section class="user-list">
+    <section class="ui-section user-list" aria-label="Users">
+        <header class="ui-section-header">
+            <h2 class="ui-section-title">All Users</h2>
+            <p class="ui-section-description">Total: {{.Total}}</p>
+        </header>
+        <div class="ui-section-body">
         {{if .Users}}
         <table class="data-table">
             <thead>
@@ -64,7 +57,7 @@
                         {{if .LastLoginAt}}
                         {{.LastLoginAt.Format "2006-01-02 15:04"}}
                         {{else}}
-                        Never
+                        <span class="text-secondary">Never</span>
                         {{end}}
                     </td>
                     <td>
@@ -82,14 +75,9 @@
             </tbody>
         </table>
         {{else}}
-        <div class="empty-state">
-            <div class="empty-state-icon">👥</div>
-            <h3 class="empty-state-title">No Users Found</h3>
-            <p class="empty-state-description">
-                No users in the system yet
-            </p>
-        </div>
+            {{template "empty-state" dict "Icon" "👥" "Title" "No Users Found" "Description" "No users in the system yet"}}
         {{end}}
+        </div>
     </section>
 
     {{end}}

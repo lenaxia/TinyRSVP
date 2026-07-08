@@ -615,6 +615,7 @@ docker-compose up -d
 | Branch Name | Purpose | Status | Created | Owner |
 |-------------|---------|--------|---------|-------|
 | `main` | Stable code | Active | 2026-01-06 | - |
+| `feature/admin-dashboard-and-partials` | Redesign admin dashboard w/ drilldowns + system panels, extract reusable partials (`components.css` + upgraded `partials/components.html`), polish read-only settings/metrics pages | In Progress | 2026-07-07 | LLM |
 
 **Merged Branches:**
 
@@ -671,7 +672,7 @@ docker-compose up -d
 
 **Naming:** `NNNN_YYYY-MM-DD_description.md` (continuous numbering from 0000)
 
-**Current Count:** 151 entries (0000-0150)
+**Current Count:** 176 entries (0000-0175)
 
 **Purpose:**
 - Progress updates
@@ -685,7 +686,7 @@ docker-compose up -d
 - When handing off to another session
 - When documenting blockers
 
-**Next Entry:** Use `0151_YYYY-MM-DD_description.md`
+**Next Entry:** Use `0176_YYYY-MM-DD_description.md`
 
 ### Backlog Stories
 

@@ -18,17 +18,29 @@ type AdminDashboardService interface {
 	GetAdminStats(ctx context.Context) (*admin.AdminStats, error)
 }
 
+// AdminSystemHealthProvider supplies best-effort operational health data for
+// the admin dashboard's system panels. Both methods can fail without
+// blocking the page — the handler treats a nil return as "not available".
+type AdminSystemHealthProvider interface {
+	GetEmailQueueStatus(ctx context.Context) (*EmailQueueMetrics, error)
+	GetDBStats() (*DBPoolMetrics, error)
+}
+
 type AdminDashboardStats = admin.AdminStats
 
 type AdminDashboardHandler struct {
-	service   AdminDashboardService
-	templates *template.Template
+	service      AdminDashboardService
+	systemHealth AdminSystemHealthProvider
+	templates    *template.Template
+	lastPageData *AdminDashboardPageData
 }
 
 type AdminDashboardPageData struct {
 	ActivePage string
 	User       *models.User
 	Stats      *AdminDashboardStats
+	EmailQueue *EmailQueueMetrics
+	DBPool     *DBPoolMetrics
 	Error      string
 	Loading    bool
 }
@@ -41,6 +53,21 @@ func NewAdminDashboardHandler(service AdminDashboardService) *AdminDashboardHand
 
 func (h *AdminDashboardHandler) SetTemplates(tmpl *template.Template) {
 	h.templates = tmpl
+}
+
+// SetSystemHealth wires the optional operational health provider. When set,
+// the admin dashboard's rendered data includes email queue + DB pool KPIs.
+// When left unset, the page still renders with just business stats.
+func (h *AdminDashboardHandler) SetSystemHealth(p AdminSystemHealthProvider) {
+	h.systemHealth = p
+}
+
+// LastPageData returns the most recently rendered page data. Exposed so
+// tests can assert on what would be passed to the template without needing
+// to parse a real template — the render itself is exercised by template
+// tests in templates/web/.
+func (h *AdminDashboardHandler) LastPageData() *AdminDashboardPageData {
+	return h.lastPageData
 }
 
 func (h *AdminDashboardHandler) AdminDashboard(w http.ResponseWriter, r *http.Request) {
@@ -66,6 +93,22 @@ func (h *AdminDashboardHandler) AdminDashboard(w http.ResponseWriter, r *http.Re
 		Stats:      stats,
 	}
 
+	// Best-effort ops-at-a-glance data. Failures are logged but don't block
+	// the page — a broken email queue check should not blank the dashboard.
+	if h.systemHealth != nil {
+		if q, err := h.systemHealth.GetEmailQueueStatus(r.Context()); err != nil {
+			log.Printf("Admin dashboard: email queue status unavailable: %v", err)
+		} else {
+			data.EmailQueue = q
+		}
+		if db, err := h.systemHealth.GetDBStats(); err != nil {
+			log.Printf("Admin dashboard: db pool stats unavailable: %v", err)
+		} else {
+			data.DBPool = db
+		}
+	}
+
+	h.lastPageData = data
 	h.renderPage(w, http.StatusOK, data)
 }
 

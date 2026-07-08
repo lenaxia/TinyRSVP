@@ -3,62 +3,154 @@
 {{define "title"}}Admin Dashboard - TinyRSVP{{end}}
 
 {{define "content"}}
-    {{template "page-header" dict "Title" "Admin Dashboard" "Actions" (printf `<span>%s (%s)</span>` .User.Name .User.Role)}}
+    {{template "page-header" dict "Title" "Admin Dashboard" "Actions" (printf `<span class="header-user">%s <span class="header-user-role">(%s)</span></span>` .User.Name .User.Role)}}
 
     {{if .Error}}
-    <div class="error-state" role="alert">
-        <h2 class="error-state-title">Error Loading Dashboard</h2>
-        <p class="error-state-description">{{.Error}}</p>
-        <button class="btn btn-primary" onclick="window.location.reload()">Retry</button>
-    </div>
+        {{template "error-state" dict "Title" "Error Loading Dashboard" "Description" .Error "OnClick" "window.location.reload()" "ActionText" "Retry"}}
     {{else if .Loading}}
-    <div class="loading-state" aria-live="polite" aria-busy="true">
-        <div class="loading-spinner" role="status"></div>
-        <p class="loading-state-text">Loading admin dashboard...</p>
-    </div>
+        {{template "loading-state" dict "Message" "Loading admin dashboard..."}}
     {{else}}
-    
-    <section class="stats-grid">
-        <div class="stats-card">
-            <h2 class="stats-card-title">Total Users</h2>
-            <div class="stats-card-value">{{.Stats.TotalUsers}}</div>
-            <p class="stats-card-subtitle">
-                Active users
-            </p>
-        </div>
 
-        <div class="stats-card">
-            <h2 class="stats-card-title">Total Events</h2>
-            <div class="stats-card-value">{{.Stats.TotalEvents}}</div>
-            <p class="stats-card-subtitle">
-                All events
-            </p>
-        </div>
-
-        <div class="stats-card">
-            <h2 class="stats-card-title">Total Invites</h2>
-            <div class="stats-card-value">{{.Stats.TotalInvites}}</div>
-            <p class="stats-card-subtitle">
-                All invites
-            </p>
-        </div>
+    <section class="metric-tile-grid" aria-label="Overview metrics">
+        {{template "metric-tile" dict
+            "Label" "Total Users"
+            "Value" .Stats.TotalUsers
+            "Href"  "/admin/users"
+            "Accent" "primary"
+        }}
+        {{template "metric-tile" dict
+            "Label" "Total Events"
+            "Value" .Stats.TotalEvents
+            "Href"  "/events"
+            "Accent" "success"
+        }}
+        {{template "metric-tile" dict
+            "Label" "Total Invites"
+            "Value" .Stats.TotalInvites
+            "Accent" "warning"
+        }}
+        {{if .EmailQueue}}
+            {{if .EmailQueue.Healthy}}
+                {{template "metric-tile" dict
+                    "Label" "System Health"
+                    "Value" "Healthy"
+                    "Sub"   "All checks passing"
+                    "Href"  "/admin/metrics"
+                    "Accent" "success"
+                }}
+            {{else}}
+                {{template "metric-tile" dict
+                    "Label" "System Health"
+                    "Value" "Attention"
+                    "Sub"   "See system panels below"
+                    "Href"  "/admin/metrics"
+                    "Accent" "error"
+                }}
+            {{end}}
+        {{else}}
+            {{template "metric-tile" dict
+                "Label" "System Health"
+                "Value" "—"
+                "Sub"   "Not available"
+                "Href"  "/admin/metrics"
+                "Accent" "info"
+            }}
+        {{end}}
     </section>
 
-    <section class="admin-actions">
-        <h2>Quick Actions</h2>
-        <div class="action-grid">
-            <a href="/admin/users" class="action-card">
-                <h3>Manage Users</h3>
-                <p>View and manage system users</p>
-            </a>
-            <a href="/admin/settings" class="action-card">
-                <h3>System Settings</h3>
-                <p>View server configuration</p>
-            </a>
-            <a href="/admin/metrics" class="action-card">
-                <h3>System Metrics</h3>
-                <p>View system health and performance</p>
-            </a>
+    {{if or .DBPool .EmailQueue}}
+    <section class="ui-section" aria-label="System panels">
+        <header class="ui-section-header">
+            <h2 class="ui-section-title">System</h2>
+            <p class="ui-section-description">Live operational health. Full details in <a href="/admin/metrics">Metrics</a>.</p>
+        </header>
+        <div class="ui-section-body">
+            <div class="action-grid">
+                {{if .DBPool}}
+                <div class="panel">
+                    <div class="panel-header">
+                        <h3 class="panel-header-title">Database Pool</h3>
+                        {{template "status-badge" dict "Variant" "success" "Label" "Active"}}
+                    </div>
+                    <div class="panel-body">
+                        <dl class="definition-list">
+                            <dt>Open</dt>
+                            <dd>{{.DBPool.OpenConnections}} / {{.DBPool.MaxOpenConnections}}</dd>
+                            <dt>In use</dt>
+                            <dd>{{.DBPool.InUse}}</dd>
+                            <dt>Idle</dt>
+                            <dd>{{.DBPool.Idle}}</dd>
+                            <dt>Wait count</dt>
+                            <dd>{{.DBPool.WaitCount}}</dd>
+                        </dl>
+                    </div>
+                    <div class="panel-footer">
+                        <a href="/admin/metrics" class="panel-footer-link">View details →</a>
+                    </div>
+                </div>
+                {{end}}
+
+                {{if .EmailQueue}}
+                <div class="panel">
+                    <div class="panel-header">
+                        <h3 class="panel-header-title">Email Queue</h3>
+                        {{if .EmailQueue.Healthy}}
+                            {{template "status-badge" dict "Variant" "success" "Label" "Healthy"}}
+                        {{else}}
+                            {{template "status-badge" dict "Variant" "error" "Label" "Unhealthy"}}
+                        {{end}}
+                    </div>
+                    <div class="panel-body">
+                        <dl class="definition-list">
+                            <dt>Pending</dt>
+                            <dd>{{.EmailQueue.QueueSize}}</dd>
+                            <dt>Sending</dt>
+                            <dd>{{.EmailQueue.SendingCount}}</dd>
+                            <dt>Failed</dt>
+                            <dd>{{.EmailQueue.FailedCount}}</dd>
+                        </dl>
+                    </div>
+                    <div class="panel-footer">
+                        <a href="/admin/metrics" class="panel-footer-link">View details →</a>
+                    </div>
+                </div>
+                {{end}}
+            </div>
+        </div>
+    </section>
+    {{end}}
+
+    <section class="ui-section" aria-label="Quick actions">
+        <header class="ui-section-header">
+            <h2 class="ui-section-title">Quick Actions</h2>
+        </header>
+        <div class="ui-section-body">
+            <div class="action-grid">
+                {{template "action-card" dict
+                    "Href" "/admin/users"
+                    "Icon" "👥"
+                    "Title" "Manage Users"
+                    "Description" "View and change user roles"
+                }}
+                {{template "action-card" dict
+                    "Href" "/admin/settings"
+                    "Icon" "⚙"
+                    "Title" "System Settings"
+                    "Description" "Read-only view of runtime configuration"
+                }}
+                {{template "action-card" dict
+                    "Href" "/admin/metrics"
+                    "Icon" "📊"
+                    "Title" "System Metrics"
+                    "Description" "DB pool, email queue, health details"
+                }}
+                {{template "action-card" dict
+                    "Href" "/metrics"
+                    "Icon" "🔎"
+                    "Title" "Prometheus"
+                    "Description" "Raw metrics for external scrapers"
+                }}
+            </div>
         </div>
     </section>
 

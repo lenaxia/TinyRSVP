@@ -104,13 +104,33 @@ func parseWithBase(templateName string) (*template.Template, error) {
 	if err != nil {
 		return nil, err
 	}
-	// ParseFiles adds base, page_header, and the leaf template. base.html calls
-	// {{template "navigation" .}} which will use our stub above since ParseFiles
-	// does not re-define "navigation" (it defines "base", "css-common", etc.).
+	// ParseFiles adds base, page_header, components, and the leaf template.
+	// base.html calls {{template "navigation" .}} which will use our stub
+	// above since ParseFiles does not re-define "navigation" (it defines
+	// "base", "css-common", etc.).
 	_, err = t.ParseFiles(
 		"partials/base.html",
 		"partials/page_header.html",
+		"partials/components.html",
 		templateName,
+	)
+	if err != nil {
+		return nil, err
+	}
+	return t, nil
+}
+
+// parsePartialsOnly parses just the partials/components.html file (plus the
+// navigation stub for completeness) so tests can render individual partial
+// blocks directly, without a full page. Used by partial-level unit tests.
+func parsePartialsOnly() (*template.Template, error) {
+	t, err := template.New("partials").Funcs(testFuncMap()).Parse(stubNavigation)
+	if err != nil {
+		return nil, err
+	}
+	_, err = t.ParseFiles(
+		"partials/page_header.html",
+		"partials/components.html",
 	)
 	if err != nil {
 		return nil, err

@@ -2,13 +2,16 @@
 
 ## Overview
 
-TinyRSVP uses Go's `html/template` system with a base template and reusable components to ensure consistency across all pages.
+TinyRSVP uses Go's `html/template` with a base template + reusable partials.
+Every page **must** compose from the partials rather than reinvent the same
+HTML. See [PATTERNS.md](../PATTERNS.md) for a cookbook mapping common design
+needs to the partial + CSS class you should reach for.
 
 ## Base Template System
 
 ### base.html
 
-The base template provides the foundational HTML structure that all pages extend.
+Provides the foundational HTML structure that all pages extend.
 
 **Usage:**
 ```go
@@ -24,265 +27,196 @@ The base template provides the foundational HTML structure that all pages extend
 ```
 
 **Available Blocks:**
-- `title` - Page title (default: "TinyRSVP")
-- `main-class` - CSS class for main container (default: "dashboard-main")
-- `css-extra` - Additional CSS files specific to the page
-- `js-extra` - Additional JavaScript files specific to the page
-- `content` - Main page content (required)
+- `title` — Page title (default: "TinyRSVP")
+- `main-class` — CSS class on `<main>` (default: "dashboard-main")
+- `css-extra` — Page-specific CSS imports
+- `js-extra` — Page-specific JS imports
+- `content` — Main page content (required)
 
 **Automatically Included:**
-- All common CSS files (base, variables, typography, colors, spacing, grid, buttons, navigation, dashboard, mobile, loading, error, keyboard, focus, theme)
-- All common JavaScript files (navigation_toggle, loading_states, keyboard_navigation, screen_reader, focus_management, theme_controller)
-- Navigation component
+- All common CSS files, **including `components.css`** which backs every
+  partial in `components.html`
+- Common JavaScript for nav, loading states, keyboard, screen reader,
+  focus, theme
+- The `<nav>` navigation
 
-### Example: Simple Page
+## Reusable Components (`components.html`)
+
+**Every server-side template loader (`cmd/server/main.go`,
+`tests/uxserver/server.go`) parses `partials/components.html` alongside
+`partials/base.html`.** You don't need to add it per-page — it's ambient.
+
+### stats-card
+
+Statistic display. Can optionally be a link (drilldown) and have a colored
+accent border.
+
+**Usage:**
+```html
+{{template "stats-card" dict
+    "Title"    "Total Events"
+    "Value"    .Stats.TotalEvents
+    "Subtitle" "2 draft, 5 published"
+    "Href"     "/events"
+    "Accent"   "success"
+}}
+```
+
+**Parameters:**
+- `Title` (string, required)
+- `Value` (any, required)
+- `Subtitle` (string, optional)
+- `Href` (string, optional) — renders as `<a>` when set, else `<div>`
+- `Accent` (string, optional) — one of `primary`, `success`, `warning`, `error`
+- `Icon` (string, optional) — small emoji/icon
+
+### metric-tile
+
+Denser than stats-card. Compact numeric-first tile for the admin dashboard
+"at a glance" strip and the metrics business-summary section.
+
+**Usage:**
+```html
+{{template "metric-tile" dict
+    "Label" "Total Users"
+    "Value" 42
+    "Sub"   "Active this month"
+    "Href"  "/admin/users"
+    "Accent" "primary"
+}}
+```
+
+### section
+
+A titled block with optional description. Prefer this over hand-rolled
+`<h2 class="section-title">` markup.
 
 ```html
-{{template "base" .}}
+{{template "section" dict
+    "Title"       "Server"
+    "Description" "Runtime settings loaded at startup"
+    "Body"        (safeHTML `<dl class="definition-list">…</dl>`)
+}}
+```
 
-{{define "title"}}My Page - TinyRSVP{{end}}
-
-{{define "content"}}
-    <header class="dashboard-header">
-        <h1>My Page</h1>
-        <a href="/action" class="btn btn-primary">Action</a>
+Or inline (more common):
+```html
+<section class="ui-section">
+    <header class="ui-section-header">
+        <h2 class="ui-section-title">Server</h2>
     </header>
-
-    <section class="stats-grid">
-        <!-- Content here -->
-    </section>
-{{end}}
+    <div class="ui-section-body">
+        ...
+    </div>
+</section>
 ```
 
-### Example: Page with Extra CSS/JS
+### action-card
+
+Big-tap-target navigation card. Used for the admin dashboard "Quick Actions"
+grid.
 
 ```html
-{{template "base" .}}
-
-{{define "title"}}Events - TinyRSVP{{end}}
-
-{{define "main-class"}}event-list{{end}}
-
-{{define "css-extra"}}
-    <link rel="stylesheet" href="/static/css/forms.css">
-    <link rel="stylesheet" href="/static/css/event_list.css">
-{{end}}
-
-{{define "content"}}
-    <!-- Page content -->
-{{end}}
+{{template "action-card" dict
+    "Href"        "/admin/users"
+    "Icon"        "👥"
+    "Title"       "Manage Users"
+    "Description" "View and change user roles"
+}}
 ```
 
-## Reusable Components
+Put multiple inside a `<div class="action-grid">…</div>`.
 
-### components.html
+### status-badge
 
-Provides reusable UI components that can be included in any page.
-
-#### stats-card
-
-Displays a statistic with title, value, and optional subtitle.
-
-**Usage:**
-```html
-{{template "stats-card" (dict "Title" "Total Events" "Value" .Stats.TotalEvents "Subtitle" "All events")}}
-```
-
-**Parameters:**
-- `Title` (string, required) - Card title
-- `Value` (any, required) - Main value to display
-- `Subtitle` (string, optional) - Additional context
-
-#### empty-state
-
-Displays an empty state with icon, title, description, and optional action button.
-
-**Usage:**
-```html
-{{template "empty-state" (dict 
-    "Icon" "📅" 
-    "Title" "No Events Found" 
-    "Description" "Get started by creating your first event."
-    "ActionURL" "/events/new"
-    "ActionText" "Create Event"
-)}}
-```
-
-**Parameters:**
-- `Icon` (string, required) - Emoji or icon
-- `Title` (string, required) - Empty state title
-- `Description` (string, required) - Explanation text
-- `ActionURL` (string, optional) - URL for action button
-- `ActionText` (string, optional) - Button text
-
-#### loading-state
-
-Displays a loading spinner with message.
-
-**Usage:**
-```html
-{{template "loading-state" (dict "Message" "Loading dashboard...")}}
-```
-
-**Parameters:**
-- `Message` (string, required) - Loading message
-
-#### error-state
-
-Displays an error message with optional action button.
-
-**Usage:**
-```html
-{{template "error-state" (dict 
-    "Title" "Error Loading Dashboard" 
-    "Description" .Error
-    "OnClick" "window.location.reload()"
-    "ActionText" "Retry"
-)}}
-```
-
-**Parameters:**
-- `Title` (string, required) - Error title
-- `Description` (string, required) - Error description
-- `ActionURL` (string, optional) - URL for action button
-- `OnClick` (string, optional) - JavaScript onclick handler
-- `ActionText` (string, optional) - Button text
-
-### page_header.html
-
-Provides a standardized page header with title and optional actions.
-
-**Usage:**
-```html
-{{template "page-header" (dict "Title" "Dashboard" "Actions" (html `<a href="/events/new" class="btn btn-primary">Create Event</a>`))}}
-```
-
-**Parameters:**
-- `Title` (string, required) - Page title
-- `Actions` (HTML, optional) - Action buttons or other header content
-
-## Standard Page Structure
-
-All pages should follow this structure:
+Inline pill for status/state.
 
 ```html
-{{template "base" .}}
-
-{{define "title"}}Page Name - TinyRSVP{{end}}
-
-{{define "main-class"}}dashboard-main{{end}}  <!-- or event-list, etc. -->
-
-{{define "css-extra"}}
-    <!-- Page-specific CSS if needed -->
-{{end}}
-
-{{define "content"}}
-    <header class="dashboard-header">
-        <h1>Page Title</h1>
-        <!-- Optional actions -->
-    </header>
-
-    {{if .Error}}
-        <!-- Error state -->
-    {{else if .Loading}}
-        <!-- Loading state -->
-    {{else}}
-        <!-- Main content -->
-    {{end}}
-{{end}}
-
-{{define "js-extra"}}
-    <!-- Page-specific JavaScript if needed -->
-{{end}}
+{{template "status-badge" dict "Variant" "success" "Label" "Healthy"}}
 ```
 
-## Benefits
+**Variants:** `success`, `warning`, `error`, `info`, `neutral` (default).
 
-1. **DRY Principle**: Common HTML structure defined once
-2. **Consistency**: All pages automatically get the same CSS/JS includes
-3. **Maintainability**: Update base template to affect all pages
-4. **Type Safety**: Go templates provide compile-time checking
-5. **Reusability**: Components can be used across multiple pages
-6. **Flexibility**: Pages can override or extend base behavior
+### definition-list
 
-## Migration Guide
+`<dl>` with tabular labels for read-only settings / metrics grids.
 
-### Converting Existing Pages
-
-1. **Remove boilerplate HTML** (<!DOCTYPE>, <html>, <head>, <body> tags)
-2. **Add base template call** at the top: `{{template "base" .}}`
-3. **Define required blocks**: `title`, `content`
-4. **Move page-specific CSS** to `css-extra` block
-5. **Move page-specific JS** to `js-extra` block
-6. **Use standardized components** where applicable
-
-### Before (Old Style):
 ```html
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Dashboard - TinyRSVP</title>
-    <link rel="stylesheet" href="/static/css/base.css">
-    <link rel="stylesheet" href="/static/css/variables.css">
-    <!-- ... 15 more CSS files ... -->
-</head>
-<body>
-    {{template "navigation" .}}
-    <main class="dashboard-main">
-        <header class="dashboard-header">
-            <h1>Dashboard</h1>
-        </header>
-        <!-- content -->
-    </main>
-    <script src="/static/js/navigation_toggle.js"></script>
-    <!-- ... 5 more JS files ... -->
-</body>
-</html>
+{{template "definition-list" dict
+    "Rows" (list
+        (dict "Label" "Host" "Value" "localhost")
+        (dict "Label" "Port" "Value" 8080)
+    )
+}}
 ```
 
-### After (New Style):
+Or inline `<dl class="definition-list">` if you want template control over the
+rows.
+
+### empty-state / loading-state / error-state
+
+Unchanged from earlier revisions — see components.html for signatures.
+
+### page-header
+
+Standardized `<header>` with title + optional actions HTML.
+
 ```html
-{{template "base" .}}
-
-{{define "title"}}Dashboard - TinyRSVP{{end}}
-
-{{define "content"}}
-    <header class="dashboard-header">
-        <h1>Dashboard</h1>
-    </header>
-    <!-- content -->
-{{end}}
+{{template "page-header" dict
+    "Title"   "Events"
+    "Actions" (safeHTML `<a href="/events/new" class="btn btn-primary">Create</a>`)
+}}
 ```
+
+## CSS Component Backing
+
+Every partial has a matching rule set in `static/css/components.css`. Rules:
+
+- **Design tokens only.** No hardcoded hex/rgb. Guarded by
+  `TestComponentsNoHardcodedColors`.
+- **Dark-mode-safe by construction.** The tokens (via `variables.css`)
+  handle theme switching, so components inherit correct behavior.
 
 ## Component Library
 
-The following components are available:
-
 | Component | File | Purpose |
 |-----------|------|---------|
-| `base` | base.html | Base page structure |
-| `navigation` | navigation.html | Top navigation bar |
-| `page-header` | page_header.html | Page title with actions |
-| `stats-card` | components.html | Statistics display card |
-| `empty-state` | components.html | Empty state message |
-| `loading-state` | components.html | Loading spinner |
-| `error-state` | components.html | Error message |
-| `modal-center` | modal_center.html | Centered modal |
-| `modal-slide` | modal_slide.html | Slide-in modal |
+| `base` | `base.html` | Base page structure |
+| `navigation` | `navigation.html` | Top navigation bar |
+| `page-header` | `page_header.html` | Page title with actions |
+| `stats-card` | `components.html` | Statistics display card (drilldown-capable) |
+| `metric-tile` | `components.html` | Compact numeric tile |
+| `section` | `components.html` | Titled block with body |
+| `action-card` | `components.html` | Nav card with icon + title + description |
+| `status-badge` | `components.html` | Inline status pill |
+| `definition-list` | `components.html` | `<dl>` grid for read-only key/value pairs |
+| `empty-state` | `components.html` | Empty state message |
+| `loading-state` | `components.html` | Loading spinner |
+| `error-state` | `components.html` | Error message |
+| `modal-center` | `modal_center.html` | Centered modal |
 
-## Future Enhancements
+## Adding a New Partial
 
-Consider creating additional reusable components:
-- `card` - Generic card container
-- `table` - Data table with sorting/filtering
-- `list-item` - List item with icon and actions
-- `form-field` - Form input with label and validation
-- `dropdown` - Dropdown menu component
-- `tabs` - Tab navigation component
-- `pagination` - Pagination controls
-- `breadcrumbs` - Breadcrumb navigation
+1. Write the test first in `templates/web/components_partials_test.go`.
+2. Verify RED with `go test -run TestPartialName ./templates/web/`.
+3. Add the `{{define "your-partial"}}` block to `components.html`.
+4. If the partial introduces new CSS classes, write CSS tests in
+   `static/css/components_test.go` FIRST, then add the rule to
+   `static/css/components.css`.
+5. Update the table above and (if the pattern is common) [PATTERNS.md](../PATTERNS.md).
 
-## Questions?
+## Migration Checklist
 
-Refer to existing pages that use the base template system, or consult the LAYOUT_GUIDE.md for CSS patterns.
+Existing pages should be migrated whenever they're touched substantively:
+
+1. Drop the boilerplate `<!DOCTYPE>` / `<html>` / `<head>` / `<body>`.
+2. Add `{{template "base" .}}` at the top.
+3. Define required blocks: `title`, `content`.
+4. Replace inline error/loading/empty markup with the `error-state` /
+   `loading-state` / `empty-state` partials.
+5. Replace hand-rolled `<h2 class="…-section-title">` + wrapper with
+   `<section class="ui-section">` from components.css.
+6. Replace hand-rolled `<dl>` grids with `.definition-list`.
+7. Replace ad-hoc status pills with `status-badge`.
+
+Not every page has to be migrated in one commit. Do it opportunistically.
