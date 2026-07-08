@@ -204,7 +204,7 @@ func Setup(opts Options) (*Server, func(), error) {
 	inviteImportService := invites.NewInviteService(tokenGenerator, inviteRepo)
 	individualInviteService := invites.NewIndividualInviteService(tokenGenerator, inviteRepo, eventRepo)
 
-	requireAuth := middleware.RequireAuth(sessionMgr, userService)
+	requireAuth := middleware.TestRequireAuth(sessionMgr, userService)
 	requireAdmin := middleware.RequireAdmin(authChecker)
 	middlewareAdapter := handlers.NewMiddlewareAdapter(requireAuth, requireAdmin)
 
