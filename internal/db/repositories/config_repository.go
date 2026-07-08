@@ -2,9 +2,7 @@ package repositories
 
 import (
 	"context"
-	"crypto/rand"
 	"database/sql"
-	"encoding/base64"
 	"errors"
 	"fmt"
 	"time"
@@ -13,15 +11,11 @@ import (
 	"github.com/lenaxia/tinyrsvp/internal/models"
 )
 
-const hmacSecretKey = "hmac_secret"
-
 type ConfigRepository interface {
 	Get(ctx context.Context, key string) (*models.Config, error)
 	Set(ctx context.Context, key, value string) error
 	Delete(ctx context.Context, key string) error
 	GetAll(ctx context.Context) ([]*models.Config, error)
-	GetHMACSecret(ctx context.Context) ([]byte, error)
-	SetHMACSecret(ctx context.Context, secret []byte) error
 }
 
 type configRepository struct {
@@ -132,44 +126,4 @@ func (r *configRepository) GetAll(ctx context.Context) ([]*models.Config, error)
 	}
 
 	return configs, nil
-}
-
-func (r *configRepository) GetHMACSecret(ctx context.Context) ([]byte, error) {
-	config, err := r.Get(ctx, hmacSecretKey)
-	if err != nil {
-		var notFoundErr *models.NotFoundError
-		if errors.As(err, &notFoundErr) {
-			secret, err := r.generateAndStoreHMACSecret(ctx)
-			if err != nil {
-				return nil, fmt.Errorf("failed to generate HMAC secret: %w", err)
-			}
-			return secret, nil
-		}
-		return nil, err
-	}
-
-	secret, err := base64.StdEncoding.DecodeString(config.Value)
-	if err != nil {
-		return nil, fmt.Errorf("failed to decode HMAC secret: %w", err)
-	}
-
-	return secret, nil
-}
-
-func (r *configRepository) SetHMACSecret(ctx context.Context, secret []byte) error {
-	encoded := base64.StdEncoding.EncodeToString(secret)
-	return r.Set(ctx, hmacSecretKey, encoded)
-}
-
-func (r *configRepository) generateAndStoreHMACSecret(ctx context.Context) ([]byte, error) {
-	secret := make([]byte, 32)
-	if _, err := rand.Read(secret); err != nil {
-		return nil, fmt.Errorf("failed to generate random secret: %w", err)
-	}
-
-	if err := r.SetHMACSecret(ctx, secret); err != nil {
-		return nil, err
-	}
-
-	return secret, nil
 }

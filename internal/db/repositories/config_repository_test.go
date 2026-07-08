@@ -1,7 +1,6 @@
 package repositories
 
 import (
-	"bytes"
 	"context"
 	"errors"
 	"fmt"
@@ -221,111 +220,7 @@ func TestConfigRepository_GetAll(t *testing.T) {
 	})
 }
 
-func TestConfigRepository_GetHMACSecret(t *testing.T) {
-	database := setupTestDB(t)
-	defer database.Close()
 
-	repo := NewConfigRepository(database)
-	ctx := context.Background()
-
-	t.Run("auto-generate HMAC secret on first call", func(t *testing.T) {
-		secret, err := repo.GetHMACSecret(ctx)
-		if err != nil {
-			t.Fatalf("GetHMACSecret() error = %v", err)
-		}
-
-		if len(secret) < 32 {
-			t.Errorf("Expected secret >= 32 bytes, got %d", len(secret))
-		}
-	})
-
-	t.Run("return same secret on subsequent calls", func(t *testing.T) {
-		secret1, err := repo.GetHMACSecret(ctx)
-		if err != nil {
-			t.Fatalf("GetHMACSecret() error = %v", err)
-		}
-
-		secret2, err := repo.GetHMACSecret(ctx)
-		if err != nil {
-			t.Fatalf("GetHMACSecret() error = %v", err)
-		}
-
-		if !bytes.Equal(secret1, secret2) {
-			t.Error("Expected same secret on subsequent calls")
-		}
-	})
-}
-
-func TestConfigRepository_SetHMACSecret(t *testing.T) {
-	database := setupTestDB(t)
-	defer database.Close()
-
-	repo := NewConfigRepository(database)
-	ctx := context.Background()
-
-	customSecret := []byte("my-custom-secret-that-is-32-bytes-long-exactly!")
-
-	t.Run("set custom HMAC secret", func(t *testing.T) {
-		if err := repo.SetHMACSecret(ctx, customSecret); err != nil {
-			t.Fatalf("SetHMACSecret() error = %v", err)
-		}
-
-		secret, err := repo.GetHMACSecret(ctx)
-		if err != nil {
-			t.Fatalf("GetHMACSecret() error = %v", err)
-		}
-
-		if !bytes.Equal(secret, customSecret) {
-			t.Error("Expected custom secret to be returned")
-		}
-	})
-
-	t.Run("overwrite existing HMAC secret", func(t *testing.T) {
-		newSecret := []byte("another-secret-that-is-also-32-bytes-long-now!")
-
-		if err := repo.SetHMACSecret(ctx, newSecret); err != nil {
-			t.Fatalf("SetHMACSecret() error = %v", err)
-		}
-
-		secret, err := repo.GetHMACSecret(ctx)
-		if err != nil {
-			t.Fatalf("GetHMACSecret() error = %v", err)
-		}
-
-		if !bytes.Equal(secret, newSecret) {
-			t.Error("Expected new secret to be returned")
-		}
-
-		if bytes.Equal(secret, customSecret) {
-			t.Error("Expected old secret to be overwritten")
-		}
-	})
-}
-
-func TestConfigRepository_HMACSecretPersistence(t *testing.T) {
-	database := setupTestDB(t)
-	defer database.Close()
-
-	repo := NewConfigRepository(database)
-	ctx := context.Background()
-
-	t.Run("HMAC secret persists across repository instances", func(t *testing.T) {
-		secret1, err := repo.GetHMACSecret(ctx)
-		if err != nil {
-			t.Fatalf("GetHMACSecret() error = %v", err)
-		}
-
-		newRepo := NewConfigRepository(database)
-		secret2, err := newRepo.GetHMACSecret(ctx)
-		if err != nil {
-			t.Fatalf("GetHMACSecret() error = %v", err)
-		}
-
-		if !bytes.Equal(secret1, secret2) {
-			t.Error("Expected HMAC secret to persist across repository instances")
-		}
-	})
-}
 
 func TestConfigRepository_SetAndGetMultipleKeys(t *testing.T) {
 	database := setupTestDB(t)
@@ -526,32 +421,3 @@ func TestConfigRepository_SpecialCharacters(t *testing.T) {
 	}
 }
 
-func TestConfigRepository_GetHMACSecret_InvalidBase64(t *testing.T) {
-	database := setupTestDB(t)
-	defer database.Close()
-
-	repo := NewConfigRepository(database)
-	ctx := context.Background()
-
-	if err := repo.Set(ctx, "hmac_secret", "invalid-base64!!!"); err != nil {
-		t.Fatalf("Failed to set invalid HMAC secret: %v", err)
-	}
-
-	_, err := repo.GetHMACSecret(ctx)
-	if err == nil {
-		t.Error("Expected error for invalid base64 HMAC secret")
-	}
-
-	if !containsString(err.Error(), "failed to decode HMAC secret") {
-		t.Errorf("Expected decode error, got: %v", err)
-	}
-}
-
-func containsString(s, substr string) bool {
-	for i := 0; i <= len(s)-len(substr); i++ {
-		if s[i:i+len(substr)] == substr {
-			return true
-		}
-	}
-	return false
-}

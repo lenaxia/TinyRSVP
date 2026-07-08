@@ -85,21 +85,6 @@ func (mr *MockConfigRepositoryMockRecorder) GetAll(ctx any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAll", reflect.TypeOf((*MockConfigRepository)(nil).GetAll), ctx)
 }
 
-// GetHMACSecret mocks base method.
-func (m *MockConfigRepository) GetHMACSecret(ctx context.Context) ([]byte, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetHMACSecret", ctx)
-	ret0, _ := ret[0].([]byte)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// GetHMACSecret indicates an expected call of GetHMACSecret.
-func (mr *MockConfigRepositoryMockRecorder) GetHMACSecret(ctx any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetHMACSecret", reflect.TypeOf((*MockConfigRepository)(nil).GetHMACSecret), ctx)
-}
-
 // Set mocks base method.
 func (m *MockConfigRepository) Set(ctx context.Context, key, value string) error {
 	m.ctrl.T.Helper()
@@ -112,18 +97,4 @@ func (m *MockConfigRepository) Set(ctx context.Context, key, value string) error
 func (mr *MockConfigRepositoryMockRecorder) Set(ctx, key, value any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Set", reflect.TypeOf((*MockConfigRepository)(nil).Set), ctx, key, value)
-}
-
-// SetHMACSecret mocks base method.
-func (m *MockConfigRepository) SetHMACSecret(ctx context.Context, secret []byte) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "SetHMACSecret", ctx, secret)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// SetHMACSecret indicates an expected call of SetHMACSecret.
-func (mr *MockConfigRepositoryMockRecorder) SetHMACSecret(ctx, secret any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetHMACSecret", reflect.TypeOf((*MockConfigRepository)(nil).SetHMACSecret), ctx, secret)
 }
