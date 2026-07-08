@@ -82,8 +82,8 @@ func TestAdminDashboardHandler_ServiceError(t *testing.T) {
 	w := httptest.NewRecorder()
 	handler.AdminDashboard(w, req)
 
-	if w.Code != http.StatusOK {
-		t.Errorf("Expected status 200 (renders error state), got %d", w.Code)
+	if w.Code == http.StatusOK {
+		t.Error("Expected non-200 status for primary stats failure (should use HandleError)")
 	}
 }
 
@@ -158,8 +158,8 @@ func TestUserManagementHandler_ServiceError(t *testing.T) {
 	w := httptest.NewRecorder()
 	handler.UserManagementPage(w, req)
 
-	if w.Code != http.StatusOK {
-		t.Errorf("Expected status 200 (renders error state), got %d", w.Code)
+	if w.Code == http.StatusOK {
+		t.Error("Expected non-200 status for primary list failure (should use HandleError)")
 	}
 }
 

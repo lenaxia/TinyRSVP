@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"html/template"
+	"log"
 	"net/http"
 	"net/url"
 	"strconv"
@@ -111,10 +112,8 @@ func (h *EventWebHandlers) ListEventsPage(w http.ResponseWriter, r *http.Request
 
 	eventList, err := h.service.ListEventsWithStats(r.Context(), filters)
 	if err != nil {
-		h.renderListPage(w, http.StatusOK, &EventListPageData{
-			ActivePage: "events",
-			Error:      "Failed to load events",
-		})
+		log.Printf("Event list: failed to load events: %v", err)
+		HandleError(w, r, err)
 		return
 	}
 

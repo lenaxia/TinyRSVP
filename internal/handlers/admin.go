@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"html/template"
+	"log"
 	"net/http"
 	"strconv"
 
@@ -54,11 +55,8 @@ func (h *AdminDashboardHandler) AdminDashboard(w http.ResponseWriter, r *http.Re
 
 	stats, err := h.service.GetAdminStats(r.Context())
 	if err != nil {
-		h.renderPage(w, http.StatusOK, &AdminDashboardPageData{
-			ActivePage: "admin",
-			User:       user,
-			Error:      "Failed to load admin statistics",
-		})
+		log.Printf("Admin dashboard: failed to load stats: %v", err)
+		HandleError(w, r, err)
 		return
 	}
 
@@ -166,16 +164,14 @@ func (h *UserManagementHandler) UserManagementPage(w http.ResponseWriter, r *htt
 
 	users, err := h.service.ListUsers(r.Context(), limit, offset)
 	if err != nil {
-		h.renderPage(w, http.StatusOK, &UserManagementPageData{
-			ActivePage: "admin",
-			User:       user,
-			Error:      "Failed to load users",
-		})
+		log.Printf("User management: failed to load users: %v", err)
+		HandleError(w, r, err)
 		return
 	}
 
 	total, err := h.service.CountUsers(r.Context())
 	if err != nil {
+		log.Printf("User management: failed to get user count: %v", err)
 		h.renderPage(w, http.StatusOK, &UserManagementPageData{
 			ActivePage: "admin",
 			User:       user,

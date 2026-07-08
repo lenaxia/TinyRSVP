@@ -116,8 +116,10 @@ func TestDashboardHandler_Dashboard_StatsError(t *testing.T) {
 
 	handler.Dashboard(w, req)
 
-	if w.Code != http.StatusOK {
-		t.Errorf("expected status %d, got %d", http.StatusOK, w.Code)
+	// Primary data load failure now uses HandleError (returns proper
+	// error status, not HTTP 200 with in-page error).
+	if w.Code == http.StatusOK {
+		t.Error("expected non-200 status for primary stats failure, got 200 (should use HandleError)")
 	}
 }
 

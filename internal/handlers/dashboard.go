@@ -3,6 +3,7 @@ package handlers
 import (
 	"fmt"
 	"html/template"
+	"log"
 	"net/http"
 
 	"github.com/lenaxia/tinyrsvp/internal/auth"
@@ -46,16 +47,14 @@ func (h *DashboardHandler) Dashboard(w http.ResponseWriter, r *http.Request) {
 
 	stats, err := h.service.GetDashboardStats(r.Context(), user.ID)
 	if err != nil {
-		h.renderPage(w, http.StatusOK, &DashboardPageData{
-			ActivePage: "dashboard",
-			User:       user,
-			Error:      "Failed to load dashboard statistics",
-		})
+		log.Printf("Dashboard: failed to load stats for user %d: %v", user.ID, err)
+		HandleError(w, r, err)
 		return
 	}
 
 	activity, err := h.service.GetRecentActivity(r.Context(), user.ID, 10)
 	if err != nil {
+		log.Printf("Dashboard: failed to load recent activity for user %d: %v", user.ID, err)
 		h.renderPage(w, http.StatusOK, &DashboardPageData{
 			ActivePage: "dashboard",
 			User:       user,
