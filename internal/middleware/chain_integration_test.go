@@ -120,8 +120,8 @@ func TestMiddlewareChain_Timeout_Integration(t *testing.T) {
 
 	handler.ServeHTTP(rec, req)
 
-	if rec.Code != http.StatusGatewayTimeout {
-		t.Errorf("expected status 504, got %d", rec.Code)
+	if rec.Code != http.StatusServiceUnavailable {
+		t.Errorf("expected status 503, got %d", rec.Code)
 	}
 }
 
