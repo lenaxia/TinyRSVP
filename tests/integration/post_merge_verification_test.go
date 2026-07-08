@@ -1,7 +1,13 @@
-package handlers_test
+// Package integration provides end-to-end HTTP integration tests that verify
+// the merged PRs (admin pages, metrics middleware, settings redaction) work
+// correctly through the real router with real handlers against an in-process
+// httptest.Server. Uses the X-Test-User-ID auth bypass via plain HTTP — no
+// browser dependency.
+package integration
 
 import (
 	"context"
+	"fmt"
 	"html/template"
 	"io"
 	"net/http"
@@ -65,13 +71,19 @@ func setupVerificationDB(t *testing.T) (db.Database, repositories.UserRepository
 func mustParseTemplates(t *testing.T, name string, files ...string) *template.Template {
 	t.Helper()
 	funcMap := template.FuncMap{
-		"dict": func(pairs ...interface{}) map[string]interface{} {
+		"dict": func(pairs ...interface{}) (map[string]interface{}, error) {
+			if len(pairs)%2 != 0 {
+				return nil, fmt.Errorf("dict requires even number of arguments")
+			}
 			m := make(map[string]interface{}, len(pairs)/2)
-			for i := 0; i+1 < len(pairs); i += 2 {
-				k, _ := pairs[i].(string)
+			for i := 0; i < len(pairs); i += 2 {
+				k, ok := pairs[i].(string)
+				if !ok {
+					return nil, fmt.Errorf("dict keys must be strings")
+				}
 				m[k] = pairs[i+1]
 			}
-			return m
+			return m, nil
 		},
 		"add": func(a, b int) int { return a + b },
 		"sub": func(a, b int) int { return a - b },
@@ -98,7 +110,7 @@ func mustParseTemplates(t *testing.T, name string, files ...string) *template.Te
 	return tmpl
 }
 
-func setupVerificationServer(t *testing.T) (*httptest.Server, int64) {
+func setupVerificationServer(t *testing.T) (*httptest.Server, int64, db.Database) {
 	t.Helper()
 	database, userRepo, eventRepo, inviteRepo, emailQueueRepo, sessionRepo, adminUserID := setupVerificationDB(t)
 
@@ -159,7 +171,7 @@ func setupVerificationServer(t *testing.T) (*httptest.Server, int64) {
 
 	srv := httptest.NewServer(router)
 	t.Cleanup(func() { srv.Close() })
-	return srv, adminUserID
+	return srv, adminUserID, database
 }
 
 func adminReq(t *testing.T, method, url string, userID int64, body io.Reader) *http.Request {
@@ -173,7 +185,7 @@ func adminReq(t *testing.T, method, url string, userID int64, body io.Reader) *h
 }
 
 func TestVerification_AdminSettings_RendersWithoutError(t *testing.T) {
-	srv, adminUserID := setupVerificationServer(t)
+	srv, adminUserID, _ := setupVerificationServer(t)
 
 	resp, err := http.DefaultClient.Do(adminReq(t, "GET", srv.URL+"/admin/settings", adminUserID, nil))
 	if err != nil {
@@ -212,7 +224,7 @@ func TestVerification_AdminSettings_RendersWithoutError(t *testing.T) {
 }
 
 func TestVerification_AdminMetrics_RendersWithoutError(t *testing.T) {
-	srv, adminUserID := setupVerificationServer(t)
+	srv, adminUserID, _ := setupVerificationServer(t)
 
 	resp, err := http.DefaultClient.Do(adminReq(t, "GET", srv.URL+"/admin/metrics", adminUserID, nil))
 	if err != nil {
@@ -240,7 +252,7 @@ func TestVerification_AdminMetrics_RendersWithoutError(t *testing.T) {
 }
 
 func TestVerification_AdminDashboard_HasLinks(t *testing.T) {
-	srv, adminUserID := setupVerificationServer(t)
+	srv, adminUserID, _ := setupVerificationServer(t)
 
 	resp, err := http.DefaultClient.Do(adminReq(t, "GET", srv.URL+"/admin", adminUserID, nil))
 	if err != nil {
@@ -262,7 +274,7 @@ func TestVerification_AdminDashboard_HasLinks(t *testing.T) {
 }
 
 func TestVerification_PrometheusMiddleware_IncrementsCounters(t *testing.T) {
-	srv, adminUserID := setupVerificationServer(t)
+	srv, adminUserID, _ := setupVerificationServer(t)
 
 	for i := 0; i < 3; i++ {
 		resp, err := http.DefaultClient.Do(adminReq(t, "GET", srv.URL+"/admin", adminUserID, nil))
@@ -304,7 +316,7 @@ func TestVerification_PrometheusMiddleware_IncrementsCounters(t *testing.T) {
 }
 
 func TestVerification_PrometheusMiddleware_DifferentPathsTracked(t *testing.T) {
-	srv, adminUserID := setupVerificationServer(t)
+	srv, adminUserID, _ := setupVerificationServer(t)
 
 	for i := 0; i < 3; i++ {
 		resp1, err := http.DefaultClient.Do(adminReq(t, "GET", srv.URL+"/admin/settings", adminUserID, nil))
@@ -352,5 +364,93 @@ func TestVerification_PrometheusMiddleware_DifferentPathsTracked(t *testing.T) {
 	}
 	if !hasMetrics {
 		t.Error("/metrics did not track /admin/metrics path with non-zero count after 3 requests")
+	}
+}
+
+func TestVerification_AdminSettings_NonAdminDenied(t *testing.T) {
+	srv, adminUserID, database := setupVerificationServer(t)
+
+	regularUser := &models.User{
+		Email: "regular@verify.test",
+		Name:  "Regular User",
+		Role:  models.RoleEventManager,
+	}
+	_, err := database.Exec(context.Background(), `
+		INSERT INTO users (email, name, role, created_at, updated_at)
+		VALUES (?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+	`, regularUser.Email, regularUser.Name, regularUser.Role)
+	if err != nil {
+		t.Fatalf("create regular user: %v", err)
+	}
+
+	var regularUserID int64
+	row := database.QueryRow(context.Background(), `SELECT id FROM users WHERE email = ?`, regularUser.Email)
+	if err := row.Scan(&regularUserID); err != nil {
+		t.Fatalf("get regular user ID: %v", err)
+	}
+
+	if regularUserID == adminUserID {
+		t.Fatal("regular user ID should differ from admin")
+	}
+
+	resp, err := http.DefaultClient.Do(adminReq(t, "GET", srv.URL+"/admin/settings", regularUserID, nil))
+	if err != nil {
+		t.Fatalf("GET /admin/settings as non-admin: %v", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusForbidden {
+		t.Errorf("non-admin /admin/settings: expected 403, got %d", resp.StatusCode)
+	}
+}
+
+func TestVerification_AdminSettings_NonExistentEndpoint(t *testing.T) {
+	srv, adminUserID, _ := setupVerificationServer(t)
+
+	resp, err := http.DefaultClient.Do(adminReq(t, "GET", srv.URL+"/admin/this-does-not-exist", adminUserID, nil))
+	if err != nil {
+		t.Fatalf("GET /admin/this-does-not-exist: %v", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode == http.StatusInternalServerError {
+		t.Error("non-existent admin endpoint returned 500 (should be 404 or similar, not a server error)")
+	}
+
+	body, _ := io.ReadAll(resp.Body)
+	if len(body) == 0 {
+		t.Error("expected non-empty body for non-existent endpoint (404 handler should render)")
+	}
+}
+
+func TestVerification_PrometheusMetrics_EndpointScrapeable(t *testing.T) {
+	srv, adminUserID, _ := setupVerificationServer(t)
+
+	// Make one request so the counter vec has at least one observed label set.
+	resp, err := http.DefaultClient.Do(adminReq(t, "GET", srv.URL+"/admin", adminUserID, nil))
+	if err != nil {
+		t.Fatalf("GET /admin: %v", err)
+	}
+	resp.Body.Close()
+
+	// Now scrape /metrics — it should contain the metric.
+	metricsResp, err := http.Get(srv.URL + "/metrics")
+	if err != nil {
+		t.Fatalf("GET /metrics: %v", err)
+	}
+	defer metricsResp.Body.Close()
+
+	if metricsResp.StatusCode != http.StatusOK {
+		t.Errorf("/metrics status = %d, want 200", metricsResp.StatusCode)
+	}
+
+	body, _ := io.ReadAll(metricsResp.Body)
+	bodyStr := string(body)
+
+	if !strings.Contains(bodyStr, "http_requests_total") {
+		t.Errorf("/metrics does not contain http_requests_total after a request was made. Body (first 500 chars):\n%.500s", bodyStr)
+	}
+	if !strings.Contains(bodyStr, "http_request_duration_seconds") {
+		t.Errorf("/metrics does not contain http_request_duration_seconds. Body (first 500 chars):\n%.500s", bodyStr)
 	}
 }
