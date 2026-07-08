@@ -22,7 +22,8 @@ HTTP request handlers for TinyRSVP application endpoints.
 - `health_test.go` - Health check tests
 - `readiness.go` - Readiness check endpoint (readiness probe)
 - `readiness_test.go` - Readiness check tests
-- `router.go` - Main router configuration
+- `router.go` - Router types, interfaces, and `NewRouter` orchestrator
+- `router_setup.go` - Route registration functions (middleware, auth, pages, API, RSVP, static)
 - `router_test.go` - Router tests
 - `router_auth_test.go` - Router authentication integration tests
 - `errors.go` - Centralized error handling
@@ -210,4 +211,5 @@ router := handlers.NewRouter(&handlers.RouterHandlers{
 - `health.go` - Simple liveness check handler
 - `readiness.go` - Complex readiness check with database and migration validation
 - `errors.go` - Centralized error handling with content negotiation
-- `router.go` - Main router with middleware chain
+- `router.go` - Router types, interfaces, and `NewRouter` orchestrator
+- `router_setup.go` - Route registration functions (extracted from NewRouter)

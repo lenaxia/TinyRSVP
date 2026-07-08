@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"encoding/json"
 	"errors"
 	"fmt"
 	"log"
@@ -9,10 +8,8 @@ import (
 	"os"
 	"strconv"
 	"strings"
-	"time"
 
 	"github.com/go-chi/chi/v5"
-	customMiddleware "github.com/lenaxia/tinyrsvp/internal/middleware"
 )
 
 type RouteInfo struct {
@@ -222,166 +219,19 @@ func NewRouter(handlers *RouterHandlers) *Router {
 		logger = log.New(os.Stdout, "", log.LstdFlags)
 	}
 
-	r.Use(func(next http.Handler) http.Handler {
-		return customMiddleware.Recovery(next)
-	})
-	r.Use(func(next http.Handler) http.Handler {
-		return customMiddleware.RequestID(next)
-	})
-	r.Use(func(next http.Handler) http.Handler {
-		return customMiddleware.RealIP(next)
-	})
-	r.Use(func(next http.Handler) http.Handler {
-		return customMiddleware.Logging(logger)(next)
-	})
-	r.Use(func(next http.Handler) http.Handler {
-		return customMiddleware.Timeout(30 * time.Second)(next)
-	})
-	hstsMaxAge := 31536000
-	r.Use(func(next http.Handler) http.Handler {
-		return customMiddleware.SecurityHeaders(&customMiddleware.SecurityHeadersConfig{
-			HSTSMaxAge: &hstsMaxAge,
-		})(next)
-	})
-	r.Use(func(next http.Handler) http.Handler {
-		return customMiddleware.CSRF(32)(next)
-	})
+	// Global middleware chain
+	setupMiddleware(r, handlers, logger)
 
-	rateLimiter := customMiddleware.NewRateLimiter(customMiddleware.RateLimiterConfig{
-		RequestsPerMinute: 300,
-		BurstSize:         300,
-	})
-	r.Use(func(next http.Handler) http.Handler {
-		return customMiddleware.RateLimit(rateLimiter, customMiddleware.RateLimitConfig{
-			AnonymousLimit:     300,
-			AuthenticatedLimit: 900,
-			AdminLimit:         3000,
-		})(next)
-	})
+	// Infrastructure routes (health, ready, metrics, CSP)
+	registerInfrastructureRoutes(r, handlers, logger)
 
-	if handlers.MetricsMiddleware != nil {
-		r.Use(handlers.MetricsMiddleware)
-	}
+	// Auth routes (login, logout, OIDC, forward-auth)
+	registerAuthRoutes(r, handlers)
 
-	r.NotFound(NotFoundHandler)
-	r.MethodNotAllowed(MethodNotAllowedHandler)
+	// Page routes (dashboard, admin, settings, metrics)
+	registerPageRoutes(r, handlers)
 
-	r.Handle("/api/csp-report", customMiddleware.CSPReportHandler(logger))
-
-	if handlers.HealthHandler != nil {
-		r.Handle("/health", handlers.HealthHandler)
-	} else {
-		r.Get("/health", func(w http.ResponseWriter, r *http.Request) {
-			w.Header().Set("Content-Type", "application/json")
-			w.WriteHeader(http.StatusOK)
-			json.NewEncoder(w).Encode(map[string]string{"status": "ok"})
-		})
-	}
-
-	if handlers.ReadinessHandler != nil {
-		r.Handle("/ready", handlers.ReadinessHandler)
-	}
-
-	if handlers.MetricsHandler != nil {
-		r.Handle("/metrics", handlers.MetricsHandler)
-	}
-
-	if handlers.AuthHandlers != nil {
-		r.Get("/login", handlers.AuthHandlers.ShowLogin)
-		r.Get("/auth/oidc/login", handlers.AuthHandlers.OIDCLogin)
-		r.Get("/auth/oidc/callback", handlers.AuthHandlers.OIDCCallback)
-		r.Post("/logout", handlers.AuthHandlers.Logout)
-	} else if handlers.LoginHandler != nil {
-		r.Handle("/login", handlers.LoginHandler)
-		r.Get("/auth/login", func(w http.ResponseWriter, r *http.Request) {
-			w.WriteHeader(http.StatusOK)
-		})
-
-		if handlers.CallbackHandler != nil {
-			r.Handle("/auth/callback", handlers.CallbackHandler)
-		} else {
-			r.Get("/auth/callback", func(w http.ResponseWriter, r *http.Request) {
-				w.WriteHeader(http.StatusOK)
-			})
-		}
-
-		if handlers.LogoutHandler != nil {
-			r.Handle("/logout", handlers.LogoutHandler)
-		} else {
-			r.Post("/logout", func(w http.ResponseWriter, r *http.Request) {
-				w.WriteHeader(http.StatusOK)
-			})
-			r.Post("/auth/logout", func(w http.ResponseWriter, r *http.Request) {
-				w.WriteHeader(http.StatusOK)
-			})
-		}
-	} else {
-		r.Get("/login", func(w http.ResponseWriter, r *http.Request) {
-			w.WriteHeader(http.StatusOK)
-		})
-		r.Get("/auth/login", func(w http.ResponseWriter, r *http.Request) {
-			w.WriteHeader(http.StatusOK)
-		})
-		r.Get("/auth/callback", func(w http.ResponseWriter, r *http.Request) {
-			w.WriteHeader(http.StatusOK)
-		})
-		r.Post("/logout", func(w http.ResponseWriter, r *http.Request) {
-			w.WriteHeader(http.StatusOK)
-		})
-		r.Post("/auth/logout", func(w http.ResponseWriter, r *http.Request) {
-			w.WriteHeader(http.StatusOK)
-		})
-	}
-
-	// Not-implemented placeholder page — no auth required so back-navigation works
-	r.Get("/not-implemented", func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-Type", "text/html; charset=utf-8")
-		w.WriteHeader(http.StatusOK)
-		fmt.Fprint(w, notImplementedHTML)
-	})
-
-	if handlers.DashboardHandler != nil && handlers.AuthMiddleware != nil {
-		r.Handle("/", handlers.AuthMiddleware.RequireAuth(
-			http.HandlerFunc(handlers.DashboardHandler.Dashboard),
-		))
-	} else {
-		r.Get("/", func(w http.ResponseWriter, r *http.Request) {
-			w.WriteHeader(http.StatusOK)
-		})
-	}
-
-	if handlers.AdminDashboardHandler != nil && handlers.AuthMiddleware != nil {
-		r.Handle("/admin", handlers.AuthMiddleware.RequireAuth(
-			handlers.AuthMiddleware.RequireAdmin(
-				http.HandlerFunc(handlers.AdminDashboardHandler.AdminDashboard),
-			),
-		))
-	}
-
-	if handlers.UserManagementHandler != nil && handlers.AuthMiddleware != nil {
-		r.Handle("/admin/users", handlers.AuthMiddleware.RequireAuth(
-			handlers.AuthMiddleware.RequireAdmin(
-				http.HandlerFunc(handlers.UserManagementHandler.UserManagementPage),
-			),
-		))
-	}
-
-	if handlers.SettingsHandler != nil && handlers.AuthMiddleware != nil {
-		r.Handle("/admin/settings", handlers.AuthMiddleware.RequireAuth(
-			handlers.AuthMiddleware.RequireAdmin(
-				http.HandlerFunc(handlers.SettingsHandler.SettingsPage),
-			),
-		))
-	}
-
-	if handlers.AdminMetricsHandler != nil && handlers.AuthMiddleware != nil {
-		r.Handle("/admin/metrics", handlers.AuthMiddleware.RequireAuth(
-			handlers.AuthMiddleware.RequireAdmin(
-				http.HandlerFunc(handlers.AdminMetricsHandler.MetricsPage),
-			),
-		))
-	}
-
+	// Event web UI routes (requires auth middleware for nested routes)
 	if handlers.EventWebHandlers != nil && handlers.AuthMiddleware != nil {
 		r.Route("/events", func(r chi.Router) {
 			r.Use(func(next http.Handler) http.Handler {
@@ -397,218 +247,41 @@ func NewRouter(handlers *RouterHandlers) *Router {
 				r.Get("/edit", handlers.EventWebHandlers.EditEventForm)
 				if handlers.CustomizationHandlers != nil {
 					r.Get("/customize", handlers.CustomizationHandlers.CustomizationPage)
+					r.Post("/customize", handlers.CustomizationHandlers.CustomizationPage)
 				}
-				r.Post("/", handlers.EventWebHandlers.UpdateEventFromForm)
-				r.Post("/publish", handlers.EventWebHandlers.PublishEventAction)
-				r.Post("/cancel", handlers.EventWebHandlers.CancelEventAction)
-				r.Post("/delete", handlers.EventWebHandlers.DeleteEventAction)
 			})
 		})
 	}
 
+	// Invite web UI routes (separate from /events to match original path pattern)
 	if handlers.InviteWebHandlers != nil && handlers.AuthMiddleware != nil {
 		r.Route("/events/{eventId}/invites", func(r chi.Router) {
 			r.Use(func(next http.Handler) http.Handler {
 				return handlers.AuthMiddleware.RequireAuth(next)
 			})
-
 			r.Get("/", handlers.InviteWebHandlers.ListInvitesPage)
 		})
 	}
 
-	apiRouter := chi.NewRouter()
-	if handlers.AuthMiddleware != nil {
-		apiRouter.Use(func(next http.Handler) http.Handler {
-			return handlers.AuthMiddleware.RequireAuth(next)
-		})
-	}
+	// API routes (/api/*)
+	registerAPIRoutes(r, handlers)
 
-	if handlers.EventHandlers != nil {
-		apiRouter.Route("/events", func(r chi.Router) {
-			r.Get("/", handlers.EventHandlers.ListEvents)
-			r.Post("/", handlers.EventHandlers.CreateEvent)
-			r.Get("/{id}", handlers.EventHandlers.GetEvent)
-			r.Put("/{id}", handlers.EventHandlers.UpdateEvent)
-			r.Delete("/{id}", handlers.EventHandlers.DeleteEvent)
-		})
-	} else {
-		apiRouter.Route("/events", func(r chi.Router) {
-			r.Get("/", func(w http.ResponseWriter, r *http.Request) {
-				w.WriteHeader(http.StatusUnauthorized)
-			})
-			r.Post("/", func(w http.ResponseWriter, r *http.Request) {
-				w.WriteHeader(http.StatusUnauthorized)
-			})
-			r.Get("/{id}", func(w http.ResponseWriter, r *http.Request) {
-				w.WriteHeader(http.StatusUnauthorized)
-			})
-			r.Put("/{id}", func(w http.ResponseWriter, r *http.Request) {
-				w.WriteHeader(http.StatusUnauthorized)
-			})
-			r.Delete("/{id}", func(w http.ResponseWriter, r *http.Request) {
-				w.WriteHeader(http.StatusUnauthorized)
-			})
-		})
-	}
-
-	if handlers.QuestionHandlers != nil {
-		handlers.QuestionHandlers.RegisterRoutes(apiRouter)
-	}
-
-	apiRouter.Route("/events/{eventId}/invites", func(r chi.Router) {
-		if handlers.ListInviteHandlers != nil {
-			r.Get("/", handlers.ListInviteHandlers.ListInvites)
-		}
-		if handlers.InviteHandlers != nil {
-			r.Post("/", handlers.InviteHandlers.CreateInvite)
-		}
-		if handlers.ImportInviteHandlers != nil {
-			r.Post("/import", handlers.ImportInviteHandlers.ImportInvites)
-		}
-		if handlers.ManualInviteHandlers != nil {
-			r.Post("/manual", handlers.ManualInviteHandlers.CreateManualInvite)
-		}
-	})
-
-	apiRouter.Route("/invites/{inviteId}", func(r chi.Router) {
-		if handlers.GetInviteHandlers != nil {
-			r.Get("/", handlers.GetInviteHandlers.GetInvite)
-		}
-		if handlers.UpdateInviteHandlers != nil {
-			r.Put("/", handlers.UpdateInviteHandlers.UpdateInvite)
-		}
-		if handlers.DeleteInviteHandlers != nil {
-			r.Delete("/", handlers.DeleteInviteHandlers.DeleteInvite)
-		}
-		if handlers.RevokeInviteHandlers != nil {
-			r.Post("/revoke", handlers.RevokeInviteHandlers.RevokeInvite)
-		}
-		if handlers.RegenerateInviteHandlers != nil {
-			r.Post("/regenerate", handlers.RegenerateInviteHandlers.RegenerateInviteToken)
-		}
-		if handlers.SendInviteHandlers != nil {
-			r.Post("/send", handlers.SendInviteHandlers.SendInvite)
-		}
-	})
-
-	if handlers.ImageHandlers != nil {
-		handlers.ImageHandlers.RegisterRoutes(apiRouter)
-	}
-
-	if handlers.RSVPSummaryHandler != nil {
-		apiRouter.Get("/events/{id}/rsvp-summary", handlers.RSVPSummaryHandler.GetRSVPSummary)
-	}
-
-	if handlers.TemplateHandlers != nil {
-		handlers.TemplateHandlers.RegisterRoutes(apiRouter)
-	}
-
-	if handlers.CustomizationHandlers != nil {
-		handlers.CustomizationHandlers.RegisterRoutes(apiRouter)
-	}
-
-	if handlers.UserHandler != nil {
-		if handlers.AuthMiddleware != nil {
-			r.Route("/api/users", func(r chi.Router) {
-				r.Use(handlers.AuthMiddleware.RequireAuth)
-				r.Use(handlers.AuthMiddleware.RequireAdmin)
-
-				// Method override middleware: HTML forms can only submit
-				// GET/POST, so forms use a hidden _method field to signal
-				// PATCH/DELETE. This middleware translates POST + _method
-				// to the intended HTTP method before chi routes it.
-				r.Use(func(next http.Handler) http.Handler {
-					return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-						if r.Method == http.MethodPost {
-							if err := r.ParseForm(); err == nil {
-								if override := r.FormValue("_method"); override != "" {
-									r.Method = strings.ToUpper(override)
-								}
-							}
-						}
-						next.ServeHTTP(w, r)
-					})
-				})
-
-				r.Get("/", handlers.UserHandler.ListUsers)
-				r.Get("/{id}", handlers.UserHandler.GetUser)
-				r.Patch("/{id}", handlers.UserHandler.UpdateUserRole)
-				r.Delete("/{id}", handlers.UserHandler.DeleteUser)
-			})
-		}
-	}
-
-	if handlers.CleanupHandler != nil && handlers.AuthMiddleware != nil {
-		r.Handle("/api/invites/cleanup", handlers.AuthMiddleware.RequireAuth(
-			handlers.AuthMiddleware.RequireAdmin(handlers.CleanupHandler),
-		))
-	}
-
-	if handlers.EmailHealthHandler != nil && handlers.AuthMiddleware != nil {
-		r.Handle("/api/email/health", handlers.AuthMiddleware.RequireAuth(
-			handlers.AuthMiddleware.RequireAdmin(handlers.EmailHealthHandler),
-		))
-	}
-
-	if handlers.CleanupHandler == nil {
-		apiRouter.Post("/invites/cleanup", func(w http.ResponseWriter, r *http.Request) {
-			w.WriteHeader(http.StatusUnauthorized)
-		})
-	}
-
-	r.Mount("/api", apiRouter)
-
+	// Template editor
 	if handlers.TemplateEditorHandlers != nil {
 		handlers.TemplateEditorHandlers.RegisterRoutes(r)
 	}
 
-	if handlers.RSVPHandler != nil {
-		r.Route("/rsvp/{token}", func(r chi.Router) {
-			r.Get("/", handlers.RSVPHandler.GetRSVPPage)
-			r.Post("/", handlers.RSVPHandler.SubmitRSVP)
-			r.Put("/", handlers.RSVPHandler.UpdateRSVP)
-			r.Get("/confirmation", handlers.RSVPHandler.GetConfirmationPage)
-		})
-		r.Get("/unsubscribe/{token}", handlers.RSVPHandler.Unsubscribe)
-		r.Get("/api/calendar/{token}", handlers.RSVPHandler.GetCalendar)
-	} else {
-		r.Route("/rsvp/{token}", func(r chi.Router) {
-			r.Get("/", func(w http.ResponseWriter, r *http.Request) {
-				w.WriteHeader(http.StatusOK)
-			})
-			r.Post("/", func(w http.ResponseWriter, r *http.Request) {
-				w.WriteHeader(http.StatusOK)
-			})
-			r.Put("/", func(w http.ResponseWriter, r *http.Request) {
-				w.WriteHeader(http.StatusOK)
-			})
-			r.Get("/confirmation", func(w http.ResponseWriter, r *http.Request) {
-				w.WriteHeader(http.StatusOK)
-			})
-		})
-		r.Get("/unsubscribe/{token}", func(w http.ResponseWriter, r *http.Request) {
-			w.WriteHeader(http.StatusOK)
-		})
-	}
+	// RSVP routes (public, no auth)
+	registerRSVPRoutes(r, handlers)
 
-	if handlers.AssetHandler != nil {
-		r.HandleFunc("/assets/*", handlers.AssetHandler.ServeAsset)
-	}
-
-	if handlers.StaticFileServer != nil {
-		r.Handle("/static/*", handlers.StaticFileServer)
-	} else {
-		r.Get("/static/*", func(w http.ResponseWriter, r *http.Request) {
-			http.StripPrefix("/static/", http.FileServer(http.Dir("static"))).ServeHTTP(w, r)
-		})
-	}
+	// Static files and assets
+	registerStaticRoutes(r, handlers)
 
 	return &Router{
 		mux:      r,
 		handlers: handlers,
 	}
 }
-
 func (router *Router) ListRoutes() []RouteInfo {
 	var routes []RouteInfo
 
