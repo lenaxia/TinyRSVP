@@ -577,3 +577,7 @@ func (m *mockRevokeEventRepository) GetByPublicID(ctx context.Context, publicID 
 func (m *mockRevokeEventRepository) GetByFriendlyName(ctx context.Context, friendlyName string) (*models.Event, error) {
 	return nil, errors.New("not implemented")
 }
+
+func (m * mockRevokeEventRepository) GetDashboardStatsByCreator(ctx context.Context, creatorID int64) (*models.DashboardStats, error) {
+	return &models.DashboardStats{}, nil
+}

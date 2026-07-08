@@ -27,6 +27,7 @@ type EventRepository interface {
 	GetByStatus(ctx context.Context, status models.EventStatus) ([]*models.Event, error)
 	GetEventsToArchive(ctx context.Context, daysAfterEvent int) ([]*models.Event, error)
 	GetByCreatorID(ctx context.Context, creatorID int64) ([]*models.Event, error)
+	GetDashboardStatsByCreator(ctx context.Context, creatorID int64) (*models.DashboardStats, error)
 	CountEvents(ctx context.Context) (int, error)
 	GetComponentOverrides(ctx context.Context, eventID int64) (*models.ComponentOverrides, error)
 	UpdateComponentOverrides(ctx context.Context, eventID int64, overrides *models.ComponentOverrides) error
@@ -826,6 +827,41 @@ func isForeignKeyConstraintError(err error) bool {
 	errMsg := err.Error()
 	return strings.Contains(errMsg, "FOREIGN KEY constraint failed") ||
 		strings.Contains(errMsg, "foreign key constraint")
+}
+
+func (r *eventRepository) GetDashboardStatsByCreator(ctx context.Context, creatorID int64) (*models.DashboardStats, error) {
+	query := `
+		SELECT
+			COUNT(DISTINCT e.id) AS total_events,
+			COUNT(DISTINCT CASE WHEN e.status = 'draft' THEN e.id END) AS draft_events,
+			COUNT(DISTINCT CASE WHEN e.status = 'published' THEN e.id END) AS published_events,
+			COUNT(DISTINCT i.id) AS total_invites,
+			COUNT(DISTINCT CASE WHEN i.status = 'draft' OR i.status = 'sent' THEN i.id END) AS pending_invites,
+			COUNT(DISTINCT rsvp.id) AS total_rsvps,
+			COUNT(DISTINCT CASE WHEN rsvp.response = 'yes' THEN rsvp.id END) AS accepted_rsvps,
+			COUNT(DISTINCT CASE WHEN rsvp.response = 'no' THEN rsvp.id END) AS declined_rsvps
+		FROM events e
+		LEFT JOIN invites i ON e.id = i.event_id
+		LEFT JOIN rsvps rsvp ON i.id = rsvp.invite_id
+		WHERE e.created_by = ? AND e.status != 'archived'
+	`
+
+	stats := &models.DashboardStats{}
+	err := r.db.QueryRow(ctx, query, creatorID).Scan(
+		&stats.TotalEvents,
+		&stats.DraftEvents,
+		&stats.PublishedEvents,
+		&stats.TotalInvites,
+		&stats.PendingInvites,
+		&stats.TotalRSVPs,
+		&stats.AcceptedRSVPs,
+		&stats.DeclinedRSVPs,
+	)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get dashboard stats: %w", err)
+	}
+
+	return stats, nil
 }
 
 func (r *eventRepository) CountEvents(ctx context.Context) (int, error) {

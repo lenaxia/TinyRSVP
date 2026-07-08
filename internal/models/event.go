@@ -46,3 +46,25 @@ type EventWithStats struct {
 	RSVPCount   int `db:"rsvp_count" json:"rsvp_count"`
 	AcceptCount int `db:"accept_count" json:"accept_count"`
 }
+
+// DashboardStats holds aggregated statistics for a user's dashboard.
+// Defined in models to avoid import cycles between events and repositories.
+type DashboardStats struct {
+	TotalEvents     int
+	DraftEvents     int
+	PublishedEvents int
+	TotalInvites    int
+	PendingInvites  int
+	TotalRSVPs      int
+	AcceptedRSVPs   int
+	DeclinedRSVPs   int
+	ResponseRate    int
+}
+
+func (s *DashboardStats) CalculateResponseRate() {
+	if s.TotalInvites == 0 {
+		s.ResponseRate = 0
+		return
+	}
+	s.ResponseRate = (s.TotalRSVPs * 100) / s.TotalInvites
+}

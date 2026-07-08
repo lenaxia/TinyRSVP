@@ -232,3 +232,7 @@ func (m *mockRSVPService) UpdateRSVP(ctx context.Context, token string, req *rsv
 	}
 	return nil, errors.New("not implemented")
 }
+
+func (m * mockRSVPEventRepository) GetDashboardStatsByCreator(ctx context.Context, creatorID int64) (*models.DashboardStats, error) {
+	return &models.DashboardStats{}, nil
+}

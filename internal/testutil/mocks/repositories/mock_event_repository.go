@@ -189,6 +189,21 @@ func (mr *MockEventRepositoryMockRecorder) GetComponentOverrides(ctx, eventID an
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetComponentOverrides", reflect.TypeOf((*MockEventRepository)(nil).GetComponentOverrides), ctx, eventID)
 }
 
+// GetDashboardStatsByCreator mocks base method.
+func (m *MockEventRepository) GetDashboardStatsByCreator(ctx context.Context, creatorID int64) (*models.DashboardStats, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetDashboardStatsByCreator", ctx, creatorID)
+	ret0, _ := ret[0].(*models.DashboardStats)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetDashboardStatsByCreator indicates an expected call of GetDashboardStatsByCreator.
+func (mr *MockEventRepositoryMockRecorder) GetDashboardStatsByCreator(ctx, creatorID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetDashboardStatsByCreator", reflect.TypeOf((*MockEventRepository)(nil).GetDashboardStatsByCreator), ctx, creatorID)
+}
+
 // GetEventsToArchive mocks base method.
 func (m *MockEventRepository) GetEventsToArchive(ctx context.Context, daysAfterEvent int) ([]*models.Event, error) {
 	m.ctrl.T.Helper()

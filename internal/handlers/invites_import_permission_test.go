@@ -525,3 +525,7 @@ func (m *mockEventRepository) GetByPublicID(ctx context.Context, publicID string
 func (m *mockEventRepository) GetByFriendlyName(ctx context.Context, friendlyName string) (*models.Event, error) {
 	return nil, nil
 }
+
+func (m * mockEventRepository) GetDashboardStatsByCreator(ctx context.Context, creatorID int64) (*models.DashboardStats, error) {
+	return &models.DashboardStats{}, nil
+}

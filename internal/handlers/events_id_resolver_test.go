@@ -211,3 +211,7 @@ func (m *mockEventIDResolverRepo) GetByCreatorID(ctx context.Context, creatorID 
 func (m *mockEventIDResolverRepo) CountEvents(ctx context.Context) (int, error) {
 	return 0, nil
 }
+
+func (m * mockEventIDResolverRepo) GetDashboardStatsByCreator(ctx context.Context, creatorID int64) (*models.DashboardStats, error) {
+	return &models.DashboardStats{}, nil
+}
