@@ -8,6 +8,7 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/go-chi/chi/v5"
 	"github.com/lenaxia/tinyrsvp/internal/auth"
 	"github.com/lenaxia/tinyrsvp/internal/models"
 )
@@ -108,14 +109,14 @@ func (h *UserHandler) ListUsers(w http.ResponseWriter, r *http.Request) {
 	respondJSON(w, http.StatusOK, response)
 }
 
-func (h *UserHandler) GetUser(w http.ResponseWriter, r *http.Request, userIDStr string) {
+func (h *UserHandler) GetUser(w http.ResponseWriter, r *http.Request) {
 	currentUser, _ := auth.UserFromContext(r.Context())
 	if !h.authChecker.CanManageUsers(r.Context(), currentUser) {
 		HandleError(w, r, NewPermissionDeniedError("insufficient permissions"))
 		return
 	}
 
-	userID, err := parseUserID(userIDStr)
+	userID, err := parseUserID(chi.URLParam(r, "id"))
 	if err != nil {
 		HandleError(w, r, NewBadRequestError("invalid user ID"))
 		return
@@ -130,14 +131,14 @@ func (h *UserHandler) GetUser(w http.ResponseWriter, r *http.Request, userIDStr 
 	respondJSON(w, http.StatusOK, toUserDTO(user))
 }
 
-func (h *UserHandler) UpdateUserRole(w http.ResponseWriter, r *http.Request, userIDStr string) {
+func (h *UserHandler) UpdateUserRole(w http.ResponseWriter, r *http.Request) {
 	currentUser, _ := auth.UserFromContext(r.Context())
 	if !h.authChecker.CanManageUsers(r.Context(), currentUser) {
 		HandleError(w, r, NewPermissionDeniedError("insufficient permissions"))
 		return
 	}
 
-	userID, err := parseUserID(userIDStr)
+	userID, err := parseUserID(chi.URLParam(r, "id"))
 	if err != nil {
 		HandleError(w, r, NewBadRequestError("invalid user ID"))
 		return
@@ -183,14 +184,14 @@ func (h *UserHandler) UpdateUserRole(w http.ResponseWriter, r *http.Request, use
 	respondJSON(w, http.StatusOK, toUserDTO(user))
 }
 
-func (h *UserHandler) DeleteUser(w http.ResponseWriter, r *http.Request, userIDStr string) {
+func (h *UserHandler) DeleteUser(w http.ResponseWriter, r *http.Request) {
 	currentUser, _ := auth.UserFromContext(r.Context())
 	if !h.authChecker.CanManageUsers(r.Context(), currentUser) {
 		HandleError(w, r, NewPermissionDeniedError("insufficient permissions"))
 		return
 	}
 
-	userID, err := parseUserID(userIDStr)
+	userID, err := parseUserID(chi.URLParam(r, "id"))
 	if err != nil {
 		HandleError(w, r, NewBadRequestError("invalid user ID"))
 		return
