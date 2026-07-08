@@ -83,4 +83,75 @@ Initial beta release. Feature-complete for v0 scope. Suitable for homelab / self
 
 ---
 
+## [0.3.0] - 2026-07-08
+
+Major quality, testing, and infrastructure release. No breaking changes to user-facing functionality, but significant internal improvements in performance, test coverage, and developer experience.
+
+### Added
+
+**New features (Epic 10)**
+- Event list stats: per-event invite count, RSVP count, and accept count displayed on the event list page (single SQL query, no N+1)
+- Dashboard clickable activity: activity items now link to the relevant event
+- Admin settings page (`/admin/settings`): read-only view of server configuration with all secrets redacted
+- Admin metrics dashboard (`/admin/metrics`): business counts, DB connection pool stats, and email queue status
+
+**Testing infrastructure**
+- Playwright-based browser UX test harness (replaces chromedp dependency for UX tests)
+- 35 browser-level tests (dashboard, event creation, invite management, RSVP flow)
+- Post-merge integration tests verifying admin pages, metrics middleware, and secret redaction
+- Coverage gap closure: 74.9% → 79.2% statement coverage across all packages
+- `tests/uxserver/` shared test server package (eliminates duplication between browser test frameworks)
+- `scripts/run_playwright_tests.sh` and `scripts/install_playwright_deps.sh` for sandboxed environments
+
+**CI/CD**
+- AI workflow migration: modular three-workflow architecture (issue triage, AI command routing, PR review) with 12 slash commands
+- 17 TinyRSVP-specific prompt files for AI assistant
+- 99-assertion bash test suite for `route-command.sh` command routing
+
+### Fixed
+
+**Critical bugs**
+- Metrics middleware was never wired into the router — `/metrics` endpoint returned zero counters for all HTTP request metrics
+- Timeout middleware race condition: concurrent writes to `http.ResponseWriter` caused corrupted responses and intermittent 504s. Replaced with `http.TimeoutHandler`
+- Invite `revocation_reason` column was written by `Update` but never read by `GetByID`, `GetByTokenHash`, or `GetByEventIDs` — a subsequent update would clobber the saved reason to NULL
+- Event list pagination hardcoded page size 10 in template while handler used `limit=50` — pagination links showed wrong page count
+- OIDC return URL lost during provider redirect — users always landed on `/` instead of their original destination. Fixed via short-lived cookie carrying the validated return URL
+
+**Test regressions**
+- Hardcoded `2026-06-15` dates in integration tests replaced with dynamic `time.Now().Add(24h)` for future-date safety
+- EXIF stripping test assertion relaxed to 150% tolerance for JPEG re-encoding overhead
+- `confirmation.html` missing JS includes and ARIA labels
+
+### Changed
+
+**Architecture improvements (codebase cleanup)**
+- Dashboard stats: replaced in-memory scan (load ALL events + invites + RSVPs, iterate in Go) with single SQL aggregation query using `LEFT JOIN` + `COUNT(DISTINCT CASE WHEN ...)`. O(1) queries regardless of data volume
+- Router refactor: split 716-line `NewRouter` monolith into 7 focused route-registration functions in `router_setup.go`
+- `/api/users` routing: replaced hand-rolled path parsing and per-method auth wrapping with proper chi routes
+- Page handlers: primary data load failures now use `HandleError` (proper HTTP status codes) instead of HTTP 200 with in-page error text
+- Consolidated duplicate `ListFilters` struct (was duplicated between `events` and `repositories` packages)
+- Removed dead DB-backed HMAC secret methods (`GetHMACSecret`/`SetHMACSecret`) — never called in production, env var is the single source of truth
+- Timeout middleware status code: 504 → 503 (matches HLD `SERVICE_UNAVAILABLE` spec)
+
+**Documentation**
+- `docs/TESTING.md` completed and verified against actual generated mocks
+- Epic 10 backlog status synced with verified code state (stories 13-22 confirmed complete)
+- 11 worklog entries documenting all work
+
+### Security
+
+- Admin settings page uses `SettingsView` DTO that redacts `SMTPPassword`, `OIDC.ClientSecret`, `Token.Secret`, and `Security.HMACSecretKey` — never passes raw secrets to the template layer
+- Return URL validation through OIDC flow (prevents open redirect via tampered cookie)
+- Return URL cookie cleared after use (prevents replay)
+
+### Known limitations (carried forward)
+
+- `X-Test-User-ID` header bypasses authentication in production code (`internal/middleware/rbac.go`) — deferred to Epic 09 (Security)
+- OIDC implementation not integration-tested against a real provider
+- `GetRecentActivity` still loads all user events/invites/RSVPs into memory (stats path is fixed, activity path is not)
+- 12 empty no-op method bodies in `email/metrics.go` report 0% coverage (Go tooling limitation)
+
+---
+
+[0.3.0]: https://github.com/lenaxia/tinyrsvp/releases/tag/v0.3.0
 [0.1.0]: https://github.com/lenaxia/tinyrsvp/releases/tag/v0.1.0
