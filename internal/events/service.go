@@ -15,20 +15,19 @@ type Service interface {
 	GetEvent(ctx context.Context, id int64) (*models.Event, error)
 	UpdateEvent(ctx context.Context, event *models.Event) error
 	DeleteEvent(ctx context.Context, id int64) error
-	ListEvents(ctx context.Context, filters ListFilters) ([]*models.Event, error)
-	ListEventsWithStats(ctx context.Context, filters ListFilters) ([]*models.EventWithStats, error)
+	ListEvents(ctx context.Context, filters repositories.ListFilters) ([]*models.Event, error)
+	ListEventsWithStats(ctx context.Context, filters repositories.ListFilters) ([]*models.EventWithStats, error)
 	PublishEvent(ctx context.Context, id int64) error
 	CancelEvent(ctx context.Context, id int64, reason string) error
 	ArchiveEvent(ctx context.Context, id int64) error
 	GetEventsToArchive(ctx context.Context, daysAfterEvent int) ([]*models.Event, error)
 }
 
-type ListFilters struct {
-	CreatorID *int64
-	Status    *models.EventStatus
-	Limit     int
-	Offset    int
-}
+// ListFilters is an alias for repositories.ListFilters so the service
+// interface and callers can use it without importing the repositories
+// package directly. Eliminates the prior duplicate struct that required
+// manual field-by-field copying.
+type ListFilters = repositories.ListFilters
 
 type service struct {
 	repo       repositories.EventRepository
@@ -206,18 +205,11 @@ func (s *service) ListEvents(ctx context.Context, filters ListFilters) ([]*model
 		}
 	}
 
-	repoFilters := repositories.ListFilters{
-		CreatorID: filters.CreatorID,
-		Status:    filters.Status,
-		Limit:     filters.Limit,
-		Offset:    filters.Offset,
-	}
-
 	if !s.authz.IsAdmin(user) {
-		repoFilters.CreatorID = &user.ID
+		filters.CreatorID = &user.ID
 	}
 
-	events, err := s.repo.List(ctx, repoFilters)
+	events, err := s.repo.List(ctx, filters)
 	if err != nil {
 		return nil, err
 	}
@@ -225,7 +217,7 @@ func (s *service) ListEvents(ctx context.Context, filters ListFilters) ([]*model
 	return events, nil
 }
 
-func (s *service) ListEventsWithStats(ctx context.Context, filters ListFilters) ([]*models.EventWithStats, error) {
+func (s *service) ListEventsWithStats(ctx context.Context, filters repositories.ListFilters) ([]*models.EventWithStats, error) {
 	user, ok := auth.UserFromContext(ctx)
 	if !ok {
 		return nil, &models.PermissionDeniedError{
@@ -241,18 +233,11 @@ func (s *service) ListEventsWithStats(ctx context.Context, filters ListFilters) 
 		}
 	}
 
-	repoFilters := repositories.ListFilters{
-		CreatorID: filters.CreatorID,
-		Status:    filters.Status,
-		Limit:     filters.Limit,
-		Offset:    filters.Offset,
-	}
-
 	if !s.authz.IsAdmin(user) {
-		repoFilters.CreatorID = &user.ID
+		filters.CreatorID = &user.ID
 	}
 
-	return s.repo.ListWithStats(ctx, repoFilters)
+	return s.repo.ListWithStats(ctx, filters)
 }
 
 func (s *service) PublishEvent(ctx context.Context, id int64) error {
