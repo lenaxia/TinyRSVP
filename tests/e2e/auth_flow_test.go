@@ -10,6 +10,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/go-chi/chi/v5"
 	"github.com/lenaxia/tinyrsvp/internal/auth"
 	"github.com/lenaxia/tinyrsvp/internal/db"
 	"github.com/lenaxia/tinyrsvp/internal/db/repositories"
@@ -81,19 +82,18 @@ func setupTestServer(t *testing.T) *testServer {
 		parts := strings.Split(path, "/")
 		userID := parts[0]
 
+		// Set chi URL param so handlers can read it via chi.URLParam(r, "id")
+		rctx := chi.NewRouteContext()
+		rctx.URLParams.Add("id", userID)
+		r = r.WithContext(context.WithValue(r.Context(), chi.RouteCtxKey, rctx))
+
 		switch r.Method {
 		case http.MethodGet:
-			requireAuth(requireAdmin(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-				userHandler.GetUser(w, r, userID)
-			}))).ServeHTTP(w, r)
+			requireAuth(requireAdmin(http.HandlerFunc(userHandler.GetUser))).ServeHTTP(w, r)
 		case http.MethodPatch:
-			requireAuth(requireAdmin(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-				userHandler.UpdateUserRole(w, r, userID)
-			}))).ServeHTTP(w, r)
+			requireAuth(requireAdmin(http.HandlerFunc(userHandler.UpdateUserRole))).ServeHTTP(w, r)
 		case http.MethodDelete:
-			requireAuth(requireAdmin(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-				userHandler.DeleteUser(w, r, userID)
-			}))).ServeHTTP(w, r)
+			requireAuth(requireAdmin(http.HandlerFunc(userHandler.DeleteUser))).ServeHTTP(w, r)
 		default:
 			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 		}

@@ -9,6 +9,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/go-chi/chi/v5"
 	"github.com/lenaxia/tinyrsvp/internal/auth"
 	"github.com/lenaxia/tinyrsvp/internal/db"
 	"github.com/lenaxia/tinyrsvp/internal/db/repositories"
@@ -102,7 +103,7 @@ func TestDeleteUser_CascadesSessions(t *testing.T) {
 	req = req.WithContext(ctx)
 	w := httptest.NewRecorder()
 
-	handler.DeleteUser(w, req, "2")
+	handler.DeleteUser(w, reqWithUserIDParam(req, "2"))
 
 	if w.Code != http.StatusNoContent {
 		t.Errorf("Expected status 204, got %d", w.Code)
@@ -148,7 +149,7 @@ func TestDeleteUser_LastAdminProtection(t *testing.T) {
 	req = req.WithContext(ctx)
 	w := httptest.NewRecorder()
 
-	handler.DeleteUser(w, req, "1")
+	handler.DeleteUser(w, reqWithUserIDParam(req, "1"))
 
 	if w.Code != http.StatusConflict {
 		t.Errorf("Expected status 409 (Conflict), got %d", w.Code)
@@ -187,7 +188,7 @@ func TestUpdateUserRole_LastAdminProtection(t *testing.T) {
 	req = req.WithContext(ctx)
 	w := httptest.NewRecorder()
 
-	handler.UpdateUserRole(w, req, "1")
+	handler.UpdateUserRole(w, reqWithUserIDParam(req, "1"))
 
 	if w.Code != http.StatusConflict {
 		t.Errorf("Expected status 409 (Conflict), got %d", w.Code)
@@ -302,7 +303,7 @@ func TestGetUser_PermissionCheck_AdminAllowed(t *testing.T) {
 	req = req.WithContext(ctx)
 	w := httptest.NewRecorder()
 
-	handler.GetUser(w, req, "2")
+	handler.GetUser(w, reqWithUserIDParam(req, "2"))
 
 	if w.Code != http.StatusOK {
 		t.Errorf("Expected status 200 for admin, got %d", w.Code)
@@ -343,7 +344,7 @@ func TestGetUser_PermissionCheck_NonAdminDenied(t *testing.T) {
 	req = req.WithContext(ctx)
 	w := httptest.NewRecorder()
 
-	handler.GetUser(w, req, "2")
+	handler.GetUser(w, reqWithUserIDParam(req, "2"))
 
 	if w.Code != http.StatusForbidden {
 		t.Errorf("Expected status 403 for non-admin, got %d", w.Code)
@@ -385,7 +386,7 @@ func TestUpdateUserRole_PermissionCheck_AdminAllowed(t *testing.T) {
 	req = req.WithContext(ctx)
 	w := httptest.NewRecorder()
 
-	handler.UpdateUserRole(w, req, "2")
+	handler.UpdateUserRole(w, reqWithUserIDParam(req, "2"))
 
 	if w.Code != http.StatusOK {
 		t.Errorf("Expected status 200 for admin, got %d", w.Code)
@@ -427,7 +428,7 @@ func TestUpdateUserRole_PermissionCheck_NonAdminDenied(t *testing.T) {
 	req = req.WithContext(ctx)
 	w := httptest.NewRecorder()
 
-	handler.UpdateUserRole(w, req, "2")
+	handler.UpdateUserRole(w, reqWithUserIDParam(req, "2"))
 
 	if w.Code != http.StatusForbidden {
 		t.Errorf("Expected status 403 for non-admin, got %d", w.Code)
@@ -468,7 +469,7 @@ func TestDeleteUser_PermissionCheck_AdminAllowed(t *testing.T) {
 	req = req.WithContext(ctx)
 	w := httptest.NewRecorder()
 
-	handler.DeleteUser(w, req, "2")
+	handler.DeleteUser(w, reqWithUserIDParam(req, "2"))
 
 	if w.Code != http.StatusNoContent {
 		t.Errorf("Expected status 204 for admin, got %d", w.Code)
@@ -509,9 +510,17 @@ func TestDeleteUser_PermissionCheck_NonAdminDenied(t *testing.T) {
 	req = req.WithContext(ctx)
 	w := httptest.NewRecorder()
 
-	handler.DeleteUser(w, req, "2")
+	handler.DeleteUser(w, reqWithUserIDParam(req, "2"))
 
 	if w.Code != http.StatusForbidden {
 		t.Errorf("Expected status 403 for non-admin, got %d", w.Code)
 	}
+}
+
+// reqWithUserIDParam adds a chi URL parameter "id" to the request so
+// handlers can read it via chi.URLParam(r, "id").
+func reqWithUserIDParam(r *http.Request, userID string) *http.Request {
+	rctx := chi.NewRouteContext()
+	rctx.URLParams.Add("id", userID)
+	return r.WithContext(context.WithValue(r.Context(), chi.RouteCtxKey, rctx))
 }

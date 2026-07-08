@@ -283,7 +283,7 @@ func TestGetUser(t *testing.T) {
 			req := httptest.NewRequest(http.MethodGet, "/api/users/"+tt.userID, nil)
 			w := httptest.NewRecorder()
 
-			handler.GetUser(w, req, tt.userID)
+			handler.GetUser(w, reqWithUserIDParam(req, tt.userID))
 
 			if w.Code != tt.wantStatus {
 				t.Errorf("Expected status %d, got %d", tt.wantStatus, w.Code)
@@ -428,7 +428,7 @@ func TestUpdateUserRole(t *testing.T) {
 			req := httptest.NewRequest(http.MethodPatch, "/api/users/"+tt.userID+"/role", bytes.NewReader(body))
 			w := httptest.NewRecorder()
 
-			handler.UpdateUserRole(w, req, tt.userID)
+			handler.UpdateUserRole(w, reqWithUserIDParam(req, tt.userID))
 
 			if w.Code != tt.wantStatus {
 				t.Errorf("Expected status %d, got %d", tt.wantStatus, w.Code)
@@ -544,7 +544,7 @@ func TestDeleteUser(t *testing.T) {
 			req := httptest.NewRequest(http.MethodDelete, "/api/users/"+tt.userID, nil)
 			w := httptest.NewRecorder()
 
-			handler.DeleteUser(w, req, tt.userID)
+			handler.DeleteUser(w, reqWithUserIDParam(req, tt.userID))
 
 			if w.Code != tt.wantStatus {
 				t.Errorf("Expected status %d, got %d", tt.wantStatus, w.Code)
@@ -765,7 +765,7 @@ func TestGetUser_WithAuthorizationCheck(t *testing.T) {
 			req = req.WithContext(ctx)
 			w := httptest.NewRecorder()
 
-			handler.GetUser(w, req, "1")
+			handler.GetUser(w, reqWithUserIDParam(req, "1"))
 
 			if w.Code != tt.wantStatus {
 				t.Errorf("Expected status %d, got %d", tt.wantStatus, w.Code)
@@ -832,7 +832,7 @@ func TestUpdateUserRole_WithAuthorizationCheck(t *testing.T) {
 			req = req.WithContext(ctx)
 			w := httptest.NewRecorder()
 
-			handler.UpdateUserRole(w, req, "1")
+			handler.UpdateUserRole(w, reqWithUserIDParam(req, "1"))
 
 			if w.Code != tt.wantStatus {
 				t.Errorf("Expected status %d, got %d", tt.wantStatus, w.Code)
@@ -895,7 +895,7 @@ func TestDeleteUser_WithAuthorizationCheck(t *testing.T) {
 			req = req.WithContext(ctx)
 			w := httptest.NewRecorder()
 
-			handler.DeleteUser(w, req, "1")
+			handler.DeleteUser(w, reqWithUserIDParam(req, "1"))
 
 			if w.Code != tt.wantStatus {
 				t.Errorf("Expected status %d, got %d", tt.wantStatus, w.Code)

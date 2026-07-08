@@ -171,9 +171,9 @@ type RSVPSummaryHandlerInterface interface {
 
 type UserHandlerInterface interface {
 	ListUsers(w http.ResponseWriter, r *http.Request)
-	GetUser(w http.ResponseWriter, r *http.Request, userID string)
-	UpdateUserRole(w http.ResponseWriter, r *http.Request, userID string)
-	DeleteUser(w http.ResponseWriter, r *http.Request, userID string)
+	GetUser(w http.ResponseWriter, r *http.Request)
+	UpdateUserRole(w http.ResponseWriter, r *http.Request)
+	DeleteUser(w http.ResponseWriter, r *http.Request)
 }
 
 type TemplateHandlerInterface interface {
@@ -509,61 +509,31 @@ func NewRouter(handlers *RouterHandlers) *Router {
 
 	if handlers.UserHandler != nil {
 		if handlers.AuthMiddleware != nil {
-			r.Handle("/api/users", handlers.AuthMiddleware.RequireAuth(
-				handlers.AuthMiddleware.RequireAdmin(
-					http.HandlerFunc(handlers.UserHandler.ListUsers),
-				),
-			))
+			r.Route("/api/users", func(r chi.Router) {
+				r.Use(handlers.AuthMiddleware.RequireAuth)
+				r.Use(handlers.AuthMiddleware.RequireAdmin)
 
-			r.HandleFunc("/api/users/", func(w http.ResponseWriter, req *http.Request) {
-				path := strings.TrimPrefix(req.URL.Path, "/api/users/")
-				if path == "" {
-					http.NotFound(w, req)
-					return
-				}
-
-				parts := strings.Split(path, "/")
-				userID := parts[0]
-
-				// Support _method override for HTML form submissions
-				// (browsers can only submit GET/POST; forms use hidden _method field)
-				method := req.Method
-				if method == http.MethodPost {
-					if err := req.ParseForm(); err == nil {
-						if override := req.FormValue("_method"); override != "" {
-							method = strings.ToUpper(override)
+				// Method override middleware: HTML forms can only submit
+				// GET/POST, so forms use a hidden _method field to signal
+				// PATCH/DELETE. This middleware translates POST + _method
+				// to the intended HTTP method before chi routes it.
+				r.Use(func(next http.Handler) http.Handler {
+					return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+						if r.Method == http.MethodPost {
+							if err := r.ParseForm(); err == nil {
+								if override := r.FormValue("_method"); override != "" {
+									r.Method = strings.ToUpper(override)
+								}
+							}
 						}
-					}
-				}
+						next.ServeHTTP(w, r)
+					})
+				})
 
-				switch method {
-				case http.MethodGet:
-					handlers.AuthMiddleware.RequireAuth(
-						handlers.AuthMiddleware.RequireAdmin(
-							http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-								handlers.UserHandler.GetUser(w, r, userID)
-							}),
-						),
-					).ServeHTTP(w, req)
-				case http.MethodPatch:
-					handlers.AuthMiddleware.RequireAuth(
-						handlers.AuthMiddleware.RequireAdmin(
-							http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-								handlers.UserHandler.UpdateUserRole(w, r, userID)
-							}),
-						),
-					).ServeHTTP(w, req)
-				case http.MethodDelete:
-					handlers.AuthMiddleware.RequireAuth(
-						handlers.AuthMiddleware.RequireAdmin(
-							http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-								handlers.UserHandler.DeleteUser(w, r, userID)
-							}),
-						),
-					).ServeHTTP(w, req)
-				default:
-					http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-				}
+				r.Get("/", handlers.UserHandler.ListUsers)
+				r.Get("/{id}", handlers.UserHandler.GetUser)
+				r.Patch("/{id}", handlers.UserHandler.UpdateUserRole)
+				r.Delete("/{id}", handlers.UserHandler.DeleteUser)
 			})
 		}
 	}

@@ -126,17 +126,17 @@ func (m *mockUserHandler) ListUsers(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode([]interface{}{})
 }
 
-func (m *mockUserHandler) GetUser(w http.ResponseWriter, r *http.Request, userID string) {
+func (m *mockUserHandler) GetUser(w http.ResponseWriter, r *http.Request) {
 	m.getCalled = true
 	w.WriteHeader(http.StatusOK)
 }
 
-func (m *mockUserHandler) UpdateUserRole(w http.ResponseWriter, r *http.Request, userID string) {
+func (m *mockUserHandler) UpdateUserRole(w http.ResponseWriter, r *http.Request) {
 	m.updateCalled = true
 	w.WriteHeader(http.StatusOK)
 }
 
-func (m *mockUserHandler) DeleteUser(w http.ResponseWriter, r *http.Request, userID string) {
+func (m *mockUserHandler) DeleteUser(w http.ResponseWriter, r *http.Request) {
 	m.deleteCalled = true
 	w.WriteHeader(http.StatusNoContent)
 }
