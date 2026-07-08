@@ -9,6 +9,7 @@ import (
 
 	"github.com/lenaxia/tinyrsvp/internal/db/repositories"
 	"github.com/lenaxia/tinyrsvp/internal/models"
+	"github.com/lenaxia/tinyrsvp/pkg/token"
 )
 
 type mockGenerator struct {
@@ -959,5 +960,59 @@ func TestInviteService_CleanupExpiredTokens(t *testing.T) {
 				tt.validateResult(t, count)
 			}
 		})
+	}
+}
+
+func TestNewInviteServiceWithTemplates(t *testing.T) {
+	gen := token.NewGenerator(nil)
+	repo := &mockInviteRepository{}
+
+	svc := NewInviteServiceWithTemplates(gen, repo, nil)
+	if svc == nil {
+		t.Fatal("expected non-nil InviteService")
+	}
+}
+
+func TestDeleteInvite_Success(t *testing.T) {
+	gen := token.NewGenerator(nil)
+	repo := &mockInviteRepository{
+		getByIDFunc: func(ctx context.Context, id int64) (*models.Invite, error) {
+			return &models.Invite{ID: id, Status: models.InviteStatusDraft}, nil
+		},
+	}
+	svc := NewInviteService(gen, repo)
+
+	if err := svc.DeleteInvite(context.Background(), 1); err != nil {
+		t.Errorf("DeleteInvite: %v", err)
+	}
+}
+
+func TestDeleteInvite_RespondedError(t *testing.T) {
+	gen := token.NewGenerator(nil)
+	repo := &mockInviteRepository{
+		getByIDFunc: func(ctx context.Context, id int64) (*models.Invite, error) {
+			return &models.Invite{ID: id, Status: models.InviteStatusResponded}, nil
+		},
+	}
+	svc := NewInviteService(gen, repo)
+
+	err := svc.DeleteInvite(context.Background(), 1)
+	if err == nil {
+		t.Fatal("expected error for responded invite")
+	}
+}
+
+func TestDeleteInvite_NotFound(t *testing.T) {
+	gen := token.NewGenerator(nil)
+	repo := &mockInviteRepository{
+		getByIDFunc: func(ctx context.Context, id int64) (*models.Invite, error) {
+			return nil, &models.NotFoundError{Resource: "Invite", ID: id}
+		},
+	}
+	svc := NewInviteService(gen, repo)
+
+	err := svc.DeleteInvite(context.Background(), 999)
+	if err == nil {
+		t.Fatal("expected error for non-existent invite")
 	}
 }

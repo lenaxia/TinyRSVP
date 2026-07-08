@@ -400,6 +400,317 @@ func TestUserService_UpdateUser(t *testing.T) {
 	}
 }
 
+func TestUserService_UpdateRole(t *testing.T) {
+	tests := []struct {
+		name         string
+		userID       int64
+		role         models.UserRole
+		mockRepo     *MockUserRepository
+		wantErr      bool
+		wantNotFound bool
+	}{
+		{
+			name:   "happy path delegates to UpdateUserRole",
+			userID: 1,
+			role:   models.RoleAdmin,
+			mockRepo: &MockUserRepository{
+				GetByIDFunc: func(ctx context.Context, id int64) (*models.User, error) {
+					return &models.User{
+						ID:    id,
+						Email: "user@example.com",
+						Name:  "Test User",
+						Role:  models.RoleEventManager,
+					}, nil
+				},
+				UpdateFunc: func(ctx context.Context, user *models.User) error {
+					if user.Role != models.RoleAdmin {
+						return fmt.Errorf("unexpected role: %s", user.Role)
+					}
+					return nil
+				},
+			},
+			wantErr: false,
+		},
+		{
+			name:   "user not found returns error",
+			userID: 999,
+			role:   models.RoleAdmin,
+			mockRepo: &MockUserRepository{
+				GetByIDFunc: func(ctx context.Context, id int64) (*models.User, error) {
+					return nil, &models.NotFoundError{Resource: "User", ID: id}
+				},
+			},
+			wantErr:      true,
+			wantNotFound: true,
+		},
+		{
+			name:   "repository update failure returns error",
+			userID: 2,
+			role:   models.RoleEventManager,
+			mockRepo: &MockUserRepository{
+				GetByIDFunc: func(ctx context.Context, id int64) (*models.User, error) {
+					return &models.User{ID: id, Role: models.RoleAdmin}, nil
+				},
+				UpdateFunc: func(ctx context.Context, user *models.User) error {
+					return fmt.Errorf("db connection lost")
+				},
+			},
+			wantErr: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			service := NewUserService(tt.mockRepo)
+			userSvc, ok := service.(*userService)
+			if !ok {
+				t.Fatalf("expected *userService concrete type, got %T", service)
+			}
+
+			err := userSvc.UpdateRole(context.Background(), tt.userID, tt.role)
+
+			if tt.wantErr {
+				if err == nil {
+					t.Fatal("Expected error, got nil")
+				}
+				if tt.wantNotFound {
+					var notFoundErr *models.NotFoundError
+					if !errors.As(err, &notFoundErr) {
+						t.Errorf("Expected NotFoundError, got %T", err)
+					}
+				}
+				return
+			}
+			if err != nil {
+				t.Fatalf("UpdateRole failed: %v", err)
+			}
+		})
+	}
+}
+
+func TestUserService_UpdateLastLogin(t *testing.T) {
+	tests := []struct {
+		name     string
+		userID   int64
+		mockRepo *MockUserRepository
+		wantErr  bool
+	}{
+		{
+			name:   "happy path updates last login",
+			userID: 1,
+			mockRepo: &MockUserRepository{
+				UpdateLastLoginFunc: func(ctx context.Context, userID int64) error {
+					if userID != 1 {
+						return fmt.Errorf("unexpected user ID: %d", userID)
+					}
+					return nil
+				},
+			},
+			wantErr: false,
+		},
+		{
+			name:   "repository error propagates",
+			userID: 42,
+			mockRepo: &MockUserRepository{
+				UpdateLastLoginFunc: func(ctx context.Context, userID int64) error {
+					return fmt.Errorf("database unavailable")
+				},
+			},
+			wantErr: true,
+		},
+		{
+			name:     "nil mock function defaults to no-op success",
+			userID:   7,
+			mockRepo: &MockUserRepository{},
+			wantErr:  false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			service := NewUserService(tt.mockRepo)
+
+			err := service.UpdateLastLogin(context.Background(), tt.userID)
+
+			if tt.wantErr {
+				if err == nil {
+					t.Fatal("Expected error, got nil")
+				}
+				return
+			}
+			if err != nil {
+				t.Fatalf("UpdateLastLogin failed: %v", err)
+			}
+		})
+	}
+}
+
+func TestUserService_CountUsers(t *testing.T) {
+	tests := []struct {
+		name      string
+		mockRepo  *MockUserRepository
+		wantCount int
+		wantErr   bool
+	}{
+		{
+			name: "happy path returns count",
+			mockRepo: &MockUserRepository{
+				CountFunc: func(ctx context.Context) (int, error) {
+					return 42, nil
+				},
+			},
+			wantCount: 42,
+			wantErr:   false,
+		},
+		{
+			name: "zero users when database empty",
+			mockRepo: &MockUserRepository{
+				CountFunc: func(ctx context.Context) (int, error) {
+					return 0, nil
+				},
+			},
+			wantCount: 0,
+			wantErr:   false,
+		},
+		{
+			name: "repository error propagates",
+			mockRepo: &MockUserRepository{
+				CountFunc: func(ctx context.Context) (int, error) {
+					return 0, fmt.Errorf("count query failed")
+				},
+			},
+			wantCount: 0,
+			wantErr:   true,
+		},
+		{
+			name:      "nil mock function defaults to zero count",
+			mockRepo:  &MockUserRepository{},
+			wantCount: 0,
+			wantErr:   false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			service := NewUserService(tt.mockRepo)
+
+			count, err := service.CountUsers(context.Background())
+
+			if tt.wantErr {
+				if err == nil {
+					t.Fatal("Expected error, got nil")
+				}
+				if count != 0 {
+					t.Errorf("Expected count 0 on error, got %d", count)
+				}
+				return
+			}
+			if err != nil {
+				t.Fatalf("CountUsers failed: %v", err)
+			}
+			if count != tt.wantCount {
+				t.Errorf("Expected count %d, got %d", tt.wantCount, count)
+			}
+		})
+	}
+}
+
+func TestUserService_CountAdmins(t *testing.T) {
+	tests := []struct {
+		name      string
+		mockRepo  *MockUserRepository
+		wantCount int
+		wantErr   bool
+	}{
+		{
+			name: "happy path returns admin count",
+			mockRepo: &MockUserRepository{
+				CountByRoleFunc: func(ctx context.Context, role models.UserRole) (int, error) {
+					if role != models.RoleAdmin {
+						return 0, fmt.Errorf("expected role %s, got %s", models.RoleAdmin, role)
+					}
+					return 3, nil
+				},
+			},
+			wantCount: 3,
+			wantErr:   false,
+		},
+		{
+			name: "no admins returns zero",
+			mockRepo: &MockUserRepository{
+				CountByRoleFunc: func(ctx context.Context, role models.UserRole) (int, error) {
+					return 0, nil
+				},
+			},
+			wantCount: 0,
+			wantErr:   false,
+		},
+		{
+			name: "repository error propagates",
+			mockRepo: &MockUserRepository{
+				CountByRoleFunc: func(ctx context.Context, role models.UserRole) (int, error) {
+					return 0, fmt.Errorf("role count query failed")
+				},
+			},
+			wantCount: 0,
+			wantErr:   true,
+		},
+		{
+			name:      "nil mock function defaults to zero count",
+			mockRepo:  &MockUserRepository{},
+			wantCount: 0,
+			wantErr:   false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			service := NewUserService(tt.mockRepo)
+
+			count, err := service.CountAdmins(context.Background())
+
+			if tt.wantErr {
+				if err == nil {
+					t.Fatal("Expected error, got nil")
+				}
+				if count != 0 {
+					t.Errorf("Expected count 0 on error, got %d", count)
+				}
+				return
+			}
+			if err != nil {
+				t.Fatalf("CountAdmins failed: %v", err)
+			}
+			if count != tt.wantCount {
+				t.Errorf("Expected count %d, got %d", tt.wantCount, count)
+			}
+		})
+	}
+}
+
+func TestUserService_CountAdmins_AlwaysQueriesAdminRole(t *testing.T) {
+	var capturedRole models.UserRole
+	mockRepo := &MockUserRepository{
+		CountByRoleFunc: func(ctx context.Context, role models.UserRole) (int, error) {
+			capturedRole = role
+			return 1, nil
+		},
+	}
+
+	service := NewUserService(mockRepo)
+
+	count, err := service.CountAdmins(context.Background())
+	if err != nil {
+		t.Fatalf("CountAdmins failed: %v", err)
+	}
+	if count != 1 {
+		t.Errorf("Expected count 1, got %d", count)
+	}
+	if capturedRole != models.RoleAdmin {
+		t.Errorf("Expected repo.CountByRole called with %q, got %q", models.RoleAdmin, capturedRole)
+	}
+}
+
 type MockUserRepository struct {
 	CreateFunc                   func(ctx context.Context, user *models.User) error
 	CreateWithBootstrapCheckFunc func(ctx context.Context, user *models.User) (bool, error)

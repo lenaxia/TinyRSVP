@@ -1556,3 +1556,35 @@ func TestEventRepository_GetDashboardStatsByCreator(t *testing.T) {
 		t.Errorf("non-existent user: TotalEvents = %d, want 0", emptyStats.TotalEvents)
 	}
 }
+
+func TestEventRepository_GetByCreatorID(t *testing.T) {
+	database := setupEventTestDB(t)
+	defer database.Close()
+
+	repo := NewEventRepository(database)
+	ctx := context.Background()
+
+	event := &models.Event{
+		Title: "Creator Test", StartTime: time.Now().Add(24 * time.Hour),
+		Timezone: "UTC", Status: models.EventStatusDraft, CreatedBy: 1,
+	}
+	if err := repo.Create(ctx, event); err != nil {
+		t.Fatalf("create: %v", err)
+	}
+
+	events, err := repo.GetByCreatorID(ctx, 1)
+	if err != nil {
+		t.Fatalf("GetByCreatorID: %v", err)
+	}
+	if len(events) != 1 {
+		t.Errorf("expected 1 event, got %d", len(events))
+	}
+
+	empty, err := repo.GetByCreatorID(ctx, 999)
+	if err != nil {
+		t.Fatalf("GetByCreatorID non-existent: %v", err)
+	}
+	if len(empty) != 0 {
+		t.Errorf("expected 0 events for non-existent creator, got %d", len(empty))
+	}
+}

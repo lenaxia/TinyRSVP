@@ -1,6 +1,7 @@
 package email
 
 import (
+	"errors"
 	"testing"
 	"time"
 )
@@ -176,5 +177,86 @@ func TestMockMetrics(t *testing.T) {
 		if len(metrics.batchSizes) != 1 || metrics.batchSizes[0] != 10 {
 			t.Errorf("Expected batch size 10, got %v", metrics.batchSizes)
 		}
+	})
+}
+
+// assertNoPanic runs fn and fails the test (with the given label) if fn panics.
+// The noOpMetrics methods are empty no-ops; their contract is "safe to call,
+// never panic, no side effects". This helper turns that contract into an
+// explicit assertion.
+func assertNoPanic(t *testing.T, label string, fn func()) {
+	t.Helper()
+	defer func() {
+		if r := recover(); r != nil {
+			t.Fatalf("%s panicked: %v", label, r)
+		}
+	}()
+	fn()
+}
+
+// TestMetricsNoOp exercises every noOpMetrics method across happy, edge and
+// unhappy inputs (table-driven). Each call must be a safe no-op.
+func TestMetricsNoOp(t *testing.T) {
+	metrics := NewNoOpMetrics()
+	if metrics == nil {
+		t.Fatal("NewNoOpMetrics() returned nil")
+	}
+
+	tests := []struct {
+		name string
+		fn   func()
+	}{
+		// Happy paths
+		{"RecordQueueSize positive", func() { metrics.RecordQueueSize(100) }},
+		{"RecordEmailQueued", func() { metrics.RecordEmailQueued() }},
+		{"RecordEmailDequeued", func() { metrics.RecordEmailDequeued() }},
+		{"RecordEmailSent", func() { metrics.RecordEmailSent(2 * time.Second) }},
+		{"RecordEmailFailed", func() { metrics.RecordEmailFailed("smtp_error") }},
+		{"RecordRetryAttempt", func() { metrics.RecordRetryAttempt(3) }},
+		{"RecordRateLimitHit", func() { metrics.RecordRateLimitHit() }},
+		{"RecordRateLimitWait", func() { metrics.RecordRateLimitWait(5 * time.Second) }},
+		{"RecordBatchProcessed", func() { metrics.RecordBatchProcessed(10, 3*time.Second) }},
+		{"RecordProcessingError non-nil", func() { metrics.RecordProcessingError(errors.New("boom")) }},
+
+		// Edge / unhappy paths
+		{"RecordQueueSize zero", func() { metrics.RecordQueueSize(0) }},
+		{"RecordQueueSize negative", func() { metrics.RecordQueueSize(-5) }},
+		{"RecordEmailSent zero duration", func() { metrics.RecordEmailSent(0) }},
+		{"RecordEmailFailed empty reason", func() { metrics.RecordEmailFailed("") }},
+		{"RecordRetryAttempt zero", func() { metrics.RecordRetryAttempt(0) }},
+		{"RecordRateLimitWait zero", func() { metrics.RecordRateLimitWait(0) }},
+		{"RecordBatchProcessed zero", func() { metrics.RecordBatchProcessed(0, 0) }},
+		{"RecordProcessingError nil", func() { metrics.RecordProcessingError(nil) }},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			assertNoPanic(t, tt.name, tt.fn)
+		})
+	}
+}
+
+// TestMetricsNoOpImplementsInterface guarantees the no-op satisfies the
+// Metrics interface at compile time and that repeated calls are idempotent.
+func TestMetricsNoOpImplementsInterface(t *testing.T) {
+	var _ Metrics = NewNoOpMetrics()
+
+	metrics := NewNoOpMetrics()
+
+	// Repeated calls must remain safe (idempotent no-op).
+	for i := 0; i < 5; i++ {
+		metrics.RecordEmailQueued()
+		metrics.RecordEmailDequeued()
+		metrics.RecordEmailSent(time.Second)
+		metrics.RecordRetryAttempt(i)
+		metrics.RecordBatchProcessed(i, time.Second)
+	}
+
+	assertNoPanic(t, "repeated mixed calls", func() {
+		metrics.RecordQueueSize(0)
+		metrics.RecordEmailFailed("anything")
+		metrics.RecordRateLimitHit()
+		metrics.RecordRateLimitWait(0)
+		metrics.RecordProcessingError(nil)
 	})
 }

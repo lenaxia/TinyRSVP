@@ -1,8 +1,13 @@
 package email
 
 import (
+	"bufio"
+	"context"
 	"encoding/base64"
+	"errors"
 	"fmt"
+	"net"
+	"strconv"
 	"strings"
 	"testing"
 	"time"
@@ -415,5 +420,287 @@ func TestSMTPSender_Close_MultipleCalls(t *testing.T) {
 	err = sender.Close()
 	if err != nil {
 		t.Errorf("Second Close() error = %v, want nil", err)
+	}
+}
+
+// fakeSMTPServer is a minimal in-process SMTP server used to exercise
+// (*smtpSender).Send without an external (MailHog) dependency. It speaks just
+// enough of the SMTP protocol for the net/smtp client to authenticate, send a
+// message and quit. Per-command response overrides let tests simulate
+// permanent/transient failures at any step.
+type fakeSMTPServer struct {
+	listener net.Listener
+	host     string
+	port     int
+
+	// Optional response overrides. When empty, a default success response is sent.
+	authResp   string // response to AUTH (default "235 OK")
+	mailResp   string // response to MAIL FROM (default "250 OK")
+	rcptResp   string // response to RCPT TO (default "250 OK")
+	dataResp   string // response to the final "." of DATA (default "250 OK")
+	dataCmdResp string // response to the DATA command (default "354 ..."); when set, DATA is rejected and data mode is not entered
+	quitResp   string // response to QUIT (default "221 Bye")
+
+	dropOnConnect bool // close the connection immediately (simulates reset)
+}
+
+func newFakeSMTPServer(t *testing.T) *fakeSMTPServer {
+	t.Helper()
+	ln, err := net.Listen("tcp", "127.0.0.1:0")
+	if err != nil {
+		t.Fatalf("failed to start fake SMTP server: %v", err)
+	}
+	host, portStr, _ := net.SplitHostPort(ln.Addr().String())
+	port, _ := strconv.Atoi(portStr)
+	s := &fakeSMTPServer{listener: ln, host: host, port: port}
+	go s.serve()
+	return s
+}
+
+func (s *fakeSMTPServer) close() {
+	s.listener.Close()
+}
+
+func (s *fakeSMTPServer) serve() {
+	for {
+		conn, err := s.listener.Accept()
+		if err != nil {
+			return // listener closed
+		}
+		go s.handle(conn)
+	}
+}
+
+func (s *fakeSMTPServer) handle(conn net.Conn) {
+	defer conn.Close()
+	if s.dropOnConnect {
+		return
+	}
+	r := bufio.NewReader(conn)
+	writeLine := func(msg string) {
+		conn.Write([]byte(msg))
+	}
+	orDefault := func(resp, def string) string {
+		if resp != "" {
+			return resp
+		}
+		return def
+	}
+
+	writeLine("220 fake.smtp ESMTP ready\r\n")
+
+	inData := false
+	for {
+		line, err := r.ReadString('\n')
+		if err != nil {
+			return
+		}
+		if inData {
+			if strings.TrimSpace(line) == "." {
+				inData = false
+				writeLine(orDefault(s.dataResp, "250 OK\r\n"))
+			}
+			continue
+		}
+		upper := strings.ToUpper(strings.TrimSpace(line))
+		switch {
+		case strings.HasPrefix(upper, "EHLO"), strings.HasPrefix(upper, "HELO"):
+			writeLine("250 fake.smtp\r\n")
+		case strings.HasPrefix(upper, "AUTH"):
+			writeLine(orDefault(s.authResp, "235 OK\r\n"))
+		case strings.HasPrefix(upper, "MAIL"):
+			writeLine(orDefault(s.mailResp, "250 OK\r\n"))
+		case strings.HasPrefix(upper, "RCPT"):
+			writeLine(orDefault(s.rcptResp, "250 OK\r\n"))
+		case strings.HasPrefix(upper, "DATA"):
+			if s.dataCmdResp != "" {
+				writeLine(s.dataCmdResp)
+			} else {
+				writeLine("354 Start mail input; end with <CRLF>.<CRLF>\r\n")
+				inData = true
+			}
+		case strings.HasPrefix(upper, "QUIT"):
+			writeLine(orDefault(s.quitResp, "221 Bye\r\n"))
+			return
+		case strings.HasPrefix(upper, "RSET"), strings.HasPrefix(upper, "NOOP"):
+			writeLine("250 OK\r\n")
+		default:
+			writeLine("500 Unrecognized command\r\n")
+		}
+	}
+}
+
+// TestSMTPSender_Send exercises (*smtpSender).Send against an in-process fake
+// SMTP server, covering happy paths (with and without auth) and unhappy paths
+// where the server rejects a command with a permanent (5xx) SMTP error.
+func TestSMTPSender_Send(t *testing.T) {
+	tests := []struct {
+		name     string
+		useAuth  bool
+		setup    func(*fakeSMTPServer)
+		wantErr  bool
+		wantPerm bool // expect the error to be a *PermanentError
+	}{
+		{
+			name:    "happy path without auth",
+			useAuth: false,
+			wantErr: false,
+		},
+		{
+			name:    "happy path with auth",
+			useAuth: true,
+			wantErr: false,
+		},
+		{
+			name:     "rcpt rejected yields permanent error",
+			setup:    func(s *fakeSMTPServer) { s.rcptResp = "550 No such user\r\n" },
+			wantErr:  true,
+			wantPerm: true,
+		},
+		{
+			name:     "mail from rejected yields permanent error",
+			setup:    func(s *fakeSMTPServer) { s.mailResp = "550 Sender not allowed\r\n" },
+			wantErr:  true,
+			wantPerm: true,
+		},
+		{
+			name:     "data rejected yields permanent error",
+			setup:    func(s *fakeSMTPServer) { s.dataResp = "554 Message rejected\r\n" },
+			wantErr:  true,
+			wantPerm: true,
+		},
+		{
+			name:     "data command rejected yields permanent error",
+			setup:    func(s *fakeSMTPServer) { s.dataCmdResp = "554 No data accepted\r\n" },
+			wantErr:  true,
+			wantPerm: true,
+		},
+		{
+			name:    "auth rejected yields non-classified error",
+			useAuth: true,
+			setup:   func(s *fakeSMTPServer) { s.authResp = "535 Authentication failed\r\n" },
+			wantErr: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			srv := newFakeSMTPServer(t)
+			defer srv.close()
+			if tt.setup != nil {
+				tt.setup(srv)
+			}
+
+			cfg := testConfig()
+			cfg.SMTPHost = srv.host
+			cfg.SMTPPort = srv.port
+			cfg.UseTLS = false
+			cfg.SkipVerify = false
+			cfg.Timeout = 5 * time.Second
+			if !tt.useAuth {
+				cfg.SMTPUsername = ""
+				cfg.SMTPPassword = ""
+			}
+
+			sender, err := NewSMTPSender(cfg)
+			if err != nil {
+				t.Fatalf("NewSMTPSender() error = %v", err)
+			}
+
+			toName := "Recipient"
+			msg := &SMTPMessage{
+				To:       "recipient@example.com",
+				ToName:   &toName,
+				Subject:  "Test Subject",
+				BodyText: "plain body",
+				BodyHTML: "<p>html body</p>",
+			}
+
+			err = sender.Send(context.Background(), msg)
+			if tt.wantErr {
+				if err == nil {
+					t.Fatal("Send() error = nil, want error")
+				}
+				if tt.wantPerm {
+					if _, ok := err.(*PermanentError); !ok {
+						t.Errorf("Send() error = %T (%v), want *PermanentError", err, err)
+					}
+				}
+				return
+			}
+			if err != nil {
+				t.Fatalf("Send() error = %v, want nil", err)
+			}
+		})
+	}
+}
+
+// TestSMTPSender_Send_DialFailure covers the unhappy path where the SMTP server
+// is unreachable: Send must surface a "failed to connect to SMTP" error.
+func TestSMTPSender_Send_DialFailure(t *testing.T) {
+	cfg := testConfig()
+	cfg.SMTPHost = "127.0.0.1"
+	cfg.SMTPPort = 1 // nothing listening on port 1 -> connection refused
+	cfg.UseTLS = false
+	cfg.Timeout = 2 * time.Second
+
+	sender, err := NewSMTPSender(cfg)
+	if err != nil {
+		t.Fatalf("NewSMTPSender() error = %v", err)
+	}
+
+	msg := &SMTPMessage{
+		To:       "recipient@example.com",
+		Subject:  "Test",
+		BodyText: "body",
+	}
+
+	err = sender.Send(context.Background(), msg)
+	if err == nil {
+		t.Fatal("Send() error = nil, want error")
+	}
+	if !strings.Contains(err.Error(), "failed to connect to SMTP") {
+		t.Errorf("Send() error = %q, want it to contain %q", err.Error(), "failed to connect to SMTP")
+	}
+}
+
+// TestSMTPSender_PermanentError_Unwrap covers PermanentError.Unwrap (and the
+// errors.Is integration that relies on it) across a wrapped error and nil.
+func TestSMTPSender_PermanentError_Unwrap(t *testing.T) {
+	tests := []struct {
+		name    string
+		wrapped error
+		wantNil bool
+	}{
+		{"wrapped error", errors.New("550 mailbox unavailable"), false},
+		{"nil wrapped", nil, true},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			pe := &PermanentError{Err: tt.wrapped}
+
+			got := pe.Unwrap()
+			if got != tt.wrapped {
+				t.Errorf("Unwrap() = %v, want %v", got, tt.wrapped)
+			}
+			if tt.wantNil && got != nil {
+				t.Errorf("Unwrap() = %v, want nil", got)
+			}
+
+			// errors.Is exercises Unwrap on the non-nil path.
+			if tt.wrapped != nil {
+				if !errors.Is(pe, tt.wrapped) {
+					t.Errorf("errors.Is(pe, wrapped) = false, want true")
+				}
+			}
+
+			// Error() should embed the wrapped message when non-nil.
+			if tt.wrapped != nil {
+				if !strings.Contains(pe.Error(), tt.wrapped.Error()) {
+					t.Errorf("Error() = %q, want it to contain %q", pe.Error(), tt.wrapped.Error())
+				}
+			}
+		})
 	}
 }
