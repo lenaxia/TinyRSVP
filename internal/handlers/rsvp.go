@@ -1009,7 +1009,11 @@ func (h *RSVPHandler) GetCalendar(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	rsvpURL := fmt.Sprintf("%s/rsvp/%s", r.Header.Get("X-Forwarded-Proto")+"://"+r.Host, token)
+	scheme := r.Header.Get("X-Forwarded-Proto")
+	if scheme != "http" && scheme != "https" {
+		scheme = "https"
+	}
+	rsvpURL := fmt.Sprintf("%s://%s/rsvp/%s", scheme, r.Host, token)
 
 	generator := ics.NewGenerator()
 	data, err := generator.Generate(event, rsvpURL)

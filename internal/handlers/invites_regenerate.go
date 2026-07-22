@@ -5,7 +5,6 @@ import (
 	"errors"
 	"net/http"
 	"strconv"
-	"strings"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/lenaxia/tinyrsvp/internal/auth"
@@ -80,9 +79,8 @@ func (h *RegenerateInviteTokenHandlers) RegenerateInviteToken(w http.ResponseWri
 
 	result, err := h.service.RegenerateToken(r.Context(), inviteID)
 	if err != nil {
-		errMsg := err.Error()
-		if strings.Contains(errMsg, "cannot regenerate token for revoked invite") ||
-			strings.Contains(errMsg, "cannot regenerate token for responded invite") {
+		var valErr *models.ValidationError
+		if errors.As(err, &valErr) {
 			HandleError(w, r, NewBadRequestError(err.Error()))
 			return
 		}

@@ -3,6 +3,7 @@ package events
 import (
 	"context"
 	"fmt"
+	"log/slog"
 
 	"github.com/lenaxia/tinyrsvp/internal/auth"
 	"github.com/lenaxia/tinyrsvp/internal/db/repositories"
@@ -153,7 +154,7 @@ func (s *service) UpdateEvent(ctx context.Context, event *models.Event) error {
 		newExpiry := event.StartTime.Add(30 * 24 * 60 * 60 * 1e9) // 30 days
 		if err := s.inviteRepo.UpdateExpiresAtByEventID(ctx, event.ID, newExpiry); err != nil {
 			// Non-fatal: log but don't fail the event update
-			fmt.Printf("warning: failed to update invite expiries for event %d: %v\n", event.ID, err)
+			slog.Warn("failed to update invite expiries for event", "event_id", event.ID, "error", err)
 		}
 	}
 

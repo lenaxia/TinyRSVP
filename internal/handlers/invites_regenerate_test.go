@@ -371,7 +371,7 @@ func TestRegenerateInviteTokenHandlers_RegenerateInviteToken(t *testing.T) {
 					}, nil
 				},
 				regenerateTokenFunc: func(ctx context.Context, inviteID int64) (*invites.RegenerateTokenResponse, error) {
-					return nil, errors.New("cannot regenerate token for revoked invite")
+					return nil, &models.ValidationError{Field: "status", Message: "cannot regenerate token for revoked invite"}
 				},
 			},
 			mockEventRepo: &mockRegenerateEventRepository{
@@ -409,7 +409,7 @@ func TestRegenerateInviteTokenHandlers_RegenerateInviteToken(t *testing.T) {
 					}, nil
 				},
 				regenerateTokenFunc: func(ctx context.Context, inviteID int64) (*invites.RegenerateTokenResponse, error) {
-					return nil, errors.New("cannot regenerate token for responded invite")
+					return nil, &models.ValidationError{Field: "status", Message: "cannot regenerate token for responded invite"}
 				},
 			},
 			mockEventRepo: &mockRegenerateEventRepository{

@@ -424,7 +424,7 @@ func TestRevokeInviteHandlers_RevokeInvite(t *testing.T) {
 					}, nil
 				},
 				revokeInviteFunc: func(ctx context.Context, req *invites.RevokeInviteRequest) error {
-					return errors.New("cannot transition from responded to revoked")
+					return &models.ValidationError{Field: "status", Message: "cannot transition from responded to revoked"}
 				},
 			},
 			mockEventRepo: &mockRevokeEventRepository{
@@ -463,7 +463,7 @@ func TestRevokeInviteHandlers_RevokeInvite(t *testing.T) {
 					}, nil
 				},
 				revokeInviteFunc: func(ctx context.Context, req *invites.RevokeInviteRequest) error {
-					return errors.New("cannot transition from revoked to revoked")
+					return &models.ValidationError{Field: "status", Message: "cannot transition from revoked to revoked"}
 				},
 			},
 			mockEventRepo: &mockRevokeEventRepository{

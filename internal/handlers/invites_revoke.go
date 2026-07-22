@@ -6,7 +6,6 @@ import (
 	"errors"
 	"net/http"
 	"strconv"
-	"strings"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/lenaxia/tinyrsvp/internal/auth"
@@ -99,9 +98,8 @@ func (h *RevokeInviteHandlers) RevokeInvite(w http.ResponseWriter, r *http.Reque
 	}
 
 	if err := h.service.RevokeInvite(r.Context(), serviceReq); err != nil {
-		errMsg := err.Error()
-		if strings.Contains(errMsg, "cannot transition from responded") ||
-			strings.Contains(errMsg, "cannot transition from revoked") {
+		var valErr *models.ValidationError
+		if errors.As(err, &valErr) {
 			HandleError(w, r, NewBadRequestError(err.Error()))
 			return
 		}

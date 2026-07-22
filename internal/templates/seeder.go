@@ -4,7 +4,7 @@ import (
 	"context"
 	"embed"
 	"fmt"
-	"log"
+	"log/slog"
 	"os"
 	"path/filepath"
 
@@ -129,7 +129,7 @@ func (s *Seeder) SeedThemes(ctx context.Context) error {
 		}
 
 		if err := s.seedTheme(ctx, theme); err != nil {
-			log.Printf("Warning: Failed to seed theme %s: %v", theme.Name, err)
+			slog.Warn("Failed to seed theme", "theme", theme.Name, "error", err)
 		}
 	}
 
@@ -300,7 +300,7 @@ func (s *Seeder) loadThemeTemplate(filename string) string {
 		}
 	}
 
-	log.Printf("Warning: Failed to load theme template %s", filename)
+	slog.Warn("Failed to load theme template from disk; theme will be empty. Ensure WORKDIR contains templates/web/rsvp_themes/", "filename", filename)
 	return ""
 }
 
@@ -317,7 +317,7 @@ func (s *Seeder) loadThemeCSS(filename string) string {
 		}
 	}
 
-	log.Printf("Warning: Failed to load theme CSS %s", filename)
+	slog.Warn("Failed to load theme CSS from disk; theme styling will be missing. Ensure WORKDIR contains static/css/themes/", "filename", filename)
 	return ""
 }
 
@@ -340,6 +340,6 @@ func (s *Seeder) loadComponentConfig(filename string) string {
 		}
 	}
 
-	log.Printf("Warning: Failed to load component config %s", filename)
+	slog.Warn("Failed to load component config from disk", "filename", filename)
 	return ""
 }
