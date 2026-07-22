@@ -172,6 +172,21 @@ func (s *service) SubmitRSVP(ctx context.Context, token string, req *SubmitRSVPR
 		return nil, ErrDuplicateRSVP
 	}
 
+	if event.EventCapacity != nil && models.RSVPResponse(req.Response) == models.RSVPResponseYes {
+		stats, err := s.rsvpRepo.GetStats(ctx, event.ID)
+		if err != nil {
+			return nil, fmt.Errorf("failed to check event capacity: %w", err)
+		}
+		currentAttendees := stats.YesCount + stats.TotalGuests
+		newAttendees := 1 + req.PlusOnes
+		if currentAttendees+newAttendees > *event.EventCapacity {
+			return nil, &models.ValidationError{
+				Field:   "response",
+				Message: "event is at capacity",
+			}
+		}
+	}
+
 	var rsvp *models.RSVP
 	err = s.db.WithTransaction(ctx, func(tx *sql.Tx) error {
 		rsvpModel := &models.RSVP{

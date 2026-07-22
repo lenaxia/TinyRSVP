@@ -236,3 +236,7 @@ func (m *mockRSVPService) UpdateRSVP(ctx context.Context, token string, req *rsv
 func (m * mockRSVPEventRepository) GetDashboardStatsByCreator(ctx context.Context, creatorID int64) (*models.DashboardStats, error) {
 	return &models.DashboardStats{}, nil
 }
+
+func (m * mockRSVPEventRepository) CountEventsByCreator(ctx context.Context, creatorID int64) (int, error) {
+	return 0, nil
+}

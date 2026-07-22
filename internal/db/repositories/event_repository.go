@@ -29,6 +29,7 @@ type EventRepository interface {
 	GetByCreatorID(ctx context.Context, creatorID int64) ([]*models.Event, error)
 	GetDashboardStatsByCreator(ctx context.Context, creatorID int64) (*models.DashboardStats, error)
 	CountEvents(ctx context.Context) (int, error)
+	CountEventsByCreator(ctx context.Context, creatorID int64) (int, error)
 	GetComponentOverrides(ctx context.Context, eventID int64) (*models.ComponentOverrides, error)
 	UpdateComponentOverrides(ctx context.Context, eventID int64, overrides *models.ComponentOverrides) error
 	DeleteComponentOverrides(ctx context.Context, eventID int64) error
@@ -871,6 +872,18 @@ func (r *eventRepository) CountEvents(ctx context.Context) (int, error) {
 	err := r.db.QueryRow(ctx, query).Scan(&count)
 	if err != nil {
 		return 0, fmt.Errorf("failed to count events: %w", err)
+	}
+
+	return count, nil
+}
+
+func (r *eventRepository) CountEventsByCreator(ctx context.Context, creatorID int64) (int, error) {
+	query := `SELECT COUNT(*) FROM events WHERE created_by = ? AND status != 'archived'`
+
+	var count int
+	err := r.db.QueryRow(ctx, query, creatorID).Scan(&count)
+	if err != nil {
+		return 0, fmt.Errorf("failed to count events by creator: %w", err)
 	}
 
 	return count, nil

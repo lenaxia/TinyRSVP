@@ -85,10 +85,12 @@ func PrometheusMetrics(metrics *PrometheusMetricsCollector) func(http.Handler) h
 
 var idPattern = regexp.MustCompile(`/\d+(/|$)`)
 var tokenPattern = regexp.MustCompile(`/[a-f0-9]{64}(/|$)`)
+var longSegmentPattern = regexp.MustCompile(`/[A-Za-z0-9_-]{20,}(/|$)`)
 
 func normalizePath(path string) string {
 	path = idPattern.ReplaceAllString(path, "/{id}$1")
 	path = tokenPattern.ReplaceAllString(path, "/{token}$1")
+	path = longSegmentPattern.ReplaceAllString(path, "/{token}$1")
 	return path
 }
 
