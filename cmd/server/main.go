@@ -828,7 +828,7 @@ func main() {
 	logger.Info("Event archiving background job started")
 
 	rateLimiter := email.NewRateLimiter(emailConfig.RateLimit)
-	emailMetrics := email.NewNoOpMetrics()
+	emailMetrics := email.NewPrometheusMetrics(prometheus.DefaultRegisterer)
 	emailLogger := email.NewLogger(logger)
 
 	emailProcessor := email.NewQueueProcessor(
@@ -865,23 +865,7 @@ func main() {
 	shutdown := make(chan os.Signal, 1)
 	signal.Notify(shutdown, os.Interrupt, syscall.SIGTERM)
 
-	select {
-	case err := <-serverErrors:
-		logger.Error("Server error", "error", err)
-		os.Exit(1)
-
-	case err := <-processorErrors:
-		logger.Error("Email processor fatal error — server continuing but email delivery is stopped; restart to recover", "error", err)
-		// Do not exit — HTTP serving continues; operator must restart to restore email delivery.
-		// Wait for a shutdown signal before running cleanup.
-		shutdown = make(chan os.Signal, 1)
-		signal.Notify(shutdown, os.Interrupt, syscall.SIGTERM)
-		sig := <-shutdown
-		logger.Info("Shutdown signal received", "signal", sig)
-
-	case sig := <-shutdown:
-		logger.Info("Shutdown signal received", "signal", sig)
-
+	performGracefulShutdown := func() {
 		shutdownCtx, shutdownCancel := context.WithTimeout(context.Background(), 30*time.Second)
 		defer shutdownCancel()
 
@@ -915,5 +899,21 @@ func main() {
 		}
 
 		logger.Info("Server stopped gracefully")
+	}
+
+	select {
+	case err := <-serverErrors:
+		logger.Error("Server error", "error", err)
+		performGracefulShutdown()
+		os.Exit(1)
+
+	case err := <-processorErrors:
+		logger.Error("Email processor fatal error, initiating graceful shutdown", "error", err)
+		performGracefulShutdown()
+		os.Exit(1)
+
+	case sig := <-shutdown:
+		logger.Info("Shutdown signal received", "signal", sig)
+		performGracefulShutdown()
 	}
 }

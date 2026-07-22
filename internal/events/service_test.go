@@ -1519,3 +1519,7 @@ func TestListEventsWithStats_AsEventManager(t *testing.T) {
 		t.Errorf("InviteCount = %d, want 5", results[0].InviteCount)
 	}
 }
+
+func (m * mockEventRepository) CountEventsByCreator(ctx context.Context, creatorID int64) (int, error) {
+	return 0, nil
+}

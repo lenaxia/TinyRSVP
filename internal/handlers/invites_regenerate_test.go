@@ -503,3 +503,7 @@ func (m *mockRegenerateEventRepository) GetByFriendlyName(ctx context.Context, f
 func (m * mockRegenerateEventRepository) GetDashboardStatsByCreator(ctx context.Context, creatorID int64) (*models.DashboardStats, error) {
 	return &models.DashboardStats{}, nil
 }
+
+func (m * mockRegenerateEventRepository) CountEventsByCreator(ctx context.Context, creatorID int64) (int, error) {
+	return 0, nil
+}

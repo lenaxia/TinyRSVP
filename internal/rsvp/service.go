@@ -174,6 +174,26 @@ func (s *service) SubmitRSVP(ctx context.Context, token string, req *SubmitRSVPR
 
 	var rsvp *models.RSVP
 	err = s.db.WithTransaction(ctx, func(tx *sql.Tx) error {
+		if event.EventCapacity != nil && models.RSVPResponse(req.Response) == models.RSVPResponseYes {
+			var currentAttendees int
+			err := tx.QueryRowContext(ctx,
+				`SELECT COUNT(*) FROM rsvps r
+				 JOIN invites i ON r.invite_id = i.id
+				 WHERE i.event_id = ? AND r.response = 'yes'`,
+				event.ID,
+			).Scan(&currentAttendees)
+			if err != nil {
+				return fmt.Errorf("failed to check event capacity: %w", err)
+			}
+			newAttendees := 1 + req.PlusOnes
+			if currentAttendees+newAttendees > *event.EventCapacity {
+				return &models.ValidationError{
+					Field:   "response",
+					Message: "event is at capacity",
+				}
+			}
+		}
+
 		rsvpModel := &models.RSVP{
 			InviteID:    invite.ID,
 			Response:    models.RSVPResponse(req.Response),

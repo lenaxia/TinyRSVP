@@ -2160,3 +2160,174 @@ func TestCheckDeadline_TimezoneAware(t *testing.T) {
 		})
 	}
 }
+
+func TestService_SubmitRSVP_EventCapacityEnforced(t *testing.T) {
+	database := setupTestDB(t)
+	defer database.Close()
+
+	ctx := context.Background()
+
+	eventRepo := repositories.NewEventRepository(database)
+	inviteRepo := repositories.NewInviteRepository(database)
+	rsvpRepo := repositories.NewRSVPRepository(database)
+	questionRepo := repositories.NewQuestionRepository(database)
+	answerRepo := repositories.NewAnswerRepository(database)
+
+	capacity := 2
+	event := &models.Event{
+		Title:        "Capacity Test",
+		StartTime:    time.Now().Add(24 * time.Hour),
+		Timezone:     "UTC",
+		Status:       models.EventStatusPublished,
+		CreatedBy:    1,
+		EventCapacity: &capacity,
+	}
+	if err := eventRepo.Create(ctx, event); err != nil {
+		t.Fatalf("create event: %v", err)
+	}
+
+	tokenHash := strings.Repeat("d", 43)
+	invite1 := &models.Invite{
+		EventID: event.ID, Email: strPtr("g1@cap.test"), TokenHash: tokenHash,
+		Status: models.InviteStatusSent, ExpiresAt: time.Now().Add(48 * time.Hour),
+	}
+	invite2 := &models.Invite{
+		EventID: event.ID, Email: strPtr("g2@cap.test"), TokenHash: strings.Repeat("e", 43),
+		Status: models.InviteStatusSent, ExpiresAt: time.Now().Add(48 * time.Hour),
+	}
+	invite3 := &models.Invite{
+		EventID: event.ID, Email: strPtr("g3@cap.test"), TokenHash: strings.Repeat("f", 43),
+		Status: models.InviteStatusSent, ExpiresAt: time.Now().Add(48 * time.Hour),
+	}
+	for _, inv := range []*models.Invite{invite1, invite2, invite3} {
+		if err := inviteRepo.Create(ctx, inv); err != nil {
+			t.Fatalf("create invite: %v", err)
+		}
+	}
+
+	inviteSvc := &mockInviteService{}
+	inviteSvc.getInviteByTokenFunc = func(ctx context.Context, token string) (*models.Invite, error) {
+		switch token {
+		case "token1":
+			return invite1, nil
+		case "token2":
+			return invite2, nil
+		case "token3":
+			return invite3, nil
+		default:
+			return nil, errors.New("not found")
+		}
+	}
+
+	svc := NewService(database, inviteSvc, inviteRepo, eventRepo, rsvpRepo, answerRepo, questionRepo)
+
+	_, err := svc.SubmitRSVP(ctx, "token1", &SubmitRSVPRequest{Response: "yes", PlusOnes: 0})
+	if err != nil {
+		t.Fatalf("first RSVP should succeed: %v", err)
+	}
+
+	_, err = svc.SubmitRSVP(ctx, "token2", &SubmitRSVPRequest{Response: "yes", PlusOnes: 0})
+	if err != nil {
+		t.Fatalf("second RSVP should succeed (at capacity): %v", err)
+	}
+
+	_, err = svc.SubmitRSVP(ctx, "token3", &SubmitRSVPRequest{Response: "yes", PlusOnes: 0})
+	if err == nil {
+		t.Fatal("third RSVP should fail (over capacity)")
+	}
+	if !strings.Contains(err.Error(), "capacity") {
+		t.Errorf("expected capacity error, got: %v", err)
+	}
+}
+
+func TestService_SubmitRSVP_EventCapacityAllowsNoResponse(t *testing.T) {
+	database := setupTestDB(t)
+	defer database.Close()
+
+	ctx := context.Background()
+
+	eventRepo := repositories.NewEventRepository(database)
+	inviteRepo := repositories.NewInviteRepository(database)
+	rsvpRepo := repositories.NewRSVPRepository(database)
+	questionRepo := repositories.NewQuestionRepository(database)
+	answerRepo := repositories.NewAnswerRepository(database)
+
+	capacity := 1
+	event := &models.Event{
+		Title:        "Zero Capacity",
+		StartTime:    time.Now().Add(24 * time.Hour),
+		Timezone:     "UTC",
+		Status:       models.EventStatusPublished,
+		CreatedBy:    1,
+		EventCapacity: &capacity,
+	}
+	if err := eventRepo.Create(ctx, event); err != nil {
+		t.Fatalf("create event: %v", err)
+	}
+
+	tokenHash := strings.Repeat("g", 43)
+	invite := &models.Invite{
+		EventID: event.ID, Email: strPtr("no@cap.test"), TokenHash: tokenHash,
+		Status: models.InviteStatusSent, ExpiresAt: time.Now().Add(48 * time.Hour),
+	}
+	if err := inviteRepo.Create(ctx, invite); err != nil {
+		t.Fatalf("create invite: %v", err)
+	}
+
+	inviteSvc := &mockInviteService{}
+	inviteSvc.getInviteByTokenFunc = func(ctx context.Context, token string) (*models.Invite, error) {
+		return invite, nil
+	}
+
+	svc := NewService(database, inviteSvc, inviteRepo, eventRepo, rsvpRepo, answerRepo, questionRepo)
+
+	_, err := svc.SubmitRSVP(ctx, "any", &SubmitRSVPRequest{Response: "no", PlusOnes: 0})
+	if err != nil {
+		t.Fatalf("'no' response should succeed even at zero capacity: %v", err)
+	}
+}
+
+func TestService_SubmitRSVP_NoCapacityLimit(t *testing.T) {
+	database := setupTestDB(t)
+	defer database.Close()
+
+	ctx := context.Background()
+
+	eventRepo := repositories.NewEventRepository(database)
+	inviteRepo := repositories.NewInviteRepository(database)
+	rsvpRepo := repositories.NewRSVPRepository(database)
+	questionRepo := repositories.NewQuestionRepository(database)
+	answerRepo := repositories.NewAnswerRepository(database)
+
+	event := &models.Event{
+		Title:     "No Limit",
+		StartTime: time.Now().Add(24 * time.Hour),
+		Timezone:  "UTC",
+		Status:    models.EventStatusPublished,
+		CreatedBy: 1,
+	}
+	if err := eventRepo.Create(ctx, event); err != nil {
+		t.Fatalf("create event: %v", err)
+	}
+
+	tokenHash := strings.Repeat("h", 43)
+	invite := &models.Invite{
+		EventID: event.ID, Email: strPtr("free@nolimit.test"), TokenHash: tokenHash,
+		Status: models.InviteStatusSent, ExpiresAt: time.Now().Add(48 * time.Hour),
+	}
+	if err := inviteRepo.Create(ctx, invite); err != nil {
+		t.Fatalf("create invite: %v", err)
+	}
+
+	inviteSvc := &mockInviteService{}
+	inviteSvc.getInviteByTokenFunc = func(ctx context.Context, token string) (*models.Invite, error) {
+		return invite, nil
+	}
+
+	svc := NewService(database, inviteSvc, inviteRepo, eventRepo, rsvpRepo, answerRepo, questionRepo)
+
+	_, err := svc.SubmitRSVP(ctx, "any", &SubmitRSVPRequest{Response: "yes", PlusOnes: 0})
+	if err != nil {
+		t.Fatalf("RSVP should succeed when no capacity limit is set: %v", err)
+	}
+}
