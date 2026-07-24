@@ -1009,10 +1009,7 @@ func (h *RSVPHandler) GetCalendar(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	scheme := r.Header.Get("X-Forwarded-Proto")
-	if scheme != "http" && scheme != "https" {
-		scheme = "https"
-	}
+	scheme := resolveScheme(r.Header.Get("X-Forwarded-Proto"))
 	rsvpURL := fmt.Sprintf("%s://%s/rsvp/%s", scheme, r.Host, token)
 
 	generator := ics.NewGenerator()
@@ -1028,4 +1025,11 @@ func (h *RSVPHandler) GetCalendar(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Cache-Control", "no-cache")
 	w.WriteHeader(http.StatusOK)
 	w.Write(data)
+}
+
+func resolveScheme(forwardedProto string) string {
+	if forwardedProto == "http" || forwardedProto == "https" {
+		return forwardedProto
+	}
+	return "https"
 }
