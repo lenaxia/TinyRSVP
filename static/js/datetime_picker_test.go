@@ -35,7 +35,45 @@ func TestDateTimePickerSingleMode(t *testing.T) {
 	}
 }
 
-func TestDateTimePickerRangeMode(t *testing.T) {
+func TestDateTimePickerRangeModeEndDisabledByDefault(t *testing.T) {
+	requireServer(t)
+	ctx, cancel := chromedp.NewContext(context.Background())
+	defer cancel()
+
+	ctx, cancel = context.WithTimeout(ctx, 30*time.Second)
+	defer cancel()
+
+	var toggleGroupDisplay, endToggleDisplay string
+	var endCheckboxChecked bool
+	err := chromedp.Run(ctx,
+		chromedp.Navigate("http://localhost:8080/static/datetime_picker_test.html"),
+		chromedp.WaitVisible(`#event_datetime_trigger`, chromedp.ByID),
+		chromedp.Click(`#event_datetime_trigger`, chromedp.ByID),
+		chromedp.WaitVisible(`.datetime-picker-panel.open`, chromedp.ByQuery),
+		chromedp.Sleep(500*time.Millisecond),
+		chromedp.Evaluate(`window.getComputedStyle(document.querySelector('.datetime-toggle-group')).display`, &toggleGroupDisplay),
+		chromedp.Evaluate(`window.getComputedStyle(document.querySelector('.datetime-end-toggle')).display`, &endToggleDisplay),
+		chromedp.Evaluate(`document.querySelector('.datetime-end-checkbox').checked`, &endCheckboxChecked),
+	)
+
+	if err != nil {
+		t.Fatalf("Failed to run test: %v", err)
+	}
+
+	if toggleGroupDisplay != "none" {
+		t.Errorf("Expected toggle group hidden by default (end disabled), got display: %s", toggleGroupDisplay)
+	}
+
+	if endToggleDisplay == "none" {
+		t.Errorf("Expected 'Add end time' checkbox visible for datetime-range mode, got display: %s", endToggleDisplay)
+	}
+
+	if endCheckboxChecked {
+		t.Error("Expected 'Add end time' checkbox unchecked by default")
+	}
+}
+
+func TestDateTimePickerEnablingEndShowsToggleGroup(t *testing.T) {
 	requireServer(t)
 	ctx, cancel := chromedp.NewContext(context.Background())
 	defer cancel()
@@ -44,13 +82,18 @@ func TestDateTimePickerRangeMode(t *testing.T) {
 	defer cancel()
 
 	var toggleGroupDisplay string
+	var activeContent string
 	err := chromedp.Run(ctx,
 		chromedp.Navigate("http://localhost:8080/static/datetime_picker_test.html"),
 		chromedp.WaitVisible(`#event_datetime_trigger`, chromedp.ByID),
 		chromedp.Click(`#event_datetime_trigger`, chromedp.ByID),
 		chromedp.WaitVisible(`.datetime-picker-panel.open`, chromedp.ByQuery),
 		chromedp.Sleep(500*time.Millisecond),
+		// Enable end time via the checkbox
+		chromedp.Evaluate(`document.querySelector('.datetime-end-checkbox').click()`, nil),
+		chromedp.Sleep(400*time.Millisecond),
 		chromedp.Evaluate(`window.getComputedStyle(document.querySelector('.datetime-toggle-group')).display`, &toggleGroupDisplay),
+		chromedp.Evaluate(`document.querySelector('.datetime-picker-content.active')?.dataset?.content || 'none'`, &activeContent),
 	)
 
 	if err != nil {
@@ -58,7 +101,11 @@ func TestDateTimePickerRangeMode(t *testing.T) {
 	}
 
 	if toggleGroupDisplay == "none" {
-		t.Errorf("Expected toggle group to be visible for datetime-range mode, got display: %s", toggleGroupDisplay)
+		t.Errorf("Expected toggle group visible after enabling end time, got display: %s", toggleGroupDisplay)
+	}
+
+	if activeContent != "end" {
+		t.Errorf("Expected end pane active after enabling end time, got: %s", activeContent)
 	}
 }
 
@@ -151,6 +198,8 @@ func TestDateTimePickerRangeModeShowsEndDateInDisplay(t *testing.T) {
 		chromedp.Sleep(200*time.Millisecond),
 		chromedp.Click(`.time-option`, chromedp.ByQuery),
 		chromedp.Sleep(200*time.Millisecond),
+		chromedp.Evaluate(`document.querySelector('.datetime-end-checkbox').click()`, nil),
+		chromedp.Sleep(400*time.Millisecond),
 		chromedp.Click(`.datetime-toggle-btn[data-mode="end"]`, chromedp.ByQuery),
 		chromedp.Sleep(500*time.Millisecond),
 		// Use JS click to bypass chromedp viewport visibility checks for end pane elements
@@ -195,6 +244,8 @@ func TestDateTimePickerSingleModeNoEndDateAfterRangeMode(t *testing.T) {
 		chromedp.Sleep(200*time.Millisecond),
 		chromedp.Click(`.time-option`, chromedp.ByQuery),
 		chromedp.Sleep(200*time.Millisecond),
+		chromedp.Evaluate(`document.querySelector('.datetime-end-checkbox').click()`, nil),
+		chromedp.Sleep(400*time.Millisecond),
 		chromedp.Click(`.datetime-toggle-btn[data-mode="end"]`, chromedp.ByQuery),
 		chromedp.Sleep(500*time.Millisecond),
 		// Use JS click to bypass chromedp viewport visibility checks for end pane elements
@@ -367,5 +418,172 @@ func TestDateTimePickerDeadlineAfterEventPickerUsedEndMode(t *testing.T) {
 	}
 	if activeContent != "start" {
 		t.Errorf("expected [data-content='start'] to be active after opening deadline picker, got %q", activeContent)
+	}
+}
+
+// TestDateTimePickerUncheckingEndClearsEndTime verifies that enabling end time,
+// saving (which writes end_time), then unchecking the "Add end time" checkbox
+// and saving again clears the end_time input. This satisfies the requirement
+// that an end datetime can be removed after being set.
+func TestDateTimePickerUncheckingEndClearsEndTime(t *testing.T) {
+	requireServer(t)
+	ctx, cancel := chromedp.NewContext(context.Background())
+	defer cancel()
+	ctx, cancel = context.WithTimeout(ctx, 45*time.Second)
+	defer cancel()
+
+	var endValueAfterSet, endValueAfterClear string
+	err := chromedp.Run(ctx,
+		chromedp.Navigate("http://localhost:8080/static/datetime_picker_test.html"),
+		chromedp.WaitVisible(`#event_datetime_trigger`, chromedp.ByID),
+		chromedp.Click(`#event_datetime_trigger`, chromedp.ByID),
+		chromedp.WaitVisible(`.datetime-picker-panel.open`, chromedp.ByQuery),
+		chromedp.Sleep(400*time.Millisecond),
+
+		// Pick start date + time
+		chromedp.Click(`.calendar-day:not(.other-month):not(.disabled)`, chromedp.ByQuery),
+		chromedp.Sleep(200*time.Millisecond),
+		chromedp.Click(`.time-option`, chromedp.ByQuery),
+		chromedp.Sleep(200*time.Millisecond),
+
+		// Enable end and pick an end date (second available day) + time
+		chromedp.Evaluate(`document.querySelector('.datetime-end-checkbox').click()`, nil),
+		chromedp.Sleep(400*time.Millisecond),
+		chromedp.Evaluate(`(function(){var d=document.querySelectorAll('.datetime-picker-content[data-content="end"] .calendar-day:not(.other-month):not(.disabled)');if(d.length>1){d[1].click();return true;}return false;})()`, nil),
+		chromedp.Sleep(300*time.Millisecond),
+		chromedp.Evaluate(`(function(){var t=document.querySelector('.datetime-picker-content[data-content="end"] .time-option:not(.disabled)');if(t){t.click();return true;}return false;})()`, nil),
+		chromedp.Sleep(200*time.Millisecond),
+		chromedp.Click(`.datetime-picker-save`, chromedp.ByQuery),
+		chromedp.Sleep(400*time.Millisecond),
+		chromedp.Value(`#end_time`, &endValueAfterSet, chromedp.ByID),
+
+		// Reopen, uncheck end, save — end_time must be cleared
+		chromedp.Click(`#event_datetime_trigger`, chromedp.ByID),
+		chromedp.WaitVisible(`.datetime-picker-panel.open`, chromedp.ByQuery),
+		chromedp.Sleep(400*time.Millisecond),
+		chromedp.Evaluate(`document.querySelector('.datetime-end-checkbox').click()`, nil),
+		chromedp.Sleep(300*time.Millisecond),
+		chromedp.Click(`.datetime-picker-save`, chromedp.ByQuery),
+		chromedp.Sleep(400*time.Millisecond),
+		chromedp.Value(`#end_time`, &endValueAfterClear, chromedp.ByID),
+	)
+	if err != nil {
+		t.Fatalf("Failed to run test: %v", err)
+	}
+	if endValueAfterSet == "" {
+		t.Error("end_time should be populated after enabling end and saving")
+	}
+	if endValueAfterClear != "" {
+		t.Errorf("end_time should be cleared after unchecking end and saving, got: %s", endValueAfterClear)
+	}
+}
+
+// TestDateTimePickerEndCalendarDisablesBeforeStart verifies that once a start
+// date is chosen and end time enabled, days strictly before the start date are
+// rendered as disabled in the end pane (cannot select end before start).
+func TestDateTimePickerEndCalendarDisablesBeforeStart(t *testing.T) {
+	requireServer(t)
+	ctx, cancel := chromedp.NewContext(context.Background())
+	defer cancel()
+	ctx, cancel = context.WithTimeout(ctx, 30*time.Second)
+	defer cancel()
+
+	// JS that picks a start day, enables end, then reports whether any
+	// non-other-month day earlier than the selected start day is clickable
+	// (i.e. lacks the 'disabled' class). The picker is correct when the
+	// returned count of such clickably-invalid days is 0.
+	var invalidClickableDays int64
+	err := chromedp.Run(ctx,
+		chromedp.Navigate("http://localhost:8080/static/datetime_picker_test.html"),
+		chromedp.WaitVisible(`#event_datetime_trigger`, chromedp.ByID),
+		chromedp.Click(`#event_datetime_trigger`, chromedp.ByID),
+		chromedp.WaitVisible(`.datetime-picker-panel.open`, chromedp.ByQuery),
+		chromedp.Sleep(400*time.Millisecond),
+
+		// Pick a start day that is NOT the first of the month, so earlier
+		// same-month days exist to test against.
+		chromedp.Evaluate(`(function(){
+			var days = document.querySelectorAll('.datetime-picker-content[data-content="start"] .calendar-day:not(.other-month):not(.disabled)');
+			for (var i = days.length - 1; i >= 0; i--) {
+				var n = parseInt(days[i].textContent, 10);
+				if (n > 2) { days[i].click(); return true; }
+			}
+			return false;
+		})()`, nil),
+		chromedp.Sleep(300*time.Millisecond),
+		chromedp.Click(`.time-option`, chromedp.ByQuery),
+		chromedp.Sleep(200*time.Millisecond),
+
+		chromedp.Evaluate(`document.querySelector('.datetime-end-checkbox').click()`, nil),
+		chromedp.Sleep(400*time.Millisecond),
+
+		chromedp.Evaluate(`(function(){
+			var endDays = document.querySelectorAll('.datetime-picker-content[data-content="end"] .calendar-day:not(.other-month)');
+			var startText = (document.querySelector('.datetime-picker-content[data-content="start"] .calendar-day.selected')||{}).textContent;
+			var startNum = parseInt(startText, 10);
+			var bad = 0;
+			endDays.forEach(function(d){
+				var n = parseInt(d.textContent, 10);
+				if (!isNaN(startNum) && !isNaN(n) && n < startNum && !d.classList.contains('disabled')) { bad++; }
+			});
+			return bad;
+		})()`, &invalidClickableDays),
+	)
+	if err != nil {
+		t.Fatalf("Failed to run test: %v", err)
+	}
+	if invalidClickableDays != 0 {
+		t.Errorf("Expected no clickable end days before start date, got %d", invalidClickableDays)
+	}
+}
+
+// TestDateTimePickerMovingStartAfterEndClearsEnd verifies that when an end time
+// is set, moving the start date to a later day than the end (which would make
+// end < start) clears the end selection on save, rather than persisting an
+// invalid range that errors on submit.
+func TestDateTimePickerMovingStartAfterEndClearsEnd(t *testing.T) {
+	requireServer(t)
+	ctx, cancel := chromedp.NewContext(context.Background())
+	defer cancel()
+	ctx, cancel = context.WithTimeout(ctx, 45*time.Second)
+	defer cancel()
+
+	var endValueAfterMove string
+	err := chromedp.Run(ctx,
+		chromedp.Navigate("http://localhost:8080/static/datetime_picker_test.html"),
+		chromedp.WaitVisible(`#event_datetime_trigger`, chromedp.ByID),
+		chromedp.Click(`#event_datetime_trigger`, chromedp.ByID),
+		chromedp.WaitVisible(`.datetime-picker-panel.open`, chromedp.ByQuery),
+		chromedp.Sleep(400*time.Millisecond),
+
+		// Pick an early start day
+		chromedp.Evaluate(`(function(){var d=document.querySelector('.datetime-picker-content[data-content="start"] .calendar-day:not(.other-month):not(.disabled)');if(d){d.click();return true;}return false;})()`, nil),
+		chromedp.Sleep(300*time.Millisecond),
+		chromedp.Click(`.time-option`, chromedp.ByQuery),
+		chromedp.Sleep(200*time.Millisecond),
+
+		// Enable end, pick the very next day as end
+		chromedp.Evaluate(`document.querySelector('.datetime-end-checkbox').click()`, nil),
+		chromedp.Sleep(400*time.Millisecond),
+		chromedp.Evaluate(`(function(){var d=document.querySelectorAll('.datetime-picker-content[data-content="end"] .calendar-day:not(.other-month):not(.disabled)');if(d.length>1){d[1].click();return true;}return false;})()`, nil),
+		chromedp.Sleep(300*time.Millisecond),
+		chromedp.Evaluate(`(function(){var t=document.querySelector('.datetime-picker-content[data-content="end"] .time-option:not(.disabled)');if(t){t.click();return true;}return false;})()`, nil),
+		chromedp.Sleep(200*time.Millisecond),
+
+		// Switch back to start and pick a day far in the future (last available)
+		chromedp.Click(`.datetime-toggle-btn[data-mode="start"]`, chromedp.ByQuery),
+		chromedp.Sleep(300*time.Millisecond),
+		chromedp.Evaluate(`(function(){var d=document.querySelectorAll('.datetime-picker-content[data-content="start"] .calendar-day:not(.other-month):not(.disabled)');if(d.length){d[d.length-1].click();return true;}return false;})()`, nil),
+		chromedp.Sleep(300*time.Millisecond),
+
+		chromedp.Click(`.datetime-picker-save`, chromedp.ByQuery),
+		chromedp.Sleep(400*time.Millisecond),
+		chromedp.Value(`#end_time`, &endValueAfterMove, chromedp.ByID),
+	)
+	if err != nil {
+		t.Fatalf("Failed to run test: %v", err)
+	}
+	if endValueAfterMove != "" {
+		t.Errorf("end_time should be cleared after moving start past end, got: %s", endValueAfterMove)
 	}
 }

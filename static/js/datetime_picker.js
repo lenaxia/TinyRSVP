@@ -60,6 +60,11 @@
             btn.addEventListener('click', () => activeInstance && activeInstance.openTimezonePanel());
         });
 
+        const endCheckbox = document.querySelector('.datetime-end-checkbox');
+        if (endCheckbox) {
+            endCheckbox.addEventListener('change', () => activeInstance && activeInstance.toggleEndTime(endCheckbox.checked));
+        }
+
         if (tzPanel) {
             tzCloseBtn && tzCloseBtn.addEventListener('click', () => activeInstance && activeInstance.closeTimezonePanel());
             tzOverlay && tzOverlay.addEventListener('click', () => activeInstance && activeInstance.closeTimezonePanel());
@@ -90,7 +95,6 @@
             this.config = {
                 mode,
                 showTimezone:    triggerEl.dataset.showTimezone !== 'false',
-                showEndTime:     mode === 'datetime-range',
                 triggerEl,
                 startInputId:    triggerEl.dataset.startInput  || triggerEl.id,
                 endInputId:      triggerEl.dataset.endInput     || null,
@@ -109,11 +113,14 @@
             this.currentMonth      = new Date();
             this.today             = new Date();
             this.today.setHours(0, 0, 0, 0);
+            this.showEndTime       = false;
 
             if (!panel || !overlay) return;
 
             this._bindTrigger();
             this._loadExistingValues();
+            this.showEndTime = this.config.mode === 'datetime-range' && this.selectedEndDate !== null;
+            if (this.selectedStartDate) this._updateTriggerDisplay();
         }
 
         // ---- private --------------------------------------------------------
@@ -167,7 +174,7 @@
             // causing the user to interact with stale content from the previous instance.
             this.switchMode(this.currentMode);
             if (this.config.showTimezone)  this._updateTimezoneDisplay();
-            if (this.config.showEndTime)   this._updateToggleDisplays();
+            if (this.showEndTime)          this._updateToggleDisplays();
         }
 
         closePanel() {
@@ -191,6 +198,7 @@
         }
 
         switchMode(mode) {
+            if (mode === 'end' && !this.showEndTime) mode = 'start';
             this.currentMode = mode;
             document.querySelectorAll('.datetime-toggle-btn').forEach(btn => {
                 btn.classList.toggle('active', btn.dataset.mode === mode);
@@ -200,6 +208,19 @@
             });
             this.renderCalendar();
             if (this.config.mode !== 'date-only') this.renderTimePicker();
+        }
+
+        toggleEndTime(enabled) {
+            if (this.config.mode !== 'datetime-range') return;
+            this.showEndTime = !!enabled;
+            if (!this.showEndTime) {
+                this.selectedEndDate = null;
+                this.selectedEndTime = null;
+            }
+            this._updateUIForMode();
+            this.switchMode(this.showEndTime ? 'end' : 'start');
+            this._updateToggleDisplays();
+            this._updateTriggerDisplay();
         }
 
         navigateMonth(direction) {
@@ -261,6 +282,7 @@
             if (!timeScroll) return;
 
             timeScroll.innerHTML = '';
+            const disableBefore = this._endSameDayMinDateTime();
             for (let hour = 0; hour < 24; hour++) {
                 for (let minute = 0; minute < 60; minute += 15) {
                     const timeStr   = this._formatTimeOption(hour, minute);
@@ -274,11 +296,15 @@
                         setTimeout(() => timeOption.scrollIntoView({ block: 'center', behavior: 'smooth' }), 100);
                     }
 
-                    timeOption.addEventListener('click', (e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        this._selectTime(timeStr);
-                    });
+                    if (disableBefore && this._combineDateAndTime(this.selectedEndDate, timeStr) <= disableBefore) {
+                        timeOption.classList.add('disabled');
+                    } else {
+                        timeOption.addEventListener('click', (e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            this._selectTime(timeStr);
+                        });
+                    }
                     timeScroll.appendChild(timeOption);
                 }
             }
@@ -298,12 +324,12 @@
                 }
             }
 
-            if (endInput && this.selectedEndDate) {
-                if (this.config.mode === 'date-only') {
-                    endInput.value = this._formatDateForInput(this.selectedEndDate);
-                } else if (this.selectedEndTime) {
+            if (endInput) {
+                if (this.showEndTime && this.selectedEndDate && this.selectedEndTime) {
                     const dt = this._combineDateAndTime(this.selectedEndDate, this.selectedEndTime);
                     endInput.value = this._formatForInput(dt);
+                } else {
+                    endInput.value = '';
                 }
             }
 
@@ -332,10 +358,16 @@
         }
 
         _updateUIForMode() {
+            const isRange = this.config.mode === 'datetime-range';
+
+            const endToggle = panel.querySelector('.datetime-end-toggle');
+            if (endToggle) endToggle.style.display = isRange ? '' : 'none';
+
+            const endCheckbox = panel.querySelector('.datetime-end-checkbox');
+            if (endCheckbox) endCheckbox.checked = this.showEndTime;
+
             const toggleGroup = panel.querySelector('.datetime-toggle-group');
-            if (toggleGroup) {
-                toggleGroup.style.display = this.config.showEndTime ? 'flex' : 'none';
-            }
+            if (toggleGroup) toggleGroup.style.display = this.showEndTime ? 'flex' : 'none';
 
             panel.querySelectorAll('.timezone-display').forEach(el => {
                 el.style.display = this.config.showTimezone ? '' : 'none';
@@ -354,8 +386,15 @@
             const dayDate = new Date(year, month, dayNum);
             dayDate.setHours(0, 0, 0, 0);
 
+            let minDate = this.today;
+            if (this.currentMode === 'end' && this.selectedStartDate) {
+                const startDay = new Date(this.selectedStartDate);
+                startDay.setHours(0, 0, 0, 0);
+                minDate = startDay;
+            }
+
             if (isOtherMonth) day.classList.add('other-month');
-            if (dayDate < this.today) day.classList.add('disabled');
+            if (dayDate < minDate) day.classList.add('disabled');
             if (dayDate.getTime() === this.today.getTime()) day.classList.add('today');
 
             const selectedDate = this.currentMode === 'start' ? this.selectedStartDate : this.selectedEndDate;
@@ -365,7 +404,7 @@
                 if (dayDate.getTime() === sel.getTime()) day.classList.add('selected');
             }
 
-            if (!isOtherMonth && dayDate >= this.today) {
+            if (!isOtherMonth && dayDate >= minDate) {
                 day.style.cursor = 'pointer';
                 day.addEventListener('click', (e) => {
                     e.preventDefault();
@@ -382,22 +421,29 @@
             if (this.currentMode === 'start') {
                 this.selectedStartDate = newDate;
                 if (!this.selectedStartTime && this.config.mode !== 'date-only') this.selectedStartTime = '12:00 PM';
+                if (this.showEndTime) this._clearEndIfInvalid();
             } else {
                 this.selectedEndDate = newDate;
                 if (!this.selectedEndTime && this.config.mode !== 'date-only') this.selectedEndTime = '12:00 PM';
+                if (this.selectedStartDate && this._sameDay(this.selectedStartDate, newDate) && this.selectedStartTime) {
+                    const startDT = this._combineDateAndTime(this.selectedStartDate, this.selectedStartTime);
+                    const endDT   = this._combineDateAndTime(newDate, this.selectedEndTime);
+                    if (endDT <= startDT) this.selectedEndTime = null;
+                }
             }
             this.renderCalendar();            if (this.config.mode !== 'date-only') this.renderTimePicker();
-            if (this.config.showEndTime) this._updateToggleDisplays();
+            if (this.showEndTime) this._updateToggleDisplays();
         }
 
         _selectTime(timeStr) {
             if (this.currentMode === 'start') {
                 this.selectedStartTime = timeStr;
+                if (this.showEndTime) this._clearEndIfInvalid();
             } else {
                 this.selectedEndTime = timeStr;
             }
             this.renderTimePicker();
-            if (this.config.showEndTime) this._updateToggleDisplays();
+            if (this.showEndTime) this._updateToggleDisplays();
         }
 
         _updateTimezoneDisplay() {
@@ -434,7 +480,7 @@
 
                 let displayText = startStr;
 
-                if (this.config.showEndTime && this.selectedEndDate && this.selectedEndTime) {
+                if (this.showEndTime && this.selectedEndDate && this.selectedEndTime) {
                     const fmt = { year: 'numeric', month: '2-digit', day: '2-digit' };
                     if (this.selectedStartDate.toLocaleDateString('en-US', fmt) !==
                         this.selectedEndDate.toLocaleDateString('en-US', fmt)) {
@@ -484,6 +530,29 @@
             const result = new Date(date);
             result.setHours(hour, minute, 0, 0);
             return result;
+        }
+
+        _sameDay(a, b) {
+            return a.getFullYear() === b.getFullYear()
+                && a.getMonth() === b.getMonth()
+                && a.getDate() === b.getDate();
+        }
+
+        _endSameDayMinDateTime() {
+            if (this.currentMode !== 'end') return null;
+            if (!this.selectedStartDate || !this.selectedStartTime || !this.selectedEndDate) return null;
+            if (!this._sameDay(this.selectedStartDate, this.selectedEndDate)) return null;
+            return this._combineDateAndTime(this.selectedStartDate, this.selectedStartTime);
+        }
+
+        _clearEndIfInvalid() {
+            if (!this.selectedStartDate || !this.selectedEndDate) return;
+            const startDT = this._combineDateAndTime(this.selectedStartDate, this.selectedStartTime || '12:00 AM');
+            const endDT   = this._combineDateAndTime(this.selectedEndDate, this.selectedEndTime || '12:00 AM');
+            if (endDT <= startDT) {
+                this.selectedEndDate = null;
+                this.selectedEndTime = null;
+            }
         }
 
         _formatForInput(date) {
