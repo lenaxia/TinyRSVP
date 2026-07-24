@@ -14,13 +14,6 @@ const DateDefaults = {
         return this.formatDateTimeLocal(now);
     },
 
-    getDefaultEndTime() {
-        const now = new Date();
-        now.setDate(now.getDate() + 7);
-        now.setHours(21, 0, 0, 0);
-        return this.formatDateTimeLocal(now);
-    },
-
     getDefaultRSVPDeadline() {
         const now = new Date();
         now.setDate(now.getDate() + 5);
@@ -93,15 +86,10 @@ const DateDefaults = {
 
     setDateDefaults() {
         const startTimeInput = document.getElementById('start_time');
-        const endTimeInput = document.getElementById('end_time');
         const rsvpDeadlineInput = document.getElementById('rsvp_deadline');
 
         if (startTimeInput && !startTimeInput.value) {
             startTimeInput.value = this.getDefaultStartTime();
-        }
-
-        if (endTimeInput && !endTimeInput.value) {
-            endTimeInput.value = this.getDefaultEndTime();
         }
 
         if (rsvpDeadlineInput && !rsvpDeadlineInput.value) {

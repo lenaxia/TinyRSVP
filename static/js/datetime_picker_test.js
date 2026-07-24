@@ -50,6 +50,10 @@ describe('DateTimePicker Toggle Group Visibility', () => {
                     <button class="datetime-picker-close">×</button>
                 </div>
                 <div class="datetime-picker-body">
+                    <label class="datetime-end-toggle">
+                        <input type="checkbox" class="datetime-end-checkbox">
+                        <span class="datetime-end-toggle-label">Add end time</span>
+                    </label>
                     <div class="datetime-toggle-group">
                         <button type="button" class="datetime-toggle-btn active" data-mode="start">
                             <span class="datetime-toggle-label">Start Time</span>
@@ -156,16 +160,35 @@ describe('DateTimePicker Toggle Group Visibility', () => {
         }, 100);
     });
 
-    test('toggle group should be visible for datetime-range mode', (done) => {
+    test('toggle group should be hidden by default for datetime-range mode (end disabled)', (done) => {
         const eventTrigger = document.getElementById('event_datetime_trigger');
-        
+
         setTimeout(() => {
             eventTrigger.click();
-            
+
             setTimeout(() => {
                 expect(panel.classList.contains('open')).toBe(true);
-                expect(toggleGroup.style.display).toBe('flex');
+                expect(toggleGroup.style.display).toBe('none');
                 done();
+            }, 100);
+        }, 100);
+    });
+
+    test('enabling end time shows the toggle group for datetime-range mode', (done) => {
+        const eventTrigger = document.getElementById('event_datetime_trigger');
+        const endCheckbox = document.querySelector('.datetime-end-checkbox');
+
+        setTimeout(() => {
+            eventTrigger.click();
+
+            setTimeout(() => {
+                expect(toggleGroup.style.display).toBe('none');
+                endCheckbox.click();
+
+                setTimeout(() => {
+                    expect(toggleGroup.style.display).toBe('flex');
+                    done();
+                }, 100);
             }, 100);
         }, 100);
     });
@@ -174,18 +197,19 @@ describe('DateTimePicker Toggle Group Visibility', () => {
         const eventTrigger = document.getElementById('event_datetime_trigger');
         const rsvpTrigger = document.getElementById('rsvp_deadline_trigger');
         const closeBtn = document.querySelector('.datetime-picker-close');
-        
+
         setTimeout(() => {
             eventTrigger.click();
-            
+
             setTimeout(() => {
-                expect(toggleGroup.style.display).toBe('flex');
-                
+                // Range mode hides the toggle group until end time is enabled.
+                expect(toggleGroup.style.display).toBe('none');
+
                 closeBtn.click();
-                
+
                 setTimeout(() => {
                     rsvpTrigger.click();
-                    
+
                     setTimeout(() => {
                         expect(panel.classList.contains('open')).toBe(true);
                         expect(toggleGroup.style.display).toBe('none');
@@ -288,6 +312,7 @@ describe('DateTimePicker Toggle Group Visibility', () => {
                             startTimeOptions[0].click();
                             
                             setTimeout(() => {
+                                document.querySelector('.datetime-end-checkbox').click();
                                 const endToggleBtn = panel.querySelector('.datetime-toggle-btn[data-mode="end"]');
                                 endToggleBtn.click();
                                 
@@ -352,6 +377,7 @@ describe('DateTimePicker Toggle Group Visibility', () => {
                             startTimeOptions[0].click();
                             
                             setTimeout(() => {
+                                document.querySelector('.datetime-end-checkbox').click();
                                 const endToggleBtn = panel.querySelector('.datetime-toggle-btn[data-mode="end"]');
                                 endToggleBtn.click();
                                 
@@ -470,6 +496,10 @@ describe('DateTimePicker active-instance isolation', () => {
                     <button class="datetime-picker-close">×</button>
                 </div>
                 <div class="datetime-picker-body">
+                    <label class="datetime-end-toggle">
+                        <input type="checkbox" class="datetime-end-checkbox">
+                        <span class="datetime-end-toggle-label">Add end time</span>
+                    </label>
                     <div class="datetime-toggle-group">
                         <button type="button" class="datetime-toggle-btn active" data-mode="start">
                             <span class="datetime-toggle-label">Start Time</span>
