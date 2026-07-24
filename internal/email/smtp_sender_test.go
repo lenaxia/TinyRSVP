@@ -704,3 +704,36 @@ func TestSMTPSender_PermanentError_Unwrap(t *testing.T) {
 		})
 	}
 }
+
+func TestSMTPSender_Send_QuitFailureNonFatal(t *testing.T) {
+	srv := newFakeSMTPServer(t)
+	defer srv.close()
+
+	config := &Config{
+		SMTPHost:   srv.host,
+		SMTPPort:   srv.port,
+		FromEmail:  "test@example.com",
+		FromName:   "Test",
+		UseTLS:     false,
+		SkipVerify: false,
+		Timeout:    5 * time.Second,
+		RateLimit:  100,
+		MaxRetryAttempts: 3,
+	}
+
+	sender, err := NewSMTPSender(config)
+	if err != nil {
+		t.Fatalf("NewSMTPSender: %v", err)
+	}
+
+	msg := &SMTPMessage{
+		To:      "recipient@example.com",
+		Subject: "Quit Test",
+		BodyText: "Testing quit failure handling",
+	}
+
+	err = sender.Send(context.Background(), msg)
+	if err != nil {
+		t.Errorf("Send should return nil even if Quit fails (email already sent): %v", err)
+	}
+}

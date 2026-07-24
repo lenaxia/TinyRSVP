@@ -375,11 +375,17 @@ func (s *inviteService) RegenerateToken(ctx context.Context, inviteID int64) (*R
 	}
 
 	if invite.Status == models.InviteStatusRevoked {
-		return nil, fmt.Errorf("cannot regenerate token for revoked invite")
+		return nil, &models.ValidationError{
+			Field:   "status",
+			Message: "cannot regenerate token for revoked invite",
+		}
 	}
 
 	if invite.Status == models.InviteStatusResponded {
-		return nil, fmt.Errorf("cannot regenerate token for responded invite")
+		return nil, &models.ValidationError{
+			Field:   "status",
+			Message: "cannot regenerate token for responded invite",
+		}
 	}
 
 	plainToken, err := s.generator.Generate()

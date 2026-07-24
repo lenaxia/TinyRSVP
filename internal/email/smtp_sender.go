@@ -71,7 +71,11 @@ func (s *smtpSender) Send(ctx context.Context, msg *SMTPMessage) error {
 		return classifyError(err)
 	}
 
-	return client.Quit()
+	if err := client.Quit(); err != nil {
+		return nil
+	}
+
+	return nil
 }
 
 func (s *smtpSender) connect(ctx context.Context) (*smtp.Client, error) {

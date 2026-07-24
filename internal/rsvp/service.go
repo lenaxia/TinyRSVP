@@ -5,7 +5,7 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
-	"log"
+	"log/slog"
 	"time"
 
 	"github.com/lenaxia/tinyrsvp/internal/db"
@@ -256,11 +256,13 @@ func (s *service) SubmitRSVP(ctx context.Context, token string, req *SubmitRSVPR
 	if s.emailService != nil && invite.Email != nil {
 		answers, err := s.answerRepo.GetByRSVPID(ctx, rsvp.ID)
 		if err != nil {
-			log.Printf("Failed to get answers for confirmation email: %v", err)
+			slog.Warn("Failed to get answers for confirmation email", "error", err, "rsvp_id", rsvp.ID)
 		} else {
+			emailCtx, emailCancel := context.WithTimeout(context.Background(), 30*time.Second)
 			go func() {
-				if err := s.emailService.SendConfirmationEmail(context.Background(), token, rsvp, invite, event, answers); err != nil {
-					log.Printf("Failed to send confirmation email: %v", err)
+				defer emailCancel()
+				if err := s.emailService.SendConfirmationEmail(emailCtx, token, rsvp, invite, event, answers); err != nil {
+					slog.Warn("Failed to send confirmation email", "error", err, "rsvp_id", rsvp.ID)
 				}
 			}()
 		}
@@ -469,11 +471,13 @@ func (s *service) UpdateRSVP(ctx context.Context, token string, req *SubmitRSVPR
 	if s.emailService != nil && invite.Email != nil {
 		answers, err := s.answerRepo.GetByRSVPID(ctx, rsvp.ID)
 		if err != nil {
-			log.Printf("Failed to get answers for confirmation email: %v", err)
+			slog.Warn("Failed to get answers for confirmation email", "error", err, "rsvp_id", rsvp.ID)
 		} else {
+			emailCtx, emailCancel := context.WithTimeout(context.Background(), 30*time.Second)
 			go func() {
-				if err := s.emailService.SendConfirmationEmail(context.Background(), token, rsvp, invite, event, answers); err != nil {
-					log.Printf("Failed to send confirmation email: %v", err)
+				defer emailCancel()
+				if err := s.emailService.SendConfirmationEmail(emailCtx, token, rsvp, invite, event, answers); err != nil {
+					slog.Warn("Failed to send confirmation email", "error", err, "rsvp_id", rsvp.ID)
 				}
 			}()
 		}
