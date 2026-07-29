@@ -1,8 +1,6 @@
 module github.com/lenaxia/tinyrsvp
 
-go 1.24.0
-
-toolchain go1.24.11
+go 1.25.0
 
 require (
 	github.com/chromedp/cdproto v0.0.0-20250724212937-08a3db8b4327
@@ -15,7 +13,7 @@ require (
 	github.com/mxschmitt/playwright-go v0.6100.0
 	github.com/prometheus/client_golang v1.23.2
 	go.uber.org/mock v0.6.0
-	golang.org/x/oauth2 v0.34.0
+	golang.org/x/oauth2 v0.36.0
 )
 
 require (
