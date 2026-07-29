@@ -11,7 +11,7 @@ require (
 	github.com/go-chi/chi/v5 v5.0.11
 	github.com/go-jose/go-jose/v4 v4.1.3
 	github.com/golang-migrate/migrate/v4 v4.19.1
-	github.com/mattn/go-sqlite3 v1.14.22
+	github.com/mattn/go-sqlite3 v1.14.49
 	github.com/mxschmitt/playwright-go v0.6100.0
 	github.com/prometheus/client_golang v1.23.2
 	go.uber.org/mock v0.6.0
