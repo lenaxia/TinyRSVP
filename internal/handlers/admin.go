@@ -37,6 +37,7 @@ type AdminDashboardHandler struct {
 
 type AdminDashboardPageData struct {
 	ActivePage string
+	IsAdmin    bool
 	User       *models.User
 	Stats      *AdminDashboardStats
 	EmailQueue *EmailQueueMetrics
@@ -89,6 +90,7 @@ func (h *AdminDashboardHandler) AdminDashboard(w http.ResponseWriter, r *http.Re
 
 	data := &AdminDashboardPageData{
 		ActivePage: "admin",
+		IsAdmin:    isAdminRequest(r),
 		User:       user,
 		Stats:      stats,
 	}
@@ -157,6 +159,7 @@ type UserManagementHandler struct {
 
 type UserManagementPageData struct {
 	ActivePage string
+	IsAdmin    bool
 	User       *models.User
 	Users      []*models.User
 	Total      int
@@ -217,6 +220,7 @@ func (h *UserManagementHandler) UserManagementPage(w http.ResponseWriter, r *htt
 		log.Printf("User management: failed to get user count: %v", err)
 		h.renderPage(w, http.StatusOK, &UserManagementPageData{
 			ActivePage: "admin",
+			IsAdmin:    isAdminRequest(r),
 			User:       user,
 			Users:      users,
 			Error:      "Failed to get user count",
@@ -228,6 +232,7 @@ func (h *UserManagementHandler) UserManagementPage(w http.ResponseWriter, r *htt
 
 	data := &UserManagementPageData{
 		ActivePage: "admin",
+		IsAdmin:    isAdminRequest(r),
 		User:       user,
 		Users:      users,
 		Total:      total,

@@ -2,8 +2,6 @@ package config
 
 import (
 	"fmt"
-	"net"
-	"strings"
 )
 
 func (c *Config) loadForwardAuthFromEnv() error {
@@ -16,14 +14,7 @@ func (c *Config) loadForwardAuthFromEnv() error {
 
 	c.ForwardAuth.UserHeader = getEnvString("FORWARD_AUTH_USER_HEADER", "")
 	c.ForwardAuth.EmailHeader = getEnvString("FORWARD_AUTH_EMAIL_HEADER", "")
-
-	trustedIPsStr := getEnvString("FORWARD_AUTH_TRUSTED_IPS", "")
-	if trustedIPsStr != "" {
-		c.ForwardAuth.TrustedIPs = strings.Split(trustedIPsStr, ",")
-		for i := range c.ForwardAuth.TrustedIPs {
-			c.ForwardAuth.TrustedIPs[i] = strings.TrimSpace(c.ForwardAuth.TrustedIPs[i])
-		}
-	}
+	c.ForwardAuth.TrustedIPs = parseIPListFromEnv("FORWARD_AUTH_TRUSTED_IPS")
 
 	return nil
 }
@@ -45,20 +36,13 @@ func (c *Config) validateForwardAuth() error {
 		return fmt.Errorf("at least one trusted IP is required when forward auth is enabled")
 	}
 
-	for _, entry := range c.ForwardAuth.TrustedIPs {
-		// Accept both individual IPs and CIDR ranges (e.g. 172.19.0.0/16).
-		if strings.Contains(entry, "/") {
-			if _, _, err := net.ParseCIDR(entry); err != nil {
-				return fmt.Errorf("invalid CIDR range: %s", entry)
-			}
-		} else {
-			if net.ParseIP(entry) == nil {
-				return fmt.Errorf("invalid IP address: %s", entry)
-			}
-		}
-	}
+	return validateIPList("forward auth", c.ForwardAuth.TrustedIPs)
+}
 
-	return nil
+// validateMetrics validates the METRICS_TRUSTED_IPS entries, if any. An empty
+// list is valid (defaults to loopback-only at the middleware layer).
+func (c *Config) validateMetrics() error {
+	return validateIPList("metrics", c.Metrics.TrustedIPs)
 }
 
 func (c *Config) validateAuthModes() error {
@@ -67,3 +51,4 @@ func (c *Config) validateAuthModes() error {
 	}
 	return nil
 }
+

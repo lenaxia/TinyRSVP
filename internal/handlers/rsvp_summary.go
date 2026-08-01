@@ -42,6 +42,7 @@ func (h *RSVPSummaryHandler) SetTemplates(tmpl *template.Template) {
 
 type RSVPSummaryData struct {
 	ActivePage    string
+	IsAdmin       bool
 	Event         *models.Event
 	Stats         *repositories.RSVPStats
 	RSVPs         []*models.RSVP
@@ -113,6 +114,7 @@ func (h *RSVPSummaryHandler) GetRSVPSummary(w http.ResponseWriter, r *http.Reque
 
 	data := &RSVPSummaryData{
 		ActivePage:    "events",
+		IsAdmin:       isAdminRequest(r),
 		Event:         event,
 		Stats:         stats,
 		RSVPs:         rsvps,

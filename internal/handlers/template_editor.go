@@ -251,10 +251,12 @@ func (h *TemplateEditorHandlers) GetEditorPage(w http.ResponseWriter, r *http.Re
 		Template   *models.Template
 		User       *models.User
 		ActivePage string
+		IsAdmin    bool
 	}{
 		Template:   editable.Template,
 		User:       user,
 		ActivePage: "templates",
+		IsAdmin:    isAdminRequest(r),
 	}
 
 	h.renderPage(w, http.StatusOK, data)

@@ -47,12 +47,13 @@ type MetricsHandler struct {
 }
 
 type MetricsPageData struct {
-	ActivePage string
-	User       *models.User
-	Stats      *AdminMetricsStats
-	EmailQueue *EmailQueueMetrics
-	DBPool     *DBPoolMetrics
-	Error      string
+	ActivePage  string
+	IsAdmin     bool
+	User        *models.User
+	Stats       *AdminMetricsStats
+	EmailQueue  *EmailQueueMetrics
+	DBPool      *DBPoolMetrics
+	Error       string
 	GeneratedAt time.Time
 }
 
@@ -76,6 +77,7 @@ func (h *MetricsHandler) MetricsPage(w http.ResponseWriter, r *http.Request) {
 
 	data := &MetricsPageData{
 		ActivePage:  "admin",
+		IsAdmin:     isAdminRequest(r),
 		User:        user,
 		GeneratedAt: time.Now(),
 	}
