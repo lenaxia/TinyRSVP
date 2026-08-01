@@ -115,7 +115,7 @@ func setupVerificationServer(t *testing.T) (*httptest.Server, int64, db.Database
 	database, userRepo, eventRepo, inviteRepo, emailQueueRepo, sessionRepo, adminUserID := setupVerificationDB(t)
 
 	userService := auth.NewUserService(userRepo)
-	sessionMgr := auth.NewSessionManager(sessionRepo, false)
+	sessionMgr := auth.NewSessionManager(sessionRepo, false, 0)
 	authChecker := auth.NewAuthorizationChecker()
 	requireAuth := middleware.TestRequireAuth(sessionMgr, userService)
 	requireAdmin := middleware.RequireAdmin(authChecker)

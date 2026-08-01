@@ -74,7 +74,7 @@ func TestMain_RouterIntegration(t *testing.T) {
 	templateValidator := templates.NewValidator(templateEngine)
 	templateService := templates.NewService(templateRepo, templateValidator)
 
-	sessionMgr := auth.NewSessionManager(sessionRepo, false)
+	sessionMgr := auth.NewSessionManager(sessionRepo, false, 0)
 	userService := auth.NewUserService(userRepo)
 	authChecker := auth.NewAuthorizationChecker()
 
@@ -333,7 +333,7 @@ func TestMain_RouterIntegration_AuthenticatedRoutes(t *testing.T) {
 	templateValidator := templates.NewValidator(templateEngine)
 	templateService := templates.NewService(templateRepo, templateValidator)
 
-	sessionMgr := auth.NewSessionManager(sessionRepo, false)
+	sessionMgr := auth.NewSessionManager(sessionRepo, false, 0)
 	userService := auth.NewUserService(userRepo)
 	authChecker := auth.NewAuthorizationChecker()
 
@@ -536,7 +536,7 @@ func TestMain_RouterIntegration_MiddlewareChain(t *testing.T) {
 		t.Fatalf("Failed to create test user: %v", err)
 	}
 
-	sessionMgr := auth.NewSessionManager(sessionRepo, false)
+	sessionMgr := auth.NewSessionManager(sessionRepo, false, 0)
 	userService := auth.NewUserService(userRepo)
 	authChecker := auth.NewAuthorizationChecker()
 

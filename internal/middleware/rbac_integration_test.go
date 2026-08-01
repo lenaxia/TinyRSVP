@@ -41,7 +41,7 @@ func setupIntegrationTest(t *testing.T) (auth.SessionManager, auth.UserService, 
 	userRepo := repositories.NewUserRepository(database)
 	sessionRepo := repositories.NewSessionRepository(database)
 
-	sessionMgr := auth.NewSessionManager(sessionRepo, false)
+	sessionMgr := auth.NewSessionManager(sessionRepo, false, 0)
 	userService := auth.NewUserService(userRepo)
 
 	cleanup := func() {

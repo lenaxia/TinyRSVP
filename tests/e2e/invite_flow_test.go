@@ -72,7 +72,7 @@ func setupInviteTestServer(t *testing.T) *inviteTestServer {
 	eventRepo := repositories.NewEventRepository(database)
 	inviteRepo := repositories.NewInviteRepository(database)
 
-	sessionMgr := auth.NewSessionManager(sessionRepo, false)
+	sessionMgr := auth.NewSessionManager(sessionRepo, false, 0)
 	userService := auth.NewUserService(userRepo)
 	authChecker := auth.NewAuthorizationChecker()
 
