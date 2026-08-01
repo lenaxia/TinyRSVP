@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"context"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
@@ -8,6 +9,7 @@ import (
 	"testing"
 
 	"github.com/lenaxia/tinyrsvp/internal/auth"
+	"github.com/lenaxia/tinyrsvp/internal/models"
 )
 
 func TestShowLogin_ValidReturnURL(t *testing.T) {
@@ -206,14 +208,40 @@ func TestOIDCLogin_AuthenticatorError(t *testing.T) {
 
 func TestOIDCCallback_Success(t *testing.T) {
 	mockAuth := &mockAuthenticator{
-		handleCallbackFunc: func(w http.ResponseWriter, r *http.Request) error {
-			http.Redirect(w, r, "/dashboard", http.StatusFound)
+		handleCallbackFunc: func(w http.ResponseWriter, r *http.Request) (*auth.AuthResult, error) {
+			return &auth.AuthResult{
+				Email:       "user@example.com",
+				Name:        "Test User",
+				OIDCSubject: strPtr("subject-123"),
+			}, nil
+		},
+	}
+
+	userService := &mockAuthUserService{
+		getOrCreateUserFunc: func(ctx context.Context, email, name string, oidcSubject *string) (*models.User, error) {
+			return &models.User{ID: 7, Email: email, Role: models.RoleEventManager}, nil
+		},
+		updateLastLoginFunc: func(ctx context.Context, userID int64) error {
+			return nil
+		},
+	}
+
+	sessionMgr := &mockAuthSessionManager{
+		createSessionFunc: func(ctx context.Context, userID int64, r *http.Request) (*models.Session, error) {
+			return &models.Session{ID: "sess-1"}, nil
+		},
+		setSessionCookieFunc: func(w http.ResponseWriter, sessionID string) error {
+			return nil
+		},
+		clearSessionCookieFunc: func(w http.ResponseWriter) error {
 			return nil
 		},
 	}
 
 	h := &AuthHandlers{
 		authenticator: mockAuth,
+		userService:   userService,
+		sessionMgr:    sessionMgr,
 	}
 
 	req := httptest.NewRequest(http.MethodGet, "/auth/oidc/callback?code=abc123&state=xyz", nil)
@@ -226,8 +254,8 @@ func TestOIDCCallback_Success(t *testing.T) {
 	}
 
 	location := w.Header().Get("Location")
-	if location != "/dashboard" {
-		t.Errorf("OIDCCallback() location = %v, want /dashboard", location)
+	if location != "/" {
+		t.Errorf("OIDCCallback() location = %v, want / (default when no return URL)", location)
 	}
 }
 
@@ -247,13 +275,15 @@ func TestOIDCCallback_Error(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			mockAuth := &mockAuthenticator{
-				handleCallbackFunc: func(w http.ResponseWriter, r *http.Request) error {
-					return tt.callbackError
+				handleCallbackFunc: func(w http.ResponseWriter, r *http.Request) (*auth.AuthResult, error) {
+					return nil, tt.callbackError
 				},
 			}
 
 			h := &AuthHandlers{
 				authenticator: mockAuth,
+				userService:   &mockAuthUserService{},
+				sessionMgr:    &mockAuthSessionManager{},
 			}
 
 			req := httptest.NewRequest(http.MethodGet, "/auth/oidc/callback?code=abc123&state=xyz", nil)
@@ -277,6 +307,7 @@ func TestLogout_Success(t *testing.T) {
 
 	h := &AuthHandlers{
 		authenticator: mockAuth,
+		sessionMgr:    &mockAuthSessionManager{},
 	}
 
 	req := httptest.NewRequest(http.MethodPost, "/logout", nil)
@@ -400,7 +431,7 @@ func TestValidateReturnURL(t *testing.T) {
 
 type mockAuthenticator struct {
 	handleLoginFunc    func(w http.ResponseWriter, r *http.Request) error
-	handleCallbackFunc func(w http.ResponseWriter, r *http.Request) error
+	handleCallbackFunc func(w http.ResponseWriter, r *http.Request) (*auth.AuthResult, error)
 	handleLogoutFunc   func(w http.ResponseWriter, r *http.Request) error
 }
 
@@ -411,9 +442,9 @@ func (m *mockAuthenticator) HandleLogin(w http.ResponseWriter, r *http.Request) 
 	return nil
 }
 
-func (m *mockAuthenticator) HandleCallback(w http.ResponseWriter, r *http.Request) (*AuthResult, error) {
+func (m *mockAuthenticator) HandleCallback(w http.ResponseWriter, r *http.Request) (*auth.AuthResult, error) {
 	if m.handleCallbackFunc != nil {
-		return nil, m.handleCallbackFunc(w, r)
+		return m.handleCallbackFunc(w, r)
 	}
 	return nil, nil
 }
@@ -424,3 +455,155 @@ func (m *mockAuthenticator) HandleLogout(w http.ResponseWriter, r *http.Request)
 	}
 	return nil
 }
+
+type mockAuthUserService struct {
+	createUserFunc        func(ctx context.Context, email, name string, oidcSubject *string) (*models.User, error)
+	getOrCreateUserFunc   func(ctx context.Context, email, name string, oidcSubject *string) (*models.User, error)
+	getUserByIDFunc       func(ctx context.Context, id int64) (*models.User, error)
+	getUserByEmailFunc    func(ctx context.Context, email string) (*models.User, error)
+	updateUserFunc        func(ctx context.Context, user *models.User) error
+	updateUserRoleFunc    func(ctx context.Context, userID int64, role models.UserRole) error
+	updateLastLoginFunc   func(ctx context.Context, userID int64) error
+	deleteUserFunc        func(ctx context.Context, id int64) error
+	listUsersFunc         func(ctx context.Context, limit, offset int) ([]*models.User, error)
+	countUsersFunc        func(ctx context.Context) (int, error)
+	countAdminsFunc       func(ctx context.Context) (int, error)
+}
+
+func (m *mockAuthUserService) CreateUser(ctx context.Context, email, name string, oidcSubject *string) (*models.User, error) {
+	if m.createUserFunc != nil {
+		return m.createUserFunc(ctx, email, name, oidcSubject)
+	}
+	return &models.User{Email: email}, nil
+}
+func (m *mockAuthUserService) GetOrCreateUser(ctx context.Context, email, name string, oidcSubject *string) (*models.User, error) {
+	if m.getOrCreateUserFunc != nil {
+		return m.getOrCreateUserFunc(ctx, email, name, oidcSubject)
+	}
+	return &models.User{Email: email}, nil
+}
+func (m *mockAuthUserService) GetUserByID(ctx context.Context, id int64) (*models.User, error) {
+	if m.getUserByIDFunc != nil {
+		return m.getUserByIDFunc(ctx, id)
+	}
+	return &models.User{ID: id}, nil
+}
+func (m *mockAuthUserService) GetUserByEmail(ctx context.Context, email string) (*models.User, error) {
+	if m.getUserByEmailFunc != nil {
+		return m.getUserByEmailFunc(ctx, email)
+	}
+	return &models.User{Email: email}, nil
+}
+func (m *mockAuthUserService) UpdateUser(ctx context.Context, user *models.User) error {
+	if m.updateUserFunc != nil {
+		return m.updateUserFunc(ctx, user)
+	}
+	return nil
+}
+func (m *mockAuthUserService) UpdateUserRole(ctx context.Context, userID int64, role models.UserRole) error {
+	if m.updateUserRoleFunc != nil {
+		return m.updateUserRoleFunc(ctx, userID, role)
+	}
+	return nil
+}
+func (m *mockAuthUserService) UpdateLastLogin(ctx context.Context, userID int64) error {
+	if m.updateLastLoginFunc != nil {
+		return m.updateLastLoginFunc(ctx, userID)
+	}
+	return nil
+}
+func (m *mockAuthUserService) DeleteUser(ctx context.Context, id int64) error {
+	if m.deleteUserFunc != nil {
+		return m.deleteUserFunc(ctx, id)
+	}
+	return nil
+}
+func (m *mockAuthUserService) ListUsers(ctx context.Context, limit, offset int) ([]*models.User, error) {
+	if m.listUsersFunc != nil {
+		return m.listUsersFunc(ctx, limit, offset)
+	}
+	return []*models.User{}, nil
+}
+func (m *mockAuthUserService) CountUsers(ctx context.Context) (int, error) {
+	if m.countUsersFunc != nil {
+		return m.countUsersFunc(ctx)
+	}
+	return 0, nil
+}
+func (m *mockAuthUserService) CountAdmins(ctx context.Context) (int, error) {
+	if m.countAdminsFunc != nil {
+		return m.countAdminsFunc(ctx)
+	}
+	return 0, nil
+}
+
+var _ auth.UserService = (*mockAuthUserService)(nil)
+
+type mockAuthSessionManager struct {
+	createSessionFunc       func(ctx context.Context, userID int64, r *http.Request) (*models.Session, error)
+	getSessionFunc          func(ctx context.Context, sessionID string) (*models.Session, error)
+	refreshSessionFunc      func(ctx context.Context, sessionID string) error
+	deleteSessionFunc       func(ctx context.Context, sessionID string) error
+	deleteUserSessionsFunc  func(ctx context.Context, userID int64) error
+	cleanupExpiredFunc      func(ctx context.Context) (int64, error)
+	setSessionCookieFunc    func(w http.ResponseWriter, sessionID string) error
+	clearSessionCookieFunc  func(w http.ResponseWriter) error
+	getSessionFromReqFunc   func(r *http.Request) (string, error)
+}
+
+func (m *mockAuthSessionManager) CreateSession(ctx context.Context, userID int64, r *http.Request) (*models.Session, error) {
+	if m.createSessionFunc != nil {
+		return m.createSessionFunc(ctx, userID, r)
+	}
+	return &models.Session{ID: "sess"}, nil
+}
+func (m *mockAuthSessionManager) GetSession(ctx context.Context, sessionID string) (*models.Session, error) {
+	if m.getSessionFunc != nil {
+		return m.getSessionFunc(ctx, sessionID)
+	}
+	return &models.Session{ID: sessionID}, nil
+}
+func (m *mockAuthSessionManager) RefreshSession(ctx context.Context, sessionID string) error {
+	if m.refreshSessionFunc != nil {
+		return m.refreshSessionFunc(ctx, sessionID)
+	}
+	return nil
+}
+func (m *mockAuthSessionManager) DeleteSession(ctx context.Context, sessionID string) error {
+	if m.deleteSessionFunc != nil {
+		return m.deleteSessionFunc(ctx, sessionID)
+	}
+	return nil
+}
+func (m *mockAuthSessionManager) DeleteUserSessions(ctx context.Context, userID int64) error {
+	if m.deleteUserSessionsFunc != nil {
+		return m.deleteUserSessionsFunc(ctx, userID)
+	}
+	return nil
+}
+func (m *mockAuthSessionManager) CleanupExpired(ctx context.Context) (int64, error) {
+	if m.cleanupExpiredFunc != nil {
+		return m.cleanupExpiredFunc(ctx)
+	}
+	return 0, nil
+}
+func (m *mockAuthSessionManager) SetSessionCookie(w http.ResponseWriter, sessionID string) error {
+	if m.setSessionCookieFunc != nil {
+		return m.setSessionCookieFunc(w, sessionID)
+	}
+	return nil
+}
+func (m *mockAuthSessionManager) ClearSessionCookie(w http.ResponseWriter) error {
+	if m.clearSessionCookieFunc != nil {
+		return m.clearSessionCookieFunc(w)
+	}
+	return nil
+}
+func (m *mockAuthSessionManager) GetSessionFromRequest(r *http.Request) (string, error) {
+	if m.getSessionFromReqFunc != nil {
+		return m.getSessionFromReqFunc(r)
+	}
+	return "", nil
+}
+
+var _ auth.SessionManager = (*mockAuthSessionManager)(nil)

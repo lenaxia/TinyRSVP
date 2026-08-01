@@ -6,6 +6,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/lenaxia/tinyrsvp/internal/auth"
 	"github.com/lenaxia/tinyrsvp/internal/middleware"
 )
 
@@ -15,16 +16,15 @@ func TestRouter_WithAuthHandlers(t *testing.T) {
 			http.Redirect(w, r, "https://oidc.example.com/authorize", http.StatusFound)
 			return nil
 		},
-		handleCallbackFunc: func(w http.ResponseWriter, r *http.Request) error {
-			http.Redirect(w, r, "/dashboard", http.StatusFound)
-			return nil
+		handleCallbackFunc: func(w http.ResponseWriter, r *http.Request) (*auth.AuthResult, error) {
+			return &auth.AuthResult{Email: "user@example.com"}, nil
 		},
 		handleLogoutFunc: func(w http.ResponseWriter, r *http.Request) error {
 			return nil
 		},
 	}
 
-	authHandlers := NewAuthHandlers(mockAuth)
+	authHandlers := NewAuthHandlers(mockAuth, &mockAuthUserService{}, &mockAuthSessionManager{})
 
 	router := NewRouter(&RouterHandlers{
 		AuthHandlers: authHandlers,
@@ -53,7 +53,7 @@ func TestRouter_WithAuthHandlers(t *testing.T) {
 		{
 			name:           "GET /auth/oidc/callback redirects to dashboard",
 			method:         http.MethodGet,
-			path:           "/auth/oidc/callback?code=test&state=test",
+			path:           "/auth/oidc/callback?code=test&state=test&return=/dashboard",
 			wantStatusCode: http.StatusFound,
 			wantLocation:   "/dashboard",
 		},
@@ -82,7 +82,7 @@ func TestRouter_WithAuthHandlers(t *testing.T) {
 
 func TestRouter_WithAuthHandlers_ListRoutes(t *testing.T) {
 	mockAuth := &mockAuthenticator{}
-	authHandlers := NewAuthHandlers(mockAuth)
+	authHandlers := NewAuthHandlers(mockAuth, &mockAuthUserService{}, &mockAuthSessionManager{})
 
 	router := NewRouter(&RouterHandlers{
 		AuthHandlers: authHandlers,
@@ -123,7 +123,7 @@ func TestRouter_WithAuthHandlers_ReturnURLFlow(t *testing.T) {
 		},
 	}
 
-	authHandlers := NewAuthHandlers(mockAuth)
+	authHandlers := NewAuthHandlers(mockAuth, &mockAuthUserService{}, &mockAuthSessionManager{})
 	router := NewRouter(&RouterHandlers{
 		AuthHandlers: authHandlers,
 	})
@@ -145,7 +145,7 @@ func TestRouter_WithAuthHandlers_ReturnURLFlow(t *testing.T) {
 
 func TestRouter_WithAuthHandlers_InvalidReturnURL(t *testing.T) {
 	mockAuth := &mockAuthenticator{}
-	authHandlers := NewAuthHandlers(mockAuth)
+	authHandlers := NewAuthHandlers(mockAuth, &mockAuthUserService{}, &mockAuthSessionManager{})
 
 	router := NewRouter(&RouterHandlers{
 		AuthHandlers: authHandlers,
@@ -163,7 +163,7 @@ func TestRouter_WithAuthHandlers_InvalidReturnURL(t *testing.T) {
 
 func TestRouter_WithAuthHandlers_LogoutMethodRestriction(t *testing.T) {
 	mockAuth := &mockAuthenticator{}
-	authHandlers := NewAuthHandlers(mockAuth)
+	authHandlers := NewAuthHandlers(mockAuth, &mockAuthUserService{}, &mockAuthSessionManager{})
 
 	router := NewRouter(&RouterHandlers{
 		AuthHandlers: authHandlers,
@@ -185,7 +185,7 @@ func TestRouter_WithAuthHandlers_LogoutWithCSRF(t *testing.T) {
 			return nil
 		},
 	}
-	authHandlers := NewAuthHandlers(mockAuth)
+	authHandlers := NewAuthHandlers(mockAuth, &mockAuthUserService{}, &mockAuthSessionManager{})
 
 	router := NewRouter(&RouterHandlers{
 		AuthHandlers: authHandlers,

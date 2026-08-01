@@ -91,45 +91,24 @@ func registerAuthRoutes(r chi.Router, h *RouterHandlers) {
 		r.Get("/auth/oidc/login", h.AuthHandlers.OIDCLogin)
 		r.Get("/auth/oidc/callback", h.AuthHandlers.OIDCCallback)
 		r.Post("/logout", h.AuthHandlers.Logout)
-	} else if h.LoginHandler != nil {
-		r.Handle("/login", h.LoginHandler)
-		r.Get("/auth/login", func(w http.ResponseWriter, r *http.Request) {
-			w.WriteHeader(http.StatusOK)
-		})
-		if h.CallbackHandler != nil {
-			r.Handle("/auth/callback", h.CallbackHandler)
-		} else {
-			r.Get("/auth/callback", func(w http.ResponseWriter, r *http.Request) {
-				w.WriteHeader(http.StatusOK)
-			})
-		}
-		if h.LogoutHandler != nil {
-			r.Handle("/logout", h.LogoutHandler)
-		} else {
-			r.Post("/logout", func(w http.ResponseWriter, r *http.Request) {
-				w.WriteHeader(http.StatusOK)
-			})
-			r.Post("/auth/logout", func(w http.ResponseWriter, r *http.Request) {
-				w.WriteHeader(http.StatusOK)
-			})
-		}
-	} else {
-		r.Get("/login", func(w http.ResponseWriter, r *http.Request) {
-			w.WriteHeader(http.StatusOK)
-		})
-		r.Get("/auth/login", func(w http.ResponseWriter, r *http.Request) {
-			w.WriteHeader(http.StatusOK)
-		})
-		r.Get("/auth/callback", func(w http.ResponseWriter, r *http.Request) {
-			w.WriteHeader(http.StatusOK)
-		})
-		r.Post("/logout", func(w http.ResponseWriter, r *http.Request) {
-			w.WriteHeader(http.StatusOK)
-		})
-		r.Post("/auth/logout", func(w http.ResponseWriter, r *http.Request) {
-			w.WriteHeader(http.StatusOK)
-		})
+		return
 	}
+
+	// Fallback stubs so NewRouter(nil-handlers) returns a non-panicking router
+	// for tests. These are never reachable in production (AuthHandlers is
+	// always wired by main.go).
+	r.Get("/login", func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusOK)
+	})
+	r.Get("/auth/oidc/login", func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusOK)
+	})
+	r.Get("/auth/oidc/callback", func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusOK)
+	})
+	r.Post("/logout", func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusOK)
+	})
 }
 
 // registerPageRoutes sets up the dashboard, admin, settings, and metrics

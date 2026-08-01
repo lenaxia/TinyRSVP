@@ -29,9 +29,6 @@ type Router struct {
 
 type RouterHandlers struct {
 	AuthHandlers     *AuthHandlers
-	LoginHandler     http.Handler
-	CallbackHandler  http.Handler
-	LogoutHandler    http.Handler
 	HealthHandler    http.Handler
 	ReadinessHandler http.Handler
 

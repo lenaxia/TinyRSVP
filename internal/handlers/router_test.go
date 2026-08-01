@@ -332,13 +332,13 @@ func TestRouter_RouteGroups(t *testing.T) {
 		},
 		{
 			name:       "auth login fallback route exists",
-			path:       "/auth/login",
+			path:       "/auth/oidc/login",
 			method:     http.MethodGet,
 			wantStatus: http.StatusOK,
 		},
 		{
 			name:       "auth callback fallback route exists",
-			path:       "/auth/callback",
+			path:       "/auth/oidc/callback",
 			method:     http.MethodGet,
 			wantStatus: http.StatusOK,
 		},
@@ -397,10 +397,9 @@ func TestRouter_ListRoutes(t *testing.T) {
 			wantRouteContains: []string{
 				"/health",
 				"/login",
-				"/auth/login",
-				"/auth/callback",
+				"/auth/oidc/login",
+				"/auth/oidc/callback",
 				"/logout",
-				"/auth/logout",
 				"/api/events",
 				"/rsvp/{token}",
 				"/static/*",

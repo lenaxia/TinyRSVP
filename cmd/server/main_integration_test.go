@@ -119,9 +119,7 @@ func TestMain_RouterIntegration(t *testing.T) {
 	}
 	authenticator := auth.NewForwardAuthenticator(fwdAuthCfg, userService, sessionMgr)
 
-	loginHandler := auth.NewLoginHandler(authenticator)
-	callbackHandler := auth.NewCallbackHandler(authenticator, userService, sessionMgr)
-	logoutHandler := auth.NewLogoutHandler(authenticator)
+	authHandlers := handlers.NewAuthHandlers(authenticator, userService, sessionMgr)
 
 	healthHandler := handlers.NewHealthHandler("test-version")
 	readinessHandler := handlers.NewReadinessHandler("test-version", database, migrator)
@@ -156,9 +154,7 @@ func TestMain_RouterIntegration(t *testing.T) {
 	staticFS := http.StripPrefix("/static/", http.FileServer(http.Dir("../../static")))
 
 	router := handlers.NewRouter(&handlers.RouterHandlers{
-		LoginHandler:             loginHandler,
-		CallbackHandler:          callbackHandler,
-		LogoutHandler:            logoutHandler,
+		AuthHandlers:             authHandlers,
 		HealthHandler:            healthHandler,
 		ReadinessHandler:         readinessHandler,
 		EventHandlers:            eventHandlers,
@@ -205,15 +201,15 @@ func TestMain_RouterIntegration(t *testing.T) {
 			name:           "login endpoint",
 			method:         http.MethodGet,
 			path:           "/login",
-			wantStatusCode: http.StatusInternalServerError,
-			description:    "Login handler is called (fails in test due to missing OIDC config)",
+			wantStatusCode: http.StatusOK,
+			description:    "Login page renders",
 		},
 		{
 			name:           "callback endpoint",
 			method:         http.MethodGet,
-			path:           "/auth/callback",
+			path:           "/auth/oidc/callback",
 			wantStatusCode: http.StatusUnauthorized,
-			description:    "Callback handler is called (fails in test due to untrusted IP)",
+			description:    "Callback handler fails without valid auth (401)",
 		},
 		{
 			name:           "logout endpoint",
@@ -384,9 +380,7 @@ func TestMain_RouterIntegration_AuthenticatedRoutes(t *testing.T) {
 	}
 	authenticator := auth.NewForwardAuthenticator(fwdAuthCfg, userService, sessionMgr)
 
-	loginHandler := auth.NewLoginHandler(authenticator)
-	callbackHandler := auth.NewCallbackHandler(authenticator, userService, sessionMgr)
-	logoutHandler := auth.NewLogoutHandler(authenticator)
+	authHandlers := handlers.NewAuthHandlers(authenticator, userService, sessionMgr)
 
 	healthHandler := handlers.NewHealthHandler("test-version")
 	readinessHandler := handlers.NewReadinessHandler("test-version", database, migrator)
@@ -421,9 +415,7 @@ func TestMain_RouterIntegration_AuthenticatedRoutes(t *testing.T) {
 	staticFS := http.StripPrefix("/static/", http.FileServer(http.Dir("../../static")))
 
 	router := handlers.NewRouter(&handlers.RouterHandlers{
-		LoginHandler:             loginHandler,
-		CallbackHandler:          callbackHandler,
-		LogoutHandler:            logoutHandler,
+		AuthHandlers:             authHandlers,
 		HealthHandler:            healthHandler,
 		ReadinessHandler:         readinessHandler,
 		EventHandlers:            eventHandlers,

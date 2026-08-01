@@ -8,6 +8,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/lenaxia/tinyrsvp/internal/auth"
 	"github.com/lenaxia/tinyrsvp/internal/middleware"
 )
 
@@ -17,14 +18,15 @@ func TestAuthFlow_Integration_LoginToCallback(t *testing.T) {
 			http.Redirect(w, r, "https://oidc.example.com/authorize?state=test123", http.StatusFound)
 			return nil
 		},
-		handleCallbackFunc: func(w http.ResponseWriter, r *http.Request) error {
-			http.Redirect(w, r, "/dashboard", http.StatusFound)
-			return nil
+		handleCallbackFunc: func(w http.ResponseWriter, r *http.Request) (*auth.AuthResult, error) {
+			return &auth.AuthResult{Email: "user@example.com", Name: "Test User", OIDCSubject: strPtr("sub-1")}, nil
 		},
 	}
 
 	h := &AuthHandlers{
 		authenticator: mockAuth,
+		userService:   &mockAuthUserService{},
+		sessionMgr:    &mockAuthSessionManager{},
 	}
 
 	t.Run("complete login flow with return URL", func(t *testing.T) {
@@ -52,8 +54,8 @@ func TestAuthFlow_Integration_LoginToCallback(t *testing.T) {
 		}
 
 		callbackLocation := callbackW.Header().Get("Location")
-		if callbackLocation != "/dashboard" {
-			t.Errorf("OIDCCallback() location = %v, want /dashboard", callbackLocation)
+		if callbackLocation != "/" {
+			t.Errorf("OIDCCallback() location = %v, want / (default when no return URL)", callbackLocation)
 		}
 	})
 }
@@ -100,6 +102,8 @@ func TestAuthFlow_Integration_LogoutFlow(t *testing.T) {
 
 	h := &AuthHandlers{
 		authenticator: mockAuth,
+		userService:   &mockAuthUserService{},
+		sessionMgr:    &mockAuthSessionManager{},
 	}
 
 	t.Run("logout redirects to login page", func(t *testing.T) {
@@ -159,8 +163,8 @@ func TestAuthFlow_Integration_ErrorHandling(t *testing.T) {
 			name: "callback with auth error shows unauthorized",
 			setupAuth: func() *mockAuthenticator {
 				return &mockAuthenticator{
-					handleCallbackFunc: func(w http.ResponseWriter, r *http.Request) error {
-						return http.ErrAbortHandler
+					handleCallbackFunc: func(w http.ResponseWriter, r *http.Request) (*auth.AuthResult, error) {
+						return nil, http.ErrAbortHandler
 					},
 				}
 			},
@@ -179,6 +183,8 @@ func TestAuthFlow_Integration_ErrorHandling(t *testing.T) {
 			mockAuth := tt.setupAuth()
 			h := &AuthHandlers{
 				authenticator: mockAuth,
+				userService:   &mockAuthUserService{},
+				sessionMgr:    &mockAuthSessionManager{},
 			}
 
 			req := httptest.NewRequest(tt.method, tt.requestURL, nil)

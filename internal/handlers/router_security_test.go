@@ -51,7 +51,7 @@ func TestRouter_SecurityHeadersOnAllRoutes(t *testing.T) {
 	}{
 		{http.MethodGet, "/health"},
 		{http.MethodGet, "/login"},
-		{http.MethodGet, "/auth/callback"},
+		{http.MethodGet, "/auth/oidc/callback"},
 		{http.MethodGet, "/static/css/main.css"},
 		{http.MethodGet, "/rsvp/token123"},
 	}
