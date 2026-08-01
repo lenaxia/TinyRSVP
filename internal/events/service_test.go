@@ -125,6 +125,10 @@ func (m *mockEventRepository) CountEvents(ctx context.Context) (int, error) {
 	return 0, nil
 }
 
+func (m *mockEventRepository) CountByFilters(ctx context.Context, filters repositories.ListFilters) (int, error) {
+	return 0, nil
+}
+
 func (m *mockEventRepository) GetComponentOverrides(ctx context.Context, eventID int64) (*models.ComponentOverrides, error) {
 	if m.GetComponentOverridesFunc != nil {
 		return m.GetComponentOverridesFunc(ctx, eventID)

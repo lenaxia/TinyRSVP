@@ -43,11 +43,11 @@ func (r *rsvpRepository) Create(ctx context.Context, rsvp *models.RSVP) error {
 	}
 
 	query := `
-		INSERT INTO rsvps (invite_id, response, plus_ones, created_at, updated_at)
-		VALUES (?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+		INSERT INTO rsvps (invite_id, response, plus_ones, adults_count, kids_count, created_at, updated_at)
+		VALUES (?, ?, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
 	`
 
-	result, err := r.db.Exec(ctx, query, rsvp.InviteID, rsvp.Response, rsvp.PlusOnes)
+	result, err := r.db.Exec(ctx, query, rsvp.InviteID, rsvp.Response, rsvp.PlusOnes, rsvp.AdultsCount, rsvp.KidsCount)
 	if err != nil {
 		return fmt.Errorf("failed to create RSVP: %w", err)
 	}
@@ -70,7 +70,7 @@ func (r *rsvpRepository) Create(ctx context.Context, rsvp *models.RSVP) error {
 
 func (r *rsvpRepository) GetByID(ctx context.Context, id int64) (*models.RSVP, error) {
 	query := `
-		SELECT id, invite_id, response, plus_ones, created_at, updated_at
+		SELECT id, invite_id, response, plus_ones, adults_count, kids_count, created_at, updated_at
 		FROM rsvps
 		WHERE id = ?
 	`
@@ -81,6 +81,8 @@ func (r *rsvpRepository) GetByID(ctx context.Context, id int64) (*models.RSVP, e
 		&rsvp.InviteID,
 		&rsvp.Response,
 		&rsvp.PlusOnes,
+		&rsvp.AdultsCount,
+		&rsvp.KidsCount,
 		&rsvp.CreatedAt,
 		&rsvp.UpdatedAt,
 	)
@@ -100,7 +102,7 @@ func (r *rsvpRepository) GetByID(ctx context.Context, id int64) (*models.RSVP, e
 
 func (r *rsvpRepository) GetByInviteID(ctx context.Context, inviteID int64) (*models.RSVP, error) {
 	query := `
-		SELECT id, invite_id, response, plus_ones, created_at, updated_at
+		SELECT id, invite_id, response, plus_ones, adults_count, kids_count, created_at, updated_at
 		FROM rsvps
 		WHERE invite_id = ?
 	`
@@ -111,6 +113,8 @@ func (r *rsvpRepository) GetByInviteID(ctx context.Context, inviteID int64) (*mo
 		&rsvp.InviteID,
 		&rsvp.Response,
 		&rsvp.PlusOnes,
+		&rsvp.AdultsCount,
+		&rsvp.KidsCount,
 		&rsvp.CreatedAt,
 		&rsvp.UpdatedAt,
 	)
@@ -130,7 +134,7 @@ func (r *rsvpRepository) GetByInviteID(ctx context.Context, inviteID int64) (*mo
 
 func (r *rsvpRepository) GetByEventID(ctx context.Context, eventID int64) ([]*models.RSVP, error) {
 	query := `
-		SELECT r.id, r.invite_id, r.response, r.plus_ones, r.created_at, r.updated_at
+		SELECT r.id, r.invite_id, r.response, r.plus_ones, r.adults_count, r.kids_count, r.created_at, r.updated_at
 		FROM rsvps r
 		INNER JOIN invites i ON r.invite_id = i.id
 		WHERE i.event_id = ?
@@ -151,6 +155,8 @@ func (r *rsvpRepository) GetByEventID(ctx context.Context, eventID int64) ([]*mo
 			&rsvp.InviteID,
 			&rsvp.Response,
 			&rsvp.PlusOnes,
+			&rsvp.AdultsCount,
+			&rsvp.KidsCount,
 			&rsvp.CreatedAt,
 			&rsvp.UpdatedAt,
 		)
@@ -174,11 +180,11 @@ func (r *rsvpRepository) Update(ctx context.Context, rsvp *models.RSVP) error {
 
 	query := `
 		UPDATE rsvps
-		SET response = ?, plus_ones = ?, updated_at = CURRENT_TIMESTAMP
+		SET response = ?, plus_ones = ?, adults_count = ?, kids_count = ?, updated_at = CURRENT_TIMESTAMP
 		WHERE id = ?
 	`
 
-	result, err := r.db.Exec(ctx, query, rsvp.Response, rsvp.PlusOnes, rsvp.ID)
+	result, err := r.db.Exec(ctx, query, rsvp.Response, rsvp.PlusOnes, rsvp.AdultsCount, rsvp.KidsCount, rsvp.ID)
 	if err != nil {
 		return fmt.Errorf("failed to update RSVP: %w", err)
 	}
@@ -208,7 +214,7 @@ func (r *rsvpRepository) GetStats(ctx context.Context, eventID int64) (*RSVPStat
 			COUNT(CASE WHEN r.response = 'yes' THEN 1 END) as yes_count,
 			COUNT(CASE WHEN r.response = 'no' THEN 1 END) as no_count,
 			COUNT(CASE WHEN r.response = 'maybe' THEN 1 END) as maybe_count,
-			COALESCE(SUM(CASE WHEN r.response = 'yes' THEN 1 + r.plus_ones ELSE 0 END), 0) as total_guests
+			COALESCE(SUM(CASE WHEN r.response = 'yes' THEN 1 + COALESCE(r.plus_ones, 0) + COALESCE(r.adults_count, 0) + COALESCE(r.kids_count, 0) ELSE 0 END), 0) as total_guests
 		FROM invites i
 		LEFT JOIN rsvps r ON i.id = r.invite_id
 		WHERE i.event_id = ?
@@ -245,7 +251,7 @@ func (r *rsvpRepository) GetByInviteIDs(ctx context.Context, inviteIDs []int64) 
 	}
 
 	query := fmt.Sprintf(`
-		SELECT id, invite_id, response, plus_ones, created_at, updated_at
+		SELECT id, invite_id, response, plus_ones, adults_count, kids_count, created_at, updated_at
 		FROM rsvps
 		WHERE invite_id IN (%s)
 		ORDER BY created_at DESC
@@ -265,6 +271,8 @@ func (r *rsvpRepository) GetByInviteIDs(ctx context.Context, inviteIDs []int64) 
 			&rsvp.InviteID,
 			&rsvp.Response,
 			&rsvp.PlusOnes,
+			&rsvp.AdultsCount,
+			&rsvp.KidsCount,
 			&rsvp.CreatedAt,
 			&rsvp.UpdatedAt,
 		)
