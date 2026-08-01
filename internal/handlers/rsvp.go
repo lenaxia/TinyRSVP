@@ -35,6 +35,13 @@ type RSVPService interface {
 	UpdateRSVP(ctx context.Context, token string, req *rsvp.SubmitRSVPRequest) (*models.RSVP, error)
 }
 
+// rsvpSubmitResponse is the JSON success payload returned by the RSVP
+// submit/update handlers when the client requests application/json.
+type rsvpSubmitResponse struct {
+	RSVP    *models.RSVP `json:"rsvp"`
+	Message string       `json:"message"`
+}
+
 type RSVPHandler struct {
 	inviteService         RSVPInviteService
 	eventRepo             repositories.EventRepository
@@ -249,15 +256,18 @@ func (h *RSVPHandler) GetRSVPPage(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *RSVPHandler) handleInviteError(w http.ResponseWriter, err error) {
-	errMsg := err.Error()
-	if strings.Contains(errMsg, "expired") {
-		h.renderError(w, http.StatusGone, "This invite has expired")
+	var forbiddenErr *models.ForbiddenError
+	if errors.As(err, &forbiddenErr) {
+		h.renderError(w, http.StatusForbidden, forbiddenErr.Message)
 		return
 	}
-	if strings.Contains(errMsg, "revoked") {
-		h.renderError(w, http.StatusForbidden, "This invite has been revoked")
+
+	var notFoundErr *models.NotFoundError
+	if errors.As(err, &notFoundErr) {
+		h.renderError(w, http.StatusNotFound, "Invite not found")
 		return
 	}
+
 	h.renderError(w, http.StatusNotFound, "Invite not found or has been revoked")
 }
 
@@ -554,9 +564,9 @@ func (h *RSVPHandler) SubmitRSVP(w http.ResponseWriter, r *http.Request) {
 		if existingRSVP != nil {
 			statusCode = http.StatusOK
 		}
-		h.respondJSON(w, statusCode, map[string]interface{}{
-			"rsvp":    result,
-			"message": "RSVP submitted successfully",
+		h.respondJSON(w, statusCode, rsvpSubmitResponse{
+			RSVP:    result,
+			Message: "RSVP submitted successfully",
 		})
 		return
 	}
@@ -654,9 +664,9 @@ func (h *RSVPHandler) UpdateRSVP(w http.ResponseWriter, r *http.Request) {
 	contentType := r.Header.Get("Content-Type")
 
 	if strings.Contains(acceptHeader, "application/json") || strings.Contains(contentType, "application/json") {
-		h.respondJSON(w, http.StatusOK, map[string]interface{}{
-			"rsvp":    result,
-			"message": "RSVP updated successfully",
+		h.respondJSON(w, http.StatusOK, rsvpSubmitResponse{
+			RSVP:    result,
+			Message: "RSVP updated successfully",
 		})
 		return
 	}
@@ -890,13 +900,9 @@ func (h *RSVPHandler) Unsubscribe(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *RSVPHandler) handleUnsubscribeInviteError(w http.ResponseWriter, err error) {
-	errMsg := err.Error()
-	if strings.Contains(errMsg, "expired") {
-		h.renderUnsubscribeError(w, http.StatusGone, "This invite has expired")
-		return
-	}
-	if strings.Contains(errMsg, "revoked") {
-		h.renderUnsubscribeError(w, http.StatusForbidden, "This invite has been revoked")
+	var forbiddenErr *models.ForbiddenError
+	if errors.As(err, &forbiddenErr) {
+		h.renderUnsubscribeError(w, http.StatusForbidden, forbiddenErr.Message)
 		return
 	}
 
