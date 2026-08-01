@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
@@ -607,3 +608,98 @@ func (m *mockAuthSessionManager) GetSessionFromRequest(r *http.Request) (string,
 }
 
 var _ auth.SessionManager = (*mockAuthSessionManager)(nil)
+
+func TestOIDCCallback_GetOrCreateUserError(t *testing.T) {
+	mockAuth := &mockAuthenticator{
+		handleCallbackFunc: func(w http.ResponseWriter, r *http.Request) (*auth.AuthResult, error) {
+			return &auth.AuthResult{Email: "x@example.com"}, nil
+		},
+	}
+	userSvc := &mockAuthUserService{
+		getOrCreateUserFunc: func(ctx context.Context, email, name string, oidcSubject *string) (*models.User, error) {
+			return nil, fmt.Errorf("db error")
+		},
+	}
+	h := &AuthHandlers{authenticator: mockAuth, userService: userSvc, sessionMgr: &mockAuthSessionManager{}}
+
+	req := httptest.NewRequest(http.MethodGet, "/auth/oidc/callback?code=abc", nil)
+	w := httptest.NewRecorder()
+	h.OIDCCallback(w, req)
+
+	if w.Code != http.StatusInternalServerError {
+		t.Errorf("expected 500, got %d", w.Code)
+	}
+}
+
+func TestOIDCCallback_CreateSessionError(t *testing.T) {
+	mockAuth := &mockAuthenticator{
+		handleCallbackFunc: func(w http.ResponseWriter, r *http.Request) (*auth.AuthResult, error) {
+			return &auth.AuthResult{Email: "x@example.com"}, nil
+		},
+	}
+	userSvc := &mockAuthUserService{}
+	sessMgr := &mockAuthSessionManager{
+		createSessionFunc: func(ctx context.Context, userID int64, r *http.Request) (*models.Session, error) {
+			return nil, fmt.Errorf("session error")
+		},
+	}
+	h := &AuthHandlers{authenticator: mockAuth, userService: userSvc, sessionMgr: sessMgr}
+
+	req := httptest.NewRequest(http.MethodGet, "/auth/oidc/callback?code=abc", nil)
+	w := httptest.NewRecorder()
+	h.OIDCCallback(w, req)
+
+	if w.Code != http.StatusInternalServerError {
+		t.Errorf("expected 500, got %d", w.Code)
+	}
+}
+
+func TestOIDCCallback_SetSessionCookieError(t *testing.T) {
+	mockAuth := &mockAuthenticator{
+		handleCallbackFunc: func(w http.ResponseWriter, r *http.Request) (*auth.AuthResult, error) {
+			return &auth.AuthResult{Email: "x@example.com"}, nil
+		},
+	}
+	userSvc := &mockAuthUserService{}
+	sessMgr := &mockAuthSessionManager{
+		setSessionCookieFunc: func(w http.ResponseWriter, sessionID string) error {
+			return fmt.Errorf("cookie error")
+		},
+	}
+	h := &AuthHandlers{authenticator: mockAuth, userService: userSvc, sessionMgr: sessMgr}
+
+	req := httptest.NewRequest(http.MethodGet, "/auth/oidc/callback?code=abc", nil)
+	w := httptest.NewRecorder()
+	h.OIDCCallback(w, req)
+
+	if w.Code != http.StatusInternalServerError {
+		t.Errorf("expected 500, got %d", w.Code)
+	}
+}
+
+func TestOIDCCallback_ReturnURLCookieFallback(t *testing.T) {
+	mockAuth := &mockAuthenticator{
+		handleCallbackFunc: func(w http.ResponseWriter, r *http.Request) (*auth.AuthResult, error) {
+			return &auth.AuthResult{Email: "x@example.com"}, nil
+		},
+	}
+	h := &AuthHandlers{
+		authenticator: mockAuth,
+		userService:   &mockAuthUserService{},
+		sessionMgr:    &mockAuthSessionManager{},
+	}
+
+	req := httptest.NewRequest(http.MethodGet, "/auth/oidc/callback?code=abc", nil)
+	req.AddCookie(&http.Cookie{Name: auth.ReturnURLCookieName, Value: "/events/42"})
+	w := httptest.NewRecorder()
+
+	h.OIDCCallback(w, req)
+
+	if w.Code != http.StatusFound {
+		t.Errorf("expected 302, got %d", w.Code)
+	}
+	location := w.Header().Get("Location")
+	if location != "/events/42" {
+		t.Errorf("expected redirect to /events/42 (from cookie), got %v", location)
+	}
+}
