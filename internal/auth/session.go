@@ -21,14 +21,21 @@ const (
 )
 
 type sessionManager struct {
-	repo   repositories.SessionRepository
-	secure bool
+	repo            repositories.SessionRepository
+	secure          bool
+	sessionDuration time.Duration
 }
 
-func NewSessionManager(repo repositories.SessionRepository, secure bool) SessionManager {
+// NewSessionManager creates a SessionManager. If sessionDuration is <= 0, the
+// package default (7 days) is used.
+func NewSessionManager(repo repositories.SessionRepository, secure bool, sessionDuration time.Duration) SessionManager {
+	if sessionDuration <= 0 {
+		sessionDuration = SessionDuration
+	}
 	return &sessionManager{
-		repo:   repo,
-		secure: secure,
+		repo:            repo,
+		secure:          secure,
+		sessionDuration: sessionDuration,
 	}
 }
 
@@ -46,7 +53,7 @@ func (m *sessionManager) CreateSession(ctx context.Context, userID int64, r *htt
 		ID:             sessionID,
 		UserID:         userID,
 		CreatedAt:      now,
-		ExpiresAt:      now.Add(SessionDuration),
+		ExpiresAt:      now.Add(m.sessionDuration),
 		LastAccessedAt: now,
 		IPAddress:      &ipAddress,
 		UserAgent:      &userAgent,
@@ -94,7 +101,7 @@ func (m *sessionManager) SetSessionCookie(w http.ResponseWriter, sessionID strin
 		Name:     SessionCookieName,
 		Value:    sessionID,
 		Path:     "/",
-		MaxAge:   int(SessionDuration.Seconds()),
+		MaxAge:   int(m.sessionDuration.Seconds()),
 		Secure:   m.secure,
 		HttpOnly: true,
 		SameSite: http.SameSiteLaxMode,

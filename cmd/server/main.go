@@ -197,7 +197,7 @@ func main() {
 	}
 	logger.Info("Email template renderer initialized")
 
-	sessionMgr := auth.NewSessionManager(sessionRepo, strings.HasPrefix(cfg.Server.BaseURL, "https://"))
+	sessionMgr := auth.NewSessionManager(sessionRepo, strings.HasPrefix(cfg.Server.BaseURL, "https://"), cfg.Security.SessionDuration)
 	userService := auth.NewUserService(userRepo)
 	authChecker := auth.NewAuthorizationChecker()
 
@@ -751,9 +751,9 @@ func main() {
 	server := &http.Server{
 		Addr:         addr,
 		Handler:      router,
-		ReadTimeout:  15 * time.Second,
-		WriteTimeout: 15 * time.Second,
-		IdleTimeout:  60 * time.Second,
+		ReadTimeout:  cfg.Server.ReadTimeout,
+		WriteTimeout: cfg.Server.WriteTimeout,
+		IdleTimeout:  cfg.Server.IdleTimeout,
 	}
 
 	cleanupCtx, cleanupCancel := context.WithCancel(context.Background())

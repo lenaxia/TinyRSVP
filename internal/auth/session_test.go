@@ -24,7 +24,7 @@ func TestSessionManager_CreateSession(t *testing.T) {
 		},
 	}
 
-	mgr := NewSessionManager(mockRepo, true)
+	mgr := NewSessionManager(mockRepo, true, 0)
 
 	r := httptest.NewRequest("GET", "/", nil)
 	r.Header.Set("X-Forwarded-For", "203.0.113.1")
@@ -65,6 +65,48 @@ func TestSessionManager_CreateSession(t *testing.T) {
 	}
 }
 
+func TestSessionManager_CreateSession_CustomDuration(t *testing.T) {
+	mockRepo := &MockSessionRepository{
+		CreateFunc: func(ctx context.Context, session *models.Session) error {
+			return nil
+		},
+	}
+
+	mgr := NewSessionManager(mockRepo, true, 48*time.Hour)
+
+	r := httptest.NewRequest("GET", "/", nil)
+	session, err := mgr.CreateSession(context.Background(), 123, r)
+	if err != nil {
+		t.Fatalf("CreateSession failed: %v", err)
+	}
+
+	expectedExpiry := time.Now().Add(48 * time.Hour)
+	if session.ExpiresAt.Sub(expectedExpiry) > time.Minute {
+		t.Errorf("Expected expiry around %v (config duration), got %v", expectedExpiry, session.ExpiresAt)
+	}
+}
+
+func TestSessionManager_CreateSession_ZeroDurationUsesDefault(t *testing.T) {
+	mockRepo := &MockSessionRepository{
+		CreateFunc: func(ctx context.Context, session *models.Session) error {
+			return nil
+		},
+	}
+
+	mgr := NewSessionManager(mockRepo, true, 0)
+
+	r := httptest.NewRequest("GET", "/", nil)
+	session, err := mgr.CreateSession(context.Background(), 123, r)
+	if err != nil {
+		t.Fatalf("CreateSession failed: %v", err)
+	}
+
+	expectedExpiry := time.Now().Add(7 * 24 * time.Hour)
+	if session.ExpiresAt.Sub(expectedExpiry) > time.Minute {
+		t.Errorf("Expected expiry around %v (default), got %v", expectedExpiry, session.ExpiresAt)
+	}
+}
+
 func TestSessionManager_CreateSession_UniqueIDs(t *testing.T) {
 	mockRepo := &MockSessionRepository{
 		CreateFunc: func(ctx context.Context, session *models.Session) error {
@@ -72,7 +114,7 @@ func TestSessionManager_CreateSession_UniqueIDs(t *testing.T) {
 		},
 	}
 
-	mgr := NewSessionManager(mockRepo, true)
+	mgr := NewSessionManager(mockRepo, true, 0)
 
 	r := httptest.NewRequest("GET", "/", nil)
 
@@ -106,7 +148,7 @@ func TestSessionManager_GetSession_Valid(t *testing.T) {
 		},
 	}
 
-	mgr := NewSessionManager(mockRepo, true)
+	mgr := NewSessionManager(mockRepo, true, 0)
 
 	session, err := mgr.GetSession(context.Background(), sessionID)
 	if err != nil {
@@ -142,7 +184,7 @@ func TestSessionManager_GetSession_Expired(t *testing.T) {
 		},
 	}
 
-	mgr := NewSessionManager(mockRepo, true)
+	mgr := NewSessionManager(mockRepo, true, 0)
 
 	session, err := mgr.GetSession(context.Background(), sessionID)
 	if err == nil {
@@ -171,7 +213,7 @@ func TestSessionManager_RefreshSession(t *testing.T) {
 		},
 	}
 
-	mgr := NewSessionManager(mockRepo, true)
+	mgr := NewSessionManager(mockRepo, true, 0)
 
 	err := mgr.RefreshSession(context.Background(), sessionID)
 	if err != nil {
@@ -190,7 +232,7 @@ func TestSessionManager_RefreshSession_NotFound(t *testing.T) {
 		},
 	}
 
-	mgr := NewSessionManager(mockRepo, true)
+	mgr := NewSessionManager(mockRepo, true, 0)
 
 	err := mgr.RefreshSession(context.Background(), "nonexistent")
 	if err == nil {
@@ -211,7 +253,7 @@ func TestSessionManager_DeleteSession(t *testing.T) {
 		},
 	}
 
-	mgr := NewSessionManager(mockRepo, true)
+	mgr := NewSessionManager(mockRepo, true, 0)
 
 	err := mgr.DeleteSession(context.Background(), sessionID)
 	if err != nil {
@@ -230,7 +272,7 @@ func TestSessionManager_DeleteSession_NotFound(t *testing.T) {
 		},
 	}
 
-	mgr := NewSessionManager(mockRepo, true)
+	mgr := NewSessionManager(mockRepo, true, 0)
 
 	err := mgr.DeleteSession(context.Background(), "nonexistent")
 	if err == nil {
@@ -251,7 +293,7 @@ func TestSessionManager_DeleteUserSessions(t *testing.T) {
 		},
 	}
 
-	mgr := NewSessionManager(mockRepo, true)
+	mgr := NewSessionManager(mockRepo, true, 0)
 
 	err := mgr.DeleteUserSessions(context.Background(), userID)
 	if err != nil {
@@ -270,7 +312,7 @@ func TestSessionManager_CleanupExpired(t *testing.T) {
 		},
 	}
 
-	mgr := NewSessionManager(mockRepo, true)
+	mgr := NewSessionManager(mockRepo, true, 0)
 
 	count, err := mgr.CleanupExpired(context.Background())
 	if err != nil {
@@ -289,7 +331,7 @@ func TestSessionManager_CleanupExpired_Error(t *testing.T) {
 		},
 	}
 
-	mgr := NewSessionManager(mockRepo, true)
+	mgr := NewSessionManager(mockRepo, true, 0)
 
 	_, err := mgr.CleanupExpired(context.Background())
 	if err == nil {
@@ -299,7 +341,7 @@ func TestSessionManager_CleanupExpired_Error(t *testing.T) {
 
 func TestSessionManager_SetSessionCookie(t *testing.T) {
 	mockRepo := &MockSessionRepository{}
-	mgr := NewSessionManager(mockRepo, true)
+	mgr := NewSessionManager(mockRepo, true, 0)
 
 	w := httptest.NewRecorder()
 	sessionID := "test-session-id-123"
@@ -350,7 +392,7 @@ func TestSessionManager_SetSessionCookie(t *testing.T) {
 
 func TestSessionManager_SetSessionCookie_NonSecure(t *testing.T) {
 	mockRepo := &MockSessionRepository{}
-	mgr := NewSessionManager(mockRepo, false)
+	mgr := NewSessionManager(mockRepo, false, 0)
 
 	w := httptest.NewRecorder()
 	sessionID := "test-session-id"
@@ -384,7 +426,7 @@ func TestSessionManager_SetSessionCookie_NonSecure(t *testing.T) {
 
 func TestSessionManager_ClearSessionCookie(t *testing.T) {
 	mockRepo := &MockSessionRepository{}
-	mgr := NewSessionManager(mockRepo, true)
+	mgr := NewSessionManager(mockRepo, true, 0)
 
 	w := httptest.NewRecorder()
 
@@ -417,7 +459,7 @@ func TestSessionManager_ClearSessionCookie(t *testing.T) {
 
 func TestSessionManager_GetSessionFromRequest(t *testing.T) {
 	mockRepo := &MockSessionRepository{}
-	mgr := NewSessionManager(mockRepo, true)
+	mgr := NewSessionManager(mockRepo, true, 0)
 
 	sessionID := "test-session-id"
 	r := httptest.NewRequest("GET", "/", nil)
@@ -438,7 +480,7 @@ func TestSessionManager_GetSessionFromRequest(t *testing.T) {
 
 func TestSessionManager_GetSessionFromRequest_NoCookie(t *testing.T) {
 	mockRepo := &MockSessionRepository{}
-	mgr := NewSessionManager(mockRepo, true)
+	mgr := NewSessionManager(mockRepo, true, 0)
 
 	r := httptest.NewRequest("GET", "/", nil)
 
