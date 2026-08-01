@@ -83,7 +83,7 @@ None
 
 ## Status
 
-- **Status:** Not Started
+- **Status:** ✅ Complete (verified 2026-08-01: `ActivityItem.EventID` populated; clickable links render; worklog 0160)
 - **Assigned:** Unassigned
 - **Started:** N/A
 - **Completed:** N/A

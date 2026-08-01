@@ -19,30 +19,29 @@ This document provides a comprehensive breakdown of the TinyRSVP v0 implementati
 
 ---
 
-## Epic Status Summary (UPDATED 2026-04-06 — code-verified)
+## Epic Status Summary (UPDATED 2026-08-01 — code-verified)
 
 | Epic | Status | Confidence | Test Pass Rate | Notes |
 |------|--------|-----------|----------------|-------|
 | 00: Foundation | ✅ Complete | HIGH | 100% | |
-| 01: Auth | ✅ Complete | HIGH | 100% | OIDC uses mock provider in tests; real wire tests not run |
+| 01: Auth | ✅ Complete | HIGH | 100% | OIDC uses mock provider in tests; real wire tests not run. X-Test-User-ID bypass removed from production (worklog 0174). |
 | 02: Events | ✅ Complete | HIGH | 100% | |
 | 03: Invites | ✅ Complete | HIGH | 100% | Plain token stored alongside hash (minor) |
 | 04: RSVP | ✅ Complete | HIGH | 100% | |
-| 05: Email | ⚠️ Mostly Complete | MEDIUM | 100%* | *Tests pass but assert broken behavior; 3 bugs — see Epic 05 |
-| 06: Templates | ✅ Complete | HIGH | 100% | Component editor wired in service/handler but not in router |
+| 05: Email | ✅ Complete | HIGH | 100% | Bugs fixed (worklogs 0175/0176): SMTP dup, ICS injection, confirmation goroutine timeout, plaintext invite email, question text lookup, unsubscribe template. |
+| 06: Templates | ✅ Complete | HIGH | 100% | Component editor wired in router (Story 19, worklog 0171). |
 | 07: Frontend | ✅ Complete | HIGH | 100% | UX tests need Chrome; all non-browser tests pass |
-| 08: API | ⚠️ Mostly Complete | MEDIUM | 100% | X-Test-User-ID bypass active in production (Critical) |
-| 09: Security | ❌ Not Started | N/A | N/A | Has 1 pre-identified critical issue (see Epic 09) |
-| 10: Tech Debt | 🔄 Active | N/A | N/A | 5 stories complete; 6 new issues added from code validation |
+| 08: API | ✅ Complete | HIGH | 100% | X-Test-User-ID bypass removed (worklog 0174). /metrics now IP-allowlist protected (PR #61). |
+| 09: Security | ❌ Not Started | N/A | N/A | Has 1 pre-identified critical issue; blocking issue #7 now resolved. |
+| 10: Tech Debt | ✅ Complete (21/22) | HIGH | 100% | Only Story 09 (event filtering/sort) genuinely open; see Epic 10 README. |
 | 11: RSVP Themes | ✅ Complete | HIGH | 100% | |
-| 12: Test Infrastructure | ⚠️ Partial | HIGH | 100% | Phases 1-3 + Phase 5 done; Phase 4 partial (cleanup + TESTING.md missing) |
+| 12: Test Infrastructure | ⚠️ Mostly Complete | HIGH | 100% | 16/20 stories done; remaining rescoped for Go import cycles (see Epic 12 README). |
 | 13: Guest Accounts | ❌ Not Started | N/A | N/A | |
-| 14: Bug Fixes & Gaps | ✅ Complete (Story 01 deferred) | HIGH | 100% | Stories 02-06 done; Story 01 (X-Test-User-ID) deferred to Epic 09 |
+| 14: Bug Fixes & Gaps | ✅ Complete | HIGH | 100% | All 6 stories done (worklogs 0174-0176). |
 
-**All 32 non-browser test packages pass (verified 2026-04-06).**
+**All non-browser test packages pass (verified 2026-08-01).**
 
-**Production Ready:** NO — one remaining blocker:
-1. `X-Test-User-ID` auth bypass must be removed/gated before public deployment — **Epic 14 Story 01 / Epic 09**
+**Production Ready:** YES (private/homelab beta). Public beta still blocked on Epic 09 (Security audit). The previously-cited blocker (X-Test-User-ID auth bypass) is resolved.
 
 ---
 
@@ -445,24 +444,24 @@ Before starting implementation, consider:
 
 ### Epic 14: Bug Fixes & Code Gaps
 **Priority:** High | **Effort:** 1 week | **Stories:** 6  
-**Status:** ❌ Not Started | **Source:** Code validation 2026-04-06
+**Status:** ✅ Complete | **Verified:** 2026-08-01 (worklogs 0174-0176)
 
 **Purpose:** Fix all bugs and dead code identified during the 2026-04-06 code-level validation pass. Every item has a confirmed file:line reference. Completing this epic is required before beginning Epic 09 (Security audit).
 
-| Story | Severity | Summary |
-|-------|----------|---------|
-| 14_STORY_01 | Critical | Remove `X-Test-User-ID` auth bypass from `rbac.go` |
-| 14_STORY_02 | High | Render `TemplateTypeInviteEmail` in `SendInvite` (currently hardcoded plaintext) |
-| 14_STORY_03 | High | Look up question text in confirmation emails (currently shows "Question N") |
-| 14_STORY_04 | High | Add `unsubscribe.html` to `rsvpPageTemplates` (currently returns garbled body) |
-| 14_STORY_05 | Medium | Wire template editor into router, or delete it |
-| 14_STORY_06 | Low | Move `MockService` from `internal/email/service.go` to testutil |
+| Story | Severity | Summary | Status |
+|-------|----------|---------|--------|
+| 14_STORY_01 | Critical | Remove `X-Test-User-ID` auth bypass from `rbac.go` | ✅ Done (0174) |
+| 14_STORY_02 | High | Render `TemplateTypeInviteEmail` in `SendInvite` | ✅ Done |
+| 14_STORY_03 | High | Look up question text in confirmation emails | ✅ Done |
+| 14_STORY_04 | High | Add `unsubscribe.html` to `rsvpPageTemplates` | ✅ Done |
+| 14_STORY_05 | Medium | Wire template editor into router | ✅ Done |
+| 14_STORY_06 | Low | Move `MockService` out of production `email/service.go` | ✅ Done |
 
 **Depends on:** Epics 00–11  
-**Blocks:** Epic 09 (story 01 must be resolved first)
+**Blocks:** Epic 09 (story 01 must be resolved first) — ✅ resolved
 
 ---
 
 
-**Last Validated:** 2026-04-06 (code-level verification, not doc assertions)  
-**Next Action:** Fix X-Test-User-ID bypass (Epic 09), fix Epic 05 email bugs, then begin Epic 09 security audit
+**Last Validated:** 2026-08-01 (code-level verification, not doc assertions)  
+**Next Action:** Begin Epic 09 (Security audit) — the X-Test-User-ID blocker is resolved and `/metrics` is now protected. Epic 10 Story 09 (event filtering/sort) is the only other open code gap.

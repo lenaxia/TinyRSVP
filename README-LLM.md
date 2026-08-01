@@ -1,7 +1,7 @@
 # TinyRSVP - LLM Implementation Guide
 
 **Version:** 2.0  
-**Last Updated:** 2026-03-02  
+**Last Updated:** 2026-08-01  
 **Project Status:** Active Development (75% Complete)
 
 ---
@@ -702,6 +702,10 @@ docker compose -f docker-compose.test.yml -f docker-compose.local.yml down -v
 | Branch Name | Purpose | Merged Date | PR/Commit |
 |-------------|---------|-------------|-----------|
 | `feature/admin-dashboard-and-partials` | Redesign admin dashboard w/ drilldowns + system panels, extract reusable partials (`components.css` + upgraded `partials/components.html`), polish read-only settings/metrics pages | 2026-07-08 | #50 (0e29593) |
+| `bugfix/event-datetime-picker-end-opt-in` | Datetime picker: end time opt-in checkbox, clearable end, prevent end-before-start | 2026-07-24 | #54 |
+| `fix/metrics-protection-and-admin-nav` | IP-allowlist `/metrics`; role-gate admin nav link | 2026-08-01 | #61 |
+| `chore/consolidate-dependency-updates` | Bump chi/oidc/oauth2/sqlite3/chromedp/go-jose + Go 1.26 + Dockerfile | 2026-08-01 | #62 |
+| `docs/local-testing-guide` | Local testing stack guide + docker-compose.local.yml override | 2026-08-01 | #48 |
 
 **Branch Naming Convention:**
 - Feature: `feature/short-description`
@@ -752,7 +756,7 @@ docker compose -f docker-compose.test.yml -f docker-compose.local.yml down -v
 
 **Naming:** `NNNN_YYYY-MM-DD_description.md` (continuous numbering from 0000)
 
-**Current Count:** 176 entries (0000-0175)
+**Current Count:** 178 entries (0000-0177)
 
 **Purpose:**
 - Progress updates
@@ -766,7 +770,7 @@ docker compose -f docker-compose.test.yml -f docker-compose.local.yml down -v
 - When handing off to another session
 - When documenting blockers
 
-**Next Entry:** Use `0176_YYYY-MM-DD_description.md`
+**Next Entry:** Use `0178_YYYY-MM-DD_description.md`
 
 ### Backlog Stories
 
@@ -1224,6 +1228,7 @@ A: Set the `Accept: application/json` header in your test requests. Content nego
 | 2.0 | 2026-02-04 | Major documentation reorganization: Added 02_DESIGN/, 03_REFERENCE/, 04_SUMMARIES/, 99_ARCHIVE/ folders. Updated all references to reflect new structure. Changed worklog naming to continuous numbering (0000-NNNN). Organized backlog into epic folders. |
 | 2.1 | 2026-03-02 | Updated worklog count to 149 (entries 0000-0148). Next entry: 0150. |
 | 2.2 | 2026-03-03 | Updated worklog count to 151 (entries 0000-0150). Next entry: 0151. |
+| 2.3 | 2026-08-01 | Reconciled stale docs: worklog count 178, merged-branch table updated through #62, status/backlog/epic READMEs corrected to code-verified reality (Epics 10/12/14, /metrics protection, X-Test-User-ID resolved). |
 
 ---
 

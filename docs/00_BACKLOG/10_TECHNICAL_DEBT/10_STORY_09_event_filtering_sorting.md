@@ -113,7 +113,10 @@ document.addEventListener('DOMContentLoaded', function() {
 - Tests for all changes
 
 ### Status
-- Status: Not Started
+- Status: ⚠️ In Progress (partial) — verified 2026-08-01
+  - **Done:** Backend `?status=` filtering works (`events_web.go:106` → `ListFilters.Status`).
+  - **Broken:** Frontend status/search/sort controls navigate to `/not-implemented` (`event_list.html:48,64,70`) instead of submitting `?status=`.
+  - **Not started:** Search and sort (no `Search`/`SortBy`/`SortOrder` fields on `ListFilters`).
 - Priority: High (UAT feedback - broken functionality)
 - Assigned: Unassigned
 - Created: 2026-01-10

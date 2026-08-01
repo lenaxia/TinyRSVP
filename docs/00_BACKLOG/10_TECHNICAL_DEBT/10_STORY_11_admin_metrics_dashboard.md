@@ -34,7 +34,7 @@ The admin dashboard has a "Metrics" quick action that links to `/metrics`, which
 3. Link to external monitoring tool (Grafana) if available
 
 ### Status
-- Status: Not Started
+- Status: ✅ Complete (verified 2026-08-01: `/admin/metrics` + `AdminMetricsStats`; worklog 0175a)
 - Priority: Low
 - Assigned: Unassigned
 - Created: 2026-01-10

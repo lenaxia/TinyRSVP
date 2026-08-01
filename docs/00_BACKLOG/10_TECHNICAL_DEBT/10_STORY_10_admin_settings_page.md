@@ -23,7 +23,7 @@ The admin dashboard has a link to `/admin/settings` but this route returns a 404
 - Future enhancements can add edit capabilities
 
 ### Status
-- Status: Not Started
+- Status: ✅ Complete (verified 2026-08-01: `/admin/settings` route + template + secret redaction; worklog 0175a)
 - Priority: Medium
 - Assigned: Unassigned
 - Created: 2026-01-10
