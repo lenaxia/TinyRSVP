@@ -703,3 +703,110 @@ func TestOIDCCallback_ReturnURLCookieFallback(t *testing.T) {
 		t.Errorf("expected redirect to /events/42 (from cookie), got %v", location)
 	}
 }
+
+func TestOIDCCallback_UpdateLastLoginError(t *testing.T) {
+	mockAuth := &mockAuthenticator{
+		handleCallbackFunc: func(w http.ResponseWriter, r *http.Request) (*auth.AuthResult, error) {
+			return &auth.AuthResult{Email: "x@example.com"}, nil
+		},
+	}
+	userSvc := &mockAuthUserService{
+		updateLastLoginFunc: func(ctx context.Context, userID int64) error {
+			return fmt.Errorf("db error")
+		},
+	}
+	h := &AuthHandlers{
+		authenticator: mockAuth,
+		userService:   userSvc,
+		sessionMgr:    &mockAuthSessionManager{},
+	}
+
+	req := httptest.NewRequest(http.MethodGet, "/auth/oidc/callback?code=abc", nil)
+	w := httptest.NewRecorder()
+	h.OIDCCallback(w, req)
+
+	if w.Code != http.StatusFound {
+		t.Errorf("expected 302 (flow should continue despite UpdateLastLogin error), got %d", w.Code)
+	}
+}
+
+func TestOIDCCallback_InvalidReturnURLFallback(t *testing.T) {
+	mockAuth := &mockAuthenticator{
+		handleCallbackFunc: func(w http.ResponseWriter, r *http.Request) (*auth.AuthResult, error) {
+			return &auth.AuthResult{Email: "x@example.com"}, nil
+		},
+	}
+	h := &AuthHandlers{
+		authenticator: mockAuth,
+		userService:   &mockAuthUserService{},
+		sessionMgr:    &mockAuthSessionManager{},
+	}
+
+	req := httptest.NewRequest(http.MethodGet, "/auth/oidc/callback?code=abc&return=javascript:alert(1)", nil)
+	w := httptest.NewRecorder()
+	h.OIDCCallback(w, req)
+
+	if w.Code != http.StatusFound {
+		t.Errorf("expected 302, got %d", w.Code)
+	}
+	location := w.Header().Get("Location")
+	if location != "/" {
+		t.Errorf("expected redirect to / for invalid return URL, got %v", location)
+	}
+}
+
+func TestOIDCCallback_ReturnURLCookieCleared(t *testing.T) {
+	mockAuth := &mockAuthenticator{
+		handleCallbackFunc: func(w http.ResponseWriter, r *http.Request) (*auth.AuthResult, error) {
+			return &auth.AuthResult{Email: "x@example.com"}, nil
+		},
+	}
+	h := &AuthHandlers{
+		authenticator: mockAuth,
+		userService:   &mockAuthUserService{},
+		sessionMgr:    &mockAuthSessionManager{},
+	}
+
+	req := httptest.NewRequest(http.MethodGet, "/auth/oidc/callback?code=abc", nil)
+	req.AddCookie(&http.Cookie{Name: auth.ReturnURLCookieName, Value: "/dashboard"})
+	w := httptest.NewRecorder()
+	h.OIDCCallback(w, req)
+
+	var clearedCookie *http.Cookie
+	for _, c := range w.Result().Cookies() {
+		if c.Name == auth.ReturnURLCookieName {
+			clearedCookie = c
+			break
+		}
+	}
+	if clearedCookie == nil {
+		t.Fatal("expected return URL cookie to be cleared")
+	}
+	if clearedCookie.MaxAge != -1 {
+		t.Errorf("expected MaxAge=-1, got %d", clearedCookie.MaxAge)
+	}
+	if clearedCookie.Value != "" {
+		t.Errorf("expected Value to be empty, got %q", clearedCookie.Value)
+	}
+}
+
+func TestOIDCCallback_NilResult(t *testing.T) {
+	mockAuth := &mockAuthenticator{
+		handleCallbackFunc: func(w http.ResponseWriter, r *http.Request) (*auth.AuthResult, error) {
+			return nil, nil
+		},
+	}
+	h := &AuthHandlers{
+		authenticator: mockAuth,
+		userService:   &mockAuthUserService{},
+		sessionMgr:    &mockAuthSessionManager{},
+	}
+
+	req := httptest.NewRequest(http.MethodGet, "/auth/oidc/callback?code=abc", nil)
+	w := httptest.NewRecorder()
+	h.OIDCCallback(w, req)
+
+	if w.Code != http.StatusUnauthorized {
+		t.Errorf("expected 401 for nil result, got %d", w.Code)
+	}
+}
