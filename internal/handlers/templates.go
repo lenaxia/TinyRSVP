@@ -626,8 +626,6 @@ func (h *TemplateHandlers) HandleThemePreview(w http.ResponseWriter, r *http.Req
 	customImageURL := r.URL.Query().Get("custom_image_url")
 	customColor := r.URL.Query().Get("custom_color")
 
-	w.Header().Set("Content-Type", "text/html; charset=utf-8")
-
 	themeSlug := getThemeSlug(template.Category)
 
 	headerImageURL := customImageURL

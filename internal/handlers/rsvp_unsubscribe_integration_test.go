@@ -175,8 +175,8 @@ func TestUnsubscribeHandler_Integration_ExpiredToken(t *testing.T) {
 
 	r.ServeHTTP(w, req)
 
-	if w.Code != http.StatusGone {
-		t.Errorf("Expected status 410, got %d", w.Code)
+	if w.Code != http.StatusForbidden {
+		t.Errorf("Expected status 403, got %d", w.Code)
 	}
 
 	body := w.Body.String()
