@@ -312,7 +312,7 @@ func Setup(opts Options) (*Server, func(), error) {
 		filepath.Join(templateBase, "event_detail.html"),
 	)
 
-	eventWebHandlers := handlers.NewEventWebHandlers(eventService, templateService, eventListTemplates, eventFormTemplates, eventDetailTemplates)
+	eventWebHandlers := handlers.NewEventWebHandlers(eventService, templateService, questionService, eventListTemplates, eventFormTemplates, eventDetailTemplates)
 
 	customizationTemplates := mustParse("event_customization.html", funcMap,
 		filepath.Join(templateBase, "partials/base.html"),

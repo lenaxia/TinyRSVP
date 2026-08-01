@@ -102,7 +102,7 @@ func TestEventWebHandlers_EditEventForm_MultiDayDisplay(t *testing.T) {
 				</html>
 			`))
 
-			handlers := NewEventWebHandlers(mockService, nil, tmpl, tmpl, tmpl)
+			handlers := NewEventWebHandlers(mockService, nil, nil, tmpl, tmpl, tmpl)
 
 			req := httptest.NewRequest("GET", "/events/1/edit", nil)
 			rctx := chi.NewRouteContext()

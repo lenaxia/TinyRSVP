@@ -524,7 +524,7 @@ func main() {
 	}
 	logger.Info("Event detail templates loaded successfully")
 
-	eventWebHandlers := handlers.NewEventWebHandlers(eventService, templateService, eventListTemplates, eventFormTemplates, eventDetailTemplates)
+	eventWebHandlers := handlers.NewEventWebHandlers(eventService, templateService, questionService, eventListTemplates, eventFormTemplates, eventDetailTemplates)
 
 	customizationHandlers.SetTemplates(customizationTemplates)
 

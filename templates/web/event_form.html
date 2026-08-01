@@ -185,24 +185,10 @@
                     <h2 class="form-section-title">Preference Questions</h2>
                     <p class="form-help-text">Ask guests about dietary restrictions, meal preferences, etc.</p>
 
-                    {{/* Coming-soon overlay */}}
-                    <div style="
-                        position:absolute;inset:0;
-                        background:rgba(var(--color-background-rgb,249,250,251),0.85);
-                        border-radius:var(--border-radius-lg,0.5rem);
-                        display:flex;flex-direction:column;
-                        align-items:center;justify-content:center;
-                        gap:0.5rem;z-index:10;
-                        border:2px dashed var(--color-border,#e5e7eb);
-                    ">
-                        <span style="font-size:2rem">🚧</span>
-                        <strong>Coming Soon</strong>
-                        <span style="color:var(--color-text-secondary,#666);font-size:0.875rem">Preference questions will be available in a future release.</span>
-                    </div>
-
-                    <div id="questions-container" aria-hidden="true">
+                    <div id="questions-container">
                         {{range $index, $question := .Questions}}
                         <div class="question-item" data-index="{{$index}}">
+                            <input type="hidden" name="questions[{{$index}}][id]" value="{{$question.ID}}">
                             <div class="form-group">
                                 <label for="question_{{$index}}_text" class="form-label">Question {{add $index 1}}</label>
                                 <input
@@ -212,7 +198,6 @@
                                     class="form-input"
                                     value="{{$question.Text}}"
                                     placeholder="e.g., Do you have any dietary restrictions?"
-                                    disabled
                                 >
                             </div>
                             <div class="form-group">
@@ -221,20 +206,39 @@
                                     id="question_{{$index}}_type"
                                     name="questions[{{$index}}][type]"
                                     class="form-select"
-                                    disabled
                                 >
-                                    <option value="text"{{if eq $question.Type "text"}} selected{{end}}>Text</option>
-                                    <option value="choice"{{if eq $question.Type "choice"}} selected{{end}}>Multiple Choice</option>
+                                    <option value="text"{{if eq $question.QuestionType "text"}} selected{{end}}>Text</option>
+                                    <option value="single_choice"{{if eq $question.QuestionType "single_choice"}} selected{{end}}>Single Choice</option>
+                                    <option value="multiple_choice"{{if eq $question.QuestionType "multiple_choice"}} selected{{end}}>Multiple Choice</option>
                                 </select>
                             </div>
-                            <button type="button" class="btn btn-danger btn-sm remove-question" data-index="{{$index}}" disabled>
+                            <div class="form-group question-options-field" style="display: {{if or (eq $question.QuestionType "single_choice") (eq $question.QuestionType "multiple_choice")}}block{{else}}none{{end}};">
+                                <label for="question_{{$index}}_options" class="form-label">Options (one per line)</label>
+                                <textarea
+                                    id="question_{{$index}}_options"
+                                    name="questions[{{$index}}][options]"
+                                    class="form-textarea"
+                                    rows="3"
+                                >{{if $question.Options}}{{range $question.ParseOptions}}{{.}}
+{{end}}{{end}}</textarea>
+                            </div>
+                            <label class="form-checkbox-label">
+                                <input
+                                    type="checkbox"
+                                    name="questions[{{$index}}][required]"
+                                    class="form-checkbox"
+                                    {{if $question.Required}}checked{{end}}
+                                >
+                                <span>Required</span>
+                            </label>
+                            <button type="button" class="btn btn-danger btn-sm remove-question" data-index="{{$index}}">
                                 Remove
                             </button>
                         </div>
                         {{end}}
                     </div>
 
-                    <button type="button" class="btn btn-secondary" id="add-question-btn" disabled>
+                    <button type="button" class="btn btn-secondary" id="add-question-btn">
                         Add Question
                     </button>
                 </section>
@@ -293,4 +297,5 @@
     <script src="/static/js/theme_preview_modal.js"></script>
     <script src="/static/js/image_upload.js"></script>
     <script src="/static/js/color_picker.js"></script>
+    <script src="/static/js/questions.js"></script>
 {{end}}
