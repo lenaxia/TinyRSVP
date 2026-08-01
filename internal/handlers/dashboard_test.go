@@ -150,8 +150,8 @@ func TestDashboardHandler_Dashboard_NoTemplate(t *testing.T) {
 
 	handler.Dashboard(w, req)
 
-	if w.Code != http.StatusOK {
-		t.Errorf("expected status %d, got %d", http.StatusOK, w.Code)
+	if w.Code != http.StatusInternalServerError {
+		t.Errorf("expected status %d when templates are nil, got %d", http.StatusInternalServerError, w.Code)
 	}
 }
 

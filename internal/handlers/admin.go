@@ -2,7 +2,6 @@ package handlers
 
 import (
 	"context"
-	"fmt"
 	"html/template"
 	"log/slog"
 	"net/http"
@@ -112,36 +111,7 @@ func (h *AdminDashboardHandler) AdminDashboard(w http.ResponseWriter, r *http.Re
 }
 
 func (h *AdminDashboardHandler) renderPage(w http.ResponseWriter, status int, data *AdminDashboardPageData) {
-	w.Header().Set("Content-Type", "text/html; charset=utf-8")
-	w.WriteHeader(status)
-
-	if h.templates != nil {
-		if err := h.templates.ExecuteTemplate(w, "admin_dashboard.html", data); err != nil {
-			http.Error(w, "Failed to render page", http.StatusInternalServerError)
-		}
-		return
-	}
-
-	fmt.Fprintf(w, `<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Dashboard - TinyRSVP</title>
-</head>
-<body>
-    <h1>Admin Dashboard</h1>
-    %s
-</body>
-</html>`, func() string {
-		if data.Error != "" {
-			return fmt.Sprintf("<p>Error: %s</p>", data.Error)
-		}
-		if data.Stats != nil {
-			return fmt.Sprintf("<p>Total Users: %d</p>", data.Stats.TotalUsers)
-		}
-		return "<p>Loading...</p>"
-	}())
+	renderHTML(w, h.templates, "admin_dashboard.html", status, data)
 }
 
 type UserListService interface {
@@ -241,34 +211,5 @@ func (h *UserManagementHandler) UserManagementPage(w http.ResponseWriter, r *htt
 }
 
 func (h *UserManagementHandler) renderPage(w http.ResponseWriter, status int, data *UserManagementPageData) {
-	w.Header().Set("Content-Type", "text/html; charset=utf-8")
-	w.WriteHeader(status)
-
-	if h.templates != nil {
-		if err := h.templates.ExecuteTemplate(w, "user_management.html", data); err != nil {
-			http.Error(w, "Failed to render page", http.StatusInternalServerError)
-		}
-		return
-	}
-
-	fmt.Fprintf(w, `<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>User Management - TinyRSVP</title>
-</head>
-<body>
-    <h1>User Management</h1>
-    %s
-</body>
-</html>`, func() string {
-		if data.Error != "" {
-			return fmt.Sprintf("<p>Error: %s</p>", data.Error)
-		}
-		if data.Users != nil {
-			return fmt.Sprintf("<p>Total Users: %d</p>", len(data.Users))
-		}
-		return "<p>Loading...</p>"
-	}())
+	renderHTML(w, h.templates, "user_management.html", status, data)
 }

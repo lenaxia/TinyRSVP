@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"fmt"
 	"html/template"
 	"net/http"
 
@@ -179,19 +178,5 @@ func (h *SettingsHandler) SettingsPage(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *SettingsHandler) renderPage(w http.ResponseWriter, status int, data *SettingsPageData) {
-	w.Header().Set("Content-Type", "text/html; charset=utf-8")
-	w.WriteHeader(status)
-
-	if h.templates != nil {
-		if err := h.templates.ExecuteTemplate(w, "admin_settings.html", data); err != nil {
-			http.Error(w, "Failed to render page", http.StatusInternalServerError)
-		}
-		return
-	}
-
-	fmt.Fprintf(w, `<!DOCTYPE html>
-<html lang="en">
-<head><meta charset="UTF-8"><title>Admin Settings - TinyRSVP</title></head>
-<body><h1>Admin Settings</h1><p>Template not loaded.</p></body>
-</html>`)
+	renderHTML(w, h.templates, "admin_settings.html", status, data)
 }

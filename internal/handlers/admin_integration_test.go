@@ -63,6 +63,7 @@ func TestAdminDashboard_Integration_Success(t *testing.T) {
 	userService := auth.NewUserService(userRepo)
 	adminService := admin.NewAdminService(userService, eventRepo, inviteRepo)
 	handler := NewAdminDashboardHandler(adminService)
+	handler.SetTemplates(testTemplate(t, "admin_dashboard.html"))
 
 	req := httptest.NewRequest(http.MethodGet, "/admin", nil)
 	ctx := auth.WithUser(req.Context(), adminUser)
@@ -145,6 +146,7 @@ func TestUserManagement_Integration_Success(t *testing.T) {
 
 	userService := auth.NewUserService(userRepo)
 	handler := NewUserManagementHandler(userService)
+	handler.SetTemplates(testTemplate(t, "user_management.html"))
 
 	req := httptest.NewRequest(http.MethodGet, "/admin/users", nil)
 	ctx := auth.WithUser(req.Context(), adminUser)
@@ -231,6 +233,7 @@ func TestAdminDashboard_Integration_WithStats(t *testing.T) {
 	userService := auth.NewUserService(userRepo)
 	adminService := admin.NewAdminService(userService, eventRepo, inviteRepo)
 	handler := NewAdminDashboardHandler(adminService)
+	handler.SetTemplates(testTemplate(t, "admin_dashboard.html"))
 
 	req := httptest.NewRequest(http.MethodGet, "/admin", nil)
 	ctx := auth.WithUser(req.Context(), adminUser)
@@ -277,6 +280,7 @@ func TestUserManagement_Integration_WithPagination(t *testing.T) {
 
 	userService := auth.NewUserService(userRepo)
 	handler := NewUserManagementHandler(userService)
+	handler.SetTemplates(testTemplate(t, "user_management.html"))
 
 	req := httptest.NewRequest(http.MethodGet, "/admin/users?limit=10&offset=0", nil)
 	ctx := auth.WithUser(req.Context(), adminUser)

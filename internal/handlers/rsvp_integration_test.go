@@ -232,6 +232,7 @@ func TestRSVPHandler_Integration_ExpiredToken(t *testing.T) {
 	questionRepo := repositories.NewQuestionRepository(database)
 
 	handler := NewRSVPHandler(inviteService, eventRepo, rsvpRepo, questionRepo)
+	handler.SetTemplates(testTemplate(t, "rsvp_page.html"))
 
 	r := chi.NewRouter()
 	r.Get("/rsvp/{token}", handler.GetRSVPPage)
@@ -275,6 +276,7 @@ func TestRSVPHandler_Integration_RevokedInvite(t *testing.T) {
 	questionRepo := repositories.NewQuestionRepository(database)
 
 	handler := NewRSVPHandler(inviteService, eventRepo, rsvpRepo, questionRepo)
+	handler.SetTemplates(testTemplate(t, "rsvp_page.html"))
 
 	r := chi.NewRouter()
 	r.Get("/rsvp/{token}", handler.GetRSVPPage)
@@ -315,6 +317,7 @@ func TestRSVPHandler_Integration_CancelledEvent(t *testing.T) {
 	questionRepo := repositories.NewQuestionRepository(database)
 
 	handler := NewRSVPHandler(inviteService, eventRepo, rsvpRepo, questionRepo)
+	handler.SetTemplates(testTemplate(t, "rsvp_page.html"))
 
 	r := chi.NewRouter()
 	r.Get("/rsvp/{token}", handler.GetRSVPPage)
@@ -347,6 +350,7 @@ func TestRSVPHandler_Integration_InvalidToken(t *testing.T) {
 	questionRepo := repositories.NewQuestionRepository(database)
 
 	handler := NewRSVPHandler(inviteService, eventRepo, rsvpRepo, questionRepo)
+	handler.SetTemplates(testTemplate(t, "rsvp_page.html"))
 
 	r := chi.NewRouter()
 	r.Get("/rsvp/{token}", handler.GetRSVPPage)

@@ -52,6 +52,7 @@ func TestUnsubscribeHandler_Success(t *testing.T) {
 	mockQuestionRepo := &mockRSVPQuestionRepository{}
 
 	handler := NewRSVPHandler(mockInviteSvc, mockEventRepo, mockRSVPRepo, mockQuestionRepo)
+	handler.SetTemplates(testTemplate(t, "unsubscribe.html"))
 
 	r := chi.NewRouter()
 	r.Get("/unsubscribe/{token}", handler.Unsubscribe)
@@ -94,6 +95,7 @@ func TestUnsubscribeHandler_InvalidToken(t *testing.T) {
 	mockQuestionRepo := &mockRSVPQuestionRepository{}
 
 	handler := NewRSVPHandler(mockInviteSvc, mockEventRepo, mockRSVPRepo, mockQuestionRepo)
+	handler.SetTemplates(testTemplate(t, "unsubscribe.html"))
 
 	r := chi.NewRouter()
 	r.Get("/unsubscribe/{token}", handler.Unsubscribe)
@@ -120,6 +122,7 @@ func TestUnsubscribeHandler_ExpiredToken(t *testing.T) {
 	mockQuestionRepo := &mockRSVPQuestionRepository{}
 
 	handler := NewRSVPHandler(mockInviteSvc, mockEventRepo, mockRSVPRepo, mockQuestionRepo)
+	handler.SetTemplates(testTemplate(t, "unsubscribe.html"))
 
 	r := chi.NewRouter()
 	r.Get("/unsubscribe/{token}", handler.Unsubscribe)
@@ -146,6 +149,7 @@ func TestUnsubscribeHandler_RevokedInvite(t *testing.T) {
 	mockQuestionRepo := &mockRSVPQuestionRepository{}
 
 	handler := NewRSVPHandler(mockInviteSvc, mockEventRepo, mockRSVPRepo, mockQuestionRepo)
+	handler.SetTemplates(testTemplate(t, "unsubscribe.html"))
 
 	r := chi.NewRouter()
 	r.Get("/unsubscribe/{token}", handler.Unsubscribe)
@@ -194,6 +198,7 @@ func TestUnsubscribeHandler_AlreadyUnsubscribed(t *testing.T) {
 	mockQuestionRepo := &mockRSVPQuestionRepository{}
 
 	handler := NewRSVPHandler(mockInviteSvc, mockEventRepo, mockRSVPRepo, mockQuestionRepo)
+	handler.SetTemplates(testTemplate(t, "unsubscribe.html"))
 
 	r := chi.NewRouter()
 	r.Get("/unsubscribe/{token}", handler.Unsubscribe)
@@ -242,6 +247,7 @@ func TestUnsubscribeHandler_UnsubscribeError(t *testing.T) {
 	mockQuestionRepo := &mockRSVPQuestionRepository{}
 
 	handler := NewRSVPHandler(mockInviteSvc, mockEventRepo, mockRSVPRepo, mockQuestionRepo)
+	handler.SetTemplates(testTemplate(t, "unsubscribe.html"))
 
 	r := chi.NewRouter()
 	r.Get("/unsubscribe/{token}", handler.Unsubscribe)
@@ -263,6 +269,7 @@ func TestUnsubscribeHandler_EmptyToken(t *testing.T) {
 	mockQuestionRepo := &mockRSVPQuestionRepository{}
 
 	handler := NewRSVPHandler(mockInviteSvc, mockEventRepo, mockRSVPRepo, mockQuestionRepo)
+	handler.SetTemplates(testTemplate(t, "unsubscribe.html"))
 
 	r := chi.NewRouter()
 	r.Get("/unsubscribe/{token}", handler.Unsubscribe)
@@ -301,6 +308,7 @@ func TestUnsubscribeHandler_EventNotFound(t *testing.T) {
 	mockQuestionRepo := &mockRSVPQuestionRepository{}
 
 	handler := NewRSVPHandler(mockInviteSvc, mockEventRepo, mockRSVPRepo, mockQuestionRepo)
+	handler.SetTemplates(testTemplate(t, "unsubscribe.html"))
 
 	r := chi.NewRouter()
 	r.Get("/unsubscribe/{token}", handler.Unsubscribe)

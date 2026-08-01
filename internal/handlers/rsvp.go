@@ -8,7 +8,6 @@ import (
 	"fmt"
 	"html/template"
 	"io"
-	"log/slog"
 	"net/http"
 	"net/url"
 	"strconv"
@@ -314,33 +313,7 @@ func (h *RSVPHandler) renderPage(w http.ResponseWriter, status int, data *RSVPPa
 		}
 	}
 
-	if h.templates != nil {
-		if err := h.templates.ExecuteTemplate(w, "rsvp_page.html", data); err != nil {
-			http.Error(w, "Failed to render page", http.StatusInternalServerError)
-		}
-		return
-	}
-
-	fmt.Fprintf(w, `<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RSVP</title>
-</head>
-<body>
-    <h1>RSVP Page</h1>
-    %s
-</body>
-</html>`, func() string {
-		if data.ErrorMessage != "" {
-			return fmt.Sprintf("<p>Error: %s</p>", data.ErrorMessage)
-		}
-		if data.Event != nil {
-			return fmt.Sprintf("<p>Event: %s</p>", data.Event.Title)
-		}
-		return "<p>Loading...</p>"
-	}())
+	renderHTML(w, h.templates, "rsvp_page.html", status, data)
 }
 
 func (h *RSVPHandler) SetTemplates(tmpl *template.Template) {
@@ -814,44 +787,7 @@ func (h *RSVPHandler) renderConfirmationError(w http.ResponseWriter, status int,
 }
 
 func (h *RSVPHandler) renderConfirmationPage(w http.ResponseWriter, status int, data *ConfirmationPageData) {
-	if h.confirmationTemplates != nil {
-		// Buffer the render so we can still write a clean error response if
-		// template execution fails (writing w.WriteHeader before Execute would
-		// make any subsequent http.Error a no-op — headers already sent).
-		var buf bytes.Buffer
-		if err := h.confirmationTemplates.ExecuteTemplate(&buf, "confirmation.html", data); err != nil {
-			slog.Error("confirmation template execution failed", "error", err)
-			http.Error(w, "Failed to render page", http.StatusInternalServerError)
-			return
-		}
-		w.Header().Set("Content-Type", "text/html; charset=utf-8")
-		w.WriteHeader(status)
-		buf.WriteTo(w)
-		return
-	}
-
-	w.Header().Set("Content-Type", "text/html; charset=utf-8")
-	w.WriteHeader(status)
-	fmt.Fprintf(w, `<!DOCTYPE html>
-<html lang="en">
-<head>
-	   <meta charset="UTF-8">
-	   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-	   <title>RSVP Confirmation</title>
-</head>
-<body>
-	   <h1>RSVP Confirmation</h1>
-	   %s
-</body>
-</html>`, func() string {
-		if data.ErrorMessage != "" {
-			return fmt.Sprintf("<p>Error: %s</p>", data.ErrorMessage)
-		}
-		if data.Event != nil && data.RSVP != nil {
-			return fmt.Sprintf("<p>Thank you for your RSVP to %s! Your response: %s</p>", data.Event.Title, data.RSVP.Response)
-		}
-		return "<p>Loading...</p>"
-	}())
+	renderHTML(w, h.confirmationTemplates, "confirmation.html", status, data)
 }
 
 type UnsubscribePageData struct {
@@ -924,36 +860,7 @@ func (h *RSVPHandler) renderUnsubscribeError(w http.ResponseWriter, status int, 
 }
 
 func (h *RSVPHandler) renderUnsubscribePage(w http.ResponseWriter, status int, data *UnsubscribePageData) {
-	w.Header().Set("Content-Type", "text/html; charset=utf-8")
-	w.WriteHeader(status)
-
-	if h.templates != nil {
-		if err := h.templates.ExecuteTemplate(w, "unsubscribe.html", data); err != nil {
-			http.Error(w, "Failed to render page", http.StatusInternalServerError)
-		}
-		return
-	}
-
-	fmt.Fprintf(w, `<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Unsubscribe</title>
-</head>
-<body>
-    <h1>Unsubscribe from Reminders</h1>
-    %s
-</body>
-</html>`, func() string {
-		if data.ErrorMessage != "" {
-			return fmt.Sprintf("<p>Error: %s</p>", data.ErrorMessage)
-		}
-		if data.Success && data.Event != nil {
-			return fmt.Sprintf("<p>You have been unsubscribed from reminders for %s.</p>", data.Event.Title)
-		}
-		return "<p>Processing...</p>"
-	}())
+	renderHTML(w, h.templates, "unsubscribe.html", status, data)
 }
 
 func (h *RSVPHandler) GetCalendar(w http.ResponseWriter, r *http.Request) {

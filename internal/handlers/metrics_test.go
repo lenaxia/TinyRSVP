@@ -40,6 +40,7 @@ func (m *mockMetricsDataSource) GetDBStats() (*DBPoolMetrics, error) {
 
 func TestMetricsPage_Success(t *testing.T) {
 	handler := NewMetricsHandler(&mockMetricsDataSource{})
+	handler.SetTemplates(testTemplate(t, "admin_metrics.html"))
 
 	w := httptest.NewRecorder()
 	r := httptest.NewRequest("GET", "/admin/metrics", nil)
@@ -73,6 +74,7 @@ func TestMetricsPage_ServiceError(t *testing.T) {
 			return nil, fmt.Errorf("database unavailable")
 		},
 	})
+	handler.SetTemplates(testTemplate(t, "admin_metrics.html"))
 
 	w := httptest.NewRecorder()
 	r := httptest.NewRequest("GET", "/admin/metrics", nil)
@@ -94,6 +96,7 @@ func TestMetricsPage_PartialFailure(t *testing.T) {
 			return nil, fmt.Errorf("db stats unavailable")
 		},
 	})
+	handler.SetTemplates(testTemplate(t, "admin_metrics.html"))
 
 	data := &MetricsPageData{}
 	_ = data

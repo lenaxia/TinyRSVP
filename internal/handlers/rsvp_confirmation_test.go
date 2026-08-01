@@ -84,6 +84,7 @@ func TestRSVPHandler_GetConfirmationPage_Success(t *testing.T) {
 
 	handler := NewRSVPHandler(mockInviteSvc, mockEventRepo, mockRSVPRepo, mockQuestionRepo)
 	handler.SetAnswerRepository(mockAnswerRepo)
+	handler.SetConfirmationTemplates(testTemplate(t, "confirmation.html"))
 
 	r := chi.NewRouter()
 	r.Get("/rsvp/{token}/confirmation", handler.GetConfirmationPage)
@@ -137,6 +138,7 @@ func TestRSVPHandler_GetConfirmationPage_NoRSVP(t *testing.T) {
 
 	handler := NewRSVPHandler(mockInviteSvc, mockEventRepo, mockRSVPRepo, mockQuestionRepo)
 	handler.SetAnswerRepository(mockAnswerRepo)
+	handler.SetConfirmationTemplates(testTemplate(t, "confirmation.html"))
 
 	r := chi.NewRouter()
 	r.Get("/rsvp/{token}/confirmation", handler.GetConfirmationPage)
@@ -165,6 +167,7 @@ func TestRSVPHandler_GetConfirmationPage_InvalidToken(t *testing.T) {
 
 	handler := NewRSVPHandler(mockInviteSvc, mockEventRepo, mockRSVPRepo, mockQuestionRepo)
 	handler.SetAnswerRepository(mockAnswerRepo)
+	handler.SetConfirmationTemplates(testTemplate(t, "confirmation.html"))
 
 	r := chi.NewRouter()
 	r.Get("/rsvp/{token}/confirmation", handler.GetConfirmationPage)
@@ -278,6 +281,7 @@ func TestRSVPHandler_GetConfirmationPage_CancelledEvent(t *testing.T) {
 
 	handler := NewRSVPHandler(mockInviteSvc, mockEventRepo, mockRSVPRepo, mockQuestionRepo)
 	handler.SetAnswerRepository(mockAnswerRepo)
+	handler.SetConfirmationTemplates(testTemplate(t, "confirmation.html"))
 
 	r := chi.NewRouter()
 	r.Get("/rsvp/{token}/confirmation", handler.GetConfirmationPage)
@@ -440,6 +444,7 @@ func TestRSVPHandler_ConfirmationPage_ErrorPath_NilEvent(t *testing.T) {
 	mockQuestionRepo := mockrepos.NewMockQuestionRepository(ctrl)
 
 	handler := NewRSVPHandler(mockInviteSvc, mockEventRepo, mockRSVPRepo, mockQuestionRepo)
+	handler.SetTemplates(testTemplate(t, "rsvp_page.html"))
 
 	// Use a template that mimics the real one: accesses .Event.Title in title
 	// block and branches on .ErrorMessage in content — should not panic when
@@ -463,7 +468,7 @@ func TestRSVPHandler_ConfirmationPage_ErrorPath_NilEvent(t *testing.T) {
 	if w.Code != http.StatusNotFound {
 		t.Errorf("Expected 404 for bad token, got %d", w.Code)
 	}
-	if !strings.Contains(w.Body.String(), "Error:") {
+	if !strings.Contains(w.Body.String(), "Invite not found") {
 		t.Errorf("Expected error message in body, got: %s", w.Body.String())
 	}
 }
