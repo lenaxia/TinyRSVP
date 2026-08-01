@@ -606,6 +606,87 @@ docker run -p 8080:8080 \
 docker-compose up -d
 ```
 
+### Local Testing Stack (READ BEFORE STANDING UP CONTAINERS)
+
+**Canonical local-dev stack:** [`docker-compose.test.yml`](docker-compose.test.yml)
++ [`docker-compose.local.yml`](docker-compose.local.yml) override.
+
+Do NOT hand-roll a new compose file for local testing. The test compose already
+wires together every dependency the app needs to actually be usable end-to-end:
+
+| Service | Purpose | Host port |
+|---------|---------|-----------|
+| `tinyrsvp` | The app | `:8080` (direct, bypasses auth) |
+| `traefik` | Reverse proxy + injects forward-auth headers | `:8081` (web), `:8082` (dashboard) |
+| `mailhog` | Mock SMTP + web UI to inspect sent mail | `:8025` (UI), `:1025` (SMTP) |
+| `authelia` | OIDC provider (only needed for OIDC flows) | `:9091` |
+| `browserless` | Headless Chrome for UX tests | `:3000`, `:9222` |
+
+**Forward-auth is pre-wired.** Traefik's dynamic config at
+[`test/traefik/dynamic.yml`](test/traefik/dynamic.yml) injects
+`X-Forwarded-User: admin` and `X-Forwarded-Email: admin@tinyrsvp.test`
+on every request routed through `:8081`, and `FORWARD_AUTH_TRUSTED_IPS`
+already includes `172.16.0.0/12` so any Docker bridge container IP is
+trusted. Hitting the app directly on `:8080` will 401 on admin routes —
+that is expected; go through Traefik on `:8081`.
+
+**Why the `docker-compose.local.yml` override exists:** This host (and
+likely other WSL/Docker setups) cannot resolve external DNS from *inside*
+build containers, so `go mod download` in the Dockerfile fails on
+`proxy.golang.org`. The override replaces the `build:` block in
+`docker-compose.test.yml` with a pinned published image
+(`ghcr.io/lenaxia/tinyrsvp:X.Y.Z`). Bump the tag on releases; never use
+`:latest`. The override is committed for convenience — if you *want* to
+build from local source, omit `-f docker-compose.local.yml` and Compose
+will use the `build:` in the test file.
+
+**Bring the stack up:**
+
+```bash
+# Everything (app + traefik + mailhog + authelia + browserless)
+docker compose -f docker-compose.test.yml -f docker-compose.local.yml up -d
+
+# Just what you usually need (app + traefik + mailhog)
+docker compose -f docker-compose.test.yml -f docker-compose.local.yml \
+  up -d tinyrsvp traefik mailhog
+
+# Watch logs
+docker compose -f docker-compose.test.yml -f docker-compose.local.yml logs -f tinyrsvp
+
+# Tear down (keeps the tinyrsvp-test-data volume)
+docker compose -f docker-compose.test.yml -f docker-compose.local.yml down
+
+# Tear down and wipe data
+docker compose -f docker-compose.test.yml -f docker-compose.local.yml down -v
+```
+
+**Using the app in a browser:**
+
+- Go to http://localhost:8081/ — Traefik will prompt for basic auth
+  (`admin` / `admin`), then inject the forward-auth headers.
+- The app creates a session on `/login` and redirects to the dashboard.
+- MailHog UI at http://localhost:8025/ shows every email the app sends.
+- Traefik dashboard at http://localhost:8082/dashboard/.
+
+**Common pitfalls (learned the hard way):**
+
+- Requests to `http://localhost:8080/` come from your host, not a trusted
+  Docker IP. Admin routes will 401. Use `http://localhost:8081/` to go
+  through Traefik.
+- `TOKEN_SECRET` must persist across restarts or every existing invite
+  link breaks. `docker-compose.test.yml` hardcodes a test value on purpose
+  — do NOT rotate it casually.
+- Do NOT put unquoted `:` inside a compose `environment: - VAR=${VAR:?msg}`
+  default-error message. YAML parses the second colon as a mapping and
+  `docker compose config` fails with
+  `unexpected type map[string]interface {}`. Quote the whole entry.
+- Forward-auth middleware in `internal/auth/forward_auth.go` only fires
+  on `/login`. Every other route relies on the session cookie. If curl
+  loops between `/` and `/login`, you forgot `-c cookie.jar -b cookie.jar`.
+- `docker compose ... down` on this compose project will also stop any
+  container that happens to share its default network name. Check
+  `docker ps` before tearing down if you have unrelated stacks running.
+
 ---
 
 ## Branch Management

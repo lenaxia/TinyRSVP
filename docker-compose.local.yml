@@ -1,0 +1,15 @@
+# Local override for docker-compose.test.yml
+#
+# Purpose: swap the `build:` in docker-compose.test.yml for a pinned
+# published image so `docker compose up` works on hosts that cannot
+# reach proxy.golang.org from build containers (e.g. WSL with a
+# broken DNS forwarder).
+#
+# Usage:
+#   docker compose -f docker-compose.test.yml -f docker-compose.local.yml up -d
+#
+# Bump the tag when a new release is cut; do not use :latest.
+services:
+  tinyrsvp:
+    build: !reset null
+    image: ghcr.io/lenaxia/tinyrsvp:0.3.0
