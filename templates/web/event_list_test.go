@@ -8,26 +8,30 @@ import (
 )
 
 type EventListEvent struct {
-	ID          int
-	Title       string
-	Description string
-	Location    string
-	StartTime   time.Time
-	Status      string
-	InviteCount int
-	RSVPCount   int
-	AcceptCount int
+	ID               int
+	Title            string
+	Description      string
+	Location         string
+	StartTime        time.Time
+	Status           string
+	InviteCount      int
+	RSVPCount        int
+	AcceptCount      int
+	PrivateGuestList bool
+	CreatedBy        int64
 }
 
 type EventListData struct {
-	Events  []EventListEvent
-	Loading bool
-	Error   string
-	Filter  string
-	Sort    string
-	Page    int
-	Total   int
-	PageSize int
+	Events       []EventListEvent
+	Loading      bool
+	Error        string
+	Filter       string
+	Sort         string
+	Page         int
+	Total        int
+	PageSize     int
+	IsAdmin      bool
+	CurrentUserID int64
 }
 
 func getEventListTemplate() (*template.Template, error) {

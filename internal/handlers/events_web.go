@@ -30,16 +30,17 @@ type EventWebHandlers struct {
 }
 
 type EventListPageData struct {
-	ActivePage string
-	IsAdmin    bool
-	Events     []*models.EventWithStats
-	Total      int
-	Page       int
-	PageSize   int
-	Filter     string
-	Sort       string
-	Error      string
-	Loading    bool
+	ActivePage   string
+	IsAdmin      bool
+	CurrentUserID int64
+	Events       []*models.EventWithStats
+	Total        int
+	Page         int
+	PageSize     int
+	Filter       string
+	Sort         string
+	Error        string
+	Loading      bool
 }
 
 type EventFormPageData struct {
@@ -121,6 +122,8 @@ func (h *EventWebHandlers) ListEventsPage(w http.ResponseWriter, r *http.Request
 		return
 	}
 
+	hidePrivateGuestListStats(eventList, user)
+
 	total, err := h.service.CountEvents(r.Context(), filters)
 	if err != nil {
 		HandleError(w, r, err)
@@ -128,9 +131,10 @@ func (h *EventWebHandlers) ListEventsPage(w http.ResponseWriter, r *http.Request
 	}
 
 	data := &EventListPageData{
-		ActivePage: "events",
-		IsAdmin:    isAdminRequest(r),
-		Events:     eventList,
+		ActivePage:   "events",
+		IsAdmin:      isAdminRequest(r),
+		CurrentUserID: user.ID,
+		Events:       eventList,
 		Total:      total,
 		Page:       page,
 		PageSize:   limit,
@@ -759,4 +763,21 @@ func parseQuestionsFromForm(form url.Values) []*models.PreferenceQuestion {
 	}
 
 	return questions
+}
+
+// hidePrivateGuestListStats zeroes the InviteCount/RSVPCount/AcceptCount on
+// events marked PrivateGuestList=true when the viewer is not the event owner
+// or an admin. The event itself is still visible; only attendance figures are
+// hidden.
+func hidePrivateGuestListStats(events []*models.EventWithStats, user *models.User) {
+	if user == nil || user.IsAdmin() {
+		return
+	}
+	for _, e := range events {
+		if e.PrivateGuestList && e.CreatedBy != user.ID {
+			e.InviteCount = 0
+			e.RSVPCount = 0
+			e.AcceptCount = 0
+		}
+	}
 }
