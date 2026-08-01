@@ -132,11 +132,11 @@ func (s *service) SubmitRSVP(ctx context.Context, token string, req *SubmitRSVPR
 	}
 
 	if !invite.ExpiresAt.IsZero() && invite.ExpiresAt.Before(time.Now()) {
-		return nil, errors.New("invite has expired")
+		return nil, &models.ForbiddenError{Message: "this invite has expired"}
 	}
 
 	if invite.Status == models.InviteStatusRevoked {
-		return nil, errors.New("invite has been revoked")
+		return nil, &models.ForbiddenError{Message: "this invite has been revoked"}
 	}
 
 	event, err := s.eventRepo.GetByID(ctx, invite.EventID)
@@ -145,7 +145,7 @@ func (s *service) SubmitRSVP(ctx context.Context, token string, req *SubmitRSVPR
 	}
 
 	if event.Status == models.EventStatusCancelled {
-		return nil, errors.New("event has been cancelled")
+		return nil, &models.ForbiddenError{Message: "this event has been cancelled"}
 	}
 
 	if err := checkDeadline(event); err != nil {
@@ -384,11 +384,11 @@ func (s *service) UpdateRSVP(ctx context.Context, token string, req *SubmitRSVPR
 	}
 
 	if !invite.ExpiresAt.IsZero() && invite.ExpiresAt.Before(time.Now()) {
-		return nil, errors.New("invite has expired")
+		return nil, &models.ForbiddenError{Message: "this invite has expired"}
 	}
 
 	if invite.Status == models.InviteStatusRevoked {
-		return nil, errors.New("invite has been revoked")
+		return nil, &models.ForbiddenError{Message: "this invite has been revoked"}
 	}
 
 	existing, err := s.rsvpRepo.GetByInviteID(ctx, invite.ID)
@@ -402,7 +402,7 @@ func (s *service) UpdateRSVP(ctx context.Context, token string, req *SubmitRSVPR
 	}
 
 	if event.Status == models.EventStatusCancelled {
-		return nil, errors.New("event has been cancelled")
+		return nil, &models.ForbiddenError{Message: "this event has been cancelled"}
 	}
 
 	if err := checkDeadline(event); err != nil {

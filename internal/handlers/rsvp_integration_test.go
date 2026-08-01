@@ -965,8 +965,8 @@ func TestRSVPHandler_Integration_UpdateRSVP_NoExistingRSVP(t *testing.T) {
 	}
 
 	responseBody := updateW.Body.String()
-	if !strings.Contains(responseBody, "no existing RSVP") {
-		t.Error("Response should indicate no existing RSVP")
+	if !strings.Contains(responseBody, "not found") {
+		t.Error("Response should indicate RSVP was not found")
 	}
 }
 

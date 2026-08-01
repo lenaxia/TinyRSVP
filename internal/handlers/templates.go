@@ -3,8 +3,10 @@ package handlers
 import (
 	"encoding/json"
 	"fmt"
+	"html/template"
 	"net/http"
 	"strconv"
+	"sync"
 	"time"
 
 	"github.com/go-chi/chi/v5"
@@ -13,6 +15,114 @@ import (
 	"github.com/lenaxia/tinyrsvp/internal/models"
 	"github.com/lenaxia/tinyrsvp/internal/templates"
 )
+
+var themePreviewTemplate *template.Template
+var themePreviewOnce sync.Once
+
+func getThemePreviewTemplate() (*template.Template, error) {
+	var err error
+	themePreviewOnce.Do(func() {
+		themePreviewTemplate, err = template.New("themePreview").Parse(themePreviewHTML)
+	})
+	return themePreviewTemplate, err
+}
+
+const themePreviewHTML = `<!DOCTYPE html>
+<html lang="en" data-theme="{{.DataTheme}}" data-event-theme="{{.ThemeSlug}}">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Theme Preview - {{.TemplateName}}</title>
+	<link rel="stylesheet" href="/static/css/variables.css">
+	<link rel="stylesheet" href="/static/css/typography.css">
+	<link rel="stylesheet" href="/static/css/colors.css">
+	<link rel="stylesheet" href="/static/css/buttons.css">
+	<link rel="stylesheet" href="/static/css/forms.css">
+	<link rel="stylesheet" href="/static/css/rsvp_page.css">
+	<link rel="stylesheet" href="/static/css/themes/{{.ThemeSlug}}.css">
+	{{if .CustomColorCSS}}<style>
+		:root {
+			--primary-color: {{.CustomColor}};
+			--primary-color-hover: {{.CustomColor}};
+			--primary-color-alpha: {{.CustomColor}}33;
+		}
+	</style>{{end}}
+</head>
+<body>
+	<div class="rsvp-page">
+		<div class="rsvp-container">
+			<div class="rsvp-card">
+				{{if .HeaderImageURL}}
+				<div class="rsvp-card-header">
+					<img class="theme-header-image" src="{{.HeaderImageURL}}" alt="{{.TemplateName}} theme" loading="eager" style="width: 100%; object-fit: cover; max-height: 400px;" />
+				</div>
+				{{end}}
+				<div class="rsvp-card-content">
+					<div class="event-details">
+						<h1 class="event-title">{{.Title}}</h1>
+						<div class="event-info">
+							<div class="event-info-item">
+								<div class="event-info-content">
+									<div class="event-info-label">Date &amp; Time</div>
+									<time>{{.StartTime}}</time>
+								</div>
+							</div>
+							<div class="event-info-item">
+								<div class="event-info-content">
+									<div class="event-info-label">Location</div>
+									<address class="event-location">{{.Location}}</address>
+								</div>
+							</div>
+						</div>
+						<div class="event-description">
+							<h2>About This Event</h2>
+							<p>{{.Description}}</p>
+						</div>
+					</div>
+					<form class="rsvp-form">
+						<h2 class="rsvp-form-title">Please Respond</h2>
+						<div class="form-group">
+							<fieldset>
+								<legend class="form-label">Will you attend?</legend>
+								<div class="response-options">
+									<div class="response-option">
+										<input type="radio" name="response" value="yes" id="response_yes">
+										<label for="response_yes">Yes, I'll be there</label>
+									</div>
+									<div class="response-option">
+										<input type="radio" name="response" value="maybe" id="response_maybe">
+										<label for="response_maybe">Maybe</label>
+									</div>
+									<div class="response-option">
+										<input type="radio" name="response" value="no" id="response_no">
+										<label for="response_no">No, I can't make it</label>
+									</div>
+								</div>
+							</fieldset>
+						</div>
+						<div class="rsvp-actions">
+							<button type="button" class="btn btn-primary" disabled>Submit RSVP (Preview Only)</button>
+						</div>
+					</form>
+				</div>
+			</div>
+		</div>
+	</div>
+</body>
+</html>`
+
+type themePreviewData struct {
+	DataTheme        string
+	ThemeSlug        string
+	TemplateName     string
+	CustomColor      string
+	CustomColorCSS   bool
+	HeaderImageURL   string
+	Title            string
+	StartTime        string
+	Location         string
+	Description      string
+}
 
 type TemplateCategory = models.TemplateCategory
 
@@ -518,108 +628,39 @@ func (h *TemplateHandlers) HandleThemePreview(w http.ResponseWriter, r *http.Req
 
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 
-	dataTheme := themeMode
 	themeSlug := getThemeSlug(template.Category)
 
-	// Determine header image: prefer custom upload, fall back to theme's default SVG
 	headerImageURL := customImageURL
 	if headerImageURL == "" && template.ImageURL != nil && *template.ImageURL != "" {
 		headerImageURL = *template.ImageURL
 	}
 
-	headerImageHTML := ""
-	if headerImageURL != "" {
-		headerImageHTML = fmt.Sprintf(`
-			<div class="rsvp-card-header">
-				<img class="theme-header-image" src="%s" alt="%s theme" loading="eager" style="width: 100%%; object-fit: cover; max-height: 400px;" />
-			</div>`, headerImageURL, template.Name)
+	customColorValid := customColor != "" && isValidHexColor(customColor)
+
+	data := themePreviewData{
+		DataTheme:      themeMode,
+		ThemeSlug:      themeSlug,
+		TemplateName:   template.Name,
+		CustomColor:    customColor,
+		CustomColorCSS: customColorValid,
+		HeaderImageURL: headerImageURL,
+		Title:          title,
+		StartTime:      startTime.Format("Monday, January 2, 2006 at 3:04 PM MST"),
+		Location:       location,
+		Description:    description,
 	}
 
-	customColorCSS := ""
-	if customColor != "" && isValidHexColor(customColor) {
-		customColorCSS = fmt.Sprintf(`
-	<style>
-		:root {
-			--primary-color: %s;
-			--primary-color-hover: %s;
-			--primary-color-alpha: %s33;
-		}
-	</style>`, customColor, customColor, customColor)
+	tmpl, err := getThemePreviewTemplate()
+	if err != nil {
+		HandleError(w, r, fmt.Errorf("parse theme preview template: %w", err))
+		return
 	}
 
-	fmt.Fprintf(w, `<!DOCTYPE html>
-<html lang="en" data-theme="%s" data-event-theme="%s">
-<head>
-	<meta charset="UTF-8">
-	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<title>Theme Preview - %s</title>
-	<link rel="stylesheet" href="/static/css/variables.css">
-	<link rel="stylesheet" href="/static/css/typography.css">
-	<link rel="stylesheet" href="/static/css/colors.css">
-	<link rel="stylesheet" href="/static/css/buttons.css">
-	<link rel="stylesheet" href="/static/css/forms.css">
-	<link rel="stylesheet" href="/static/css/rsvp_page.css">
-	<link rel="stylesheet" href="/static/css/themes/%s.css">
-	%s
-</head>
-<body>
-	<div class="rsvp-page">
-		<div class="rsvp-container">
-			<div class="rsvp-card">
-				%s
-				<div class="rsvp-card-content">
-					<div class="event-details">
-						<h1 class="event-title">%s</h1>
-						<div class="event-info">
-							<div class="event-info-item">
-								<div class="event-info-content">
-									<div class="event-info-label">Date &amp; Time</div>
-									<time>%s</time>
-								</div>
-							</div>
-							<div class="event-info-item">
-								<div class="event-info-content">
-									<div class="event-info-label">Location</div>
-									<address class="event-location">%s</address>
-								</div>
-							</div>
-						</div>
-						<div class="event-description">
-							<h2>About This Event</h2>
-							<p>%s</p>
-						</div>
-					</div>
-					<form class="rsvp-form">
-						<h2 class="rsvp-form-title">Please Respond</h2>
-						<div class="form-group">
-							<fieldset>
-								<legend class="form-label">Will you attend?</legend>
-								<div class="response-options">
-									<div class="response-option">
-										<input type="radio" name="response" value="yes" id="response_yes">
-										<label for="response_yes">Yes, I'll be there</label>
-									</div>
-									<div class="response-option">
-										<input type="radio" name="response" value="maybe" id="response_maybe">
-										<label for="response_maybe">Maybe</label>
-									</div>
-									<div class="response-option">
-										<input type="radio" name="response" value="no" id="response_no">
-										<label for="response_no">No, I can't make it</label>
-									</div>
-								</div>
-							</fieldset>
-						</div>
-						<div class="rsvp-actions">
-							<button type="button" class="btn btn-primary" disabled>Submit RSVP (Preview Only)</button>
-						</div>
-					</form>
-				</div>
-			</div>
-		</div>
-	</div>
-</body>
-</html>`, dataTheme, themeSlug, template.Name, themeSlug, customColorCSS, headerImageHTML, title, startTime.Format("Monday, January 2, 2006 at 3:04 PM MST"), location, description)
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+	if err := tmpl.Execute(w, data); err != nil {
+		HandleError(w, r, fmt.Errorf("execute theme preview template: %w", err))
+		return
+	}
 }
 
 func isValidHexColor(color string) bool {

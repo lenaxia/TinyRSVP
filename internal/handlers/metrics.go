@@ -5,7 +5,7 @@ import (
 	"database/sql"
 	"fmt"
 	"html/template"
-	"log"
+	"log/slog"
 	"net/http"
 	"time"
 
@@ -92,14 +92,14 @@ func (h *MetricsHandler) MetricsPage(w http.ResponseWriter, r *http.Request) {
 
 	emailQueue, err := h.source.GetEmailQueueStatus(r.Context())
 	if err != nil {
-		log.Printf("Metrics: failed to load email queue status: %v", err)
+		slog.Warn("metrics: failed to load email queue status", "error", err)
 	} else {
 		data.EmailQueue = emailQueue
 	}
 
 	dbPool, err := h.source.GetDBStats()
 	if err != nil {
-		log.Printf("Metrics: failed to load DB pool stats: %v", err)
+		slog.Warn("metrics: failed to load DB pool stats", "error", err)
 	} else {
 		data.DBPool = dbPool
 	}

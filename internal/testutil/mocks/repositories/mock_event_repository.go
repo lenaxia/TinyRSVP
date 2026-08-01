@@ -72,6 +72,21 @@ func (mr *MockEventRepositoryMockRecorder) CountEventsByCreator(ctx, creatorID a
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CountEventsByCreator", reflect.TypeOf((*MockEventRepository)(nil).CountEventsByCreator), ctx, creatorID)
 }
 
+// CountByFilters mocks base method.
+func (m *MockEventRepository) CountByFilters(ctx context.Context, filters repositories.ListFilters) (int, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CountByFilters", ctx, filters)
+	ret0, _ := ret[0].(int)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CountByFilters indicates an expected call of CountByFilters.
+func (mr *MockEventRepositoryMockRecorder) CountByFilters(ctx, filters any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CountByFilters", reflect.TypeOf((*MockEventRepository)(nil).CountByFilters), ctx, filters)
+}
+
 // Create mocks base method.
 func (m *MockEventRepository) Create(ctx context.Context, event *models.Event) error {
 	m.ctrl.T.Helper()
