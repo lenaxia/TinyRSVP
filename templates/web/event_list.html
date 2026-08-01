@@ -105,6 +105,14 @@
                     </div>
                 </div>
 
+                {{if and .PrivateGuestList (not $.IsAdmin) (ne .CreatedBy $.CurrentUserID)}}
+                <div class="event-card-stats" role="list">
+                    <span class="event-card-stat" role="listitem">
+                        <span class="event-card-meta-icon" aria-hidden="true">🔒</span>
+                        <span>Guest list is private</span>
+                    </span>
+                </div>
+                {{else}}
                 <div class="event-card-stats" role="list">
                     <span class="event-card-stat" role="listitem">
                         <span class="event-card-meta-icon" aria-hidden="true">✉️</span>
@@ -122,6 +130,7 @@
                         <span>Accepted</span>
                     </span>
                 </div>
+                {{end}}
             </div>
 
             <footer class="event-card-footer">
