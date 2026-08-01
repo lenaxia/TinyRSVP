@@ -267,9 +267,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	loginHandler := auth.NewLoginHandler(authenticator)
-	callbackHandler := auth.NewCallbackHandler(authenticator, userService, sessionMgr)
-	logoutHandler := auth.NewLogoutHandler(authenticator)
+	authHandlers := handlers.NewAuthHandlers(authenticator, userService, sessionMgr)
 
 	healthHandler := handlers.NewHealthHandler(version)
 	readinessHandler := handlers.NewReadinessHandler(version, database, migrator)
@@ -416,11 +414,10 @@ func main() {
 		},
 	}
 
-	rsvpPageTemplates, err := template.New("rsvp_page.html").Funcs(funcMap).ParseFiles(
+	rsvpPageTemplates, err := template.New("unsubscribe.html").Funcs(funcMap).ParseFiles(
 		"templates/web/partials/base.html",
 		"templates/web/partials/components.html",
 		"templates/web/partials/navigation.html",
-		"templates/web/rsvp_page.html",
 		"templates/web/unsubscribe.html",
 	)
 	if err != nil {
@@ -680,9 +677,7 @@ func main() {
 	adminDashboardHandler.SetSystemHealth(metricsDataSource)
 
 	router := handlers.NewRouter(&handlers.RouterHandlers{
-		LoginHandler:             loginHandler,
-		CallbackHandler:          callbackHandler,
-		LogoutHandler:            logoutHandler,
+		AuthHandlers:             authHandlers,
 		HealthHandler:            healthHandler,
 		ReadinessHandler:         readinessHandler,
 		MetricsHandler:           metricsHandler,

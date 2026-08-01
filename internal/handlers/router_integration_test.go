@@ -358,9 +358,9 @@ func TestRouter_Integration_AllRouteGroupsAccessible(t *testing.T) {
 		method string
 		path   string
 	}{
-		{"auth login", http.MethodGet, "/auth/login"},
-		{"auth callback", http.MethodGet, "/auth/callback"},
-		{"auth logout", http.MethodPost, "/auth/logout"},
+		{"auth login", http.MethodGet, "/auth/oidc/login"},
+		{"auth callback", http.MethodGet, "/auth/oidc/callback"},
+		{"auth logout", http.MethodPost, "/logout"},
 		{"api events list", http.MethodGet, "/api/events"},
 		{"api events create", http.MethodPost, "/api/events"},
 		{"api invites cleanup", http.MethodPost, "/api/invites/cleanup"},

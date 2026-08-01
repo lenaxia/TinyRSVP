@@ -28,13 +28,6 @@ func getCSRFTokenFromRouter(router http.Handler) (string, *http.Cookie) {
 	return "", nil
 }
 
-type mockAuthHandler struct{}
-
-func (m *mockAuthHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	w.WriteHeader(http.StatusOK)
-	w.Write([]byte("auth handler called"))
-}
-
 type mockEventHandlers struct {
 	listCalled   bool
 	createCalled bool
@@ -172,9 +165,15 @@ func (m *mockAuthMiddleware) RequireAdmin(next http.Handler) http.Handler {
 }
 
 func TestRouter_Integration_RealHandlersCalled(t *testing.T) {
-	loginHandler := &mockAuthHandler{}
-	callbackHandler := &mockAuthHandler{}
-	logoutHandler := &mockAuthHandler{}
+	authHandlers := &AuthHandlers{
+		authenticator: &mockAuthenticator{
+			handleCallbackFunc: func(w http.ResponseWriter, r *http.Request) (*auth.AuthResult, error) {
+				return &auth.AuthResult{Email: "user@example.com"}, nil
+			},
+		},
+		userService: &mockAuthUserService{},
+		sessionMgr:  &mockAuthSessionManager{},
+	}
 	eventHandlers := &mockEventHandlers{}
 	rsvpHandler := &mockRSVPHandler{}
 	userHandler := &mockUserHandler{}
@@ -182,14 +181,12 @@ func TestRouter_Integration_RealHandlersCalled(t *testing.T) {
 	authMiddleware := &mockAuthMiddleware{}
 
 	handlers := &RouterHandlers{
-		LoginHandler:    loginHandler,
-		CallbackHandler: callbackHandler,
-		LogoutHandler:   logoutHandler,
-		EventHandlers:   eventHandlers,
-		RSVPHandler:     rsvpHandler,
-		UserHandler:     userHandler,
-		AssetHandler:    assetHandler,
-		AuthMiddleware:  authMiddleware,
+		AuthHandlers:   authHandlers,
+		EventHandlers:  eventHandlers,
+		RSVPHandler:    rsvpHandler,
+		UserHandler:    userHandler,
+		AssetHandler:   assetHandler,
+		AuthMiddleware: authMiddleware,
 	}
 
 	router := NewRouter(handlers)
@@ -216,8 +213,8 @@ func TestRouter_Integration_RealHandlersCalled(t *testing.T) {
 		{
 			name:           "callback handler called",
 			method:         http.MethodGet,
-			path:           "/auth/callback",
-			wantStatusCode: http.StatusOK,
+			path:           "/auth/oidc/callback",
+			wantStatusCode: http.StatusFound,
 			checkCalled: func(t *testing.T) {
 			},
 		},
@@ -225,7 +222,7 @@ func TestRouter_Integration_RealHandlersCalled(t *testing.T) {
 			name:           "logout handler called",
 			method:         http.MethodPost,
 			path:           "/logout",
-			wantStatusCode: http.StatusOK,
+			wantStatusCode: http.StatusFound,
 			needsCSRF:      true,
 			checkCalled: func(t *testing.T) {
 			},
