@@ -99,6 +99,7 @@ func TestGetEditorPage_Success(t *testing.T) {
 	}
 
 	handler := NewTemplateEditorHandlers(service)
+	handler.SetTemplates(testTemplate(t, "template_editor.html"))
 
 	user := &models.User{
 		ID:    1,

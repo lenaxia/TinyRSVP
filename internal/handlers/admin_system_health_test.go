@@ -59,6 +59,7 @@ func TestAdminDashboard_ExposesSystemHealthWhenProviderSet(t *testing.T) {
 
 	handler := NewAdminDashboardHandler(adminStub)
 	handler.SetSystemHealth(healthStub)
+	handler.SetTemplates(testTemplate(t, "admin_dashboard.html"))
 
 	data := runAdminDashboard(t, handler)
 
@@ -85,6 +86,7 @@ func TestAdminDashboard_NoSystemHealthProviderMeansNoHealthData(t *testing.T) {
 		stats: &AdminDashboardStats{TotalUsers: 3, TotalEvents: 4, TotalInvites: 5},
 	}
 	handler := NewAdminDashboardHandler(adminStub)
+	handler.SetTemplates(testTemplate(t, "admin_dashboard.html"))
 	// Deliberately do not call SetSystemHealth.
 
 	data := runAdminDashboard(t, handler)
@@ -119,6 +121,7 @@ func TestAdminDashboard_SystemHealthFailuresDoNotBlockRender(t *testing.T) {
 
 	handler := NewAdminDashboardHandler(adminStub)
 	handler.SetSystemHealth(healthStub)
+	handler.SetTemplates(testTemplate(t, "admin_dashboard.html"))
 
 	req := httptest.NewRequest(http.MethodGet, "/admin", nil)
 	user := &models.User{ID: 1, Email: "a@a", Name: "A", Role: models.RoleAdmin}

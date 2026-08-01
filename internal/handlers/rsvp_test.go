@@ -63,6 +63,7 @@ func TestRSVPHandler_GetRSVPPage_ValidToken(t *testing.T) {
 	mockQuestionRepo.EXPECT().GetByEventID(gomock.Any(), gomock.Any()).Return([]*models.PreferenceQuestion{}, nil)
 
 	handler := NewRSVPHandler(mockInviteSvc, mockEventRepo, mockRSVPRepo, mockQuestionRepo)
+	handler.SetTemplates(testTemplate(t, "rsvp_page.html"))
 
 	r := chi.NewRouter()
 	r.Get("/rsvp/{token}", handler.GetRSVPPage)

@@ -51,6 +51,7 @@ func TestRSVPSummaryHandler_GetRSVPSummary_Success(t *testing.T) {
 	mockAnswerRepo := mockrepos.NewMockAnswerRepository(ctrl)
 
 	handler := NewRSVPSummaryHandler(mockEventRepo, mockRSVPRepo, mockQuestionRepo, mockAnswerRepo)
+	handler.SetTemplates(testTemplate(t, "rsvp_summary.html"))
 
 	r := chi.NewRouter()
 	r.Get("/events/{id}/rsvp-summary", handler.GetRSVPSummary)
@@ -78,6 +79,7 @@ func TestRSVPSummaryHandler_GetRSVPSummary_Unauthorized(t *testing.T) {
 	mockAnswerRepo := mockrepos.NewMockAnswerRepository(ctrl)
 
 	handler := NewRSVPSummaryHandler(mockEventRepo, mockRSVPRepo, mockQuestionRepo, mockAnswerRepo)
+	handler.SetTemplates(testTemplate(t, "rsvp_summary.html"))
 
 	r := chi.NewRouter()
 	r.Get("/events/{id}/rsvp-summary", handler.GetRSVPSummary)
@@ -101,6 +103,7 @@ func TestRSVPSummaryHandler_GetRSVPSummary_InvalidEventID(t *testing.T) {
 	mockAnswerRepo := mockrepos.NewMockAnswerRepository(ctrl)
 
 	handler := NewRSVPSummaryHandler(mockEventRepo, mockRSVPRepo, mockQuestionRepo, mockAnswerRepo)
+	handler.SetTemplates(testTemplate(t, "rsvp_summary.html"))
 
 	r := chi.NewRouter()
 	r.Get("/events/{id}/rsvp-summary", handler.GetRSVPSummary)
@@ -130,6 +133,7 @@ func TestRSVPSummaryHandler_GetRSVPSummary_EventNotFound(t *testing.T) {
 	mockAnswerRepo := mockrepos.NewMockAnswerRepository(ctrl)
 
 	handler := NewRSVPSummaryHandler(mockEventRepo, mockRSVPRepo, mockQuestionRepo, mockAnswerRepo)
+	handler.SetTemplates(testTemplate(t, "rsvp_summary.html"))
 
 	r := chi.NewRouter()
 	r.Get("/events/{id}/rsvp-summary", handler.GetRSVPSummary)
@@ -169,6 +173,7 @@ func TestRSVPSummaryHandler_GetRSVPSummary_PermissionDenied(t *testing.T) {
 	mockAnswerRepo := mockrepos.NewMockAnswerRepository(ctrl)
 
 	handler := NewRSVPSummaryHandler(mockEventRepo, mockRSVPRepo, mockQuestionRepo, mockAnswerRepo)
+	handler.SetTemplates(testTemplate(t, "rsvp_summary.html"))
 
 	r := chi.NewRouter()
 	r.Get("/events/{id}/rsvp-summary", handler.GetRSVPSummary)
@@ -222,6 +227,7 @@ func TestRSVPSummaryHandler_GetRSVPSummary_AdminCanAccessAnyEvent(t *testing.T) 
 	mockAnswerRepo := mockrepos.NewMockAnswerRepository(ctrl)
 
 	handler := NewRSVPSummaryHandler(mockEventRepo, mockRSVPRepo, mockQuestionRepo, mockAnswerRepo)
+	handler.SetTemplates(testTemplate(t, "rsvp_summary.html"))
 
 	r := chi.NewRouter()
 	r.Get("/events/{id}/rsvp-summary", handler.GetRSVPSummary)
@@ -300,6 +306,7 @@ func TestRSVPSummaryHandler_GetRSVPSummary_WithQuestions(t *testing.T) {
 	mockAnswerRepo.EXPECT().GetByRSVPID(gomock.Any(), gomock.Any()).Return(answers, nil).AnyTimes()
 
 	handler := NewRSVPSummaryHandler(mockEventRepo, mockRSVPRepo, mockQuestionRepo, mockAnswerRepo)
+	handler.SetTemplates(testTemplate(t, "rsvp_summary.html"))
 
 	r := chi.NewRouter()
 	r.Get("/events/{id}/rsvp-summary", handler.GetRSVPSummary)

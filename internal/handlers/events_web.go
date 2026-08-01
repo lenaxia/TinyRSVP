@@ -489,80 +489,15 @@ func (h *EventWebHandlers) DeleteEventAction(w http.ResponseWriter, r *http.Requ
 }
 
 func (h *EventWebHandlers) renderListPage(w http.ResponseWriter, status int, data *EventListPageData) {
-	w.Header().Set("Content-Type", "text/html; charset=utf-8")
-	w.WriteHeader(status)
-
-	if h.listTemplates != nil {
-		if err := h.listTemplates.ExecuteTemplate(w, "event_list.html", data); err != nil {
-			http.Error(w, "Failed to render page", http.StatusInternalServerError)
-		}
-		return
-	}
-
-	fmt.Fprintf(w, `<!DOCTYPE html>
-<html>
-<body>
-	%s
-</body>
-</html>`, func() string {
-		if data.Error != "" {
-			return fmt.Sprintf("<div>Error: %s</div>", data.Error)
-		}
-		if len(data.Events) == 0 {
-			return "<div>No Events Found</div>"
-		}
-		var sb strings.Builder
-		for _, event := range data.Events {
-			sb.WriteString(fmt.Sprintf("<div>%s</div>", event.Title))
-		}
-		return sb.String()
-	}())
+	renderHTML(w, h.listTemplates, "event_list.html", status, data)
 }
 
 func (h *EventWebHandlers) renderFormPage(w http.ResponseWriter, status int, data *EventFormPageData) {
-	w.Header().Set("Content-Type", "text/html; charset=utf-8")
-	w.WriteHeader(status)
-
-	if h.formTemplates != nil {
-		if err := h.formTemplates.ExecuteTemplate(w, "event_form.html", data); err != nil {
-			http.Error(w, "Failed to render page", http.StatusInternalServerError)
-		}
-		return
-	}
-
-	title := "Create Event"
-	if data.Event != nil && data.Event.ID > 0 {
-		title = "Edit Event"
-	}
-
-	fmt.Fprintf(w, `<!DOCTYPE html>
-<html>
-<body>
-	<h1>%s</h1>
-	<form>
-		<input type="hidden" name="csrf_token" value="%s">
-	</form>
-</body>
-</html>`, title, data.CSRFToken)
+	renderHTML(w, h.formTemplates, "event_form.html", status, data)
 }
 
 func (h *EventWebHandlers) renderDetailPage(w http.ResponseWriter, status int, data *EventDetailPageData) {
-	w.Header().Set("Content-Type", "text/html; charset=utf-8")
-	w.WriteHeader(status)
-
-	if h.detailTemplates != nil {
-		if err := h.detailTemplates.ExecuteTemplate(w, "event_detail.html", data); err != nil {
-			http.Error(w, "Failed to render page", http.StatusInternalServerError)
-		}
-		return
-	}
-
-	fmt.Fprintf(w, `<!DOCTYPE html>
-<html>
-<body>
-	<h1>%s</h1>
-</body>
-</html>`, data.Event.Title)
+	renderHTML(w, h.detailTemplates, "event_detail.html", status, data)
 }
 
 func parseEventFormData(form url.Values) (*models.Event, error) {

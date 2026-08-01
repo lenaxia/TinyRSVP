@@ -24,6 +24,7 @@ func TestAdminDashboardHandler_Success(t *testing.T) {
 	}, nil)
 
 	handler := NewAdminDashboardHandler(mockAdminService)
+	handler.SetTemplates(testTemplate(t, "admin_dashboard.html"))
 
 	req := httptest.NewRequest(http.MethodGet, "/admin", nil)
 	user := &models.User{
@@ -98,6 +99,7 @@ func TestUserManagementHandler_Success(t *testing.T) {
 	mockUserService.EXPECT().CountUsers(gomock.Any()).Return(1, nil)
 
 	handler := NewUserManagementHandler(mockUserService)
+	handler.SetTemplates(testTemplate(t, "user_management.html"))
 
 	req := httptest.NewRequest(http.MethodGet, "/admin/users", nil)
 	user := &models.User{
@@ -174,6 +176,7 @@ func TestUserManagementHandler_WithPagination(t *testing.T) {
 	mockUserService.EXPECT().CountUsers(gomock.Any()).Return(100, nil)
 
 	handler := NewUserManagementHandler(mockUserService)
+	handler.SetTemplates(testTemplate(t, "user_management.html"))
 
 	req := httptest.NewRequest(http.MethodGet, "/admin/users?limit=10&offset=20", nil)
 	user := &models.User{

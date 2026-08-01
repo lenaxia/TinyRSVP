@@ -148,6 +148,7 @@ func TestNewEventFormWithTemplateService(t *testing.T) {
 	handler := &EventWebHandlers{
 		service:         mockEventService,
 		templateService: mockTemplateService,
+		formTemplates:   testTemplate(t, "event_form.html"),
 	}
 
 	req := httptest.NewRequest(http.MethodGet, "/events/new", nil)

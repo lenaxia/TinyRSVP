@@ -313,8 +313,8 @@ func TestCoverageSettings_Page_WithoutTemplates(t *testing.T) {
 	w := httptest.NewRecorder()
 	h.SettingsPage(w, req)
 
-	if w.Code != http.StatusOK {
-		t.Errorf("status = %d, want %d (fallback render)", w.Code, http.StatusOK)
+	if w.Code != http.StatusInternalServerError {
+		t.Errorf("status = %d, want %d (nil templates are an internal error)", w.Code, http.StatusInternalServerError)
 	}
 }
 

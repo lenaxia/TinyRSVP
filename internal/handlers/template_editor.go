@@ -263,27 +263,7 @@ func (h *TemplateEditorHandlers) GetEditorPage(w http.ResponseWriter, r *http.Re
 }
 
 func (h *TemplateEditorHandlers) renderPage(w http.ResponseWriter, status int, data interface{}) {
-	w.Header().Set("Content-Type", "text/html; charset=utf-8")
-	w.WriteHeader(status)
-
-	if h.templates != nil {
-		if err := h.templates.ExecuteTemplate(w, "template_editor.html", data); err != nil {
-			http.Error(w, "Failed to render page", http.StatusInternalServerError)
-		}
-		return
-	}
-
-	fmt.Fprintf(w, `<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Template Editor - TinyRSVP</title>
-</head>
-<body>
-    <h1>Template Editor</h1>
-    <p>Template engine not initialized</p>
-</body>
-</html>`)
+	renderHTML(w, h.templates, "template_editor.html", status, data)
 }
 
 func parseTemplateIDFromPath(idStr string) (int64, error) {

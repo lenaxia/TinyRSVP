@@ -108,17 +108,7 @@ func (h *MetricsHandler) MetricsPage(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *MetricsHandler) renderPage(w http.ResponseWriter, status int, data *MetricsPageData) {
-	w.Header().Set("Content-Type", "text/html; charset=utf-8")
-	w.WriteHeader(status)
-
-	if h.templates != nil {
-		if err := h.templates.ExecuteTemplate(w, "admin_metrics.html", data); err != nil {
-			http.Error(w, "Failed to render page", http.StatusInternalServerError)
-		}
-		return
-	}
-
-	fmt.Fprintf(w, `<!DOCTYPE html><html><head><title>Admin Metrics</title></head><body><h1>Metrics</h1></body></html>`)
+	renderHTML(w, h.templates, "admin_metrics.html", status, data)
 }
 
 func NewDBPoolMetricsFromSQLDB(db *sql.DB) *DBPoolMetrics {

@@ -3,7 +3,6 @@ package handlers
 import (
 	"context"
 	"errors"
-	"fmt"
 	"html/template"
 	"net/http"
 	"strconv"
@@ -171,35 +170,5 @@ func (h *RSVPSummaryHandler) renderError(w http.ResponseWriter, status int, mess
 }
 
 func (h *RSVPSummaryHandler) renderPage(w http.ResponseWriter, status int, data *RSVPSummaryData) {
-	w.Header().Set("Content-Type", "text/html; charset=utf-8")
-	w.WriteHeader(status)
-
-	if h.templates != nil {
-		if err := h.templates.ExecuteTemplate(w, "rsvp_summary.html", data); err != nil {
-			http.Error(w, "Failed to render page", http.StatusInternalServerError)
-		}
-		return
-	}
-
-	fmt.Fprintf(w, `<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RSVP Summary</title>
-</head>
-<body>
-    <h1>RSVP Summary</h1>
-    %s
-</body>
-</html>`, func() string {
-		if data.Error != "" {
-			return fmt.Sprintf("<p>Error: %s</p>", data.Error)
-		}
-		if data.Event != nil && data.Stats != nil {
-			return fmt.Sprintf("<p>Event: %s | Total Invites: %d | Yes: %d | No: %d | Maybe: %d</p>",
-				data.Event.Title, data.Stats.TotalInvites, data.Stats.YesCount, data.Stats.NoCount, data.Stats.MaybeCount)
-		}
-		return "<p>Loading...</p>"
-	}())
+	renderHTML(w, h.templates, "rsvp_summary.html", status, data)
 }
