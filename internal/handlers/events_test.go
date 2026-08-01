@@ -23,6 +23,7 @@ type mockEventService struct {
 	DeleteEventFunc           func(ctx context.Context, id int64) error
 	ListEventsFunc            func(ctx context.Context, filters events.ListFilters) ([]*models.Event, error)
 	ListEventsWithStatsFunc   func(ctx context.Context, filters events.ListFilters) ([]*models.EventWithStats, error)
+	CountEventsFunc           func(ctx context.Context, filters events.ListFilters) (int, error)
 	PublishEventFunc          func(ctx context.Context, id int64) error
 	CancelEventFunc           func(ctx context.Context, id int64, reason string) error
 	ArchiveEventFunc          func(ctx context.Context, id int64) error
@@ -69,6 +70,13 @@ func (m *mockEventService) ListEventsWithStats(ctx context.Context, filters even
 		return m.ListEventsWithStatsFunc(ctx, filters)
 	}
 	return nil, nil
+}
+
+func (m *mockEventService) CountEvents(ctx context.Context, filters events.ListFilters) (int, error) {
+	if m.CountEventsFunc != nil {
+		return m.CountEventsFunc(ctx, filters)
+	}
+	return 0, nil
 }
 
 func (m *mockEventService) PublishEvent(ctx context.Context, id int64) error {
@@ -753,6 +761,9 @@ func TestEventHandlers_ListEvents(t *testing.T) {
 						},
 					}, nil
 				}
+				m.CountEventsFunc = func(ctx context.Context, filters events.ListFilters) (int, error) {
+					return 1, nil
+				}
 			},
 			wantStatus: http.StatusOK,
 			wantBody:   `"total":1`,
@@ -771,9 +782,30 @@ func TestEventHandlers_ListEvents(t *testing.T) {
 					}
 					return []*models.Event{}, nil
 				}
+				m.CountEventsFunc = func(ctx context.Context, filters events.ListFilters) (int, error) {
+					return 0, nil
+				}
 			},
 			wantStatus: http.StatusOK,
 			wantBody:   `"limit":10`,
+		},
+		{
+			name:  "total reflects full count not page length when limit truncates",
+			query: "?limit=2",
+			user: &models.User{
+				ID:   1,
+				Role: models.RoleEventManager,
+			},
+			setupMock: func(m *mockEventService) {
+				m.ListEventsFunc = func(ctx context.Context, filters events.ListFilters) ([]*models.Event, error) {
+					return []*models.Event{{ID: 1, Title: "A"}, {ID: 2, Title: "B"}}, nil
+				}
+				m.CountEventsFunc = func(ctx context.Context, filters events.ListFilters) (int, error) {
+					return 57, nil
+				}
+			},
+			wantStatus: http.StatusOK,
+			wantBody:   `"total":57`,
 		},
 		{
 			name:  "list with status filter",

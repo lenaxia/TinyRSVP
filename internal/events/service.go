@@ -18,6 +18,7 @@ type Service interface {
 	DeleteEvent(ctx context.Context, id int64) error
 	ListEvents(ctx context.Context, filters repositories.ListFilters) ([]*models.Event, error)
 	ListEventsWithStats(ctx context.Context, filters repositories.ListFilters) ([]*models.EventWithStats, error)
+	CountEvents(ctx context.Context, filters repositories.ListFilters) (int, error)
 	PublishEvent(ctx context.Context, id int64) error
 	CancelEvent(ctx context.Context, id int64, reason string) error
 	ArchiveEvent(ctx context.Context, id int64) error
@@ -239,6 +240,32 @@ func (s *service) ListEventsWithStats(ctx context.Context, filters repositories.
 	}
 
 	return s.repo.ListWithStats(ctx, filters)
+}
+
+// CountEvents returns the total count of events matching filters, honoring the
+// same authz scoping (non-admins see only their own). Ignores Limit/Offset so
+// the count reflects the full result set for pagination.
+func (s *service) CountEvents(ctx context.Context, filters repositories.ListFilters) (int, error) {
+	user, ok := auth.UserFromContext(ctx)
+	if !ok {
+		return 0, &models.PermissionDeniedError{
+			Action:   "count events",
+			Resource: "Event",
+		}
+	}
+
+	if !s.authz.IsEventManager(user) {
+		return 0, &models.PermissionDeniedError{
+			Action:   "count events",
+			Resource: "Event",
+		}
+	}
+
+	if !s.authz.IsAdmin(user) {
+		filters.CreatorID = &user.ID
+	}
+
+	return s.repo.CountByFilters(ctx, filters)
 }
 
 func (s *service) PublishEvent(ctx context.Context, id int64) error {

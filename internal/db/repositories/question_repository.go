@@ -31,10 +31,10 @@ func NewQuestionRepository(database db.Database) QuestionRepository {
 func (r *questionRepository) Create(ctx context.Context, question *models.PreferenceQuestion) error {
 	query := `
 		INSERT INTO preference_questions (
-			event_id, question_text, question_type, options, required, display_order,
+			event_id, question_text, question_type, options, required, display_order, help_text,
 			created_at, updated_at
 		)
-		VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
 	`
 
 	now := time.Now()
@@ -46,6 +46,7 @@ func (r *questionRepository) Create(ctx context.Context, question *models.Prefer
 		question.Options,
 		question.Required,
 		question.DisplayOrder,
+		question.HelpText,
 		now,
 		now,
 	)
@@ -67,7 +68,7 @@ func (r *questionRepository) Create(ctx context.Context, question *models.Prefer
 
 func (r *questionRepository) GetByID(ctx context.Context, id int64) (*models.PreferenceQuestion, error) {
 	query := `
-		SELECT id, event_id, question_text, question_type, options, required, display_order,
+		SELECT id, event_id, question_text, question_type, options, required, display_order, help_text,
 			created_at, updated_at
 		FROM preference_questions
 		WHERE id = ?
@@ -82,6 +83,7 @@ func (r *questionRepository) GetByID(ctx context.Context, id int64) (*models.Pre
 		&question.Options,
 		&question.Required,
 		&question.DisplayOrder,
+		&question.HelpText,
 		&question.CreatedAt,
 		&question.UpdatedAt,
 	)
@@ -101,7 +103,7 @@ func (r *questionRepository) GetByID(ctx context.Context, id int64) (*models.Pre
 
 func (r *questionRepository) GetByEventID(ctx context.Context, eventID int64) ([]*models.PreferenceQuestion, error) {
 	query := `
-		SELECT id, event_id, question_text, question_type, options, required, display_order,
+		SELECT id, event_id, question_text, question_type, options, required, display_order, help_text,
 			created_at, updated_at
 		FROM preference_questions
 		WHERE event_id = ?
@@ -125,6 +127,7 @@ func (r *questionRepository) GetByEventID(ctx context.Context, eventID int64) ([
 			&question.Options,
 			&question.Required,
 			&question.DisplayOrder,
+			&question.HelpText,
 			&question.CreatedAt,
 			&question.UpdatedAt,
 		)
@@ -145,7 +148,7 @@ func (r *questionRepository) Update(ctx context.Context, question *models.Prefer
 	query := `
 		UPDATE preference_questions
 		SET question_text = ?, question_type = ?, options = ?, required = ?,
-			display_order = ?, updated_at = ?
+			display_order = ?, help_text = ?, updated_at = ?
 		WHERE id = ?
 	`
 
@@ -157,6 +160,7 @@ func (r *questionRepository) Update(ctx context.Context, question *models.Prefer
 		question.Options,
 		question.Required,
 		question.DisplayOrder,
+		question.HelpText,
 		now,
 		question.ID,
 	)
