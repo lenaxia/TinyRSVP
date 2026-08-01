@@ -91,7 +91,7 @@ None
 
 ## Status
 
-- **Status:** Not Started
+- **Status:** ✅ Complete (verified 2026-08-01: `EventWithStats` + `ListWithStats`; worklog 0160)
 - **Assigned:** Unassigned
 - **Started:** N/A
 - **Completed:** N/A

@@ -1,8 +1,10 @@
 # TinyRSVP Project Status Assessment
 
-**Date:** 2026-03-05 (updated; original 2026-02-04)  
+**Date:** 2026-08-01 (reconciled; prior audits 2026-03-05 / 2026-02-04)  
 **Status:** Complete (95%) — MVP/private beta ready  
 **Production Ready:** YES (private/homelab beta); Epic 09 needed for public beta  
+
+> **Note (2026-08-01):** The detailed tables below reflect the 2026-03-05 audit. The headline status has since been reconciled in [`docs/00_BACKLOG/00_BACKLOG_SUMMARY.md`](../00_BACKLOG/00_BACKLOG_SUMMARY.md) (code-verified 2026-08-01): all 14 v0 epics are complete, the X-Test-User-ID blocker is resolved (worklog 0174), `/metrics` is now IP-allowlist protected (PR #61), and Epic 14 (bug fixes) is fully done. The only open code gap is Epic 10 Story 09 (event filtering/sort). Epic 09 (Security audit) remains the public-beta gate.
 
 ---
 

@@ -8,7 +8,7 @@ This directory contains all user stories for Epic 12: Test Infrastructure Modern
 
 **Estimated Effort:** 20-26 hours (3-4 weeks)
 
-**Status:** Partially Complete — Phases 1-3 done, Phase 4 partially done, Phase 5 done
+**Status:** Mostly Complete — 16 of 20 stories done; remaining work rescoped to account for Go import cycles (verified 2026-08-01)
 
 ---
 
@@ -29,7 +29,7 @@ This directory contains all user stories for Epic 12: Test Infrastructure Modern
 
 | Story | Title | Effort | Status |
 |-------|-------|--------|--------|
-| [05](12_STORY_05_mockgen_setup.md) | Install and Configure mockgen | 30 min | ✅ Done — `//go:generate mockgen` directives present in mock files |
+| [05](12_STORY_05_mockgen_setup.md) | Install and Configure mockgen | 30 min | ✅ Done — mockgen wired via `tools.go` + `scripts/generate_mocks.sh` (195-line script). Note: the original "`//go:generate mockgen` directives" claim was inaccurate; generation is driven by the script, not source directives. |
 | [06](12_STORY_06_priority1_mocks.md) | Generate Priority 1 Repository Mocks | 1 hour | ✅ Done — 10 repository mocks in `internal/testutil/mocks/repositories/` |
 | [07](12_STORY_07_service_mocks.md) | Generate Service Mocks | 30 min | ✅ Done — 8 service mocks in `internal/testutil/mocks/services/` |
 | [08](12_STORY_08_remaining_mocks.md) | Generate Remaining Mocks | 30 min | ✅ Done — additional mocks in `internal/testutil/mocks/other/` (12 files) |
@@ -42,8 +42,8 @@ This directory contains all user stories for Epic 12: Test Infrastructure Modern
 |-------|-------|--------|--------|
 | [09](12_STORY_09_validate_pattern.md) | Migrate 3 Example Files to Validate | 2 hours | ✅ Done |
 | [10](12_STORY_10_reflect_adjust.md) | Review and Adjust Approach | 1 hour | ✅ Done — PROCEED decision made |
-| [11](12_STORY_11_migrate_handlers.md) | Migrate Handler Tests (~81 files) | 4-5 hours | ⚠️ Partial — 14 handler test files use `testutil/mocks`; ~67 test files still define local mock structs |
-| [12](12_STORY_12_migrate_services.md) | Migrate Service Tests (~30 files) | 2-3 hours | ⚠️ Partial — some service tests migrated, others still use local mocks |
+| [11](12_STORY_11_migrate_handlers.md) | Migrate Handler Tests (~81 files) | 4-5 hours | ⚠️ Partial — 12 handler test files use `testutil/mocks`; 26 handler test files still define local mock structs (verified 2026-08-01). Handlers have no import cycle with testutil, so these are genuinely migratable. |
+| [12](12_STORY_12_migrate_services.md) | Migrate Service Tests (~30 files) | 2-3 hours | ⚠️ Partial — **blocked by import cycles.** Generated service mocks import their source package (e.g. `mocks/services/mock_event_service.go` imports `internal/events`), so in-package service tests cannot import `mocks/services` without a cycle. Local func-field mocks in `events/`, `invites/`, `rsvp/`, `templates/`, `email/`, `auth/` are **intentional architecture**, not incomplete work (see README-LLM.md:918-927). |
 | [13](12_STORY_13_migrate_repos.md) | Migrate Repository Tests | 1 hour | ✅ Done — repository tests use real SQLite, no mocks needed |
 
 **Phase 3 Total: 10-12 hours**
@@ -52,7 +52,7 @@ This directory contains all user stories for Epic 12: Test Infrastructure Modern
 
 | Story | Title | Effort | Status |
 |-------|-------|--------|--------|
-| [14](12_STORY_14_cleanup_old_mocks.md) | Remove Manual Mocks and Duplicates | 1 hour | ❌ Not Done — ~67 local mock struct definitions remain in test files |
+| [14](12_STORY_14_cleanup_old_mocks.md) | Remove Manual Mocks and Duplicates | 1 hour | ⚠️ Rescoped — verified 2026-08-01: **54 test files** still define local mock structs (92 individual struct definitions). Of these, ~26 are in `internal/handlers/` (migratable) and ~28 are in cycle-constrained packages (architectural, see Story 12). Also: 12 files still define local pointer helpers; 6 define local `setupTestUB`. See "Rescopeding" note below. |
 | [15](12_STORY_15_testing_docs.md) | Create TESTING.md | 1 hour | ✅ Done — `docs/TESTING.md` exists; mock table verified against generated code; UX tests + running-tests sections expanded |
 | [16](12_STORY_16_testutil_readme.md) | Document testutil Package | 30 min | ✅ Done — `internal/testutil/README.md` exists |
 | [17](12_STORY_17_update_llm_guide.md) | Update README-LLM with Testing | 30 min | ✅ Done — `README-LLM.md` has testutil/mockgen section at line 890 |
@@ -110,12 +110,31 @@ Stories 18, 19, 20 (parallel, optional)
 - ~2 hours to add new interface method
 
 **After Implementation:**
-- 0 manual mock definitions
+- 0 manual mock definitions in `internal/handlers/` (target)
+- Func-field mocks retained in cycle-constrained packages (architectural)
 - 1 centralized testutil package
-- ~2,000 lines of test infrastructure code
 - ~5 minutes to add new interface method
 
-**Expected Reduction:** 87% in test infrastructure code
+**Expected Reduction:** ~87% in handler-package test mock code; cycle-constrained packages retain local mocks by design.
+
+---
+
+## Architectural Constraint: Import Cycles (verified 2026-08-01)
+
+The original Definition of Done ("0 manual mock definitions") is **not achievable** for in-package service tests because of Go's import-cycle rules:
+
+- `internal/testutil/mocks/services/mock_event_service.go` imports `internal/events`
+- Therefore `internal/events/*_test.go` (same package) **cannot** import `mocks/services` — it would create a cycle.
+
+The same constraint applies to `invites/`, `rsvp/`, `templates/`, `email/`, `auth/`, `db/`. README-LLM.md:918-927 already endorses the **func-field pattern** as the recommended approach for these packages.
+
+**Realistic completion criteria for Story 14:**
+1. Migrate the ~26 `internal/handlers/` test files to `testutil/mocks` (high value, no cycle).
+2. Consolidate the 12 local pointer helpers → `testutil.StringPtr`/etc.
+3. Consolidate the 6 local `setupTestDB` definitions → `testutil.SetupTestDB`.
+4. Document cycle-constrained packages as a deliberate exception (already done in README-LLM.md).
+
+Items 1-3 are ~10 hours of low-risk work. After that, Epic 12 should be declared **complete with a documented exception** for cycle-constrained packages.
 
 ---
 
