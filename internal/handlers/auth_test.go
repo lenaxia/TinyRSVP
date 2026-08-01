@@ -810,3 +810,40 @@ func TestOIDCCallback_NilResult(t *testing.T) {
 		t.Errorf("expected 401 for nil result, got %d", w.Code)
 	}
 }
+
+func TestLogout_SessionCookieCleared(t *testing.T) {
+	mockAuth := &mockAuthenticator{
+		handleLogoutFunc: func(w http.ResponseWriter, r *http.Request) error {
+			return nil
+		},
+	}
+	sessMgr := &mockAuthSessionManager{
+		clearSessionCookieFunc: func(w http.ResponseWriter) error {
+			http.SetCookie(w, &http.Cookie{
+				Name:   auth.SessionCookieName,
+				Value:  "",
+				MaxAge: -1,
+			})
+			return nil
+		},
+	}
+	h := &AuthHandlers{authenticator: mockAuth, sessionMgr: sessMgr}
+
+	req := httptest.NewRequest(http.MethodPost, "/logout", nil)
+	w := httptest.NewRecorder()
+	h.Logout(w, req)
+
+	if w.Code != http.StatusFound {
+		t.Errorf("expected 302, got %d", w.Code)
+	}
+
+	cleared := false
+	for _, c := range w.Result().Cookies() {
+		if c.Name == auth.SessionCookieName && c.MaxAge == -1 {
+			cleared = true
+		}
+	}
+	if !cleared {
+		t.Error("expected session cookie to be cleared (MaxAge=-1)")
+	}
+}
