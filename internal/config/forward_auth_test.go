@@ -192,7 +192,7 @@ func TestForwardAuthConfig_Validate(t *testing.T) {
 				TrustedIPs:  []string{"not-an-ip"},
 			},
 			wantErr: true,
-			errMsg:  "invalid IP address",
+			errMsg:  "invalid forward auth IP address",
 		},
 		{
 			name: "valid IPv6",
@@ -243,7 +243,7 @@ func TestForwardAuthConfig_Validate(t *testing.T) {
 				TrustedIPs:  []string{"999.999.0.0/8"},
 			},
 			wantErr: true,
-			errMsg:  "invalid CIDR range",
+			errMsg:  "invalid forward auth CIDR range",
 		},
 	}
 

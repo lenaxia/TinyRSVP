@@ -13,6 +13,7 @@ import (
 
 type RSVPSummaryData struct {
 	ActivePage    string
+	IsAdmin       bool
 	Event         *models.Event
 	Stats         *repositories.RSVPStats
 	RSVPs         []*models.RSVP

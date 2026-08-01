@@ -19,7 +19,7 @@
         </li>
         <li><a href="/" class="app-nav-link {{if eq .ActivePage "dashboard"}}active{{end}}" {{if eq .ActivePage "dashboard"}}aria-current="page"{{end}}>Dashboard</a></li>
         <li><a href="/events" class="app-nav-link {{if eq .ActivePage "events"}}active{{end}}" {{if eq .ActivePage "events"}}aria-current="page"{{end}}>Events</a></li>
-        <li><a href="/admin" class="app-nav-link {{if eq .ActivePage "admin"}}active{{end}}" {{if eq .ActivePage "admin"}}aria-current="page"{{end}}>Admin</a></li>
+        {{if .IsAdmin}}<li><a href="/admin" class="app-nav-link {{if eq .ActivePage "admin"}}active{{end}}" {{if eq .ActivePage "admin"}}aria-current="page"{{end}}>Admin</a></li>{{end}}
     </ul>
 </nav>
 {{end}}

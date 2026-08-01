@@ -142,6 +142,7 @@ type SettingsHandler struct {
 
 type SettingsPageData struct {
 	ActivePage string
+	IsAdmin    bool
 	User       *models.User
 	Settings   SettingsView
 	Error      string
@@ -169,6 +170,7 @@ func (h *SettingsHandler) SettingsPage(w http.ResponseWriter, r *http.Request) {
 
 	data := &SettingsPageData{
 		ActivePage: "admin",
+		IsAdmin:    isAdminRequest(r),
 		User:       user,
 		Settings:   view,
 	}

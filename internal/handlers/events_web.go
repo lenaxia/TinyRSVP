@@ -30,6 +30,7 @@ type EventWebHandlers struct {
 
 type EventListPageData struct {
 	ActivePage string
+	IsAdmin    bool
 	Events     []*models.EventWithStats
 	Total      int
 	Page       int
@@ -42,6 +43,7 @@ type EventListPageData struct {
 
 type EventFormPageData struct {
 	ActivePage      string
+	IsAdmin         bool
 	Event           *models.Event
 	Questions       []*models.PreferenceQuestion
 	Themes          []*models.Template
@@ -53,6 +55,7 @@ type EventFormPageData struct {
 
 type EventDetailPageData struct {
 	ActivePage string
+	IsAdmin    bool
 	Event      *models.Event
 	CSRFToken  string
 	Error      string
@@ -119,6 +122,7 @@ func (h *EventWebHandlers) ListEventsPage(w http.ResponseWriter, r *http.Request
 
 	data := &EventListPageData{
 		ActivePage: "events",
+		IsAdmin:    isAdminRequest(r),
 		Events:     eventList,
 		Total:      len(eventList),
 		Page:       page,
@@ -164,6 +168,7 @@ func (h *EventWebHandlers) NewEventForm(w http.ResponseWriter, r *http.Request) 
 
 	data := &EventFormPageData{
 		ActivePage: "events",
+		IsAdmin:    isAdminRequest(r),
 		Event: &models.Event{
 			MaxPlusOnes:    0,
 			AllowMaybeRSVP: true,
@@ -209,6 +214,7 @@ func (h *EventWebHandlers) EditEventForm(w http.ResponseWriter, r *http.Request)
 
 	data := &EventFormPageData{
 		ActivePage:      "events",
+		IsAdmin:         isAdminRequest(r),
 		Event:           event,
 		Questions:       []*models.PreferenceQuestion{},
 		Themes:          themes,
@@ -237,6 +243,7 @@ func (h *EventWebHandlers) GetEventPage(w http.ResponseWriter, r *http.Request) 
 
 	data := &EventDetailPageData{
 		ActivePage: "events",
+		IsAdmin:    isAdminRequest(r),
 		Event:      event,
 		CSRFToken:  csrfToken,
 	}

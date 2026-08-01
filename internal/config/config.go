@@ -20,6 +20,7 @@ type Config struct {
 	Storage     StorageConfig
 	Security    SecurityConfig
 	Token       TokenConfig
+	Metrics     MetricsConfig
 }
 
 type ServerConfig struct {
@@ -83,6 +84,16 @@ type SecurityConfig struct {
 type TokenConfig struct {
 	Secret         string
 	HashingEnabled bool
+}
+
+// MetricsConfig controls access to the raw Prometheus /metrics scrape
+// endpoint. The human-readable dashboard lives at /admin/metrics behind admin
+// auth; /metrics is consumed by scrapers that cannot authenticate via session
+// cookies, so it is gated by an IP allowlist instead.
+type MetricsConfig struct {
+	// TrustedIPs is a list of IPs or CIDR ranges permitted to scrape /metrics.
+	// When empty, only loopback (127.0.0.0/8, ::1) is permitted.
+	TrustedIPs []string
 }
 
 func Load() (*Config, error) {
@@ -169,6 +180,8 @@ func (c *Config) loadFromEnv() error {
 	if err := c.loadForwardAuthFromEnv(); err != nil {
 		return err
 	}
+
+	c.Metrics.TrustedIPs = parseIPListFromEnv("METRICS_TRUSTED_IPS")
 
 	c.Email.SMTPHost = getEnvString("SMTP_HOST", "")
 	if c.Email.SMTPHost == "" {
@@ -260,6 +273,10 @@ func (c *Config) Validate() error {
 
 	if err := c.validateAuthModes(); err != nil {
 		return fmt.Errorf("auth config: %w", err)
+	}
+
+	if err := c.validateMetrics(); err != nil {
+		return fmt.Errorf("metrics config: %w", err)
 	}
 
 	if err := c.validateEmail(); err != nil {

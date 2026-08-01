@@ -18,6 +18,7 @@ type DashboardHandler struct {
 
 type DashboardPageData struct {
 	ActivePage string
+	IsAdmin    bool
 	User       *models.User
 	Stats      *events.DashboardStats
 	Activities []*events.ActivityItem
@@ -57,6 +58,7 @@ func (h *DashboardHandler) Dashboard(w http.ResponseWriter, r *http.Request) {
 		log.Printf("Dashboard: failed to load recent activity for user %d: %v", user.ID, err)
 		h.renderPage(w, http.StatusOK, &DashboardPageData{
 			ActivePage: "dashboard",
+			IsAdmin:    isAdminRequest(r),
 			User:       user,
 			Stats:      stats,
 			Error:      "Failed to load recent activity",
@@ -66,6 +68,7 @@ func (h *DashboardHandler) Dashboard(w http.ResponseWriter, r *http.Request) {
 
 	data := &DashboardPageData{
 		ActivePage: "dashboard",
+		IsAdmin:    isAdminRequest(r),
 		User:       user,
 		Stats:      stats,
 		Activities: activity,

@@ -276,6 +276,7 @@ func main() {
 
 	metricsCollector := middleware.NewPrometheusMetricsWithRegistry(prometheus.DefaultRegisterer)
 	metricsHandler := middleware.MetricsHandler(metricsCollector)
+	metricsHandler = middleware.MetricsIPAllowlist(cfg.Metrics.TrustedIPs)(metricsHandler)
 	logger.Info("Prometheus metrics initialized")
 
 	userHandler := handlers.NewUserHandler(userService, authChecker)
@@ -722,7 +723,7 @@ func main() {
 	logger.Info("Router initialized with all handlers")
 	logger.Info("Registered auth endpoints", "paths", "/login, /auth/callback, /logout")
 	logger.Info("Registered health endpoints", "paths", "/health, /ready")
-	logger.Info("Registered metrics endpoint", "path", "/metrics", "method", "GET", "protection", "none")
+	logger.Info("Registered metrics endpoint", "path", "/metrics", "method", "GET", "protection", "ip-allowlist", "default", "loopback-only", "trusted_ips", cfg.Metrics.TrustedIPs)
 	logger.Info("Registered dashboard endpoint", "path", "/", "method", "GET", "protection", "authenticated")
 	logger.Info("Registered event management endpoints", "path", "/api/events", "protection", "authenticated")
 	logger.Info("Registered event web UI endpoints", "prefix", "/events", "protection", "authenticated")
