@@ -6,6 +6,7 @@ import (
 	"html/template"
 	"net/http"
 	"net/url"
+	"sort"
 	"strconv"
 	"strings"
 	"time"
@@ -22,6 +23,7 @@ import (
 type EventWebHandlers struct {
 	service         events.Service
 	templateService templates.Service
+	questionService events.QuestionService
 	listTemplates   *template.Template
 	formTemplates   *template.Template
 	detailTemplates *template.Template
@@ -60,10 +62,11 @@ type EventDetailPageData struct {
 	Error      string
 }
 
-func NewEventWebHandlers(service events.Service, templateService templates.Service, listTmpl, formTmpl, detailTmpl *template.Template) *EventWebHandlers {
+func NewEventWebHandlers(service events.Service, templateService templates.Service, questionService events.QuestionService, listTmpl, formTmpl, detailTmpl *template.Template) *EventWebHandlers {
 	return &EventWebHandlers{
 		service:         service,
 		templateService: templateService,
+		questionService: questionService,
 		listTemplates:   listTmpl,
 		formTemplates:   formTmpl,
 		detailTemplates: detailTmpl,
@@ -216,11 +219,20 @@ func (h *EventWebHandlers) EditEventForm(w http.ResponseWriter, r *http.Request)
 		selectedThemeID = defaultTheme.ID
 	}
 
+	questions := []*models.PreferenceQuestion{}
+	if h.questionService != nil {
+		questions, err = h.questionService.GetQuestions(r.Context(), event.ID)
+		if err != nil {
+			HandleError(w, r, err)
+			return
+		}
+	}
+
 	data := &EventFormPageData{
 		ActivePage:      "events",
 		IsAdmin:         isAdminRequest(r),
 		Event:           event,
-		Questions:       []*models.PreferenceQuestion{},
+		Questions:       questions,
 		Themes:          themes,
 		SelectedThemeID: selectedThemeID,
 		Errors:          make(map[string]string),
@@ -270,6 +282,18 @@ func (h *EventWebHandlers) CreateEventFromForm(w http.ResponseWriter, r *http.Re
 	if err := h.service.CreateEvent(r.Context(), event); err != nil {
 		HandleError(w, r, err)
 		return
+	}
+
+	questions := parseQuestionsFromForm(r.Form)
+	if h.questionService != nil {
+		for i := range questions {
+			questions[i].EventID = event.ID
+			questions[i].DisplayOrder = i
+			if err := h.questionService.AddQuestion(r.Context(), questions[i]); err != nil {
+				HandleError(w, r, err)
+				return
+			}
+		}
 	}
 
 	http.Redirect(w, r, fmt.Sprintf("/events/%d", event.ID), http.StatusSeeOther)
@@ -424,7 +448,62 @@ func (h *EventWebHandlers) UpdateEventFromForm(w http.ResponseWriter, r *http.Re
 		return
 	}
 
+	// Questions may only be modified while the event is a draft. On published
+	// (or later) events, ignore submitted questions rather than blocking the
+	// event update.
+	if event.Status == models.EventStatusDraft {
+		if err := h.syncQuestions(r.Context(), id, parseQuestionsFromForm(r.Form)); err != nil {
+			HandleError(w, r, err)
+			return
+		}
+	}
+
 	http.Redirect(w, r, fmt.Sprintf("/events/%d", id), http.StatusSeeOther)
+}
+
+// syncQuestions reconciles the submitted question list with the persisted
+// questions for the event: existing questions are updated, new ones created,
+// removed ones deleted, and display order applied by list position.
+func (h *EventWebHandlers) syncQuestions(ctx context.Context, eventID int64, submitted []*models.PreferenceQuestion) error {
+	if h.questionService == nil {
+		return nil
+	}
+
+	existing, err := h.questionService.GetQuestions(ctx, eventID)
+	if err != nil {
+		return err
+	}
+
+	existingByID := make(map[int64]*models.PreferenceQuestion, len(existing))
+	for _, q := range existing {
+		existingByID[q.ID] = q
+	}
+
+	seen := make(map[int64]bool, len(submitted))
+	for i, q := range submitted {
+		q.EventID = eventID
+		q.DisplayOrder = i
+		if q.ID != 0 {
+			seen[q.ID] = true
+			if err := h.questionService.UpdateQuestion(ctx, q); err != nil {
+				return err
+			}
+		} else {
+			if err := h.questionService.AddQuestion(ctx, q); err != nil {
+				return err
+			}
+		}
+	}
+
+	for id := range existingByID {
+		if !seen[id] {
+			if err := h.questionService.DeleteQuestion(ctx, id); err != nil {
+				return err
+			}
+		}
+	}
+
+	return nil
 }
 
 func (h *EventWebHandlers) PublishEventAction(w http.ResponseWriter, r *http.Request) {
@@ -509,7 +588,6 @@ func parseEventFormData(form url.Values) (*models.Event, error) {
 	if len(title) < 3 || len(title) > 200 {
 		return nil, fmt.Errorf("title must be between 3 and 200 characters")
 	}
-
 	startTimeStr := form.Get("start_time")
 	if startTimeStr == "" {
 		return nil, fmt.Errorf("start_time is required")
@@ -619,4 +697,66 @@ func (h *EventWebHandlers) loadThemes(ctx context.Context) ([]*models.Template, 
 	}
 
 	return themes, defaultTheme, nil
+}
+
+// parseQuestionsFromForm extracts the preference questions submitted by the
+// event form. Fields use the shape questions[N][field] where field is one of
+// id, text, type, required, options.
+func parseQuestionsFromForm(form url.Values) []*models.PreferenceQuestion {
+	indexSet := map[int]bool{}
+	for key := range form {
+		start := strings.Index(key, "questions[")
+		if start != 0 {
+			continue
+		}
+		end := strings.Index(key[start:], "]")
+		if end < 0 {
+			continue
+		}
+		idxStr := key[len("questions[") : start+end]
+		idx, err := strconv.Atoi(idxStr)
+		if err != nil {
+			continue
+		}
+		indexSet[idx] = true
+	}
+
+	indices := make([]int, 0, len(indexSet))
+	for idx := range indexSet {
+		indices = append(indices, idx)
+	}
+	sort.Ints(indices)
+
+	questions := make([]*models.PreferenceQuestion, 0, len(indices))
+	for _, idx := range indices {
+		q := &models.PreferenceQuestion{}
+
+		if idStr := form.Get(fmt.Sprintf("questions[%d][id]", idx)); idStr != "" {
+			if id, err := strconv.ParseInt(idStr, 10, 64); err == nil {
+				q.ID = id
+			}
+		}
+
+		q.QuestionText = strings.TrimSpace(form.Get(fmt.Sprintf("questions[%d][text]", idx)))
+		q.QuestionType = models.QuestionType(form.Get(fmt.Sprintf("questions[%d][type]", idx)))
+		q.Required = form.Get(fmt.Sprintf("questions[%d][required]", idx)) == "on"
+
+		if optionsStr := form.Get(fmt.Sprintf("questions[%d][options]", idx)); optionsStr != "" {
+			options := []string{}
+			for _, line := range strings.Split(optionsStr, "\n") {
+				if opt := strings.TrimSpace(line); opt != "" {
+					options = append(options, opt)
+				}
+			}
+			if len(options) > 0 {
+				q.SetOptions(options)
+			}
+		}
+
+		if q.QuestionText != "" {
+			questions = append(questions, q)
+		}
+	}
+
+	return questions
 }
