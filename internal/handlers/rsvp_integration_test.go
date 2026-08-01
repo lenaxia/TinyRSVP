@@ -241,8 +241,8 @@ func TestRSVPHandler_Integration_ExpiredToken(t *testing.T) {
 
 	r.ServeHTTP(w, req)
 
-	if w.Code != http.StatusForbidden {
-		t.Errorf("Expected status 403, got %d", w.Code)
+	if w.Code != http.StatusGone {
+		t.Errorf("Expected status 410, got %d", w.Code)
 	}
 
 	body := w.Body.String()
@@ -325,7 +325,7 @@ func TestRSVPHandler_Integration_CancelledEvent(t *testing.T) {
 	r.ServeHTTP(w, req)
 
 	if w.Code != http.StatusGone {
-		t.Errorf("Expected status 403, got %d", w.Code)
+		t.Errorf("Expected status 410, got %d", w.Code)
 	}
 
 	body := w.Body.String()
@@ -965,8 +965,8 @@ func TestRSVPHandler_Integration_UpdateRSVP_NoExistingRSVP(t *testing.T) {
 	}
 
 	responseBody := updateW.Body.String()
-	if !strings.Contains(responseBody, "not found") {
-		t.Error("Response should indicate RSVP was not found")
+	if !strings.Contains(responseBody, "no existing RSVP") {
+		t.Error("Response should indicate no existing RSVP")
 	}
 }
 

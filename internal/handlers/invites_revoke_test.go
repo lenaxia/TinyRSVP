@@ -585,7 +585,3 @@ func (m * mockRevokeEventRepository) GetDashboardStatsByCreator(ctx context.Cont
 func (m * mockRevokeEventRepository) CountEventsByCreator(ctx context.Context, creatorID int64) (int, error) {
 	return 0, nil
 }
-
-func (m * mockRevokeEventRepository) CountByFilters(ctx context.Context, filters repositories.ListFilters) (int, error) {
-	return 0, nil
-}

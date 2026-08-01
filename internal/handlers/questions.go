@@ -38,7 +38,6 @@ type CreateQuestionRequest struct {
 	QuestionType models.QuestionType `json:"question_type"`
 	Required     bool                `json:"required"`
 	Options      []string            `json:"options,omitempty"`
-	HelpText     *string             `json:"help_text,omitempty"`
 }
 
 type UpdateQuestionRequest struct {
@@ -46,7 +45,6 @@ type UpdateQuestionRequest struct {
 	QuestionType models.QuestionType `json:"question_type"`
 	Required     bool                `json:"required"`
 	Options      []string            `json:"options,omitempty"`
-	HelpText     *string             `json:"help_text,omitempty"`
 }
 
 type ReorderQuestionsRequest struct {
@@ -72,7 +70,6 @@ func (h *QuestionHandlers) CreateQuestion(w http.ResponseWriter, r *http.Request
 		QuestionText: req.QuestionText,
 		QuestionType: req.QuestionType,
 		Required:     req.Required,
-		HelpText:     req.HelpText,
 	}
 
 	if len(req.Options) > 0 {
@@ -134,7 +131,6 @@ func (h *QuestionHandlers) UpdateQuestion(w http.ResponseWriter, r *http.Request
 		QuestionText: req.QuestionText,
 		QuestionType: req.QuestionType,
 		Required:     req.Required,
-		HelpText:     req.HelpText,
 	}
 
 	if len(req.Options) > 0 {

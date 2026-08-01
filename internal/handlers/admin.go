@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 	"html/template"
-	"log/slog"
+	"log"
 	"net/http"
 	"strconv"
 
@@ -83,6 +83,7 @@ func (h *AdminDashboardHandler) AdminDashboard(w http.ResponseWriter, r *http.Re
 
 	stats, err := h.service.GetAdminStats(r.Context())
 	if err != nil {
+		log.Printf("Admin dashboard: failed to load stats: %v", err)
 		HandleError(w, r, err)
 		return
 	}
@@ -94,14 +95,16 @@ func (h *AdminDashboardHandler) AdminDashboard(w http.ResponseWriter, r *http.Re
 		Stats:      stats,
 	}
 
+	// Best-effort ops-at-a-glance data. Failures are logged but don't block
+	// the page — a broken email queue check should not blank the dashboard.
 	if h.systemHealth != nil {
 		if q, err := h.systemHealth.GetEmailQueueStatus(r.Context()); err != nil {
-			slog.Warn("admin dashboard: email queue status unavailable", "error", err)
+			log.Printf("Admin dashboard: email queue status unavailable: %v", err)
 		} else {
 			data.EmailQueue = q
 		}
 		if db, err := h.systemHealth.GetDBStats(); err != nil {
-			slog.Warn("admin dashboard: db pool stats unavailable", "error", err)
+			log.Printf("Admin dashboard: db pool stats unavailable: %v", err)
 		} else {
 			data.DBPool = db
 		}
@@ -207,13 +210,14 @@ func (h *UserManagementHandler) UserManagementPage(w http.ResponseWriter, r *htt
 
 	users, err := h.service.ListUsers(r.Context(), limit, offset)
 	if err != nil {
+		log.Printf("User management: failed to load users: %v", err)
 		HandleError(w, r, err)
 		return
 	}
 
 	total, err := h.service.CountUsers(r.Context())
 	if err != nil {
-		slog.Warn("user management: failed to get user count", "error", err)
+		log.Printf("User management: failed to get user count: %v", err)
 		h.renderPage(w, http.StatusOK, &UserManagementPageData{
 			ActivePage: "admin",
 			IsAdmin:    isAdminRequest(r),

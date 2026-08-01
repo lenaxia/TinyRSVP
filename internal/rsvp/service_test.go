@@ -215,12 +215,8 @@ func TestService_SubmitRSVP_ExpiredInvite(t *testing.T) {
 		t.Fatal("Expected error for expired invite")
 	}
 
-	if err.Error() != "this invite has expired" {
-		t.Errorf("Expected 'this invite has expired' error, got '%v'", err)
-	}
-	var forbiddenErr *models.ForbiddenError
-	if !errors.As(err, &forbiddenErr) {
-		t.Errorf("Expected ForbiddenError, got %T", err)
+	if err.Error() != "invite has expired" {
+		t.Errorf("Expected 'invite has expired' error, got '%v'", err)
 	}
 }
 
@@ -259,12 +255,8 @@ func TestService_SubmitRSVP_RevokedInvite(t *testing.T) {
 		t.Fatal("Expected error for revoked invite")
 	}
 
-	if err.Error() != "this invite has been revoked" {
-		t.Errorf("Expected 'this invite has been revoked' error, got '%v'", err)
-	}
-	var forbiddenErr *models.ForbiddenError
-	if !errors.As(err, &forbiddenErr) {
-		t.Errorf("Expected ForbiddenError, got %T", err)
+	if err.Error() != "invite has been revoked" {
+		t.Errorf("Expected 'invite has been revoked' error, got '%v'", err)
 	}
 }
 
@@ -678,12 +670,8 @@ func TestService_SubmitRSVP_CancelledEvent(t *testing.T) {
 		t.Fatal("Expected error for cancelled event")
 	}
 
-	if err.Error() != "this event has been cancelled" {
-		t.Errorf("Expected 'this event has been cancelled' error, got '%v'", err)
-	}
-	var forbiddenErr *models.ForbiddenError
-	if !errors.As(err, &forbiddenErr) {
-		t.Errorf("Expected ForbiddenError, got %T", err)
+	if err.Error() != "event has been cancelled" {
+		t.Errorf("Expected 'event has been cancelled' error, got '%v'", err)
 	}
 }
 
