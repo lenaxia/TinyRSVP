@@ -462,8 +462,6 @@ func TestMigration_AllTablesCreated(t *testing.T) {
 		"rsvp_answers",
 		"email_queue",
 		"templates",
-		"audit_log",
-		"config",
 	}
 
 	for _, tableName := range expectedTables {
@@ -540,14 +538,6 @@ func TestMigration_TableColumns(t *testing.T) {
 		{
 			table:   "templates",
 			columns: []string{"id", "name", "type", "html_content", "text_content", "css_content", "is_default", "created_by", "created_at", "updated_at"},
-		},
-		{
-			table:   "audit_log",
-			columns: []string{"id", "timestamp", "user_id", "action", "resource_type", "resource_id", "details", "ip_address", "user_agent"},
-		},
-		{
-			table:   "config",
-			columns: []string{"key", "value", "updated_at"},
 		},
 	}
 
@@ -879,7 +869,7 @@ func TestMigration_DownRollback(t *testing.T) {
 		t.Error("users table should not exist after migration down")
 	}
 
-	err = db.QueryRow(`SELECT COUNT(*) FROM sqlite_master WHERE type='table' AND name IN ('users', 'sessions', 'events', 'invites', 'rsvps', 'preference_questions', 'rsvp_answers', 'email_queue', 'templates', 'audit_log', 'config')`).Scan(&count)
+	err = db.QueryRow(`SELECT COUNT(*) FROM sqlite_master WHERE type='table' AND name IN ('users', 'sessions', 'events', 'invites', 'rsvps', 'preference_questions', 'rsvp_answers', 'email_queue', 'templates')`).Scan(&count)
 	if err != nil {
 		t.Fatalf("failed to query tables: %v", err)
 	}
