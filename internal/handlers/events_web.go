@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"html/template"
-	"log"
 	"net/http"
 	"net/url"
 	"strconv"
@@ -115,7 +114,12 @@ func (h *EventWebHandlers) ListEventsPage(w http.ResponseWriter, r *http.Request
 
 	eventList, err := h.service.ListEventsWithStats(r.Context(), filters)
 	if err != nil {
-		log.Printf("Event list: failed to load events: %v", err)
+		HandleError(w, r, err)
+		return
+	}
+
+	total, err := h.service.CountEvents(r.Context(), filters)
+	if err != nil {
 		HandleError(w, r, err)
 		return
 	}
@@ -124,7 +128,7 @@ func (h *EventWebHandlers) ListEventsPage(w http.ResponseWriter, r *http.Request
 		ActivePage: "events",
 		IsAdmin:    isAdminRequest(r),
 		Events:     eventList,
-		Total:      len(eventList),
+		Total:      total,
 		Page:       page,
 		PageSize:   limit,
 		Filter:     r.URL.Query().Get("status"),

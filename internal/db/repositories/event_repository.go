@@ -29,6 +29,7 @@ type EventRepository interface {
 	GetByCreatorID(ctx context.Context, creatorID int64) ([]*models.Event, error)
 	GetDashboardStatsByCreator(ctx context.Context, creatorID int64) (*models.DashboardStats, error)
 	CountEvents(ctx context.Context) (int, error)
+	CountByFilters(ctx context.Context, filters ListFilters) (int, error)
 	CountEventsByCreator(ctx context.Context, creatorID int64) (int, error)
 	GetComponentOverrides(ctx context.Context, eventID int64) (*models.ComponentOverrides, error)
 	UpdateComponentOverrides(ctx context.Context, eventID int64, overrides *models.ComponentOverrides) error
@@ -356,7 +357,7 @@ func (r *eventRepository) UpdateWithVersion(ctx context.Context, event *models.E
 			allow_rsvp_after_deadline = ?, allow_maybe_rsvp = ?, private_guest_list = ?,
 			family_headcount = ?, event_capacity = ?,
 			template_id = ?, custom_theme_image_url = ?, custom_theme_color = ?,
-			component_overrides = ?, version = version + 1, updated_at = ?
+			component_overrides = ?, version = version + 1, ics_sequence = ics_sequence + 1, updated_at = ?
 		WHERE id = ? AND version = ?
 	`
 
@@ -884,6 +885,33 @@ func (r *eventRepository) CountEventsByCreator(ctx context.Context, creatorID in
 	err := r.db.QueryRow(ctx, query, creatorID).Scan(&count)
 	if err != nil {
 		return 0, fmt.Errorf("failed to count events by creator: %w", err)
+	}
+
+	return count, nil
+}
+
+// CountByFilters returns the total number of events matching the same
+// creator/status filters used by List, ignoring Limit/Offset. Use this for
+// accurate pagination totals instead of len(results), which truncates.
+func (r *eventRepository) CountByFilters(ctx context.Context, filters ListFilters) (int, error) {
+	query := `SELECT COUNT(*) FROM events WHERE 1=1`
+
+	args := []interface{}{}
+
+	if filters.CreatorID != nil {
+		query += " AND created_by = ?"
+		args = append(args, *filters.CreatorID)
+	}
+
+	if filters.Status != nil {
+		query += " AND status = ?"
+		args = append(args, *filters.Status)
+	}
+
+	var count int
+	err := r.db.QueryRow(ctx, query, args...).Scan(&count)
+	if err != nil {
+		return 0, fmt.Errorf("failed to count events by filters: %w", err)
 	}
 
 	return count, nil

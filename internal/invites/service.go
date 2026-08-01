@@ -190,11 +190,11 @@ func (s *inviteService) GetInviteByToken(ctx context.Context, plainToken string)
 	}
 
 	if invite.ExpiresAt.Before(time.Now()) {
-		return nil, fmt.Errorf("invite has expired")
+		return nil, &models.ForbiddenError{Message: "this invite has expired"}
 	}
 
 	if invite.Status == models.InviteStatusRevoked {
-		return nil, fmt.Errorf("invite has been revoked")
+		return nil, &models.ForbiddenError{Message: "this invite has been revoked"}
 	}
 
 	return invite, nil
@@ -755,11 +755,11 @@ func (s *inviteService) UnsubscribeFromReminders(ctx context.Context, plainToken
 	}
 
 	if invite.ExpiresAt.Before(time.Now()) {
-		return fmt.Errorf("invite has expired")
+		return &models.ForbiddenError{Message: "this invite has expired"}
 	}
 
 	if invite.Status == models.InviteStatusRevoked {
-		return fmt.Errorf("invite has been revoked")
+		return &models.ForbiddenError{Message: "this invite has been revoked"}
 	}
 
 	if invite.Unsubscribed {

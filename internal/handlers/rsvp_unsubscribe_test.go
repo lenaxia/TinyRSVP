@@ -111,7 +111,7 @@ func TestUnsubscribeHandler_InvalidToken(t *testing.T) {
 func TestUnsubscribeHandler_ExpiredToken(t *testing.T) {
 	mockInviteSvc := &mockRSVPInviteService{
 		getInviteByTokenFunc: func(ctx context.Context, token string) (*models.Invite, error) {
-			return nil, errors.New("invite has expired")
+			return nil, &models.ForbiddenError{Message: "this invite has expired"}
 		},
 	}
 
@@ -129,15 +129,15 @@ func TestUnsubscribeHandler_ExpiredToken(t *testing.T) {
 
 	r.ServeHTTP(w, req)
 
-	if w.Code != http.StatusGone {
-		t.Errorf("Expected status 410, got %d", w.Code)
+	if w.Code != http.StatusForbidden {
+		t.Errorf("Expected status 403, got %d", w.Code)
 	}
 }
 
 func TestUnsubscribeHandler_RevokedInvite(t *testing.T) {
 	mockInviteSvc := &mockRSVPInviteService{
 		getInviteByTokenFunc: func(ctx context.Context, token string) (*models.Invite, error) {
-			return nil, errors.New("invite has been revoked")
+			return nil, &models.ForbiddenError{Message: "this invite has been revoked"}
 		},
 	}
 

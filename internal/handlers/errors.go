@@ -5,13 +5,14 @@ import (
 	"encoding/json"
 	"errors"
 	"html/template"
-	"log"
+	"log/slog"
 	"net/http"
 	"strings"
 
 	"github.com/lenaxia/tinyrsvp/internal/assets"
 	"github.com/lenaxia/tinyrsvp/internal/middleware"
 	"github.com/lenaxia/tinyrsvp/internal/models"
+	"github.com/lenaxia/tinyrsvp/internal/rsvp"
 )
 
 type APIError struct {
@@ -180,6 +181,16 @@ func toAPIError(err error) *APIError {
 		}
 	}
 
+	var deadlineErr *models.DeadlinePassedError
+	if errors.As(err, &deadlineErr) {
+		return &APIError{
+			StatusCode: http.StatusForbidden,
+			Code:       "DEADLINE_PASSED",
+			Message:    deadlineErr.Error(),
+			Err:        err,
+		}
+	}
+
 	var assetsValidationErr *assets.ValidationError
 	if errors.As(err, &assetsValidationErr) {
 		return &APIError{
@@ -206,6 +217,15 @@ func toAPIError(err error) *APIError {
 			StatusCode: http.StatusConflict,
 			Code:       "VERSION_CONFLICT",
 			Message:    "version conflict",
+			Err:        err,
+		}
+	}
+
+	if errors.Is(err, rsvp.ErrDuplicateRSVP) {
+		return &APIError{
+			StatusCode: http.StatusConflict,
+			Code:       "CONFLICT",
+			Message:    rsvp.ErrDuplicateRSVP.Error(),
 			Err:        err,
 		}
 	}
@@ -325,16 +345,23 @@ func writeHTMLError(w http.ResponseWriter, r *http.Request, apiErr *APIError) {
 func logError(ctx context.Context, apiErr *APIError) {
 	requestID := middleware.GetRequestID(ctx)
 
-	log.Printf("[%s] Error %d: %s (code=%s)",
-		requestID,
-		apiErr.StatusCode,
-		apiErr.Message,
-		apiErr.Code,
-	)
-
-	if apiErr.StatusCode >= 500 && apiErr.Err != nil {
-		log.Printf("[%s] Underlying error: %v", requestID, apiErr.Err)
+	if apiErr.StatusCode >= 500 {
+		slog.Error("request error",
+			"request_id", requestID,
+			"status", apiErr.StatusCode,
+			"message", apiErr.Message,
+			"code", apiErr.Code,
+			"error", apiErr.Err,
+		)
+		return
 	}
+
+	slog.Warn("request error",
+		"request_id", requestID,
+		"status", apiErr.StatusCode,
+		"message", apiErr.Message,
+		"code", apiErr.Code,
+	)
 }
 
 func HandleError(w http.ResponseWriter, r *http.Request, err error) {
