@@ -117,7 +117,7 @@ func TestRSVPHandler_GetRSVPPage_ExpiredToken(t *testing.T) {
 	defer ctrl.Finish()
 
 	mockInviteSvc := mocksvcs.NewMockInviteService(ctrl)
-	mockInviteSvc.EXPECT().GetInviteByToken(gomock.Any(), gomock.Any()).Return(nil, &models.ForbiddenError{Message: "this invite has expired"})
+	mockInviteSvc.EXPECT().GetInviteByToken(gomock.Any(), gomock.Any()).Return(nil, errors.New("invite has expired"))
 
 	mockEventRepo := mockrepos.NewMockEventRepository(ctrl)
 	mockRSVPRepo := mockrepos.NewMockRSVPRepository(ctrl)
@@ -133,8 +133,8 @@ func TestRSVPHandler_GetRSVPPage_ExpiredToken(t *testing.T) {
 
 	r.ServeHTTP(w, req)
 
-	if w.Code != http.StatusForbidden {
-		t.Errorf("Expected status 403, got %d", w.Code)
+	if w.Code != http.StatusGone {
+		t.Errorf("Expected status 410, got %d", w.Code)
 	}
 }
 
@@ -143,7 +143,7 @@ func TestRSVPHandler_GetRSVPPage_RevokedInvite(t *testing.T) {
 	defer ctrl.Finish()
 
 	mockInviteSvc := mocksvcs.NewMockInviteService(ctrl)
-	mockInviteSvc.EXPECT().GetInviteByToken(gomock.Any(), gomock.Any()).Return(nil, &models.ForbiddenError{Message: "this invite has been revoked"})
+	mockInviteSvc.EXPECT().GetInviteByToken(gomock.Any(), gomock.Any()).Return(nil, errors.New("invite has been revoked"))
 
 	mockEventRepo := mockrepos.NewMockEventRepository(ctrl)
 	mockRSVPRepo := mockrepos.NewMockRSVPRepository(ctrl)
@@ -200,7 +200,7 @@ func TestRSVPHandler_GetRSVPPage_CancelledEvent(t *testing.T) {
 	r.ServeHTTP(w, req)
 
 	if w.Code != http.StatusGone {
-		t.Errorf("Expected status 403, got %d", w.Code)
+		t.Errorf("Expected status 410, got %d", w.Code)
 	}
 }
 
@@ -240,7 +240,7 @@ func TestRSVPHandler_GetRSVPPage_ArchivedEvent(t *testing.T) {
 	r.ServeHTTP(w, req)
 
 	if w.Code != http.StatusGone {
-		t.Errorf("Expected status 403, got %d", w.Code)
+		t.Errorf("Expected status 410, got %d", w.Code)
 	}
 }
 

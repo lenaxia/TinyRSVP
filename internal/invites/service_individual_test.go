@@ -579,7 +579,3 @@ func (m *mockEventRepository) GetDashboardStatsByCreator(ctx context.Context, cr
 func (m * mockEventRepository) CountEventsByCreator(ctx context.Context, creatorID int64) (int, error) {
 	return 0, nil
 }
-
-func (m * mockEventRepository) CountByFilters(ctx context.Context, filters repositories.ListFilters) (int, error) {
-	return 0, nil
-}

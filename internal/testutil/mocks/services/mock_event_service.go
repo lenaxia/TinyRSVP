@@ -158,21 +158,6 @@ func (mr *MockEventServiceMockRecorder) ListEventsWithStats(ctx, filters any) *g
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListEventsWithStats", reflect.TypeOf((*MockEventService)(nil).ListEventsWithStats), ctx, filters)
 }
 
-// CountEvents mocks base method.
-func (m *MockEventService) CountEvents(ctx context.Context, filters events.ListFilters) (int, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CountEvents", ctx, filters)
-	ret0, _ := ret[0].(int)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// CountEvents indicates an expected call of CountEvents.
-func (mr *MockEventServiceMockRecorder) CountEvents(ctx, filters any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CountEvents", reflect.TypeOf((*MockEventService)(nil).CountEvents), ctx, filters)
-}
-
 // PublishEvent mocks base method.
 func (m *MockEventService) PublishEvent(ctx context.Context, id int64) error {
 	m.ctrl.T.Helper()

@@ -276,15 +276,9 @@ func (h *EventHandlers) ListEvents(w http.ResponseWriter, r *http.Request) {
 		responses[i] = toEventResponse(event)
 	}
 
-	total, err := h.service.CountEvents(r.Context(), filters)
-	if err != nil {
-		HandleError(w, r, err)
-		return
-	}
-
 	response := ListEventsResponse{
 		Events: responses,
-		Total:  total,
+		Total:  len(responses),
 		Limit:  limit,
 		Offset: offset,
 	}
