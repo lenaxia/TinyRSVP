@@ -8,6 +8,12 @@
   ],
   "packageRules": [
     {
+      "description": "ai-workflows pins are bumped by propagate.yml syncs only",
+      "matchManagers": ["github-actions"],
+      "matchPackageNames": ["lenaxia/ai-workflows"],
+      "enabled": false
+    },
+    {
       "description": "Auto merge GitHub Actions digest/patch/minor updates",
       "matchManagers": ["github-actions"],
       "automerge": true,
